@@ -39,4 +39,5 @@ export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './
 export { advanceTurn } from './turn';
 export { createRng } from './rng';
 export type { Rng } from './rng';
-export { canonicalStringify } from './serialize';
+export { canonicalStringify, deserializeSaveBlob, serializeSaveBlob, sha256 } from './serialize';
+export type { DeserializedSave } from './serialize';
