@@ -1,0 +1,7 @@
+{
+  "name": "@yakshetra/engine",
+  "private": true,
+  "dependencies": {
+    "zod": "*"
+  }
+}
