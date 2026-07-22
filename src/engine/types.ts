@@ -12,6 +12,31 @@
 // here lets the engine compile standalone without depending on the content package.
 
 // ---------------------------------------------------------------------------
+// Deterministic RNG (implemented in todo 3 — ./rng-impl.ts + ./rng.ts)
+// ---------------------------------------------------------------------------
+
+/**
+ * Deterministic random source. All methods consume the seeded xoshiro128**
+ * stream only; the engine never draws from an unseeded global RNG.
+ */
+export interface Rng {
+  /** Uniform float in [0, 1). */
+  next(): number;
+  /**
+   * Uniform integer in [minInclusive, maxExclusive). Uses rejection sampling
+   * so there is no modulo bias when the range is not a power of two.
+   */
+  nextInt(minInclusive: number, maxExclusive: number): number;
+  /**
+   * Pick one element from a non-empty array using the seeded stream.
+   * @throws {RangeError} when `arr` is empty.
+   */
+  pick<T>(arr: readonly T[]): T;
+  /** Return a NEW shuffled array; the input is never mutated. */
+  shuffle<T>(arr: readonly T[]): T[];
+}
+
+// ---------------------------------------------------------------------------
 // Branded primitives (todo 6)
 // ---------------------------------------------------------------------------
 
