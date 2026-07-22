@@ -359,3 +359,62 @@ export const EraPackSchema = z
   .strict();
 
 export type EraPack = z.infer<typeof EraPackSchema>;
+
+/* -------------------------------------------------------------------------------------------------
+ * Ending — a scripted death/transition for a life.
+ *
+ * Endings live in a per-pack `endings.json5` sibling to `events.json5`. The
+ * loader reads only `pack.json5`; endings are validated standalone (the same
+ * pattern events use) and merged at integration time.
+ *
+ * Each ending carries a `trigger` predicate evaluated against the run state,
+ * a `narrative_sid` resolving to weighted-not-graphic prose, and
+ * `echo_implications` describing which cross-life echo fields the ending tends
+ * to produce (descriptive metadata for the echo reducer, not a score).
+ *
+ * See `.omo/plans/buddhist-inspired-incremental-rpg.md` todo 18.
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Descriptive metadata linking an ending to the cross-life echo categories it
+ * tends to produce. Every field is optional; an ending may produce zero or
+ * more echo types. Values are short human-readable descriptions (not
+ * machine-evaluated predicates) consumed by the echo reducer at integration.
+ */
+const EchoImplicationsSchema = z
+  .object({
+    tendency: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('tendency echo this ending solidifies (top intent_root)'),
+    attachment: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('unresolved-attachment echo this ending produces'),
+    pattern_break: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('pattern-break echo this ending makes more likely'),
+    broken_vow: z
+      .string()
+      .min(1)
+      .optional()
+      .describe('broken-vow echo if vows existed and were interrupted'),
+  })
+  .strict();
+
+export const EndingSchema = z
+  .object({
+    id: TokenSchema.describe('ending id, e.g. "ending:tang/old-age"'),
+    trigger: PredicateSchema.describe('predicate on run state that selects this ending'),
+    narrative_sid: SidSchema.describe('weighted-not-graphic death narrative'),
+    echo_implications: EchoImplicationsSchema.describe(
+      'which cross-life echo fields this ending tends to produce',
+    ),
+  })
+  .strict();
+
+export type Ending = z.infer<typeof EndingSchema>;

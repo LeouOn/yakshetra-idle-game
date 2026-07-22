@@ -82,6 +82,38 @@
       "sangha_sid": "Sangha refers here to a monastic community and its shared life of work, study, care, discipline, and dependence on surrounding society. It is a social description, not a spiritual ranking."
     }
   },
+  "fantasy": {
+    "name_sid": "The Garden of Arrivals",
+    "lineage_notes_sid": "This life is set in the Garden of Arrivals, an original fictional cosmology inspired loosely by Mahāyāna contemplative imagery. It is a work of fiction. It does not represent itself as doctrine, as a teaching of any lineage, teacher, order, or school, or as a faithful depiction of any Buddhist cosmological realm. The six-parami lens set, the cross-life echo system, the intent-root taxonomy, and every event in this pack are game-design choices made in good faith, not claims about how the world actually works or about what any tradition teaches.\n\nThe Garden of Arrivals, its Court, its slow water, the bell that rings once, the memory stones, and every figure who appears in these scenes are original allegorical creations of the game's authors. They have no precedent in any sutra, commentary, oral tradition, or devotional practice. If a detail in this pack resembles a recognized image from any tradition, the resemblance is incidental and not an assertion of shared identity. The game treats its setting as a narrative space for ethical and contemplative reflection, not as a map of any metaphysical territory.\n\nThis pack deliberately excludes and does not depict: any named pure land, including Sukhāvatī, Abhirati, Vaidūryanirbhāsa, and any other named buddha-field from any tradition; any named Buddha or bodhisattva; any named historical teacher, commentator, or lineage holder; any real mantra, dhāraṇī, seed syllable, or ritual utterance; and any depiction of thangka painting, mandala geometry, mudrā gesture, or empowerment ceremony. The Gardener is not an avatar, emanation, or stand-in for any recognized figure. The Court is not a depiction of any post-death judgment scene, judgment deity, or reckoning doctrine found in any tradition. No element of this pack should be read as representing, satirizing, or commenting on any living devotional practice.\n\nThe Gardener is an original allegorical figure created for this game. The Gardener tends the Garden of Arrivals, asks arriving souls what they carry, and witnesses the patterns that cross from one life to the next. The Gardener has no sutra provenance, no devotional name, no liturgical function, and no iconographic tradition. The Gardener is not enlightened, not a teacher, not a judge in any doctrinal sense, and not a deity. The Gardener is a narrative device for exploring care, attention, and release within the game's fiction. Any resemblance to a figure from any tradition is coincidental and unintended. The name 'the Gardener' is a functional description of the figure's role within the Garden, not a title carrying doctrinal significance.\n\nThe pack draws comparative and scholarly context from five works. David L. McMahan, The Making of Buddhist Modernism (Oxford University Press, 2008), provides context on how Mahayana imagery has been received and reframed in modern contexts. Paul Williams, Mahayana Buddhism: The Doctrinal Foundations, 2nd edition (Routledge, 2009), provides doctrinal background on the six-parami framework the lens set is loosely modeled on. Peter Harvey, An Introduction to Buddhism: Teachings, History and Practices, 2nd edition (Cambridge University Press, 2013), provides general historical and ethical context. Robert E. Buswell Jr. and Donald S. Lopez Jr., The Princeton Dictionary of Buddhism (Princeton University Press, 2014), serves as a terminology reference. Rupert Gethin, The Foundations of Buddhism (Oxford University Press, 1998), provides general reference for the ethical framework. These sources inform the game's framing choices only. No source endorses or is represented by this work, and no specific teaching, claim, or doctrinal position from any source is asserted as true within the game's fiction.\n\nThe editorial intent is to provide a contemplative, non-graphic, and non-sectarian fictional space that uses Mahayana-inspired imagery — rebirth, intention, echoes across lives, vows, and release from fixed patterns — as raw material for a game about ethical attention. The setting avoids named devotional elements so that no player's relationship to a living tradition is implicated by the gameplay. Content warnings are surfaced per category and can be toggled off in settings. Difficult themes — separation from loved ones, loss of memory, spiritual disorientation, and encounters with anguish — are named in content-warning tags but never depicted in graphic detail. The game's mechanical model records one canonical intent root per choice for cross-life echo analysis; it does not compute or display any metaphysical score, ranking, or judgment on the player. The vow-enforcement rule variation means that vows taken in one life can mechanically constrain available choices in a later life; breaking a vow unlocks previously gated actions but at narrative cost rather than numerical penalty.",
+    "social": {
+      "mobility_rules_sid": "Movement between stations in the Garden follows the weight of what you carry, not a fixed hierarchy. A newly arrived soul may be called to attend the Court; a court attendant may take up a vow and become a traveler. Mobility costs trust and time, and it is never a hidden reward for virtue. The vow-enforcement rule means declared vows mechanically constrain which choices are open to you until they are met, transformed, or set aside."
+    },
+    "rule": {
+      "vow_enforcement_sid": "Vows taken in one life mechanically constrain available choices in a later life. A vow predicate gates certain actions closed until the vow is met, transformed, or set aside. Breaking a vow unlocks previously gated actions but at narrative cost rather than numerical penalty. This rule replaces social-obligation with a personal-commitment mechanic: what binds you is what you yourself have pledged, not what your station demands."
+    },
+    "role": {
+      "newly_arrived_soul": {
+        "label_sid": "Newly arrived soul",
+        "description_sid": "You arrive at the Garden carrying only what crossed with you. No memories beyond the echoes, no standing beyond the arriving."
+      },
+      "court_attendant": {
+        "label_sid": "Court attendant",
+        "description_sid": "You serve the Court that receives arriving souls. Your trust in the cosmic order runs deep; your freedom to act on your own behalf runs thin."
+      },
+      "vow_bound_traveler": {
+        "label_sid": "Vow-bound traveler",
+        "description_sid": "You carry a vow declared in a prior life. The vow opens certain paths and closes others; its weight precedes you into every choice."
+      }
+    },
+    "glossary": {
+      "garden_sid": "The Garden of Arrivals is the original fictional setting of this life. It is an allegorical space where arriving souls are received, not a depiction of any Buddhist pure land or cosmological realm.",
+      "gardener_sid": "The Gardener is an original allegorical figure who tends the Garden of Arrivals. The Gardener has no sutra provenance and is not a stand-in for any recognized devotional figure.",
+      "court_sid": "The Court is an original allegorical institution within the Garden that reviews the patterns a life carries. It is not a depiction of any post-death judgment from any tradition.",
+      "bell_sid": "The bell that rings once is an original allegorical element of the Garden. It marks transitions without doctrinal significance.",
+      "memory_stone_sid": "Memory stones are original allegorical objects in the Garden where the traces of a prior life may be held or released. They are a game-design device, not a reference to any ritual object.",
+      "slow_water_sid": "Slow water is an original allegorical feature of the Garden's landscape. It has no doctrinal referent."
+    }
+  },
   "era": {
     "tang-china": {
       "name_sid": "Tang Dynasty Chang\u2019an",
@@ -457,6 +489,22 @@
         "card": {
           "investigate-risk_sid": "At the edge, a small disturbance leaves someone searching for a way back."
         }
+      }
+    }
+  },
+  "ending": {
+    "tang": {
+      "old-age": {
+        "narrative_sid": "The seasons turned past counting. Your hands learned stillness before the rest of you did. One morning you did not rise to meet the work waiting in the yard. You died as you had lived \u2014 among the people and tasks that made the days recognizably days. The household carried your name forward into the seasons that followed, and the work you had tended did not stop with you."
+      },
+      "illness": {
+        "narrative_sid": "The sickness came in the cold season and did not leave with it. Days shortened into long nights of thin breathing and the smell of medicinal tea gone cold on the stove. You said what last things could be said, and held what could not be spoken. You died before the plum buds opened. The household remembered the fever, and the silence that came after it settled into the rooms."
+      },
+      "violence": {
+        "narrative_sid": "It ended without warning. There was no time to gather what you had meant to do, no moment to finish the sentence you were halfway through speaking. The orders, or the road, or the constable\u2019s list \u2014 one of these found you before the day was over. You died. What you had been building stopped where it stood, and the people who depended on it learned that it had stopped."
+      },
+      "starvation": {
+        "narrative_sid": "The grain ran out in the depth of winter. You measured what was left against the mouths that needed it, and the measuring did not save everyone. You grew thin beside them, slower each day, until standing took more than you had. You died knowing exactly who had eaten and who had not, and the weight of that knowing did not lighten as the light in the room dimmed."
       }
     }
   },

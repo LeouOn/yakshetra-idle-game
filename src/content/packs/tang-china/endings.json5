@@ -1,0 +1,108 @@
+{
+  // Tang China death/endings (plan todo 18).
+  //
+  // Four scripted endings covering the death conditions a Tang-era life can
+  // produce: old age, illness, violence, and starvation. Each carries a
+  // trigger predicate on run state, a narrative_sid resolving to
+  // weighted-not-graphic prose (death is named, never euphemized, never
+  // clinical), and echo_implications describing the cross-life echo fields
+  // the ending tends to feed.
+  //
+  // Design invariants (plan MUST NOT):
+  //   - No afterlife depiction, no literal bardo sequence, no named beings
+  //     greeting the dead. Endings describe the death and immediate aftermath
+  //     only; the bardo transition is a separate UI (todo 15), not narrative.
+  //   - No claim of nirvāṇa, buddhahood, or bodhisattva status. Endings do
+  //     not adjudicate the life.
+  //   - No gore, no clinical detail. Suffering is acknowledged, not staged.
+  //
+  // The file is a top-level object with an `endings` array. The loader reads
+  // only pack.json5; this file is consumed by the standalone test
+  // (src/content/packs/tang-china/__tests__/endings.test.ts) which validates
+  // each entry against EndingSchema — the same standalone-validation pattern
+  // events.json5 uses.
+
+  endings: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Old age — reached sixty still alive. Peaceful decline; time for
+    // reflection. Tendencies solidify; pattern-break more likely if the
+    // player showed cross-life change.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:tang/old-age',
+      trigger: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'age', value: 60 },
+          { op: 'gt', key: 'energy', value: 0 },
+        ],
+      },
+      narrative_sid: 'ending.tang.old-age.narrative_sid',
+      echo_implications: {
+        tendency: 'The dominant intent_root across this life solidifies into a strong tendency echo.',
+        pattern_break: 'A pattern-break echo is more likely if the player showed genuine cross-life change.',
+      },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Illness — energy depleted before sixty. Slow decline; last
+    // conversations. Unresolved grief and regrets become attachment echoes.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:tang/illness',
+      trigger: {
+        op: 'and',
+        operands: [
+          { op: 'lte', key: 'energy', value: 0 },
+          { op: 'lt', key: 'age', value: 60 },
+        ],
+      },
+      narrative_sid: 'ending.tang.illness.narrative_sid',
+      echo_implications: {
+        attachment: 'Unresolved grief and regrets from the final days of sickness become attachment echoes.',
+      },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Violence — killed by a purge or banditry. Sudden, incomplete,
+    // interrupted intentions. Broken-vow echoes if vows existed; tendency
+    // echoes if aversion dominated.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:tang/violence',
+      trigger: {
+        op: 'or',
+        operands: [
+          { op: 'has_flag', key: 'victim-of-purge' },
+          { op: 'has_flag', key: 'bandit-casualty' },
+        ],
+      },
+      narrative_sid: 'ending.tang.violence.narrative_sid',
+      echo_implications: {
+        broken_vow: 'If vows existed, the interrupted life produces broken-vow echoes.',
+        tendency: 'If aversion dominated prior to the sudden end, a tendency echo solidifies.',
+      },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Starvation — provisions depleted before fifty. Slow, with weight
+    // about who was fed and who was not. Unresolved attachment to those who
+    // could not be fed; strong tendency from scarcity choices.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:tang/starvation',
+      trigger: {
+        op: 'and',
+        operands: [
+          { op: 'lte', key: 'provisions', value: 0 },
+          { op: 'lt', key: 'age', value: 50 },
+        ],
+      },
+      narrative_sid: 'ending.tang.starvation.narrative_sid',
+      echo_implications: {
+        attachment: 'The unresolved attachment to those who could not be fed carries forward.',
+        tendency: 'The dominant intent_root during scarcity solidifies into a strong tendency echo.',
+      },
+    },
+  ],
+}

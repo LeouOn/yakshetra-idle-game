@@ -25,7 +25,6 @@
       content_warnings: [
         'war-political-violence',
         'forced-moral-compromise',
-        'poverty-starvation',
       ],
       choices: [
         {
@@ -235,7 +234,6 @@
       once_per_run: false,
       content_warnings: [
         'poverty-starvation',
-        'forced-moral-compromise',
       ],
       choices: [
         {
@@ -287,7 +285,6 @@
       once_per_run: false,
       trigger: { op: 'gte', key: 'state.age', value: 25 },
       content_warnings: [
-        'war-political-violence',
         'social-oppression',
         'forced-moral-compromise',
       ],
@@ -340,7 +337,7 @@
       once_per_run: false,
       content_warnings: [
         'illness-chronic-suffering',
-        'forced-moral-compromise',
+        'death-of-family',
       ],
       choices: [
         {
