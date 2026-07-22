@@ -92,19 +92,57 @@ export interface SocialIdentity {
 // Within-life state (filled in todo 6)
 // ---------------------------------------------------------------------------
 
+/**
+ * Within-life state.
+ *
+ * `resources` is keyed by string: the six {@link ResourceId} canonical keys are
+ * always present (initialized by `createLifeState`), but content packs may
+ * reference additional resource tokens through `add_resource` effects. Every
+ * resource value is clamped at 0 by the reducer.
+ *
+ * `identity` is the FENCE: set once at life-start by `createLifeState` and
+ * NEVER mutated by the reducer (todo 7/8 invariant). The cross-life echo
+ * reducer never reads or writes it.
+ */
 export interface LifeState {
+  /** Opaque social identity — immutable after life-start (the fence). */
+  readonly identity: SocialIdentity;
   id: LifeId;
   era: EraId;
   role: RoleId;
   age: number;
   turn: number;
-  resources: Record<ResourceId, number>;
+  /** Resource counters; always includes the six {@link ResourceId} keys. */
+  resources: Record<string, number>;
   skills: Record<string, number>;
   relationships: Record<string, { trust: number; debt: number; affection: number }>;
   flags: Set<string>;
   intent_root_history: IntentRoot[];
   chosen_lens: Lens | null;
   alive: boolean;
+  /** SID of the last narrative card shown to the player (null until first shown). */
+  last_narrative_sid: string | null;
+  /** Per-event weight overrides layered on top of each event's baseline weight. */
+  event_weights: Record<string, number>;
+  /** Remaining cooldown turns per event id (decremented each turn by advanceTurn). */
+  cooldowns: Record<string, number>;
+  /** Ordered ids of resolved choices/events (the deterministic replay log). */
+  history: string[];
+  /** Event ids that have fired and are marked once_per_run (never fire again). */
+  fired_once_per_run: Set<string>;
+  /** Event ids queued by `trigger_event` effects, awaiting the turn loop. */
+  pending_events: string[];
+}
+
+/**
+ * Era-specific life-stage hook. The engine stays era-agnostic: age advancement
+ * and any era-specific tick side effects are delegated to this callback so no
+ * era knowledge leaks into the pure reducer. `advanceTurn` invokes it AFTER the
+ * fixed engine ticks; the returned partial is shallow-merged (with `resources`
+ * deep-merged) into the new state.
+ */
+export interface EraRules {
+  advancePerTurn(state: LifeState, rng: Rng): Partial<LifeState>;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,21 +197,13 @@ export interface SaveBlob {
 }
 
 // ---------------------------------------------------------------------------
-// Forward declaration: content-schema shapes (canonical in todo 4)
+// Content-schema shapes (canonical Zod types, re-exported type-only from todo 4)
 // ---------------------------------------------------------------------------
+//
+// The engine consumes the SAME Choice/Event/EffectOp/Predicate types that
+// content packs are validated against (src/content/schema.ts). These are
+// type-only imports, so the engine package keeps its runtime-purity fence
+// (zod is already a declared engine dependency; nothing from react/rn/expo or
+// the wall clock / global rng leaks in).
 
-/**
- * Minimal `Choice` shape consumed by the engine reducer.
- *
- * The canonical Zod-validated `Choice` (with full `Predicate`/`EffectOp`
- * discriminated unions for `requires`/`effects`) lives in
- * `src/content/schema.ts` (todo 4). The engine narrows these in todo 6; here
- * they are opaque so the engine compiles without a content dependency.
- */
-export interface Choice {
-  id: string;
-  label_sid: string;
-  forbidden: boolean;
-  requires: unknown[];
-  effects: unknown[];
-}
+export type { Choice, EffectOp, Event, Predicate } from '@/content/schema';

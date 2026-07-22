@@ -10,20 +10,31 @@ export type {
   Choice,
   Echo,
   EchoType,
+  EffectOp,
   EraId,
+  EraRules,
+  Event,
   IntentRoot,
   KarmaState,
   Lens,
   LifeId,
   LifeState,
   NextLifeSeed,
+  Predicate,
   ResourceId,
   RoleId,
   SaveBlob,
   SocialIdentity,
 } from './types';
 
-export { applyChoice } from './reducer';
+export {
+  applyChoice,
+  applyEffect,
+  applyEvent,
+  createLifeState,
+  evaluatePredicate,
+} from './reducer';
+export type { CreateLifeStateOptions } from './reducer';
 export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './echo';
 export { advanceTurn } from './turn';
 export { createRng } from './rng';
