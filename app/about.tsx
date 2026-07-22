@@ -1,12 +1,15 @@
-// About screen — lineage notes, glossary, and the project disclaimer.
+// About screen — front-matter disclaimer, lineage notes, glossary, sources.
 //
-// Placeholder only. The full lineage-notes + glossary view (fed by string IDs
-// from src/i18n) lands in todo 28.
+// Renders the presentational {@link AboutView}. All text flows through `about.*`
+// string ids. A back button returns to the previous route.
 //
-// Plan reference: todo 28.
+// Plan reference: todo 28 (disclaimer + glossary surface); this route is wired
+// in todo 15 so the settings screen's "About" link resolves.
 
-import { RoutePlaceholder } from '@/ui/components/RoutePlaceholder';
+import { router } from 'expo-router';
+
+import AboutView from '@/ui/components/AboutView';
 
 export default function AboutScreen() {
-  return <RoutePlaceholder title="About Yakshetra" implementingTodo="todo 28" />;
+  return <AboutView onBack={() => router.back()} />;
 }
