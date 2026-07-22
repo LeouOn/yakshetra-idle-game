@@ -1,0 +1,48 @@
+{
+  "life": {
+    "reflect": {
+      "intended_heading_sid": "What you intended",
+      "happened_heading_sid": "What happened",
+      "carry_heading_sid": "What you carry",
+      "intended_lens_action_sid": "{lens} — {action}",
+      "delta_positive_sid": "+{n} {resource}",
+      "delta_negative_sid": "-{n} {resource}",
+      "continue_button_sid": "Continue",
+      "remember_button_sid": "Remember",
+      "card_label_sid": "Reflect on this turn"
+    }
+  },
+  "lens": {
+    "generosity_sid": "Generosity",
+    "careful_conduct_sid": "Careful Conduct",
+    "patient_courage_sid": "Patient Courage",
+    "joyful_effort_sid": "Joyful Effort",
+    "collected_attention_sid": "Collected Attention",
+    "discernment_sid": "Discernment"
+  },
+  "resource": {
+    "time_sid": "time",
+    "energy_sid": "energy",
+    "provisions_sid": "provisions",
+    "trust_sid": "trust",
+    "skill_sid": "skill",
+    "obligation_sid": "obligation"
+  },
+  "intent": {
+    "care_sid": "care",
+    "greed_sid": "greed",
+    "aversion_sid": "aversion",
+    "delusion_sid": "delusion"
+  },
+  "test": {
+    "action": {
+      "give_alms_label_sid": "Give alms at the temple gate"
+    },
+    "consequence": {
+      "alms_given_sid": "The beggar ate well; your bowl came back lighter."
+    },
+    "journal": {
+      "alms_memory_sid": "A handful of rice, passed from one open hand to another, carried into the next dawn."
+    }
+  }
+}
