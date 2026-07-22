@@ -27,14 +27,9 @@ export type {
   SocialIdentity,
 } from './types';
 
-export {
-  applyChoice,
-  applyEffect,
-  applyEvent,
-  createLifeState,
-  evaluatePredicate,
-} from './reducer';
+export { applyChoice, applyEffect, applyEvent, createLifeState } from './reducer';
 export type { CreateLifeStateOptions } from './reducer';
+export { evaluatePredicate } from './predicates';
 export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './echo';
 export { advanceTurn } from './turn';
 export { createRng } from './rng';
