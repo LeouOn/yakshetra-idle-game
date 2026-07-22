@@ -70,7 +70,13 @@ function renderBardo(props: Partial<BardoViewProps> = {}): ReturnType<typeof ren
 
 describe('BardoView', () => {
   it('renders the life-ended header using the previous era name', () => {
-    const { getByTextContent } = renderBardo({ previousEra: 'tang-china' });
+    // Exclude the just-played era from the next-life list (the parent route
+    // passes `nextErasAfter(previousEra)`); otherwise the era button would
+    // also contain the era name and `getByTextContent` would match twice.
+    const { getByTextContent } = renderBardo({
+      previousEra: 'tang-china',
+      eras: nextErasAfter('tang-china'),
+    });
     // Header heading.
     expect(() => getByTextContent('Your life has ended')).not.toThrow();
     // Subheading resolves era.tang-china.name_sid ("Tang Dynasty Chang'an").

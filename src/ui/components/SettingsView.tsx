@@ -195,10 +195,10 @@ export default function SettingsView({
           {FONT_SCALES.map((scale) => {
             const selected = settings.fontScale === scale;
             const sizeLabel = resolveSid(fontScaleLabelSid(scale));
-            const a11y = resolveSid(
+            const fullLabel = formatSid(
               selected ? 'settings.font_scale_selected_sid' : 'settings.font_scale_unselected_sid',
+              { size: sizeLabel },
             );
-            const fullLabel = formatSid(a11y, { size: sizeLabel });
             return (
               <Pressable
                 key={scale}

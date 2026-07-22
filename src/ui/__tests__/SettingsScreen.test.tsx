@@ -174,7 +174,7 @@ describe('SettingsView', () => {
     expect(onImportSlot).toHaveBeenCalledWith(2, 'PASTED-CODE');
     // Success message renders.
     const msg = getByTestID('settings-import-msg');
-    expect(String(msg.children[0])).toContain('Slot 2');
+    expect(String(msg.children[0])).toContain('slot 2');
   });
 
   it('shows the failure message when import rejects', async () => {
