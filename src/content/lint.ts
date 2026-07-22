@@ -386,6 +386,10 @@ function checkNoVisibleKarmaMeter(pack: EraPack, out: LintViolation[]): void {
 function checkNoRealMantra(pack: EraPack, out: LintViolation[]): void {
   const texts: { text: string; loc: string }[] = [];
   for (const [term, localized] of Object.entries(pack.glossary)) {
+    if (typeof localized === 'string') {
+      texts.push({ text: localized, loc: `glossary[${term}]` });
+      continue;
+    }
     for (const [locale, value] of Object.entries(localized)) {
       texts.push({ text: value, loc: `glossary[${term}][${locale}]` });
     }

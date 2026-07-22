@@ -34,12 +34,13 @@ export type ContentPackId = z.infer<typeof ContentPackIdSchema>;
 
 /**
  * A string identifier pointing at a localization entry. Every player-facing
- * text field is a `_sid` reference; inline strings are forbidden.
+ * text field is a `_sid` reference or an opaque `s:` content identifier.
+ * Inline strings are forbidden.
  */
 export const SidSchema = z
   .string()
   .min(1)
-  .regex(/_sid$/, 'player-facing text fields must be string ids ending in "_sid"');
+  .regex(/^(?:s:[a-z0-9][a-z0-9._:-]*|.+_sid)$/, 'player-facing text fields must be string ids');
 
 export type Sid = z.infer<typeof SidSchema>;
 
@@ -217,6 +218,36 @@ export const PredicateSchema: z.ZodType<Predicate> = z.lazy(() =>
 );
 
 /* -------------------------------------------------------------------------------------------------
+ * Role — a playable starting station within an era.
+ *
+ * Introduced by todo 12 (life-start screen). Roles are OPTIONAL on an
+ * EraPack so existing fixtures and the schema/lint tests from todos 4-5 do not
+ * break: the field is `.optional()`, and Wave 4-5 authored packs (Tang China,
+ * Fantasy) will populate it. When absent the UI falls back to placeholder roles.
+ * A future todo may flip this to required once the first real pack ships.
+ * -----------------------------------------------------------------------------------------------*/
+
+/** Resource-key -> starting value map for a role (e.g. { alms: 2, trust: 1 }). */
+export const StartingResourcesSchema = z.record(z.string().min(1), z.number());
+
+export type StartingResources = z.infer<typeof StartingResourcesSchema>;
+
+export const RoleSchema = z
+  .object({
+    id: TokenSchema.describe('role id, e.g. "peasant", "merchant", "monastic"'),
+    label_sid: SidSchema.optional(),
+    title_sid: SidSchema.optional(),
+    description_sid: SidSchema,
+    starting_resources: StartingResourcesSchema,
+  })
+  .strict()
+  .refine((role) => (role.label_sid === undefined) !== (role.title_sid === undefined), {
+    message: 'a role must define exactly one of label_sid or title_sid',
+  });
+
+export type Role = z.infer<typeof RoleSchema>;
+
+/* -------------------------------------------------------------------------------------------------
  * Choice, Event, EraPack
  * -----------------------------------------------------------------------------------------------*/
 
@@ -263,21 +294,34 @@ const RuleVariationSchema = z
   })
   .strict();
 
-const SocialConfigSchema = z
+const LegacySocialConfigSchema = z
   .object({
     paramitas: z.array(TokenSchema).min(1, 'social.paramitas must list >= 1 paramita key'),
     relations: z.array(TokenSchema),
   })
   .strict();
 
-/** Glossary: term -> localized text. */
-const GlossarySchema = z.record(z.string().min(1), LocalizedTextSchema);
+const AuthoredSocialConfigSchema = z
+  .object({
+    name: z.string().min(1),
+    strata: z.array(TokenSchema).min(1),
+    default_role_at_birth: TokenSchema,
+    mobility_rules_sid: SidSchema,
+  })
+  .strict();
+
+const SocialConfigSchema = z.union([LegacySocialConfigSchema, AuthoredSocialConfigSchema]);
+
+const GlossarySchema = z.record(z.string().min(1), z.union([LocalizedTextSchema, SidSchema]));
 
 /**
  * Root content pack schema for an era. This is the parse entry point.
  *
  * Constraints of note:
- * - {@link EventSchema events} array length is [6..10]
+ * - `events` is OPTIONAL on the wire so a Wave 4-5 authored pack can ship the
+ *   scaffold (pack.json5) before Wave 4-5 events land as a separate file
+ *   consumed at integration time. Schema and loader default it to `[]`. The
+ *   invariant for shipping is enforced at integration, not parse.
  * - `locale_available` MUST contain "en"
  * - `schema_version` is the literal "0.1"
  * - `lens_set` is fixed to "six-paramita-mahayana"
@@ -299,7 +343,13 @@ export const EraPackSchema = z
     social: SocialConfigSchema,
     calendar: z.string().min(1),
     content_warnings: z.array(z.string()),
-    events: z.array(EventSchema).min(6, 'era must contain 6..10 events').max(10),
+    events: z
+      .array(EventSchema)
+      .min(6, 'era must contain 6..10 events')
+      .max(10)
+      .optional()
+      .default([]),
+    starting_roles: z.array(RoleSchema).min(1).optional(),
     lineage_notes_sid: SidSchema,
     glossary: GlossarySchema,
     source_bibliography: z.array(SourceBibliographyEntrySchema),

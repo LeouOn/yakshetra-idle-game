@@ -1,0 +1,104 @@
+{
+  id: 'tang-china@0.1.0',
+  name_sid: 'tang.name_sid',
+  locale_default: 'en',
+  locale_available: ['en'],
+  schema_version: '0.1',
+  engine_compat: '>=0.1 <1.0',
+  lens_set: 'six-paramita-mahayana',
+  calendar: 'tang-ce-7xx',
+  social: {
+    name: 'Late Tang China (8th-9th century CE)',
+    strata: [
+      'literati-official',
+      'merchant',
+      'chan-monastic',
+      'peasant',
+      'soldier',
+    ],
+    default_role_at_birth: 'peasant',
+    mobility_rules_sid: 'tang.social.mobility_rules_sid',
+  },
+  starting_roles: [
+    {
+      id: 'literati-official',
+      label_sid: 'tang.role.literati_official.label_sid',
+      description_sid: 'tang.role.literati_official.description_sid',
+      starting_resources: {
+        time: 1,
+        energy: 2,
+        provisions: 2,
+        trust: 4,
+      },
+    },
+    {
+      id: 'merchant',
+      label_sid: 'tang.role.merchant.label_sid',
+      description_sid: 'tang.role.merchant.description_sid',
+      starting_resources: {
+        time: 3,
+        energy: 2,
+        provisions: 3,
+        trust: 1,
+      },
+    },
+    {
+      id: 'peasant',
+      label_sid: 'tang.role.peasant.label_sid',
+      description_sid: 'tang.role.peasant.description_sid',
+      starting_resources: {
+        time: 4,
+        energy: 3,
+        provisions: 4,
+        trust: 1,
+      },
+    },
+  ],
+  content_warnings: [
+    'war-political-violence',
+    'poverty-starvation',
+    'illness-chronic-suffering',
+    'social-oppression',
+    'forced-moral-compromise',
+  ],
+  lineage_notes_sid: 'tang.lineage_notes_sid',
+  glossary: {
+    chan: 'tang.glossary.chan_sid',
+    literati: 'tang.glossary.literati_sid',
+    sangha: 'tang.glossary.sangha_sid',
+  },
+  permitted_imagery: [
+    'ink-wash-landscape',
+    'tea-ceremony-objects',
+    'agricultural-tools',
+    'silk-road-goods',
+    'monastic-courtyard-architecture',
+  ],
+  rule_variation: {
+    id: 'social-obligation',
+    description_sid: 'tang.rule.social_obligation_sid',
+    enforces: 'social-obligation',
+  },
+  source_bibliography: [
+    {
+      citation: 'Gernet, Jacques. Buddhism in Chinese Society: An Economic History from the Fifth to the Tenth Centuries. Columbia University Press, 1995.',
+      url: 'https://cup.columbia.edu/book/buddhism-in-chinese-society/9780231114110/',
+    },
+    {
+      citation: "Weinstein, Stanley. Buddhism Under the T'ang. Cambridge University Press, 1987.",
+      url: 'https://archive.org/details/buddhismundertan0000wein',
+    },
+    {
+      citation: 'Boucher, Daniel. Bodhisattvas of the Forest and the Formation of the Mahayana: A Study and Translation of the Rastrapalapariprccha-sutra. University of Hawai\u02bbi Press, 2008.',
+      url: 'https://uhpress.hawaii.edu/title/bodhisattvas-of-the-forest-and-the-formation-of-the-mahayana/',
+    },
+    {
+      citation: 'McMahan, David L. The Making of Buddhist Modernism. Oxford University Press, 2008. Used for comparative context only.',
+      url: 'https://global.oup.com/academic/product/the-making-of-buddhist-modernism-9780195183276',
+    },
+    {
+      citation: 'Williams, Paul. Mahayana Buddhism: The Doctrinal Foundations. 2nd ed., Routledge, 2009.',
+      url: 'https://www.routledge.com/Mahayana-Buddhism-The-Doctrinal-Foundations/Williams/p/book/9780415356534',
+    },
+  ],
+}

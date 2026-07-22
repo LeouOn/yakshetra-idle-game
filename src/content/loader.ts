@@ -16,7 +16,7 @@
 // Plan reference: todo 12.
 
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 
 import JSON5 from 'json5';
 
@@ -24,6 +24,15 @@ import { lintPack } from './lint';
 import { EraPackSchema, type EraPack } from './schema';
 
 const PACKS_ROOT = resolve(process.cwd(), 'src', 'content', 'packs');
+
+/**
+ * The era-id segment of a pack path. Lowercase ASCII slug, optionally
+ * hyphenated; matches the `slug` half of a {@link ContentPackIdSchema}. We
+ * reject `..`, absolute paths, separators, and any character outside the
+ * slug charset so the resolved file path is guaranteed to live under
+ * {@link PACKS_ROOT}.
+ */
+const ERA_ID_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
 /**
  * Load, parse, schema-validate, and lint an era pack by id.
@@ -35,14 +44,25 @@ const PACKS_ROOT = resolve(process.cwd(), 'src', 'content', 'packs');
  *   always names the offending field or rule.
  */
 export async function loadEraPack(eraId: string): Promise<EraPack> {
+  if (!ERA_ID_PATTERN.test(eraId)) {
+    throw new Error(
+      `loadEraPack("${eraId}"): eraId must match ${ERA_ID_PATTERN} (lowercase ASCII slug)`,
+    );
+  }
   const path = resolve(PACKS_ROOT, eraId, 'pack.json5');
+  const insideRoot = relative(PACKS_ROOT, path)
+    .split(/[\\/]+/)
+    .join('/');
+  if (insideRoot.startsWith('../') || insideRoot.startsWith('/') || insideRoot === '..') {
+    throw new Error(`loadEraPack("${eraId}"): resolved path escapes PACKS_ROOT`);
+  }
 
   let raw: string;
   try {
     raw = await readFile(path, 'utf8');
   } catch (err) {
     throw new Error(
-      `loadEraPack("${eraId}"): could not read "${path}": ${
+      `loadEraPack("${eraId}"): could not read pack file: ${
         err instanceof Error ? err.message : String(err)
       }`,
     );
@@ -53,7 +73,7 @@ export async function loadEraPack(eraId: string): Promise<EraPack> {
     parsed = JSON5.parse(raw);
   } catch (err) {
     throw new Error(
-      `loadEraPack("${eraId}"): invalid JSON5 in "${path}": ${
+      `loadEraPack("${eraId}"): invalid JSON5 in pack file: ${
         err instanceof Error ? err.message : String(err)
       }`,
     );
