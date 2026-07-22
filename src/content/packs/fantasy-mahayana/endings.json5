@@ -1,0 +1,98 @@
+{
+  // Fantasy Mahayana death/endings (plan todo 23).
+  //
+  // Four scripted endings covering the transition conditions a Garden life can
+  // produce: peaceful fade into the Garden's pattern, departure toward the
+  // next life, death while a vow remains broken, and the rare Gardener
+  // blessing that offers a transformed vow. Each carries a trigger predicate
+  // on run state, a narrative_sid resolving to prose that names what happens
+  // without claiming any metaphysical outcome, and echo_implications
+  // describing the cross-life echo fields the ending tends to feed.
+  //
+  // Design invariants (plan MUST NOT):
+  //   - No claim of awakening, final liberation, or any named transcendent
+  //     state. Endings describe the death and immediate aftermath only; the
+  //     between-lives transition is a separate UI (todo 15), not narrative.
+  //   - No depiction of meeting named Buddhas, teachers, or devotional
+  //     figures. The Gardener is an original allegorical figure, not a
+  //     disguised sacred being.
+  //   - No mechanical reward in the karma sense. Endings describe what
+  //     happens; they do not score.
+  //
+  // The file is a top-level object with an `endings` array. The loader reads
+  // only pack.json5; this file is consumed by the standalone test path
+  // (mirroring events.json5) and validated against EndingSchema at
+  // integration time.
+
+  endings: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Fade — the traveler accepted the offer of permanent residence.
+    // The separate pattern loosens into the Garden's rhythm. The chain
+    // closes; no echoes carry forward.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:fantasy/fade',
+      trigger: { op: 'has_flag', key: 'accepted-residence' },
+      narrative_sid: 'ending.fantasy.fade.narrative_sid',
+      echo_implications: {},
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Return — the traveler requested the next life. Departure from the
+    // Garden toward an unknown continuation. All current echoes carry
+    // forward as seeds. In the prototype slice (chain stops at two lives)
+    // this triggers the chain-complete screen.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:fantasy/return',
+      trigger: { op: 'has_flag', key: 'requested-next-life' },
+      narrative_sid: 'ending.fantasy.return.narrative_sid',
+      echo_implications: {
+        tendency:
+          'All current echoes carry forward unchanged as seeds for the next chain; in the prototype slice this surfaces the chain-complete screen.',
+      },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Vow-bound — the traveler died (energy depleted) while a declared
+    // vow remained broken. The broken-vow state carries forward as a strong
+    // attachment echo, weighting the next chain toward what was left
+    // unfinished.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:fantasy/vow-bound',
+      trigger: {
+        op: 'and',
+        operands: [
+          { op: 'has_flag', key: 'vow:protect-family:broken' },
+          { op: 'lte', key: 'energy', value: 0 },
+        ],
+      },
+      narrative_sid: 'ending.fantasy.vow-bound.narrative_sid',
+      echo_implications: {
+        broken_vow:
+          'The life ended with the vow still broken; the unresolved commitment carries forward as a strong attachment echo.',
+        attachment:
+          'What the broken vow pointed toward — the person, the duty, the bond — remains unresolved and weights the opening of the next chain.',
+      },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Gardener blessing — rare. The traveler accumulated two or more
+    // pattern-break echoes, enough that a genuinely different shape becomes
+    // possible. The Gardener offers a transformed vow for the next chain.
+    // In the prototype slice (chain ends at two lives) this ending is
+    // narrative-only with a flag indicating the player would carry a
+    // transformed vow into a hypothetical third life.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'ending:fantasy/gardener-blessing',
+      trigger: { op: 'gte', key: 'echoes.pattern_break_count', value: 2 },
+      narrative_sid: 'ending.fantasy.gardener-blessing.narrative_sid',
+      echo_implications: {
+        pattern_break:
+          'The Gardener offers a transformed vow: the old commitment, loosened and re-spoken, carried forward as direction rather than debt. In the prototype slice this is narrative-only.',
+      },
+    },
+  ],
+}
