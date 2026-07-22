@@ -6,15 +6,25 @@
 //                                       branch into the active life if one exists)
 //   Settings   -> /settings
 //
+// On first launch per save slot, the front-matter disclaimer (todo 28) overlays
+// the home screen. It is gated on `!settings.disclaimerAccepted` and dismissed
+// ONLY by the "I understand" button, which persists the flag via
+// `updateSettings`. The home screen renders normally behind the overlay.
+//
 // `router.push` is type-checked against the declared routes because
 // `experiments.typedRoutes` is enabled in app.json (todo 1).
 //
-// Plan reference: todo 11.
+// Plan reference: todo 11 (home shell), todo 28 (disclaimer wiring).
 
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import DisclaimerModal from '@/ui/components/DisclaimerModal';
+import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+
 export default function IndexScreen() {
+  const { settings, updateSettings } = useSaveSlot(1);
+
   return (
     <View style={styles.container}>
       <View style={styles.heading}>
@@ -50,6 +60,13 @@ export default function IndexScreen() {
           <Text style={styles.buttonText}>Settings</Text>
         </Pressable>
       </View>
+
+      {settings.disclaimerAccepted ? null : (
+        <DisclaimerModal
+          onUnderstand={() => updateSettings({ disclaimerAccepted: true })}
+          onReadMore={() => router.push('/about')}
+        />
+      )}
     </View>
   );
 }

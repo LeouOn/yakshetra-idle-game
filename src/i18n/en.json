@@ -257,6 +257,13 @@
       "entry_5_sid": "Deque Systems, axe-core — reference for the automated accessibility audit rules."
     }
   },
+  "disclaimer": {
+    "title_sid": "A Note Before You Begin",
+    "body_sid": "Yakshetra is a work of fiction inspired by Buddhist ethical and contemplative traditions. It does not represent itself as doctrine, nor as a teaching of any lineage, teacher, or school. The six parami-inspired lenses, the cross-life echoes, and the narrative situations are game design choices made in good faith, not claims about how the world works. An advisory panel of practitioners helped shape the content-warning taxonomy so that difficult themes can be surfaced or set aside. A full glossary and lineage notes are available in About.",
+    "understand_button_sid": "I understand",
+    "read_more_button_sid": "Read more",
+    "advisory_credit_sid": "Developed with guidance from an advisory panel of Buddhist practitioners."
+  },
   "warning": {
     "death-of-self": {
       "label_sid": "Death of self",

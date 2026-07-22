@@ -44,6 +44,13 @@ export interface AppSettings {
   readonly contentWarnings: ContentWarningSettings;
   readonly reducedMotion: boolean;
   readonly fontScale: FontScale;
+  /**
+   * Whether the front-matter disclaimer (todo 28) has been acknowledged for
+   * this save slot. `false` on a fresh slot so the disclaimer shows once on
+   * first launch; once the player taps "I understand" the flag flips to `true`
+   * via {@link updateSettings} and the modal does not reappear for this slot.
+   */
+  readonly disclaimerAccepted: boolean;
 }
 
 /** Build the default settings (all nine categories on, motion on, medium text). */
@@ -52,6 +59,7 @@ export function defaultAppSettings(): AppSettings {
     contentWarnings: defaultContentWarningSettings(),
     reducedMotion: false,
     fontScale: 'medium',
+    disclaimerAccepted: false,
   };
 }
 
