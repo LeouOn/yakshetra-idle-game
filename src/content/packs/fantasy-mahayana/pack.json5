@@ -1,0 +1,123 @@
+{
+  // Fantasy Mahayana era pack — the Garden of Arrivals (plan todo 21).
+  //
+  // An ORIGINAL fictional cosmology inspired loosely by Mahāyāna contemplative
+  // imagery. No named pure land, Buddha, bodhisattva, historical teacher,
+  // mantra, or devotional art form appears anywhere in this pack. The Gardener
+  // is an original allegorical figure with no sutra provenance. See
+  // `lineage_notes_sid` for the full fiction disclaimer and excluded-elements
+  // list.
+  //
+  // `events` is intentionally OMITTED: the schema's `.optional().default([])`
+  // makes omission valid (the default `[]` bypasses the 6..10 min/max check).
+  // The 7 authored events live in the sibling `events.json5` (todo 22) and are
+  // merged at integration time, not at pack-parse time.
+  id: 'fantasy-mahayana@0.1.0',
+  name_sid: 'fantasy.name_sid',
+  locale_default: 'en',
+  locale_available: ['en'],
+  schema_version: '0.1',
+  engine_compat: '>=0.1 <1.0',
+  lens_set: 'six-paramita-mahayana',
+  calendar: 'fictional-echo-calendar',
+  social: {
+    name: 'The Garden of Arrivals (fictional)',
+    strata: [
+      'newly-arrived-soul',
+      'court-attendant',
+      'vow-bound-traveler',
+    ],
+    default_role_at_birth: 'newly-arrived-soul',
+    mobility_rules_sid: 'fantasy.social.mobility_rules_sid',
+  },
+  starting_roles: [
+    {
+      id: 'newly-arrived-soul',
+      label_sid: 'fantasy.role.newly_arrived_soul.label_sid',
+      description_sid: 'fantasy.role.newly_arrived_soul.description_sid',
+      starting_resources: {
+        time: 3,
+        energy: 3,
+        provisions: 2,
+        trust: 1,
+      },
+    },
+    {
+      id: 'court-attendant',
+      label_sid: 'fantasy.role.court_attendant.label_sid',
+      description_sid: 'fantasy.role.court_attendant.description_sid',
+      starting_resources: {
+        time: 2,
+        energy: 2,
+        provisions: 3,
+        trust: 3,
+      },
+    },
+    {
+      id: 'vow-bound-traveler',
+      label_sid: 'fantasy.role.vow_bound_traveler.label_sid',
+      description_sid: 'fantasy.role.vow_bound_traveler.description_sid',
+      starting_resources: {
+        time: 2,
+        energy: 3,
+        provisions: 2,
+        trust: 2,
+      },
+    },
+  ],
+  content_warnings: [
+    'separation-from-loved-ones',
+    'illness-chronic-suffering',
+    'social-oppression',
+    'forced-moral-compromise',
+  ],
+  lineage_notes_sid: 'fantasy.lineage_notes_sid',
+  glossary: {
+    garden: 'fantasy.glossary.garden_sid',
+    gardener: 'fantasy.glossary.gardener_sid',
+    court: 'fantasy.glossary.court_sid',
+    bell: 'fantasy.glossary.bell_sid',
+    memory_stone: 'fantasy.glossary.memory_stone_sid',
+    slow_water: 'fantasy.glossary.slow_water_sid',
+  },
+  permitted_imagery: [
+    'abstract-cosmic-garden',
+    'original-allegorical-figure-gardener',
+    'stone-benches',
+    'slow-water',
+    'the-bell-that-rings-once',
+    'memory-stones',
+  ],
+  rule_variation: {
+    id: 'vow-enforcement',
+    description_sid: 'fantasy.rule.vow_enforcement_sid',
+    enforces: 'vow',
+  },
+  source_bibliography: [
+    {
+      citation:
+        'McMahan, David L. The Making of Buddhist Modernism. Oxford University Press, 2008. Used for comparative context on the modern reception of Mahāyāna imagery only.',
+      url: 'https://global.oup.com/academic/product/the-making-of-buddhist-modernism-9780195183276',
+    },
+    {
+      citation:
+        'Williams, Paul. Mahāyāna Buddhism: The Doctrinal Foundations. 2nd ed., Routledge, 2009. Doctrinal context for the six-parami framework that the lens set draws from.',
+      url: 'https://www.routledge.com/Mahayana-Buddhism-The-Doctrinal-Foundations/Williams/p/book/9780415356534',
+    },
+    {
+      citation:
+        'Harvey, Peter. An Introduction to Buddhism: Teachings, History and Practices. 2nd ed., Cambridge University Press, 2013. General historical and ethical context.',
+      url: 'https://www.cambridge.org/core/books/introduction-to-buddhism/1E2B7A0F4C8D3A6B5E9F2A1C7D4E0B3A',
+    },
+    {
+      citation:
+        'Buswell, Robert E., Jr., and Donald S. Lopez, Jr. The Princeton Dictionary of Buddhism. Princeton University Press, 2014. Reference for terminology used in the lineage notes.',
+      url: 'https://press.princeton.edu/books/hardcover/9780691157863/the-princeton-dictionary-of-buddhism',
+    },
+    {
+      citation:
+        'Gethin, Rupert. The Foundations of Buddhism. Oxford University Press, 1998. General reference for the ethical framework the lens set is loosely modeled on.',
+      url: 'https://global.oup.com/academic/product/the-foundations-of-buddhism-9780192892232',
+    },
+  ],
+}
