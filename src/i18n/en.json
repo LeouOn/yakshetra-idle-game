@@ -53,6 +53,35 @@
       "dev_die_button_sid": "Die now (dev)"
     }
   },
+  "tang": {
+    "name_sid": "Late Tang China",
+    "lineage_notes_sid": "This life is set in late Tang China (8th–9th c CE), a period of intense Mahāyāna Buddhist flourishing followed by the Huichang persecution (845 CE). The game does not depict any historical Buddhist teachers; it depicts ordinary people in a Buddhist-inflected society. Its setting is a wide social field rather than a court chronicle. A capital district, a market road, a monastery precinct, and a farming village are connected by taxes, travel, correspondence, seasonal labor, and the movement of grain. A life may touch several of these places without treating any one of them as the single, authentic center of the age.\n\nThe period is represented through pressures that ordinary people could recognize: a household balancing provisions against obligation, a trader weighing trust against a narrow margin, an official negotiating orders that travel downward through layers of administration, and a monastic community dependent on land, gifts, and protection. Buddhist institutions are part of this social fabric, but they are not presented as automatic sources of safety or moral certainty. People ask for counsel, shelter, food, or a witness; they may also encounter bureaucracy, rivalry, scarcity, and fear. The game keeps these encounters human and local.\n\nThe reference to Mahāyāna flourishing signals the breadth of Buddhist learning, art, charity, ritual life, and monastic organization present across the period. It is historical context, not a claim that every person shared one belief or that every institution behaved in one way. The Huichang persecution of 845 CE marks a later rupture in that landscape. In this game it is understood as a period of political pressure and institutional vulnerability, not as a spectacle and not as a story about named rulers or teachers. The pack can acknowledge displacement, confiscation, concealment, and the fear of denunciation without staging graphic violence.\n\nNo historical Buddhist teacher appears as a character, advisor, narrator, or hidden solution. No named Chan patriarch is required for a player to understand the setting. Chan, literati, and sangha are glossary terms that help describe institutions and social roles in plain English; they are not a ladder of spiritual rank. The six lenses are game abstractions inspired by ethical vocabulary, and they do not measure sanctity, doctrinal correctness, or a person’s final worth.\n\nThis setting also avoids turning historical hardship into exotic scenery. Poverty, illness, war, conscription, and unequal status are content warnings because they affect bodies, households, and choices. The aim is to show constrained agency: people make decisions with incomplete information while carrying obligations to family, neighbors, employers, officials, travelers, and monastic communities. The era is therefore a context for compassionate attention, not a claim to reproduce the whole of Tang history. Players should read the pack as a respectful, limited fiction built from scholarship and open to correction.",
+    "social": {
+      "mobility_rules_sid": "Movement between stations is possible but uneven. Education, patronage, marriage, trade, military service, migration, and monastic affiliation can open routes, while debt, household duty, taxation, gendered expectations, and official suspicion can close them. A change of station costs time and trust; it is never a hidden reward for a particular virtue. Social obligation is visible in who can ask, who must answer, and whose refusal carries a price."
+    },
+    "rule": {
+      "social_obligation_sid": "Social obligation shapes trust and access. A literati-official is expected to answer to superiors and dependents; refusing a requisition may preserve provisions while weakening official trust. A merchant must protect contracts and caravan ties; a peasant must balance household survival with village demands. The rule changes what a choice costs in relationships and time, not a metaphysical score."
+    },
+    "role": {
+      "literati_official": {
+        "label_sid": "Literati-official",
+        "description_sid": "You serve within the educated administrative class, carrying written orders between households, offices, and the people who must live with their consequences."
+      },
+      "merchant": {
+        "label_sid": "Merchant",
+        "description_sid": "You move goods through markets and along caravan routes, relying on provisions, timing, contracts, and trust that can change with every stop."
+      },
+      "peasant": {
+        "label_sid": "Peasant farmer",
+        "description_sid": "You cultivate rented or family land, measuring each season against household needs, village obligations, weather, and the demands of officials."
+      }
+    },
+    "glossary": {
+      "chan_sid": "Chan is a Chinese Buddhist vocabulary for contemplative practice and the communities, texts, and institutions associated with it. The game uses the term descriptively, without assigning a single uniform doctrine to every person or monastery.",
+      "literati_sid": "The literati are educated writers, clerks, teachers, and officials whose learning can open administrative work and whose obligations connect them to both superiors and local households.",
+      "sangha_sid": "Sangha refers here to a monastic community and its shared life of work, study, care, discipline, and dependence on surrounding society. It is a social description, not a spiritual ranking."
+    }
+  },
   "era": {
     "tang-china": {
       "name_sid": "Tang Dynasty Chang\u2019an",
@@ -347,6 +376,87 @@
       },
       "card": {
         "corrupt-donation-demand-give-commodification_sid": "The older monastic smiled as the coin changed hands. The teaching spoke of accumulating merit; this game does not award merit. What was given was given; what remains is the gesture, the lighter purse, and the question it left behind."
+      }
+    },
+    "fantasy": {
+      "gardener-question": {
+        "label_sid": "The Gardener asks what you carry.",
+        "hint": {
+          "name-a-grief_sid": "Name one grief and let it be held in the open.",
+          "refuse-to-name_sid": "Keep the grief behind your silence.",
+          "name-a-joy_sid": "Name a joy without asking it to return."
+        }
+      },
+      "soul-in-torment": {
+        "label_sid": "An arriving being is caught in anguish.",
+        "hint": {
+          "sit-with_sid": "Sit beside the being until the next bell.",
+          "attempt-to-soothe_sid": "Try to make the anguish settle into a shape you can fix.",
+          "ask-gardener-to-take-them_sid": "Ask the Gardener to carry the being away."
+        },
+        "card": {
+          "attempt-to-soothe-delusion_sid": "Your care reaches for a fixed answer. The being does not become a problem you can solve."
+        }
+      },
+      "forgotten-name": {
+        "label_sid": "A forgotten name surfaces.",
+        "hint": {
+          "meditate_sid": "Attend to the name without chasing its owner.",
+          "let-go_sid": "Release the name and the claim it seems to make.",
+          "seek-in-court-records_sid": "Search the Court's records for proof of who you were."
+        },
+        "card": {
+          "meditate-pattern-break_sid": "Attention rests on the name; a different response remains possible.",
+          "seek-in-court-records-continuity_sid": "The record offers dates and marks, but no proof that a self can be held there."
+        }
+      },
+      "vow-reminder": {
+        "label_sid": "A vow from another life returns.",
+        "hint": {
+          "re-affirm_sid": "Speak the vow again, and accept its living cost.",
+          "set-aside_sid": "Set the vow aside when it asks more than you can give.",
+          "transform_sid": "Let the vow change shape while care remains."
+        },
+        "card": {
+          "re-affirm-kept_sid": "The vow is marked kept for this passage; its meaning will still be tested by action.",
+          "set-aside-mixed_sid": "The vow is marked broken. Relief and loss arrive together.",
+          "transform-transformed_sid": "The vow is marked transformed: care remains, while its old shape loosens."
+        }
+      },
+      "court-judgment": {
+        "label_sid": "The Court reads the patterns you brought.",
+        "hint": {
+          "accept-reading_sid": "Receive the Court's reading of the echoes.",
+          "dispute_sid": "Argue that the pattern does not describe you.",
+          "request-next-life_sid": "Ask to continue into another life."
+        },
+        "card": {
+          "accept-reading-summary_sid": "The Court gathers tendencies, vows, attachments, and breaks without turning them into a score.",
+          "dispute-resistance_sid": "Resistance takes the form of an argument that nothing needs to change."
+        }
+      },
+      "offer-to-stay": {
+        "label_sid": "An offer to stay is placed before you.",
+        "hint": {
+          "accept_sid": "Accept the offered room and remain in the Garden.",
+          "decline_sid": "Decline, and return to the work beyond this room.",
+          "ask-cost_sid": "Ask what staying would require of those who cannot stay."
+        },
+        "card": {
+          "accept-fade_sid": "The offered residence is accepted; the separate pattern begins to fade.",
+          "ask-cost-discernment_sid": "The question turns toward discernment: who bears the cost of a promise to stay?"
+        }
+      },
+      "storm-at-edge": {
+        "label_sid": "A storm gathers at the Garden's edge.",
+        "hint": {
+          "investigate_sid": "Walk toward the disturbance at the edge.",
+          "warn-gardener_sid": "Warn the Gardener before the storm reaches anyone.",
+          "ignore_sid": "Turn away and let the edge keep its silence."
+        },
+        "card": {
+          "investigate-risk_sid": "At the edge, a small disturbance leaves someone searching for a way back."
+        }
       }
     }
   },

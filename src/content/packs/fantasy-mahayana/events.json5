@@ -1,0 +1,366 @@
+{
+  // Fantasy Mahayana event graph (plan todo 22).
+  //
+  // The Garden and its Gardener are original allegorical fiction. The scenes
+  // name disorientation and anguish without graphic detail. Nuanced motives
+  // remain narrative cards while the engine records one canonical intent root
+  // per choice for cross-life echo analysis.
+  events: [
+    // -----------------------------------------------------------------------
+    // 1. The Gardener asks what the arriving soul carries.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/gardener-question',
+      weight: 1.0,
+      cooldown_turns: 1,
+      once_per_run: false,
+      content_warnings: ['loss-of-memory'],
+      choices: [
+        {
+          id: 'name-a-grief',
+          label_sid: 'event.fantasy.gardener-question.hint.name-a-grief_sid',
+          requires: [],
+          effects: [
+            { op: 'remove_flag', key: 'attachment:memory' },
+            { op: 'add_flag', key: 'attachment:memory:cleared' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'refuse-to-name',
+          label_sid: 'event.fantasy.gardener-question.hint.refuse-to-name_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'attachment:memory' },
+            { op: 'set_intent_root', intent_root: 'aversion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'name-a-joy',
+          label_sid: 'event.fantasy.gardener-question.hint.name-a-joy_sid',
+          requires: [],
+          effects: [
+            { op: 'remove_flag', key: 'attachment:memory' },
+            { op: 'add_flag', key: 'attachment:memory:cleared' },
+            { op: 'add_flag', key: 'appreciation:remembered-joy' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // -----------------------------------------------------------------------
+    // 2. An arriving being is caught in a storm of anguish.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/soul-in-torment',
+      weight: 0.8,
+      cooldown_turns: 1,
+      once_per_run: false,
+      content_warnings: ['encounters-with-anguish'],
+      choices: [
+        {
+          id: 'sit-with',
+          label_sid: 'event.fantasy.soul-in-torment.hint.sit-with_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -2 },
+            { op: 'add_relationship', target: 'trust-cosmic', delta: 2 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'attempt-to-soothe',
+          label_sid: 'event.fantasy.soul-in-torment.hint.attempt-to-soothe_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.soul-in-torment.card.attempt-to-soothe-delusion_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'ask-gardener-to-take-them',
+          label_sid: 'event.fantasy.soul-in-torment.hint.ask-gardener-to-take-them_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'trust-cosmic', delta: -2 },
+            { op: 'set_intent_root', intent_root: 'aversion' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // -----------------------------------------------------------------------
+    // 3. A name from a prior life surfaces without a place to hold it.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/forgotten-name',
+      weight: 0.9,
+      cooldown_turns: 1,
+      once_per_run: false,
+      content_warnings: ['loss-of-memory'],
+      choices: [
+        {
+          id: 'meditate',
+          label_sid: 'event.fantasy.forgotten-name.hint.meditate_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            { op: 'add_flag', key: 'pattern-break:attention' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.forgotten-name.card.meditate-pattern-break_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'let-go',
+          label_sid: 'event.fantasy.forgotten-name.hint.let-go_sid',
+          requires: [],
+          effects: [
+            { op: 'remove_flag', key: 'attachment:memory' },
+            { op: 'add_flag', key: 'attachment:memory:cleared' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'seek-in-court-records',
+          label_sid: 'event.fantasy.forgotten-name.hint.seek-in-court-records_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -2 },
+            { op: 'add_flag', key: 'searched-court-records' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.forgotten-name.card.seek-in-court-records-continuity_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'greed' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // -----------------------------------------------------------------------
+    // 4. A vow carried from Life 1 asks to be met again.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/vow-reminder',
+      weight: 0.7,
+      cooldown_turns: 1,
+      once_per_run: true,
+      trigger: { op: 'has_flag', key: 'vow:protect-family' },
+      content_warnings: ['spiritual-disorientation'],
+      choices: [
+        {
+          id: 're-affirm',
+          label_sid: 'event.fantasy.vow-reminder.hint.re-affirm_sid',
+          requires: [{ op: 'has_flag', key: 'vow:protect-family' }],
+          effects: [
+            { op: 'remove_flag', key: 'vow:protect-family' },
+            { op: 'add_flag', key: 'vow:protect-family:kept' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.vow-reminder.card.re-affirm-kept_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'set-aside',
+          label_sid: 'event.fantasy.vow-reminder.hint.set-aside_sid',
+          requires: [{ op: 'has_flag', key: 'vow:protect-family' }],
+          effects: [
+            { op: 'remove_flag', key: 'vow:protect-family' },
+            { op: 'add_flag', key: 'vow:protect-family:broken' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.vow-reminder.card.set-aside-mixed_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'delusion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'transform',
+          label_sid: 'event.fantasy.vow-reminder.hint.transform_sid',
+          requires: [
+            { op: 'has_flag', key: 'vow:protect-family' },
+            { op: 'has_flag', key: 'pattern-break:attention' },
+          ],
+          effects: [
+            { op: 'remove_flag', key: 'vow:protect-family' },
+            { op: 'add_flag', key: 'vow:protect-family:kept' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.vow-reminder.card.transform-transformed_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // -----------------------------------------------------------------------
+    // 5. The abstract Court reviews the patterns that arrived with you.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/court-judgment',
+      weight: 0.6,
+      cooldown_turns: 1,
+      once_per_run: false,
+      content_warnings: ['spiritual-disorientation'],
+      choices: [
+        {
+          id: 'accept-reading',
+          label_sid: 'event.fantasy.court-judgment.hint.accept-reading_sid',
+          requires: [],
+          effects: [
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.court-judgment.card.accept-reading-summary_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'dispute',
+          label_sid: 'event.fantasy.court-judgment.hint.dispute_sid',
+          requires: [],
+          effects: [
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.court-judgment.card.dispute-resistance_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'delusion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'request-next-life',
+          label_sid: 'event.fantasy.court-judgment.hint.request-next-life_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'requested-next-life' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // -----------------------------------------------------------------------
+    // 6. An offer promises a permanent room in the Garden.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/offer-to-stay',
+      weight: 0.5,
+      cooldown_turns: 1,
+      once_per_run: true,
+      content_warnings: ['spiritual-disorientation'],
+      choices: [
+        {
+          id: 'accept',
+          label_sid: 'event.fantasy.offer-to-stay.hint.accept_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'accepted-residence' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.offer-to-stay.card.accept-fade_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'decline',
+          label_sid: 'event.fantasy.offer-to-stay.hint.decline_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'declined-residence' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'ask-cost',
+          label_sid: 'event.fantasy.offer-to-stay.hint.ask-cost_sid',
+          requires: [],
+          effects: [
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.offer-to-stay.card.ask-cost-discernment_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // -----------------------------------------------------------------------
+    // 7. A disturbance gathers at the Garden's edge.
+    // -----------------------------------------------------------------------
+    {
+      id: 'event:fantasy/storm-at-edge',
+      weight: 0.8,
+      cooldown_turns: 1,
+      once_per_run: false,
+      content_warnings: ['separation'],
+      choices: [
+        {
+          id: 'investigate',
+          label_sid: 'event.fantasy.storm-at-edge.hint.investigate_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'energy', delta: -1 },
+            { op: 'add_flag', key: 'investigated-storm' },
+            {
+              op: 'narrative_card',
+              card_sid: 'event.fantasy.storm-at-edge.card.investigate-risk_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'warn-gardener',
+          label_sid: 'event.fantasy.storm-at-edge.hint.warn-gardener_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'trust-cosmic', delta: 1 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'ignore',
+          label_sid: 'event.fantasy.storm-at-edge.hint.ignore_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'storm-ignored' },
+            { op: 'set_intent_root', intent_root: 'aversion' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+  ],
+}
