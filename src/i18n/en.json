@@ -238,6 +238,116 @@
     "default": {
       "consequence_sid": "Something quietly shifts.",
       "journal_sid": "The moment passes, carrying its weight forward into what comes next."
+    },
+    "tang": {
+      "grain-requisition": {
+        "label_sid": "A bailiff from the county seat stands at the gate, scroll in hand. The magistrate requires a portion of stored grain for the army of the western frontier. The neighbors have already begun to comply; the road is loud with carts.",
+        "comply": {
+          "label_sid": "Hand over the grain",
+          "hint_sid": "You give what is asked without delay. The scroll is marked satisfied, the bailiff bows, and the household eats thinner through the rest of the season."
+        },
+        "hide_some": {
+          "label_sid": "Hide a portion in the back of the storehouse",
+          "hint_sid": "You bury sacks beneath the millet and show the bailiff only part of what you have. The neighbors\u2019 glances when he leaves are not what they were before."
+        },
+        "petition": {
+          "label_sid": "Walk to the county seat and petition for relief",
+          "hint_sid": "A petition buys time, sometimes grain returned, sometimes nothing. You will lose a day in the road dust and the magistrate may remember your name for it."
+        }
+      },
+      "sick-traveler": {
+        "label_sid": "On the road outside the village, a traveler sits under a persimmon tree, forehead burning and lips dry. They look up but cannot rise.",
+        "take_in": {
+          "label_sid": "Bring them in and tend to them",
+          "hint_sid": "You give your time and your strength to someone whose name you may never know. Other travelers, hearing of it, may one day look for your gate."
+        },
+        "pass_by": {
+          "label_sid": "Pass by",
+          "hint_sid": "You are not unkind; you are simply occupied. The persimmon tree is a fine shelter, you tell yourself, and there is work waiting."
+        },
+        "send_for_lay_brother": {
+          "label_sid": "Send for the lay-brother who keeps the monastery gate",
+          "hint_sid": "You cannot tend a stranger yourself today, but you can fetch someone who might. A day is spent on the errand; the gate-keeper knows your name now."
+        }
+      },
+      "corrupt-donation-demand": {
+        "label_sid": "An older monastic in the precinct sends word: a substantial gift would \u201copen the door to advancement\u201d within the community. The framing is careful; the request is not.",
+        "give": {
+          "label_sid": "Give what is asked",
+          "hint_sid": "You hand over the coin. The framing of \u201caccumulating merit\u201d sits uneasy \u2014 this game does not award such a thing; what remains is the gesture, the loss, and the question it left behind."
+        },
+        "refuse_politely": {
+          "label_sid": "Decline politely, with a small bow",
+          "hint_sid": "You refuse without accusation. The door does not close, but the warmth behind it cools a degree. You are still welcome in the courtyard; you are no longer invited into the inner rooms."
+        },
+        "report_to_officials": {
+          "label_sid": "Carry the matter to the county officials",
+          "hint_sid": "An honest thing to do, and a costly one. The monastic community will not soon forget your name; the officials will note your reliability in other, less kind, files."
+        }
+      },
+      "conscripted-brother": {
+        "label_sid": "A labor levy summons your brother to the frontier roadworks. He is not strong, and the roadworks are not kind.",
+        "help_flee": {
+          "label_sid": "Help him slip away before the caravan leaves",
+          "hint_sid": "You will lose the goodwill of whoever keeps the conscription roll, and you may gain something harder to name. Your brother will remember the night you came for him."
+        },
+        "let_go": {
+          "label_sid": "Let him go",
+          "hint_sid": "You watch the cart leave. The household is one quieter, the magistrate one less suspicious. The family will speak of this in years to come, and not all of them gently."
+        },
+        "pay_bribe": {
+          "label_sid": "Pay the levy officer to strike his name from the list",
+          "hint_sid": "Three strings of coin in the officer\u2019s sleeve and your brother\u2019s name is written over. It is done; it is also done."
+        }
+      },
+      "famine-year": {
+        "label_sid": "The autumn harvest is thin, and the winter ahead is thinner. Provisions in the bin are less than you would wish and less than your neighbors will need.",
+        "share": {
+          "label_sid": "Share what you have with the neighbors",
+          "hint_sid": "You set aside half of what is in the bin and carry it door to door. By spring, you may eat thin porridge. By spring, your neighbors are still alive."
+        },
+        "hoard": {
+          "label_sid": "Keep what you have",
+          "hint_sid": "You nail the bin shut and answer the door less often. The provisions last; the goodwill does not. You will eat in winter; you will eat alone."
+        },
+        "seek_monastery_granary": {
+          "label_sid": "Walk to the monastery granary and ask",
+          "hint_sid": "A long walk. The granary is not empty, but it is not generous to those it does not know. Time is lost; perhaps a portion is returned."
+        }
+      },
+      "persecution-edict": {
+        "label_sid": "An imperial order comes down the road. Monastics are to be defrocked, statues broken, wandering monks returned to lay status. The order is written in the careful hand of someone who has never read a sutra.",
+        "hide_monk": {
+          "label_sid": "Hide a wandering monk who came to your gate last night",
+          "hint_sid": "You take them in. You know the cost of being caught, and you know the cost of refusing. They will sleep in your back room until the order is lifted or until your name is written on a list."
+        },
+        "comply_and_report": {
+          "label_sid": "Carry the order out, and report any who have not yet complied",
+          "hint_sid": "You walk the road with the constables. The monastic community that once knew your name now knows it differently."
+        },
+        "flee_region": {
+          "label_sid": "Take what can be carried and leave the region",
+          "hint_sid": "The road is open in any direction. The household you leave is not your household; the one you reach is not yet home. The persecution continues elsewhere, and you have made sure it does not include you."
+        }
+      },
+      "child-illness": {
+        "label_sid": "Your child has not woken cleanly in three days. The fever is high and the breathing is thin.",
+        "spend_all_wealth": {
+          "label_sid": "Spend everything you have on a physician",
+          "hint_sid": "You empty the purse for the doctor at the gate. Whether it is enough is not yours to know. The household afterwards is a household with thin walls."
+        },
+        "pray_and_wait": {
+          "label_sid": "Pray, and wait",
+          "hint_sid": "You sit beside the bed. The incense burns. The fever will do what fevers do, and the household will remember whichever way it goes."
+        },
+        "seek_chan_master": {
+          "label_sid": "Seek counsel of a Chan master at the nearby monastery",
+          "hint_sid": "A day on the road, an afternoon in the monastery, an evening of questions without easy answers. What you bring back is not a cure. What you bring back is something the household can stand inside of."
+        }
+      },
+      "card": {
+        "corrupt-donation-demand-give-commodification_sid": "The older monastic smiled as the coin changed hands. The teaching spoke of accumulating merit; this game does not award merit. What was given was given; what remains is the gesture, the lighter purse, and the question it left behind."
+      }
     }
   },
   "test": {

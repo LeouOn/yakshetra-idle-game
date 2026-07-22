@@ -1,0 +1,382 @@
+{
+  // Tang China event graph (plan todo 17).
+  //
+  // Seven events with weighted grit: suffering is named but not graphic, no
+  // historical figures appear by name, and every choice carries an
+  // `intent_root` tag (care | greed | aversion | delusion) so the cross-life
+  // echo reducer can read the root tendency. The corrupt-donation-demand
+  // event explicitly rejects the "accumulating merit" framing the game does
+  // not implement.
+  //
+  // The file is a top-level array of EventSchema objects. The loader
+  // (src/content/loader.ts) reads only pack.json5; this file is consumed by
+  // the dedicated test (src/content/packs/tang-china/__tests__/events.test.ts)
+  // which builds a synthetic EraPack wrapping the events for the lint pass.
+
+  events: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Grain requisition — local magistrate demands grain for the army.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/grain-requisition',
+      weight: 1.0,
+      cooldown_turns: 1,
+      once_per_run: false,
+      content_warnings: [
+        'war-political-violence',
+        'forced-moral-compromise',
+        'poverty-starvation',
+      ],
+      choices: [
+        {
+          id: 'comply',
+          label_sid: 'event.tang.grain-requisition.comply.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'provisions', delta: -3 },
+            { op: 'add_relationship', target: 'officials', delta: 2 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'hide_some',
+          label_sid: 'event.tang.grain-requisition.hide_some.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'provisions', delta: -1 },
+            { op: 'add_flag', key: 'hid_grain_from_magistrate' },
+            { op: 'set_intent_root', intent_root: 'greed' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'petition',
+          label_sid: 'event.tang.grain-requisition.petition.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            { op: 'add_flag', key: 'petitioned_magistrate' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Sick traveler — an ill traveler on the road asks for shelter.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/sick-traveler',
+      weight: 0.8,
+      cooldown_turns: 2,
+      once_per_run: false,
+      content_warnings: [
+        'illness-chronic-suffering',
+      ],
+      choices: [
+        {
+          id: 'take_in',
+          label_sid: 'event.tang.sick-traveler.take_in.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            { op: 'add_resource', key: 'energy', delta: -1 },
+            { op: 'add_relationship', target: 'travelers', delta: 1 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'pass_by',
+          label_sid: 'event.tang.sick-traveler.pass_by.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: 1 },
+            { op: 'add_flag', key: 'passed_by_sick_traveler' },
+            { op: 'set_intent_root', intent_root: 'aversion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'send_for_lay_brother',
+          label_sid: 'event.tang.sick-traveler.send_for_lay_brother.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            { op: 'add_relationship', target: 'monastics', delta: 1 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Corrupt donation demand — a senior monastic demands a donation
+    // framed as "accumulating merit". The game explicitly does not award
+    // merit: the narrative_card attached to the "give" choice rejects that
+    // framing while still recording intent_root=care. This is the
+    // plan-mandated exception that prevents the donation framing from
+    // reifying into a meter.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/corrupt-donation-demand',
+      weight: 0.6,
+      cooldown_turns: 3,
+      once_per_run: false,
+      content_warnings: [
+        'social-oppression',
+        'forced-moral-compromise',
+      ],
+      choices: [
+        {
+          id: 'give',
+          label_sid: 'event.tang.corrupt-donation-demand.give.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'wealth', delta: -2 },
+            {
+              op: 'narrative_card',
+              card_sid: 'card.tang.corrupt-donation-demand.give_commodification_sid',
+            },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'refuse_politely',
+          label_sid: 'event.tang.corrupt-donation-demand.refuse_politely.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'monastics', delta: -1 },
+            { op: 'add_flag', key: 'declined_commodified_donation' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'report_to_officials',
+          label_sid: 'event.tang.corrupt-donation-demand.report_to_officials.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'monastics', delta: -3 },
+            { op: 'add_relationship', target: 'officials', delta: 1 },
+            { op: 'add_flag', key: 'reported_corruption' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Conscripted brother — a sibling has been called up for frontier
+    // labor. Only fires when a family bond exists in the run.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/conscripted-brother',
+      weight: 0.7,
+      cooldown_turns: 3,
+      once_per_run: false,
+      trigger: { op: 'has_flag', key: 'has_brother' },
+      content_warnings: [
+        'war-political-violence',
+        'forced-moral-compromise',
+        'separation-from-loved-ones',
+      ],
+      choices: [
+        {
+          id: 'help_flee',
+          label_sid: 'event.tang.conscripted-brother.help_flee.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'family', delta: 2 },
+            { op: 'add_relationship', target: 'officials', delta: -2 },
+            { op: 'add_flag', key: 'sheltered_conscript' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'let_go',
+          label_sid: 'event.tang.conscripted-brother.let_go.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'officials', delta: 1 },
+            { op: 'add_relationship', target: 'family', delta: -2 },
+            { op: 'add_flag', key: 'conscripted_brother_lost' },
+            { op: 'set_intent_root', intent_root: 'aversion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'pay_bribe',
+          label_sid: 'event.tang.conscripted-brother.pay_bribe.label_sid',
+          requires: [{ op: 'gte', key: 'wealth', value: 3 }],
+          effects: [
+            { op: 'add_resource', key: 'wealth', delta: -3 },
+            { op: 'add_flag', key: 'bribed_conscription_officer' },
+            { op: 'set_intent_root', intent_root: 'greed' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 5. Famine year — provisions are dwindling. Each path costs something.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/famine-year',
+      weight: 0.9,
+      cooldown_turns: 2,
+      once_per_run: false,
+      content_warnings: [
+        'poverty-starvation',
+        'forced-moral-compromise',
+      ],
+      choices: [
+        {
+          id: 'share',
+          label_sid: 'event.tang.famine-year.share.label_sid',
+          requires: [{ op: 'has_resource', key: 'provisions' }],
+          effects: [
+            { op: 'add_resource', key: 'provisions', delta: -2 },
+            { op: 'add_relationship', target: 'neighbors', delta: 2 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'hoard',
+          label_sid: 'event.tang.famine-year.hoard.label_sid',
+          requires: [{ op: 'has_resource', key: 'provisions' }],
+          effects: [
+            { op: 'add_relationship', target: 'neighbors', delta: -2 },
+            { op: 'add_flag', key: 'hoarded_during_famine' },
+            { op: 'set_intent_root', intent_root: 'greed' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'seek_monastery_granary',
+          label_sid: 'event.tang.famine-year.seek_monastery_granary.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            { op: 'add_relationship', target: 'monastics', delta: 1 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 6. Persecution edict — imperial order to defrock monks and destroy
+    // statues. Modeled loosely on the historical persecution without
+    // naming an emperor. Trigger fires in mid-life (age >= 25) so a
+    // late-adolescent character does not face it prematurely.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/persecution-edict',
+      weight: 0.5,
+      cooldown_turns: 4,
+      once_per_run: false,
+      trigger: { op: 'gte', key: 'state.age', value: 25 },
+      content_warnings: [
+        'war-political-violence',
+        'social-oppression',
+        'forced-moral-compromise',
+      ],
+      choices: [
+        {
+          id: 'hide_monk',
+          label_sid: 'event.tang.persecution-edict.hide_monk.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'sheltered_fugitive_monk' },
+            { op: 'add_relationship', target: 'monastics', delta: 2 },
+            { op: 'modify_event_weight', event_id: 'event:tang/persecution-edict', multiplier: 1.2 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'comply_and_report',
+          label_sid: 'event.tang.persecution-edict.comply_and_report.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_relationship', target: 'officials', delta: 2 },
+            { op: 'add_relationship', target: 'monastics', delta: -3 },
+            { op: 'add_flag', key: 'reported_fugitive_monk' },
+            { op: 'set_intent_root', intent_root: 'aversion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'flee_region',
+          label_sid: 'event.tang.persecution-edict.flee_region.label_sid',
+          requires: [],
+          effects: [
+            { op: 'modify_event_weight', event_id: 'event:tang/persecution-edict', multiplier: 0.1 },
+            { op: 'add_flag', key: 'fled_persecution' },
+            { op: 'set_intent_root', intent_root: 'delusion' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 7. Child illness — your child falls gravely ill.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'event:tang/child-illness',
+      weight: 0.7,
+      cooldown_turns: 2,
+      once_per_run: false,
+      content_warnings: [
+        'illness-chronic-suffering',
+        'forced-moral-compromise',
+      ],
+      choices: [
+        {
+          id: 'spend_all_wealth',
+          label_sid: 'event.tang.child-illness.spend_all_wealth.label_sid',
+          requires: [{ op: 'gte', key: 'wealth', value: 1 }],
+          effects: [
+            { op: 'add_resource', key: 'wealth', delta: -5 },
+            { op: 'add_flag', key: 'sought_doctor_for_child' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'pray_and_wait',
+          label_sid: 'event.tang.child-illness.pray_and_wait.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_flag', key: 'prayed_instead_of_seeking_care' },
+            { op: 'set_intent_root', intent_root: 'delusion' },
+          ],
+          forbidden: false,
+        },
+        {
+          id: 'seek_chan_master',
+          label_sid: 'event.tang.child-illness.seek_chan_master.label_sid',
+          requires: [],
+          effects: [
+            { op: 'add_resource', key: 'time', delta: -1 },
+            { op: 'add_relationship', target: 'monastics', delta: 1 },
+            { op: 'add_flag', key: 'sought_chan_counsel' },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          forbidden: false,
+        },
+      ],
+    },
+  ],
+}
