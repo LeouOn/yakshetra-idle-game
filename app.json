@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Yakshetra",
+    "slug": "yakshetra",
+    "scheme": "yakshetra",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "experiments": {
+      "typedRoutes": true
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yakshetra.app"
+    },
+    "android": {
+      "package": "com.yakshetra.app"
+    }
+  }
+}

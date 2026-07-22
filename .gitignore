@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+expo-build/
+
+# Expo
+.expo/
+.expo-shared/
+
+# EAS
+eas-build/
+eas-update-node-modules/
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Testing
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Local-only state (evidence is never committed). .omo/ holds agent/session
+# state (plans, boulder, run-continuation, evidence) - all local-only.
+.omo/
+# advisory/ is agent-generated onboarding content, not toolchain.
+advisory/
+
+# TypeScript build info
+*.tsbuildinfo
