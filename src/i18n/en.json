@@ -10,6 +10,78 @@
       "continue_button_sid": "Continue",
       "remember_button_sid": "Remember",
       "card_label_sid": "Reflect on this turn"
+    },
+    "start": {
+      "heading_sid": "A new life begins",
+      "era_label_sid": "Era",
+      "lineage_notes_heading_sid": "Lineage notes",
+      "content_warnings_heading_sid": "Content warnings",
+      "content_warnings_expand_sid": "Review content warnings",
+      "content_warnings_collapse_sid": "Hide content warnings",
+      "content_warnings_empty_sid": "No content warnings recorded for this era.",
+      "roles_heading_sid": "Choose your station",
+      "role_select_label_sid": "Begin life as {role}",
+      "loading_sid": "Loading the era\u2026",
+      "resume_hint_sid": "A save already exists for this chain.",
+      "unavailable_heading_sid": "No eras available yet",
+      "unavailable_body_sid": "Completing advisory onboarding (todo 0) before content authoring can begin.",
+      "unavailable_about_button_sid": "Learn about this project"
+    },
+    "turn": {
+      "screen_label_sid": "Turn screen",
+      "top_bar_label_sid": "Turn status",
+      "turn_label_sid": "Turn {n}",
+      "age_label_sid": "Age {n}",
+      "lens_chosen_sid": "Lens: {lens}",
+      "lens_unset_sid": "Lens: none",
+      "orient_heading_sid": "Where you stand",
+      "orient_era_role_sid": "{era} — {role}",
+      "orient_resources_label_sid": "Resources",
+      "orient_resource_row_sid": "{resource}: {n}",
+      "orient_relationships_label_sid": "Ties",
+      "orient_no_relationships_sid": "No ties yet",
+      "intend_heading_sid": "Choose your lens",
+      "intend_hint_sid": "Focus through one of the six parami.",
+      "act_heading_sid": "Choose an action",
+      "act_hint_sid": "What will you do with this moment?",
+      "act_empty_sid": "No actions are open through this lens right now.",
+      "no_era_heading_sid": "No events for this era yet",
+      "no_era_body_sid": "End this life early to reach the bardo and test the cross-life flow.",
+      "end_life_button_sid": "End life early",
+      "dev_tools_label_sid": "Dev tools",
+      "dev_skip_turn_button_sid": "Skip turn (dev)",
+      "dev_die_button_sid": "Die now (dev)"
+    }
+  },
+  "era": {
+    "tang-china": {
+      "name_sid": "Tang Dynasty Chang\u2019an",
+      "lineage_notes_sid": "A cosmopolitan capital at the eastern end of the Silk Road, where monastic communities, merchant caravans, and farming villages meet along the Wei River valley.",
+      "role": {
+        "peasant": {
+          "title_sid": "Farmer",
+          "description_sid": "You work a small holding of rented land along the Wei River, its seasons setting the rhythm of every day."
+        },
+        "merchant": {
+          "title_sid": "Merchant",
+          "description_sid": "You move goods between the Western Market and the caravan depots, bargaining in three languages before noon."
+        },
+        "monastic": {
+          "title_sid": "Lay Resident",
+          "description_sid": "You live in the workshops of a monastery precinct, keeping the storehouses and greeting travelers at the gate."
+        }
+      }
+    },
+    "fantasy-mahayana": {
+      "name_sid": "Mahayana Fantasy"
+    }
+  },
+  "content_warning": {
+    "references-to-death": {
+      "label_sid": "References to death and mourning"
+    },
+    "depiction-of-illness": {
+      "label_sid": "Depictions of illness and care"
     }
   },
   "lens": {
@@ -34,15 +106,155 @@
     "aversion_sid": "aversion",
     "delusion_sid": "delusion"
   },
+  "bardo": {
+    "life_ended_heading_sid": "Your life has ended",
+    "life_ended_in_era_sid": "Your life in {era} has ended.",
+    "life_ended_generic_sid": "A life has ended.",
+    "echoes_heading_sid": "What carried forward",
+    "no_echoes_sid": "No echoes were detected. The next life begins unburdened.",
+    "next_life_heading_sid": "Choose your next life",
+    "next_life_empty_sid": "No further lives are available in this chain.",
+    "choose_era_button_sid": "Begin in {era}",
+    "echo": {
+      "group_tendency_sid": "Tendencies",
+      "group_vow_sid": "Vows",
+      "group_unresolved_attachment_sid": "Unresolved attachments",
+      "group_pattern_break_sid": "Pattern breaks",
+      "tendency_sid": "A tendency toward {root} colored many of your choices.",
+      "pattern_break_sid": "A long-held pattern broke open: care returned after aversion.",
+      "attachment_sid": "An unresolved attachment to {subject} lingered.",
+      "vow_kept_sid": "A vow of {vow} was kept.",
+      "vow_broken_sid": "A vow of {vow} was broken.",
+      "vow_declared_sid": "A vow of {vow} was declared."
+    }
+  },
+  "settings": {
+    "title_sid": "Settings",
+    "content_warnings_heading_sid": "Content warnings",
+    "content_warnings_help_sid": "Turn a category off to filter those events out of your life.",
+    "toggle_on_sid": "On",
+    "toggle_off_sid": "Off",
+    "toggle_label_sid": "{label}, {state}",
+    "reduced_motion_label_sid": "Reduced motion",
+    "reduced_motion_help_sid": "Skip slide and transition animations.",
+    "font_scale_heading_sid": "Text size",
+    "font_scale_small_sid": "Small",
+    "font_scale_medium_sid": "Medium",
+    "font_scale_large_sid": "Large",
+    "font_scale_selected_sid": "{size}, selected",
+    "font_scale_unselected_sid": "{size}",
+    "save_slots_heading_sid": "Save slots",
+    "slot_label_sid": "Slot {n}",
+    "slot_empty_sid": "Empty",
+    "slot_meta_sid": "Saved at {unix}",
+    "export_button_sid": "Export",
+    "import_button_sid": "Import",
+    "delete_button_sid": "Delete",
+    "export_result_label_sid": "Export code",
+    "export_result_sid": "A save code was produced and copied to the clipboard.",
+    "import_failed_sid": "That save code could not be imported.",
+    "import_succeeded_sid": "Save imported into slot {n}.",
+    "about_link_sid": "About Yakshetra"
+  },
+  "about": {
+    "title_sid": "About Yakshetra",
+    "disclaimer_heading_sid": "A Note Before You Begin",
+    "disclaimer_body_sid": "Yakshetra is a work of fiction inspired by Buddhist ethical and contemplative traditions. It does not represent itself as doctrine, nor as a teaching of any lineage, teacher, or school. The parami-inspired lenses, the cross-life echoes, and the narrative situations are game design choices made in good faith, not claims about how the world actually works. If a theme here is difficult for you, the content-warning settings let you step away from it.",
+    "lineage_heading_sid": "Lineage notes",
+    "lineage_body_sid": "The game draws loosely on the six parami framework found across Theravada and Mahayana ethical literature, and on narrative conventions common to historical and fantasy fiction. No specific living teacher, order, or institution endorses or is represented by this work. Full lineage notes will accompany each era pack when the packs ship.",
+    "glossary_heading_sid": "Glossary",
+    "bibliography_heading_sid": "Sources",
+    "glossary": {
+      "parami_term_sid": "parami (perfection)",
+      "parami_definition_sid": "A quality cultivated through practice. The game's six lenses are named for parami-inspired qualities.",
+      "lens_term_sid": "lens",
+      "lens_definition_sid": "The frame a player focuses a choice through. Each lens is named for a parami-inspired quality.",
+      "intent_root_term_sid": "intent root",
+      "intent_root_definition_sid": "The root an action springs from: care, greed, aversion, or delusion. Drives the cross-life echoes.",
+      "karmic_echo_term_sid": "karmic echo",
+      "karmic_echo_definition_sid": "A narrative thread carried from one life into the next. Echoes add context and shift event availability; they are never a score.",
+      "bardo_term_sid": "bardo",
+      "bardo_definition_sid": "An 'in-between' state. The game's between-lives screen is functional UI, not a depiction of any doctrinal bardo.",
+      "life_chain_term_sid": "life chain",
+      "life_chain_definition_sid": "A sequence of two lives the player moves through, beginning unburdened and closing on a chain-complete screen.",
+      "era_pack_term_sid": "era pack",
+      "era_pack_definition_sid": "A data pack defining one setting: its events, roles, glossary, and rule variation.",
+      "rule_variation_term_sid": "rule variation",
+      "rule_variation_definition_sid": "An era-specific social mechanic layered onto the engine without era-specific code branching.",
+      "narrative_seed_term_sid": "narrative seed",
+      "narrative_seed_definition_sid": "An event or beat injected into the next life by an echo, surfacing what carried forward.",
+      "content_warning_term_sid": "content warning",
+      "content_warning_definition_sid": "A category a player may toggle off to filter the corresponding events out of the pool.",
+      "social_identity_term_sid": "social identity",
+      "social_identity_definition_sid": "Opaque descriptive attributes of a life. Never aggregated into a score; never carried forward by echoes."
+    },
+    "bibliography": {
+      "entry_1_sid": "Bodhi, Bhikkhu (trans.), A Comprehensive Manual of Abhidhamma — reference for the taxonomy of wholesome and unwholesome roots.",
+      "entry_2_sid": "Ñāṇamoli, Bhikkhu (trans.), The Path of Purification (Visuddhimagga) — reference for the parami framework.",
+      "entry_3_sid": "Web Accessibility Initiative, WCAG 2.2 — reference for the accessibility targets the UI is built toward.",
+      "entry_4_sid": "Expo Router documentation, https://docs.expo.dev/router — reference for the app's navigation model.",
+      "entry_5_sid": "Deque Systems, axe-core — reference for the automated accessibility audit rules."
+    }
+  },
+  "warning": {
+    "death-of-self": {
+      "label_sid": "Death of self",
+      "description_sid": "The player character's own death, referenced or depicted."
+    },
+    "death-of-family": {
+      "label_sid": "Death of family",
+      "description_sid": "The death of a family member or close relation."
+    },
+    "illness-chronic-suffering": {
+      "label_sid": "Illness and chronic suffering",
+      "description_sid": "Disease, injury, or sustained bodily suffering."
+    },
+    "war-political-violence": {
+      "label_sid": "War and political violence",
+      "description_sid": "Armed conflict, occupation, or organized political violence."
+    },
+    "betrayal": {
+      "label_sid": "Betrayal",
+      "description_sid": "A trusted person breaking a serious bond of trust."
+    },
+    "poverty-starvation": {
+      "label_sid": "Poverty and starvation",
+      "description_sid": "Severe material deprivation or hunger."
+    },
+    "social-oppression": {
+      "label_sid": "Social oppression",
+      "description_sid": "Coercive social hierarchies, caste, or institutional exclusion."
+    },
+    "forced-moral-compromise": {
+      "label_sid": "Forced moral compromise",
+      "description_sid": "Situations with no clean choice, where any path entails some harm."
+    },
+    "separation-from-loved-ones": {
+      "label_sid": "Separation from loved ones",
+      "description_sid": "Involuntary parting from family or close bonds."
+    }
+  },
+  "event": {
+    "default": {
+      "consequence_sid": "Something quietly shifts.",
+      "journal_sid": "The moment passes, carrying its weight forward into what comes next."
+    }
+  },
   "test": {
     "action": {
-      "give_alms_label_sid": "Give alms at the temple gate"
+      "give_alms_label_sid": "Give alms at the temple gate",
+      "harvest_rice_label_sid": "Harvest rice in the terraces"
     },
     "consequence": {
       "alms_given_sid": "The beggar ate well; your bowl came back lighter."
     },
     "journal": {
       "alms_memory_sid": "A handful of rice, passed from one open hand to another, carried into the next dawn."
+    },
+    "era": {
+      "name_sid": "Test Era",
+      "lineage_sid": "Lineage notes for the test era.",
+      "rule_sid": "Test rule variation"
     }
   }
 }
