@@ -1,0 +1,53 @@
+# Yakshetra closed list of prohibited sacred/devotional names.
+#
+# These names are excluded from all in-game narrative, identifiers, and
+# bibliographic framing to avoid reifying veneration or implying sectarian
+# doctrinal claims. The lint rule R-NO-SACRED-NAMES loads this file at lint
+# time and matches it case-insensitively, with Unicode letter boundaries,
+# against every `_sid` string, `source_bibliography` entry, and
+# `lineage_notes_sid` in a content pack.
+#
+# Format: one name per line. Lines starting with `#` are comments. The list
+# below is CLOSED — do not add names without advisory review (plan todo 32).
+# Diacritic and ASCII transliterations of the same figure are both listed so
+# the lint catches either spelling.
+Shakyamuni
+Buddha
+Amitabha
+Amida
+Amitayus
+Avalokiteshvara
+Avalokiteśvara
+Guanyin
+Kannon
+Chenrezig
+Manjushri
+Mañjuśrī
+Wenshu
+Monju
+Samantabhadra
+Puxian
+Fugen
+Ksitigarbha
+Kṣitigarbha
+Dizang
+Jizo
+Mahasthamaprapta
+Mahāsthāmaprāpta
+Dashizhi
+Daesaeji
+Seishi
+Tara
+Tārā
+Drolma
+Maitreya
+Mila
+Milarepa
+Padmasambhava
+Tsongkhapa
+Nagarjuna
+Nāgārjuna
+Atisha
+Shantideva
+Śāntideva
+Bodhidharma

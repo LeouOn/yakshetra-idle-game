@@ -1,0 +1,131 @@
+{
+  "id": "lint-fixture@0.1.0",
+  "name_sid": "era.fixture.name_sid",
+  "locale_default": "en",
+  "locale_available": ["en"],
+  "schema_version": "0.1",
+  "engine_compat": "^0.1.0",
+  "lens_set": "six-paramita-mahayana",
+  "social": {
+    "paramitas": ["generosity"],
+    "relations": ["teacher"]
+  },
+  "calendar": "lunar",
+  "content_warnings": [],
+  "events": [
+    {
+      "id": "ev_one",
+      "weight": 1,
+      "cooldown_turns": 0,
+      "once_per_run": false,
+      "content_warnings": [],
+      "choices": [
+        {
+          "id": "c_one",
+          "label_sid": "event.ev_one.choice.c_one.label_sid",
+          "requires": [],
+          "effects": [],
+          "forbidden": false
+        }
+      ]
+    },
+    {
+      "id": "ev_two",
+      "weight": 1,
+      "cooldown_turns": 0,
+      "once_per_run": false,
+      "content_warnings": [],
+      "choices": [
+        {
+          "id": "c_one",
+          "label_sid": "event.ev_two.choice.c_one.label_sid",
+          "requires": [],
+          "effects": [],
+          "forbidden": false
+        }
+      ]
+    },
+    {
+      "id": "ev_three",
+      "weight": 1,
+      "cooldown_turns": 0,
+      "once_per_run": false,
+      "content_warnings": [],
+      "choices": [
+        {
+          "id": "c_one",
+          "label_sid": "event.ev_three.choice.c_one.label_sid",
+          "requires": [],
+          "effects": [],
+          "forbidden": false
+        }
+      ]
+    },
+    {
+      "id": "ev_four",
+      "weight": 1,
+      "cooldown_turns": 0,
+      "once_per_run": false,
+      "content_warnings": [],
+      "choices": [
+        {
+          "id": "c_one",
+          "label_sid": "event.ev_four.choice.c_one.label_sid",
+          "requires": [],
+          "effects": [],
+          "forbidden": false
+        }
+      ]
+    },
+    {
+      "id": "ev_five",
+      "weight": 1,
+      "cooldown_turns": 0,
+      "once_per_run": false,
+      "content_warnings": [],
+      "choices": [
+        {
+          "id": "c_one",
+          "label_sid": "event.ev_five.choice.c_one.label_sid",
+          "requires": [],
+          "effects": [],
+          "forbidden": false
+        }
+      ]
+    },
+    {
+      "id": "ev_six",
+      "weight": 1,
+      "cooldown_turns": 0,
+      "once_per_run": false,
+      "content_warnings": [],
+      "choices": [
+        {
+          "id": "c_one",
+          "label_sid": "event.ev_six.choice.c_one.label_sid",
+          "requires": [],
+          "effects": [],
+          "forbidden": false
+        }
+      ]
+    }
+  ],
+  "lineage_notes_sid": "era.fixture.lineage_notes_sid",
+  "glossary": {
+    "alms": {
+      "en": "Food offered during the morning round."
+    }
+  },
+  "source_bibliography": [
+    {
+      "citation": "A traditional text on ethics.",
+      "url": "https://example.org/ethics"
+    }
+  ],
+  "permitted_imagery": ["monastery"],
+  "rule_variation": {
+    "id": "social-obligation-default",
+    "description_sid": "rule.default.description_sid",
+    "enforces": "social-obligation"
+  }
+}

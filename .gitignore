@@ -40,8 +40,10 @@ Thumbs.db
 # Local-only state (evidence is never committed). .omo/ holds agent/session
 # state (plans, boulder, run-continuation, evidence) - all local-only.
 .omo/
-# advisory/ is agent-generated onboarding content, not toolchain.
-advisory/
+# advisory/ holds durable reference files that ARE tracked (panel.md,
+# prohibited-names.txt) plus agent-generated onboarding content that is not.
+advisory/recruitment-log.md
+advisory/reviewer-agreements/
 
 # TypeScript build info
 *.tsbuildinfo
