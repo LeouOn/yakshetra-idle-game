@@ -20,7 +20,7 @@
     "android": {
       "package": "com.yakshetra.app"
     },
-    "plugins": ["expo-router", "expo-status-bar"],
+    "plugins": ["expo-router", "expo-status-bar", "expo-sqlite"],
     "web": {
       "bundler": "metro",
       "output": "static"
