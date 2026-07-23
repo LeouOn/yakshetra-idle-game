@@ -1,0 +1,113 @@
+# Maestro E2E flow 1 — Tang life, from launch to the bardo.
+# Plan todo 30 (flow 1 of 6).
+#
+# Selectors mirror REAL UI text from src/i18n/en.json and the testIDs declared
+# in app/index.tsx, app/life/start.tsx, and app/life/[lifeId].tsx.
+#
+# Turn advancement uses the dev affordance testID `turn-dev-skip`
+# ("Skip turn (dev)"), which is gated on __DEV__ and exists specifically to
+# drive the cross-life flow deterministically. Death uses `turn-end-life-early`
+# ("End life early"), which is always rendered while the era-pack loader is a
+# stub (NoEraFallback). Both steps are guarded with `when.visible`, so on a
+# non-dev build the flow still reaches the bardo (degraded: no turn count).
+# Full 6-turn completion therefore requires a dev/preview-debug build.
+#
+# RUNNING this flow is blocked: needs Maestro CLI + iOS Simulator / Android
+# Emulator + an installable build from todo 31. Authoring is independent.
+
+appId: com.yakshetra.app
+name: "Tang life — launch to bardo"
+tags:
+  - life
+  - tang
+
+---
+# Isolate the run: wipe save state so the disclaimer re-appears.
+- launchApp:
+    clearState: true
+
+# The front-matter disclaimer overlays the home screen on first launch per
+# save slot. After clearState it is always shown; the guard keeps the flow
+# robust on re-runs where the flag may already be persisted.
+- runFlow:
+    when:
+      visible: "I understand"
+    commands:
+      - tapOn: "I understand"
+
+# Home screen.
+- assertVisible: "New chain"
+- tapOn: "New chain"
+
+# Life-start screen. A fresh chain defaults to the Tang era. The peasant
+# station card's testID is life-start-role-peasant; its visible title is
+# "Farmer".
+- assertVisible: "A new life begins"
+- assertVisible: "Tang Dynasty Chang'an"
+- assertVisible: "Choose your station"
+- tapOn:
+    id: "life-start-role-peasant"
+
+# Turn screen — advance six turns. Each skip is conditional so the flow does
+# not hard-fail if the build is non-dev (no skip button) or if the life ends
+# early from resource exhaustion.
+- assertVisible:
+    text: "Turn 1"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+
+# End the life. "End life early" is always present on the turn screen while
+# the era-pack loader is a stub; guarded in case resource exhaustion already
+# moved us to the bardo.
+- runFlow:
+    when:
+      visible:
+        id: "turn-end-life-early"
+    commands:
+      - tapOn:
+          id: "turn-end-life-early"
+
+# Terminal: the bardo.
+- assertVisible: "Your life has ended"
+- assertVisible:
+    id: "bardo-screen"

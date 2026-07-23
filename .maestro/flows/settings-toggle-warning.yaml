@@ -1,0 +1,120 @@
+# Maestro E2E flow 5 — content-warning toggle suppresses war/political events.
+# Plan todo 30 (flow 5 of 6).
+#
+# Toggles the "war-political-violence" category OFF in Settings, then plays a
+# Tang life and asserts that the war/political event narratives are absent from
+# the rendered turns. The category id and toggle testID come from
+# src/content/warning-taxonomy.ts and src/ui/components/SettingsView.tsx
+# (settings-warning-<id> / settings-warning-<id>-state).
+#
+# Assertion scope: this is a UI-text assertion (per plan MUST: text selectors
+# only, no screenshot/font reliance). It asserts the distinctive opening lines
+# of the three Tang events tagged war-political-violence are NOT visible:
+#   - grain-requisition  -> "army of the western frontier"
+#   - conscripted-brother-> "labor levy summons your brother"
+#   - persecution-edict  -> "imperial order comes down the road"
+# Engine-level event-pool filtering (the toggle actually removing tagged events
+# from the draw) is covered by unit tests and requires the era packs to be
+# loaded (todo 17/21 wiring replaces the loader stub); until then turns are
+# advanced with the dev skip affordance.
+#
+# RUNNING is blocked on Maestro CLI + simulators + todo 31.
+
+appId: com.yakshetra.app
+name: "Settings toggle — war/political violence warning"
+tags:
+  - settings
+  - content-warning
+
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "I understand"
+    commands:
+      - tapOn: "I understand"
+
+# --- Open Settings and toggle the category off. ---
+- assertVisible: "Settings"
+- tapOn: "Settings"
+- assertVisible:
+    id: "settings-screen"
+- assertVisible: "Content warnings"
+- tapOn:
+    id: "settings-warning-war-political-violence"
+# State column now reads "Off".
+- assertVisible:
+    id: "settings-warning-war-political-violence-state"
+- assertVisible:
+    text: "War and political violence"
+
+# Return to the home screen (Settings is a pushed route).
+- back
+- assertVisible: "New chain"
+
+# --- Start a Tang life. ---
+- tapOn: "New chain"
+- assertVisible: "A new life begins"
+- tapOn:
+    id: "life-start-role-peasant"
+
+# --- Play through the life. ---
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+
+# --- Assert the war/political events did not fire (UI text absence). ---
+- assertNotVisible: "army of the western frontier"
+- assertNotVisible: "labor levy summons your brother"
+- assertNotVisible: "imperial order comes down the road"
+
+# End the life to confirm the loop still closes cleanly.
+- runFlow:
+    when:
+      visible:
+        id: "turn-end-life-early"
+    commands:
+      - tapOn:
+          id: "turn-end-life-early"
+- assertVisible: "Your life has ended"

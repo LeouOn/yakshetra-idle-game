@@ -1,0 +1,49 @@
+# Maestro E2E flow 4 — restart a chain from the chain-complete screen.
+# Plan todo 30 (flow 4 of 6).
+#
+# PRECONDITION: the app is on the chain-complete screen (the two-life chain has
+# just finished). To produce that state, run full-chain.yaml first in the same
+# session WITHOUT clearing state, or seed the save at chain-complete. This flow
+# deliberately does NOT clearState: it depends on `settings.disclaimerAccepted`
+# remaining `true` from the prior run, which is exactly what the assertion
+# checks (the disclaimer must NOT reappear on restart).
+#
+# The chain-complete button text is "Begin a new chain" (app/chain-complete.tsx);
+# it router.replace('/')s to the home screen, which is why the first-life picker
+# ("A new life begins") is reached via "New chain" from home.
+#
+# RUNNING is blocked on Maestro CLI + simulators + todo 31.
+
+appId: com.yakshetra.app
+name: "Restart — new chain without re-showing disclaimer"
+tags:
+  - restart
+  - e2e
+
+---
+# Resume wherever the prior chain left off. No clearState: we rely on the
+# persisted disclaimerAccepted flag.
+- launchApp:
+    clearState: false
+
+# Document / verify the precondition.
+- assertVisible: "The chain is complete"
+- assertVisible: "Begin a new chain"
+
+# Tap "new chain" from the chain-complete screen -> home.
+- tapOn: "Begin a new chain"
+
+# The disclaimer must NOT be shown (already accepted in the prior chain).
+- assertNotVisible:
+    text: "A Note Before You Begin"
+- assertNotVisible:
+    id: "disclaimer-modal"
+
+# Home screen.
+- assertVisible: "New chain"
+- tapOn: "New chain"
+
+# First-life picker is visible.
+- assertVisible: "A new life begins"
+- assertVisible: "Choose your station"
+- assertVisible: "Tang Dynasty Chang'an"

@@ -1,0 +1,86 @@
+# Maestro E2E flow 6 — save export / delete / import round-trip.
+# Plan todo 30 (flow 6 of 6).
+#
+# Completes one life so save slot 1 holds chain state, then exercises the
+# export -> delete -> import path in Settings. The app bridges export/import
+# through a synchronous clipboard buffer (app/settings.tsx writeClipboard /
+# readClipboard): Export both displays the base64 code AND copies it to the
+# clipboard, and Import reads the code back from that clipboard. No manual
+# text entry is required; the round-trip is in-app.
+#
+# Slot-1 selectors (src/ui/components/SettingsView.tsx):
+#   settings-slot-1             row container
+#   settings-slot-1-export      "Export"
+#   settings-slot-1-import      "Import"
+#   settings-slot-1-delete      "Delete"
+#   settings-export-code        the produced base64
+#   settings-import-msg         "Save imported into slot 1." on success
+# Slot meta reads "Empty" when null, "Saved at {unix}" otherwise.
+#
+# RUNNING is blocked on Maestro CLI + simulators + todo 31.
+
+appId: com.yakshetra.app
+name: "Save export / import round-trip"
+tags:
+  - save
+  - settings
+
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "I understand"
+    commands:
+      - tapOn: "I understand"
+
+# --- Begin a life so slot 1 is non-empty. ---
+- assertVisible: "New chain"
+- tapOn: "New chain"
+- assertVisible: "A new life begins"
+- tapOn:
+    id: "life-start-role-peasant"
+
+# Advance one turn to ensure chain state is persisted to slot 1.
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+
+# Return to the home screen: turn -> life-start -> home (two stack pops).
+- back
+- back
+- assertVisible: "Settings"
+
+# --- Export slot 1. ---
+- tapOn: "Settings"
+- assertVisible:
+    id: "settings-screen"
+- assertVisible:
+    id: "settings-slot-1"
+- tapOn:
+    id: "settings-slot-1-export"
+# The base64 export code is shown and copied to the clipboard.
+- assertVisible:
+    id: "settings-export-code"
+- assertVisible: "Export code"
+
+# --- Delete slot 1; it should become empty. ---
+- tapOn:
+    id: "settings-slot-1-delete"
+- assertVisible: "Empty"
+
+# --- Import the clipboard code back into slot 1. ---
+- tapOn:
+    id: "settings-slot-1-import"
+- assertVisible:
+    id: "settings-import-msg"
+- assertVisible: "Save imported into slot 1."
+
+# --- Assert state matches: slot 1 is no longer empty (shows "Saved at"). ---
+- assertVisible: "Saved at"
+- assertNotVisible: "Export code"

@@ -1,0 +1,162 @@
+# Maestro E2E flow 2 — Fantasy life, from launch to the bardo / chain close.
+# Plan todo 30 (flow 2 of 6).
+#
+# Navigation reality: a fresh chain defaults to the Tang era (app/life/start.tsx
+# DEFAULT_ERA_ID). The Fantasy era ("Mahayana Fantasy", id fantasy-mahayana) is
+# reachable ONLY through the bardo's "Choose your next life" picker
+# (BardoView.nextErasAfter). So this flow completes one Tang life first, then
+# begins the Fantasy life from the bardo. This matches the spec's intent
+# ("pick Fantasy life") via the only path the current navigation model offers.
+#
+# Role note: the spec names the "newly-arrived-soul" station. Its visible title
+# is "Newly arrived soul" (src/i18n/en.json -> fantasy.role.newly_arrived_soul).
+# The life-start screen renders station cards; this flow taps the
+# "Newly arrived soul" text once the Fantasy era is showing.
+#
+# Turn advancement and death use the same dev/always-on affordances as
+# tang-life.yaml (turn-dev-skip is __DEV__-gated; turn-end-life-early is always
+# present while the loader is a stub). Both are guarded.
+#
+# RUNNING is blocked on Maestro CLI + simulators + a build from todo 31.
+
+appId: com.yakshetra.app
+name: "Fantasy life — bardo to bardo/chain-complete"
+tags:
+  - life
+  - fantasy
+
+---
+- launchApp:
+    clearState: true
+
+# Dismiss the front-matter disclaimer if present.
+- runFlow:
+    when:
+      visible: "I understand"
+    commands:
+      - tapOn: "I understand"
+
+# --- First (Tang) life, used to reach the bardo's era picker. ---
+- assertVisible: "New chain"
+- tapOn: "New chain"
+- assertVisible: "A new life begins"
+- tapOn:
+    id: "life-start-role-peasant"
+
+# Advance and end the Tang life.
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-end-life-early"
+    commands:
+      - tapOn:
+          id: "turn-end-life-early"
+
+# Bardo after the first life. Pick the Fantasy era.
+- assertVisible: "Your life has ended"
+- assertVisible: "Choose your next life"
+- tapOn:
+    id: "bardo-era-fantasy-mahayana"
+
+# --- Fantasy life. ---
+- assertVisible: "A new life begins"
+- assertVisible: "Mahayana Fantasy"
+- tapOn: "Newly arrived soul"
+
+# Advance and end the Fantasy life.
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-end-life-early"
+    commands:
+      - tapOn:
+          id: "turn-end-life-early"
+
+# Terminal: the bardo again, or — once the chain wrap-up wiring (todo 14)
+# lands — the chain-complete screen. The bardo screen reliably renders on
+# death, so it is the asserted terminal here.
+- assertVisible: "Your life has ended"

@@ -1,0 +1,161 @@
+# Maestro E2E flow 3 — full two-life chain: Tang -> bardo -> Fantasy -> close.
+# Plan todo 30 (flow 3 of 6).
+#
+# A chain is exactly two lives (BardoView.nextErasAfter offers the one era the
+# player has not yet lived). This flow plays both:
+#   1. Tang life  -> bardo (Fantasy offered)
+#   2. Fantasy life -> bardo with no further eras -> chain-complete
+#
+# Terminal note: the bardo currently renders "No further lives are available in
+# this chain." after the second life; routing from there to /chain-complete is
+# the chain wrap-up UX wired in todo 14. This flow asserts the spec's intended
+# terminal ("The chain is complete" / "Begin a new chain" on the chain-complete
+# screen). While todo 14 is in flight, also tolerate the bardo's empty-eras
+# message; the final asserts are guarded so the flow reports the actual screen.
+#
+# Turn advancement / death use the same dev/always-on affordances as
+# tang-life.yaml. RUNNING is blocked on Maestro CLI + simulators + todo 31.
+
+appId: com.yakshetra.app
+name: "Full chain — Tang then Fantasy"
+tags:
+  - chain
+  - e2e
+
+---
+- launchApp:
+    clearState: true
+
+- runFlow:
+    when:
+      visible: "I understand"
+    commands:
+      - tapOn: "I understand"
+
+# --- First life: Tang. ---
+- assertVisible: "New chain"
+- tapOn: "New chain"
+- assertVisible: "A new life begins"
+- assertVisible: "Tang Dynasty Chang'an"
+- tapOn:
+    id: "life-start-role-peasant"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-end-life-early"
+    commands:
+      - tapOn:
+          id: "turn-end-life-early"
+
+# --- Bardo: pick the Fantasy era. ---
+- assertVisible: "Your life has ended"
+- assertVisible: "Choose your next life"
+- tapOn:
+    id: "bardo-era-fantasy-mahayana"
+
+# --- Second life: Fantasy. ---
+- assertVisible: "A new life begins"
+- assertVisible: "Mahayana Fantasy"
+- tapOn: "Newly arrived soul"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-dev-skip"
+    commands:
+      - tapOn:
+          id: "turn-dev-skip"
+- runFlow:
+    when:
+      visible:
+        id: "turn-end-life-early"
+    commands:
+      - tapOn:
+          id: "turn-end-life-early"
+
+# --- Terminal: chain-complete screen. ---
+# Intended terminal once todo 14 wiring routes the empty bardo onward:
+- runFlow:
+    when:
+      visible: "No further lives are available in this chain."
+    commands:
+      - takeScreenshot: "full-chain-empty-bardo"
+
+- assertVisible: "The chain is complete"
+- assertVisible: "Begin a new chain"
