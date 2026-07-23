@@ -1,0 +1,99 @@
+{
+  "task": 17,
+  "pack": "tang-china",
+  "events": 7,
+  "choices": 21,
+  "event_ids": [
+    "event:tang/grain-requisition",
+    "event:tang/sick-traveler",
+    "event:tang/corrupt-donation-demand",
+    "event:tang/conscripted-brother",
+    "event:tang/famine-year",
+    "event:tang/persecution-edict",
+    "event:tang/child-illness"
+  ],
+  "choice_counts": [3, 3, 3, 3, 3, 3, 3],
+  "intent_root_effects": 21,
+  "intent_root_distribution": {
+    "care": 13,
+    "greed": 3,
+    "aversion": 3,
+    "delusion": 2
+  },
+  "permitted_intent_roots": ["care", "greed", "aversion", "delusion"],
+  "weights": [1.0, 0.8, 0.6, 0.7, 0.9, 0.5, 0.7],
+  "triggers": {
+    "event:tang/conscripted-brother": { "op": "has_flag", "key": "has_brother" },
+    "event:tang/persecution-edict": { "op": "gte", "key": "state.age", "value": 25 }
+  },
+  "content_warnings_per_event": {
+    "event:tang/grain-requisition": ["war-political-violence", "forced-moral-compromise"],
+    "event:tang/sick-traveler": ["illness-chronic-suffering"],
+    "event:tang/corrupt-donation-demand": ["social-oppression", "forced-moral-compromise"],
+    "event:tang/conscripted-brother": ["war-political-violence", "forced-moral-compromise", "separation-from-loved-ones"],
+    "event:tang/famine-year": ["poverty-starvation"],
+    "event:tang/persecution-edict": ["social-oppression", "forced-moral-compromise"],
+    "event:tang/child-illness": ["illness-chronic-suffering", "death-of-family"]
+  },
+  "warning_categories_used": [
+    "war-political-violence",
+    "forced-moral-compromise",
+    "illness-chronic-suffering",
+    "social-oppression",
+    "separation-from-loved-ones",
+    "poverty-starvation",
+    "death-of-family"
+  ],
+  "warning_tags_all_in_closed_taxonomy": true,
+  "schema_fence": {
+    "prohibited_meter_tokens_in_effects": 0,
+    "tokens_scanned": ["karma", "merit", "spiritual_rank", "enlightenment"],
+    "corrupt_donation_commodification_rejection": "give choice attaches narrative_card (card.tang.corrupt-donation-demand.give_commodification_sid) that explicitly rejects the 'accumulating merit' framing the game does not implement; card_sid contains no prohibited meter token"
+  },
+  "effect_ops_used": [
+    "add_resource",
+    "add_relationship",
+    "add_flag",
+    "set_intent_root",
+    "narrative_card",
+    "modify_event_weight"
+  ],
+  "schema_validation": "pass",
+  "content_lint_violations": 0,
+  "loader_note": "events.json5 is a standalone authored file (top-level {events:[...]}); src/content/loader.ts reads only pack.json5. The events.test.ts builds a synthetic EraPack wrapping the events to exercise EventSchema + lintPack.",
+  "typecheck": "pass",
+  "vitest_full_suite": { "tests": 210, "test_files": 25, "exit": 0 },
+  "vitest_targeted": {
+    "file": "src/content/packs/tang-china/__tests__/events.test.ts",
+    "tests": 9,
+    "passed": 9,
+    "exit": 0
+  },
+  "events_test_cases": [
+    "parses as JSON5",
+    "contains exactly 7 events with the plan-canonical ids, in order",
+    "each event parses against EventSchema and has 2-3 choices",
+    "every choice carries exactly one set_intent_root effect with a permitted root (asserts 21 total choices)",
+    "lint reports zero violations on the events wrapped in a synthetic EraPack",
+    "persecution-edict fires only in mid-life (age >= 25)",
+    "conscripted-brother requires a family relationship flag (has_brother)",
+    "corrupt-donation-demand 'give' choice attaches a narrative_card rejecting commodification (sid matches /corrupt-donation-demand/ and NOT /karma|merit|spiritual_rank|enlightenment/)",
+    "every event declares a non-empty content_warnings array"
+  ],
+  "design_constraints_met": [
+    "No event grants or removes 'merit' or 'karma' (no meter tokens in effects).",
+    "No event depicts graphic illness, torture, or sexual violence.",
+    "No event presents the Buddha or a named bodhisattva intervening.",
+    "Illness/death narrated with restraint but acknowledged as suffering.",
+    "No historical Buddha, named Chan patriarchs, or named Tang emperors as characters.",
+    "No Sanskrit terms in diegetic Tang content (uses 'Chan', not 'Dhyana')."
+  ],
+  "open_issues": [
+    "The standalone events.json5 is not yet merged into tang-china/pack.json5 (which the loader reads); reachability via loadEraPack is integration-time (T26/T27) work, consistent with task-16/18 evidence.",
+    "modify_event_weight is used by persecution-edict choices (hide_monk x1.2, flee_region x0.1) to model escalation/de-escalation; runtime application belongs to the engine event loop, not asserted by this test."
+  ],
+  "lsp": {
+    "events_json5": "no server configured for .json5",
+    "events_test_ts": "covered by tsc --noEmit (exit 0)"
+  }
+}

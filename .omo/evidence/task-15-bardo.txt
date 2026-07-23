@@ -1,0 +1,138 @@
+TASK 15 — Bardo transition screen + settings/accessibility
+==========================================================
+Date: 2026-07-22
+Plan: .omo/plans/buddhist-inspired-incremental-rpg.md (todo 15, lines 357-369)
+
+WHAT SHIPPED
+------------
+Three Expo Router screens + their presentational views. The route files wire
+`useSaveSlot` / `router` and delegate all rendering to pure components under
+`src/ui/components/`, which keeps them trivially testable under the
+test-renderer shim (see task 14's RNTL note).
+
+- app/bardo.tsx (33 LOC) — route. Reads completed life out of save slot 1,
+  computes echoes from `state.chain.karma_state.echoes` and the next eras via
+  `nextErasAfter(previousEra)`, then renders BardoView. Picking an era calls
+  `router.push({ pathname: '/life/start', params: { era } })`.
+- app/settings.tsx (65 LOC) — route. Wires `useSaveSlot(1)` (settings + slots
+  1-5) and a synchronous clipboard bridge (web also best-effort pushes to
+  `navigator.clipboard`) and renders SettingsView.
+- app/about.tsx (15 LOC) — route. Renders AboutView with `onBack = router.back`.
+- src/ui/components/BardoView.tsx (279 LOC) — pure presentational.
+- src/ui/components/SettingsView.tsx (425 LOC) — pure presentational + SlotRow.
+- src/ui/components/AboutView.tsx (171 LOC) — pure presentational.
+
+BARDO VIEW — rendered sections (all text via `bardo.*` string ids)
+------------------------------------------------------------------
+1. "Your life has ended" header — `bardo.life_ended_heading_sid`. Subheader is
+   either `bardo.life_ended_in_era_sid` (resolves the previous era name) or the
+   generic `bardo.life_ended_generic_sid` ("A life has ended.") when the era is
+   unknown. (testID: bardo-screen)
+2. "What carried forward" — `bardo.echoes_heading_sid`. Echoes are GROUPED by
+   the four echo types (tendency, pattern_break, vow, unresolved_attachment),
+   each group under its own `bardo.echo.group_*_sid` heading
+   (testID: bardo-echo-group-<type>). Each echo renders a localized summary
+   composed from `echo.type` + `echo.key` (tendency -> root label, vow -> kept /
+   broken / declared state parsed from the `echo:vow:<name>:<state>` narrative
+   sid, attachment -> subject, pattern_break -> fixed summary).
+   GRACEFUL FALLBACK: zero echoes renders `bardo.no_echoes_sid`
+   ("No echoes were detected. The next life begins unburdened.")
+   testID: bardo-no-echoes.
+3. "Choose your next life" — `bardo.next_life_heading_sid`. Lists each available
+   era as a Pressable (testID: bardo-era-<id>) whose label is
+   `bardo.choose_era_button_sid` formatted with the era name. `nextErasAfter`
+   offers the other era after one is played; empty list (after both eras)
+   renders `bardo.next_life_empty_sid` ("No further lives are available in this
+   chain.") — the route then navigates to /chain-complete. testID: bardo-no-eras.
+MUST-NOT (plan 359): no literal bardo imagery, no judgment by named beings.
+This is functional UI only — MET.
+
+SETTINGS VIEW — rendered sections (all text via `settings.*` string ids)
+------------------------------------------------------------------------
+1. Content warnings — `WARNING_CATEGORIES` renders one Pressable per category,
+   per-category only (NO global "disable all" toggle). The 9 categories:
+   death-of-self, death-of-family, illness-chronic-suffering,
+   war-political-violence, betrayal, poverty-starvation, social-oppression,
+   forced-moral-compromise, separation-from-loved-ones
+   (testID: settings-warning-<id> + settings-warning-<id>-state).
+2. Reduced motion — single Pressable (testID: settings-reduced-motion) toggling
+   `settings.reducedMotion` via `onToggleReducedMotion`.
+3. Font size — 3-step selector small / medium / large
+   (testID: settings-font-<scale>); selected step styled distinctly.
+4. Save slot management — slots 1-5 (testID: settings-slot-<n>), each row has
+   Export (base64 code -> clipboard, disabled on empty slots), Import (reads
+   clipboard, surfaces success/failure), Delete (disabled on empty slots).
+   Exported code surfaced at testID settings-export-code. Toggles persist via
+   `useSaveSlot().updateSettings()` / `setContentWarning()`.
+5. About link (testID: settings-about-link) navigates to /about.
+
+ABOUT VIEW — rendered sections (all text via `about.*` string ids)
+------------------------------------------------------------------
+1. Front-matter disclaimer — `about.disclaimer_heading_sid` +
+   `about.disclaimer_body_sid` (testID: about-disclaimer-body). Explicit fiction
+   framing, no claim of doctrinal authority.
+2. Lineage notes — `about.lineage_heading_sid` + `about.lineage_body_sid`
+   (testID: about-lineage-body).
+3. Glossary — 11 term/definition pairs (parami, lens, intent_root, karmic_echo,
+   bardo, life_chain, era_pack, rule_variation, narrative_seed, content_warning,
+   social_identity) each at testID about-glossary-<key>.
+4. Source bibliography — 5 entries (about.bibliography.entry_1..5_sid).
+Optional Back button (testID: about-back).
+
+VERIFICATION (commands run)
+---------------------------
+$ npx tsc --noEmit                         -> exit 0  (strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes)
+$ npx vitest run                           -> 210 passed, 25 test files, exit 0
+$ npx vitest run src/ui/__tests__/BardoScreen.test.tsx src/ui/__tests__/SettingsScreen.test.tsx
+                                           -> 23 passed (8 Bardo + 15 Settings), 2 files, exit 0
+
+TESTS (BardoScreen.test.tsx, 155 LOC, 8 tests)
+----------------------------------------------
+1. renders life-ended header using previous era name (+ subheader era line)
+2. falls back to generic header when previous era unknown
+3. groups echoes by type and renders a localized summary per echo
+4. shows graceful "no echoes" message when life produced none
+5. lists each available era and fires onPickEra with era id on tap
+6. shows "no further lives" message when era list empty
+7. eraNameSid maps known eras to a name SID, unknown/null -> null
+8. nextErasAfter: fresh chain offers all; filters the just-played era
+
+TESTS (SettingsScreen.test.tsx, 296 LOC, 15 tests)
+--------------------------------------------------
+SettingsView (9): one toggle per warning category (9, no global off); default
+   On + flips via callback on tap; toggles reduced-motion + font-scale;
+   onSelectFontScale carries chosen scale; export occupied slot -> base64 code;
+   import from clipboard calls onImportSlot + success msg; import failure msg;
+   export + delete disabled on empty slots; navigate-to-about link.
+save blob base64 codec (2): encode/decode round-trips a SaveBlob exactly;
+   decodeSaveBlob throws on a tampered (integrity-mismatch) code.
+useSaveSlot settings seam (4): defaults (motion off, all warnings on, medium
+   font); updateSettings merges a reduced-motion patch; setContentWarning flips
+   one category without touching others; updateSettings sets font scale.
+
+DESIGN CONSTRAINTS (all met)
+----------------------------
+- No global "disable all warnings" toggle — per-category only.
+- No karma/merit/score messaging anywhere.
+- No depiction of literal bardo imagery or judgment by named beings.
+- No inline string literals — all text via resolveSid/formatSid string ids.
+- No `as any`, no @ts-ignore, no empty catch, no Math.random/Date.now in UI.
+
+OPEN ISSUES
+-----------
+1. AboutScreen has NO dedicated unit test. No file matching
+   *bout*.test.tsx exists under src/, and a grep for AboutView / about-screen /
+   about-disclaimer / about-glossary across all *.test.ts* returns zero matches.
+   The AboutView component is therefore NOT directly unit-tested; it is covered
+   only structurally (tsc) and by the T29 axe-core static export audit of the
+   /about route. A dedicated AboutScreen.test.tsx should be added to assert the
+   disclaimer / lineage / glossary / bibliography sections render.
+2. axe-core cannot run in this project's vitest 'node' + test-renderer
+   environment (no DOM) — see task 14 and task 29. The plan's "axe-core on both
+   screens reports 0 critical violations" criterion is satisfied instead by the
+   T29 static-export audit (7 routes, 0 critical / 1 serious / 1 moderate per
+   route, document-title + region findings documented for follow-up).
+3. Plan acceptance "RNTL test simulates complete life -> see echoes -> see next
+   era options -> tap -> navigate" is met at the component level
+   (BardoView.test.tsx) rather than via a full router/navigation integration,
+   because RNTL does not run under vitest 4 (task 14 open issue #1).
