@@ -33,7 +33,6 @@ function bullets(header, until) {
     .map((l) => l.slice(2).trim());
 }
 const mustHave = bullets('### Must have', '### Must NOT have');
-const mustNot = bullets('### Must NOT have', '## Verification strategy');
 
 // --- Evidence presence: a file task-A-B-C covers todos A, B, C (combined files) ---
 const evidenceFiles = existsSync(EVIDENCE_DIR) ? readdirSync(EVIDENCE_DIR) : [];
