@@ -1,0 +1,76 @@
+# CI: EAS Build for preview profile on version tags.
+# Triggers when a tag matching `v*` is pushed. Builds iOS + Android preview
+# artifacts via Expo Application Services and records the build URLs.
+#
+# NOTE: The task spec referenced `expo-action/eas-cli-github-action@v1`, which is
+# not a published action. The official, maintained action is
+# `expo/expo-github-action@v8` (https://github.com/expo/expo-github-action).
+# This workflow uses the correct action so it actually runs once secrets exist.
+#
+# Required secrets (see .github/SECRETS.md):
+#   - EXPO_TOKEN                       EAS access token
+#   - APPLE_ID                         Apple ID for iOS submit
+#   - APPLE_APP_SPECIFIC_PASSWORD      App-specific password for iOS submit
+#   - GOOGLE_SERVICE_ACCOUNT_JSON      Google Play service account (Android submit)
+name: eas-build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eas-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: eas build (preview, all platforms)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build (preview, all platforms)
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          mkdir -p build-out
+          eas build --profile preview --platform all --non-interactive 2>&1 | tee build-out/eas-build.log
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eas-build-${{ github.ref_name }}-${{ github.run_id }}
+          path: build-out
+          if-no-files-found: warn
+          retention-days: 14

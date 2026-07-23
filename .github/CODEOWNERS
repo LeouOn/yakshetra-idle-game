@@ -1,0 +1,16 @@
+# CODEOWNERS — https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Defense-in-depth against supply-chain attacks: any change to CI/CD must be
+# approved by a maintainer before merge. Pair this file with a branch protection
+# rule on `main` that requires CODEOWNERS review.
+#
+# TODO: replace the placeholder below with the real GitHub user or team handle
+# (e.g. @your-org/mobile-maintainers) once the repository is published.
+
+# CI/CD pipelines and secret-bearing docs — require maintainer review.
+/.github/workflows/    @YOUR_GITHUB_MAINTAINER_TEAM
+/.github/CODEOWNERS    @YOUR_GITHUB_MAINTAINER_TEAM
+/.github/SECRETS.md    @YOUR_GITHUB_MAINTAINER_TEAM
+
+# Default owner for everything else (optional, edit as the team grows).
+*                      @YOUR_GITHUB_MAINTAINER_TEAM

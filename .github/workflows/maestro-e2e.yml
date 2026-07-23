@@ -1,0 +1,102 @@
+# CI: Maestro E2E — nightly + manual.
+# Boots an Android emulator, builds + installs the app, runs all 6 Maestro flows
+# under .maestro/flows/, and uploads the recorded videos.
+#
+# Required secrets (see .github/SECRETS.md):
+#   - MAESTRO_VERSION   Maestro CLI version to pin (e.g. "v1.40.0")
+# Note: this job runs on a public-cloud ubuntu runner. iOS simulators require
+# macOS and are intentionally out of scope here.
+name: maestro-e2e
+
+on:
+  schedule:
+    # 05:30 UTC daily (nightly regression sweep)
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maestro-e2e
+  cancel-in-progress: false
+
+env:
+  MAESTRO_VERSION_DEFAULT: v1.40.0
+
+jobs:
+  e2e:
+    name: maestro e2e (android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MAESTRO_VERSION: ${{ secrets.MAESTRO_VERSION || env.MAESTRO_VERSION_DEFAULT }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup Java (Temurin 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Maestro CLI
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev/cli/${MAESTRO_VERSION}/maestro-${MAESTRO_VERSION#v}.zip" -o /tmp/maestro.zip || \
+            curl -Ls "https://get.maestro.mobile.dev/cli.bash" | bash
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+
+      - name: Run flows on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          script: |
+            set -e
+            # Prebuild native Android project and build a debug APK.
+            npx expo prebuild --platform android --clean
+            (cd android && ./gradlew assembleDebug -x lint -x lintVitalRelease --stacktrace)
+            adb wait-for-device
+            adb install -r -g android/app/build/outputs/apk/debug/app-debug.apk
+            maestro --version
+            maestro test .maestro/flows/ --format junit --output ./maestro-out
+
+      - name: Upload Maestro videos and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results-${{ github.run_id }}
+          path: maestro-out
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload emulator logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-logs-${{ github.run_id }}
+          path: |
+            *.log
+            android/app/build/reports
+          if-no-files-found: ignore
+          retention-days: 7
