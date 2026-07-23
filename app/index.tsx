@@ -26,7 +26,7 @@ export default function IndexScreen() {
   const { settings, updateSettings } = useSaveSlot(1);
 
   return (
-    <View style={styles.container}>
+    <View role="main" style={styles.container}>
       <View style={styles.heading}>
         <Text style={styles.title}>Yakshetra</Text>
         <Text style={styles.subtitle}>Two lives. One thread of karma.</Text>

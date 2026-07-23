@@ -22,7 +22,7 @@ export interface RoutePlaceholderProps {
  */
 export function RoutePlaceholder({ title, implementingTodo, children }: RoutePlaceholderProps) {
   return (
-    <View style={styles.container}>
+    <View role="main" style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>Coming soon — {implementingTodo}.</Text>
       {children !== undefined ? <View style={styles.extra}>{children}</View> : null}

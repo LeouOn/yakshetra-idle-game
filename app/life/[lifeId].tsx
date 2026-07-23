@@ -270,7 +270,11 @@ function TurnScreenBody({ eraPack, onDeath }: TurnScreenBodyProps) {
   const noEra = eraPack === null;
 
   return (
-    <View style={styles.screen} accessibilityLabel={resolveSid('life.turn.screen_label_sid')}>
+    <View
+      role="main"
+      style={styles.screen}
+      accessibilityLabel={resolveSid('life.turn.screen_label_sid')}
+    >
       <TopBar state={state} />
       <OrientPanel state={state} eraPack={eraPack} />
       {noEra && phase !== 'resolve' ? <NoEraFallback onEndLifeEarly={handleEndLifeEarly} /> : null}

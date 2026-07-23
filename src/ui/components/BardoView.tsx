@@ -159,11 +159,7 @@ export default function BardoView({ previousEra, echoes, eras, onPickEra }: Bard
   const groups = groupEchoes(echoes);
 
   return (
-    <ScrollView
-      testID="bardo-screen"
-      accessibilityRole="summary"
-      contentContainerStyle={styles.container}
-    >
+    <ScrollView testID="bardo-screen" role="main" contentContainerStyle={styles.container}>
       <View style={styles.section}>
         <Text accessibilityRole="header" style={styles.heading}>
           {resolveSid('bardo.life_ended_heading_sid')}

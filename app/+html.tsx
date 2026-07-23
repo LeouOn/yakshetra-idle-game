@@ -24,7 +24,12 @@ export default function RootHTML({ children }: PropsWithChildren) {
         <meta charSet="utf-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <title>Yakshetra</title>
+        {/*
+         * The document <title> is provided by the Helmet <Head> in
+         * _layout.tsx. Rendering one here too produces a duplicate, and the
+         * Helmet placeholder (which appears first in <head>) wins the
+         * `document.title` IDL getter — so we omit it here.
+         */}
       </head>
       <body>
         {/* Page-level reset so the RN root fills the viewport on web. */}

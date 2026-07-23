@@ -116,7 +116,7 @@ export default function LifeStartScreen() {
 
   if (status === 'loading') {
     return (
-      <View style={styles.center}>
+      <View role="main" style={styles.center}>
         <Text accessibilityRole="header" style={styles.heading}>
           {resolveSid('life.start.loading_sid')}
         </Text>
@@ -126,7 +126,7 @@ export default function LifeStartScreen() {
 
   if (status === 'unavailable' || pack === null) {
     return (
-      <View style={styles.center}>
+      <View role="main" style={styles.center}>
         <Text accessibilityRole="header" style={styles.heading}>
           {resolveSid('life.start.unavailable_heading_sid')}
         </Text>
@@ -171,7 +171,7 @@ const ReadyView: FC<ReadyViewProps> = ({ pack, eraId, hasSave, onSelectRole }) =
   const warnings = pack.content_warnings;
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+    <ScrollView role="main" style={styles.scroll} contentContainerStyle={styles.content}>
       <Text accessibilityRole="header" style={styles.heading}>
         {resolveSid('life.start.heading_sid')}
       </Text>

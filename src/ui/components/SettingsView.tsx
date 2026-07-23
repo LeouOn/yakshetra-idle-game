@@ -101,11 +101,7 @@ export default function SettingsView({
   };
 
   return (
-    <ScrollView
-      testID="settings-screen"
-      accessibilityRole="summary"
-      contentContainerStyle={styles.container}
-    >
+    <ScrollView testID="settings-screen" role="main" contentContainerStyle={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('settings.title_sid')}
       </Text>

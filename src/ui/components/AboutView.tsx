@@ -44,11 +44,7 @@ export interface AboutViewProps {
 
 export default function AboutView({ onBack }: AboutViewProps) {
   return (
-    <ScrollView
-      testID="about-screen"
-      accessibilityRole="summary"
-      contentContainerStyle={styles.container}
-    >
+    <ScrollView testID="about-screen" role="main" contentContainerStyle={styles.container}>
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('about.title_sid')}
       </Text>
