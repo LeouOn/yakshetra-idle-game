@@ -7,6 +7,15 @@
 // adapter; tsc type-checks this file against the ambient shim in
 // `./platform-modules.d.ts`).
 //
+// API SHAPE (expo-sqlite SDK 57): the kv-store module named-exports the
+// `SQLiteStorage` class. A dedicated database is opened with
+// `new SQLiteStorage(databaseName)`; the underlying SQLite file is itself opened
+// lazily on the instance's first method call, so construction is cheap. The
+// instance exposes the @react-native-async-storage/async-storage-compatible
+// methods `getItem`/`setItem`/`removeItem`/`getAllKeys`. There is NO
+// `openStorageAsync` on the kv-store module — that name does not exist in
+// expo-sqlite, so the adapter resolves + constructs the instance itself.
+//
 // Per plan todo 10: no AsyncStorage (2MB Android cap). SQLite's KV store has no
 // such practical ceiling for a save blob that is asserted to stay < 100KB.
 //
@@ -24,8 +33,20 @@ function slotKey(slot: number): string {
   return `slot-${slot}`;
 }
 
-/** The subset of expo-sqlite/kv-store this adapter uses (see platform-modules.d.ts). */
-interface KvStoreModule {
+/**
+ * Dedicated SQLite database file backing the kv-store on device. Using a
+ * dedicated name (rather than the module's shared default store) isolates save
+ * data from any other library that targets the default `AsyncStorage` database.
+ */
+const SAVE_DB_NAME = 'yakshetra-saves';
+
+/**
+ * Minimal `SQLiteStorage` instance surface this adapter uses (the real class
+ * ships many more async/sync methods — see `./platform-modules.d.ts`). Narrowed
+ * to plain `string` values because the adapter always stores the canonical
+ * envelope JSON string.
+ */
+interface KvStore {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
   removeItem(key: string): Promise<void>;
@@ -33,33 +54,47 @@ interface KvStoreModule {
 }
 
 /**
- * Lazily resolve the kv-store module. The dynamic import is deferred to call
- * time so that requiring this file in Node never triggers the RN-only module.
+ * Cached `SQLiteStorage` instance, or `null` before the first method call.
+ * Module-scoped so every {@link NativeStorageAdapter} shares one connection to
+ * the `yakshetra-saves` database instead of re-opening it per call.
  */
-async function kv(): Promise<KvStoreModule> {
-  // expo-sqlite/kv-store ships with the RN runtime and is intentionally NOT a
-  // root dependency (see package.json), so eslint cannot resolve it here — this
-  // is the whole point of the lazy import.
-  // eslint-disable-next-line import/no-unresolved
-  return (await import('expo-sqlite/kv-store')) as KvStoreModule;
+let storageInstance: KvStore | null = null;
+
+/**
+ * Lazily resolve + construct the kv-store instance. The dynamic `import()` is
+ * deferred to the first call so importing this file in Node never triggers the
+ * RN-only module; the `SQLiteStorage` constructor itself only stores the
+ * database name, so the underlying SQLite file opens on the instance's own first
+ * method call. The constructed instance is memoized in {@link storageInstance}
+ * so all subsequent adapter calls reuse it.
+ */
+async function storage(): Promise<KvStore> {
+  if (storageInstance) return storageInstance;
+  // tsc resolves `expo-sqlite/kv-store` via the ambient shim in
+  // ./platform-modules.d.ts (which shadows the package's own types); the
+  // dynamic import is deferred so a Node/Vitest import of this file never
+  // pulls the RN-only module into the graph before a method actually runs.
+  const { SQLiteStorage } = await import('expo-sqlite/kv-store');
+  storageInstance = new SQLiteStorage(SAVE_DB_NAME);
+  return storageInstance;
 }
 
 export class NativeStorageAdapter implements StorageAdapter {
   async load(slot: number): Promise<SaveBlob | null> {
-    const { getItem } = await kv();
-    const raw = await getItem(slotKey(slot));
+    const kv = await storage();
+    const raw = await kv.getItem(slotKey(slot));
     if (raw === null) return null;
     return unwrapBlob(raw, slot, noopArchiveSink);
   }
 
   async save(slot: number, blob: SaveBlob): Promise<void> {
-    const { setItem } = await kv();
-    await setItem(slotKey(slot), wrapBlob(blob));
+    const kv = await storage();
+    await kv.setItem(slotKey(slot), wrapBlob(blob));
   }
 
   async listSlots(): Promise<number[]> {
-    const { getAllKeys } = await kv();
-    const keys = await getAllKeys();
+    const kv = await storage();
+    const keys = await kv.getAllKeys();
     const slots: number[] = [];
     for (const key of keys) {
       const match = /^slot-(\d+)$/.exec(key);
@@ -69,7 +104,7 @@ export class NativeStorageAdapter implements StorageAdapter {
   }
 
   async deleteSlot(slot: number): Promise<void> {
-    const { removeItem } = await kv();
-    await removeItem(slotKey(slot));
+    const kv = await storage();
+    await kv.removeItem(slotKey(slot));
   }
 }
