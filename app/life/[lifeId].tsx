@@ -3,10 +3,10 @@
 // Implements the 4-phase turn loop: Orient -> Intend -> Act -> Resolve.
 // State is owned by the engine reducer (exposed via `useEngineReducer`) and
 // every mutation flows through `dispatch` — there is no direct write to
-// LifeState anywhere in the view layer. When no era pack is loaded the Act
-// phase renders a graceful "no events for this era yet" fallback whose
-// end-life button drives the player into the bardo (todo 15) so the
-// cross-life flow can be exercised even before content packs ship.
+// LifeState anywhere in the view layer. The era pack is loaded synchronously
+// via `loadEraPack` (the registry is bundled at build time); if loading fails
+// the Act phase renders a graceful "no events for this era yet" fallback whose
+// end-life button drives the player into the bardo (todo 15).
 //
 // Plan reference: todo 13.
 
@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { loadEraPack } from '@/content/loader';
 import type { Choice, EraPack, Event } from '@/content/schema';
 import { applyChoice, createLifeState, createRng } from '@/engine';
 import type { EraId, IntentRoot, LifeId, LifeState, Lens, ResourceId, RoleId } from '@/engine';
@@ -129,19 +130,25 @@ function computeResourceDelta(
 }
 
 // ---------------------------------------------------------------------------
-// Default export — wires route params, era pack stub, and bardo navigation.
+// Default export — wires route params, era pack loader, and bardo navigation.
 // ---------------------------------------------------------------------------
 
 /**
- * Era pack loader stub.
+ * Resolve the era pack for a life, falling back to null on failure.
  *
- * The real `loadEraPack` (todo 12) validates with Zod and reads from
- * `src/content/packs/<era>/pack.json5`. Until that lands, this stub returns
- * `null` and the Act phase renders its "no events for this era yet" fallback
- * so the bardo/cross-life flow can still be exercised.
+ * The loader is synchronous (registry is bundled at build time). On failure
+ * we log in dev and return null so the no-era fallback renders rather than
+ * white-screening — a content bug should never crash the route.
  */
-function loadEraPackStub(_era: EraId): EraPack | null {
-  return null;
+function resolveEraPack(era: EraId): EraPack | null {
+  try {
+    return loadEraPack(era);
+  } catch (err) {
+    if (readDevFlag()) {
+      console.error('[life] loadEraPack failed:', err);
+    }
+    return null;
+  }
 }
 
 /** Build a placeholder initial life state from the route's lifeId. */
@@ -165,7 +172,10 @@ export default function LifeTurnScreen() {
   const { lifeId } = useLocalSearchParams<{ lifeId: string }>();
 
   const initialState = useMemo<LifeState>(() => createInitialLife(lifeId), [lifeId]);
-  const eraPack = useMemo<EraPack | null>(() => loadEraPackStub('tang-china' as EraId), []);
+  const eraPack = useMemo<EraPack | null>(
+    () => resolveEraPack(initialState.era),
+    [initialState.era],
+  );
 
   return (
     <TurnScreen

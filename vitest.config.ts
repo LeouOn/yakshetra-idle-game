@@ -2,8 +2,27 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vitest/config';
+import JSON5 from 'json5';
 
 const here = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Vite plugin: parse .json5 files into ES modules so
+ * `import x from './f.json5'` yields the parsed object.
+ *
+ * Mirrors the Metro transformer at scripts/json5-transformer.js so the same
+ * registry imports work under both bundlers.
+ */
+const json5Plugin = () => ({
+  name: 'yakshetra-json5',
+  transform(code: string, id: string): { code: string; map: null } | null {
+    if (!id.endsWith('.json5')) {
+      return null;
+    }
+    const parsed = JSON5.parse(code);
+    return { code: `export default ${JSON.stringify(parsed)};`, map: null };
+  },
+});
 
 export default defineConfig({
   resolve: {
@@ -11,6 +30,7 @@ export default defineConfig({
       '@': resolve(here, 'src'),
     },
   },
+  plugins: [json5Plugin()],
   test: {
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'node',

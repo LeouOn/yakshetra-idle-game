@@ -5,12 +5,14 @@ import { lintPack } from '../../../lint';
 import { loadEraPack } from '../../../loader';
 
 describe('Tang China era pack scaffold', () => {
-  test('loads with zero lint violations before events are added', async () => {
+  test('loads with the merged event graph and zero lint violations', async () => {
     const pack = await loadEraPack('tang-china');
     const report = lintPack(pack);
 
     expect(pack.id).toBe('tang-china@0.1.0');
-    expect(pack.events).toHaveLength(0);
+    // The loader merges events.json5 into the pack scaffold; before the
+    // registry integration this was 0 (the scaffold's default []).
+    expect(pack.events).toHaveLength(7);
     expect(report.violations).toHaveLength(0);
   });
 

@@ -11,7 +11,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createElement } from 'react';
 
-import type { EraPack } from '@/content/schema';
+import type { LoadedEraPack } from '@/content/loader';
 import { loadEraPack } from '@/content/loader';
 import { router } from 'expo-router';
 import LifeStartScreen from '../../../app/life/start';
@@ -30,11 +30,13 @@ vi.mock('@/ui/hooks/useSaveSlot', () => ({
 }));
 
 /**
- * Build a minimal valid EraPack fixture for the 'tang-china' era. The sids
- * (name_sid, lineage_notes_sid) resolve against the real en.json table; the
- * loader is mocked so schema/lint validation is not re-run here.
+ * Build a minimal valid LoadedEraPack fixture for the 'tang-china' era. The
+ * sids (name_sid, lineage_notes_sid) resolve against the real en.json table;
+ * the loader is mocked so schema/lint validation is not re-run here. The
+ * `endings` field is required by LoadedEraPack (the loader attaches it as a
+ * sibling to the schema-validated EraPack).
  */
-function makeFixturePack(overrides: Partial<EraPack> = {}): EraPack {
+function makeFixturePack(overrides: Partial<LoadedEraPack> = {}): LoadedEraPack {
   const event = (id: string) => ({
     id,
     weight: 1,
@@ -81,6 +83,7 @@ function makeFixturePack(overrides: Partial<EraPack> = {}): EraPack {
       description_sid: 'rule.default.description_sid',
       enforces: 'social-obligation',
     },
+    endings: [],
     ...overrides,
   };
 }
@@ -98,7 +101,7 @@ describe('LifeStartScreen', () => {
   });
 
   it('renders the era name, lineage notes, content warnings, and 3 role cards when a pack loads', async () => {
-    vi.mocked(loadEraPack).mockResolvedValue(makeFixturePack());
+    vi.mocked(loadEraPack).mockReturnValue(makeFixturePack());
 
     const { getByText, getByTextContent, getByTestID } = render(createElement(LifeStartScreen));
 
@@ -133,7 +136,7 @@ describe('LifeStartScreen', () => {
   });
 
   it('navigates to the life route with the roleId param when a role card is tapped', async () => {
-    vi.mocked(loadEraPack).mockResolvedValue(makeFixturePack());
+    vi.mocked(loadEraPack).mockReturnValue(makeFixturePack());
 
     const { getByTestID, press } = render(createElement(LifeStartScreen));
 
