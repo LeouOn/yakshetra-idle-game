@@ -21,7 +21,7 @@
       "content_warnings_empty_sid": "No content warnings recorded for this era.",
       "roles_heading_sid": "Choose your station",
       "role_select_label_sid": "Begin life as {role}",
-      "loading_sid": "Loading the era\u2026",
+      "loading_sid": "Loading the era…",
       "resume_hint_sid": "A save already exists for this chain.",
       "unavailable_heading_sid": "No eras available yet",
       "unavailable_body_sid": "Completing advisory onboarding (todo 0) before content authoring can begin.",
@@ -116,7 +116,7 @@
   },
   "era": {
     "tang-china": {
-      "name_sid": "Tang Dynasty Chang\u2019an",
+      "name_sid": "Tang Dynasty Chang’an",
       "lineage_notes_sid": "A cosmopolitan capital at the eastern end of the Silk Road, where monastic communities, merchant caravans, and farming villages meet along the Wei River valley.",
       "role": {
         "peasant": {
@@ -316,7 +316,7 @@
         },
         "hide_some": {
           "label_sid": "Hide a portion in the back of the storehouse",
-          "hint_sid": "You bury sacks beneath the millet and show the bailiff only part of what you have. The neighbors\u2019 glances when he leaves are not what they were before."
+          "hint_sid": "You bury sacks beneath the millet and show the bailiff only part of what you have. The neighbors’ glances when he leaves are not what they were before."
         },
         "petition": {
           "label_sid": "Walk to the county seat and petition for relief",
@@ -339,10 +339,10 @@
         }
       },
       "corrupt-donation-demand": {
-        "label_sid": "An older monastic in the precinct sends word: a substantial gift would \u201copen the door to advancement\u201d within the community. The framing is careful; the request is not.",
+        "label_sid": "An older monastic in the precinct sends word: a substantial gift would “open the door to advancement” within the community. The framing is careful; the request is not.",
         "give": {
           "label_sid": "Give what is asked",
-          "hint_sid": "You hand over the coin. The framing of \u201caccumulating merit\u201d sits uneasy \u2014 this game does not award such a thing; what remains is the gesture, the loss, and the question it left behind."
+          "hint_sid": "You hand over the coin. The framing of “accumulating merit” sits uneasy — this game does not award such a thing; what remains is the gesture, the loss, and the question it left behind."
         },
         "refuse_politely": {
           "label_sid": "Decline politely, with a small bow",
@@ -365,7 +365,7 @@
         },
         "pay_bribe": {
           "label_sid": "Pay the levy officer to strike his name from the list",
-          "hint_sid": "Three strings of coin in the officer\u2019s sleeve and your brother\u2019s name is written over. It is done; it is also done."
+          "hint_sid": "Three strings of coin in the officer’s sleeve and your brother’s name is written over. It is done; it is also done."
         }
       },
       "famine-year": {
@@ -502,13 +502,13 @@
   "ending": {
     "tang": {
       "old-age": {
-        "narrative_sid": "The seasons turned past counting. Your hands learned stillness before the rest of you did. One morning you did not rise to meet the work waiting in the yard. You died as you had lived \u2014 among the people and tasks that made the days recognizably days. The household carried your name forward into the seasons that followed, and the work you had tended did not stop with you."
+        "narrative_sid": "The seasons turned past counting. Your hands learned stillness before the rest of you did. One morning you did not rise to meet the work waiting in the yard. You died as you had lived — among the people and tasks that made the days recognizably days. The household carried your name forward into the seasons that followed, and the work you had tended did not stop with you."
       },
       "illness": {
         "narrative_sid": "The sickness came in the cold season and did not leave with it. Days shortened into long nights of thin breathing and the smell of medicinal tea gone cold on the stove. You said what last things could be said, and held what could not be spoken. You died before the plum buds opened. The household remembered the fever, and the silence that came after it settled into the rooms."
       },
       "violence": {
-        "narrative_sid": "It ended without warning. There was no time to gather what you had meant to do, no moment to finish the sentence you were halfway through speaking. The orders, or the road, or the constable\u2019s list \u2014 one of these found you before the day was over. You died. What you had been building stopped where it stood, and the people who depended on it learned that it had stopped."
+        "narrative_sid": "It ended without warning. There was no time to gather what you had meant to do, no moment to finish the sentence you were halfway through speaking. The orders, or the road, or the constable’s list — one of these found you before the day was over. You died. What you had been building stopped where it stood, and the people who depended on it learned that it had stopped."
       },
       "starvation": {
         "narrative_sid": "The grain ran out in the depth of winter. You measured what was left against the mouths that needed it, and the measuring did not save everyone. You grew thin beside them, slower each day, until standing took more than you had. You died knowing exactly who had eaten and who had not, and the weight of that knowing did not lighten as the light in the room dimmed."
@@ -519,19 +519,19 @@
         "narrative_sid": "The separate pattern that was you loosens into the Garden's larger rhythm. There is no fanfare, no destination named, no final word spoken. The stone bench where you sat grows quiet. What you carried settles where it falls; what you tended remains. The Garden continues, neither fuller nor emptier for your presence. The chain closes here, without a verdict and without a name for what you became."
       },
       "return": {
-        "narrative_sid": "You turn from the Garden's gate toward a road you cannot yet see. The echoes you carry \u2014 tendencies, attachments, the shape of a vow \u2014 travel with you as seeds, not as sentences. No destination is named; no promised land waits on the other side of the threshold. The next life, wherever it opens, will begin with what you brought. The chain continues beyond the edge of what the prototype can hold."
+        "narrative_sid": "You turn from the Garden's gate toward a road you cannot yet see. The echoes you carry — tendencies, attachments, the shape of a vow — travel with you as seeds, not as sentences. No destination is named; no promised land waits on the other side of the threshold. The next life, wherever it opens, will begin with what you brought. The chain continues beyond the edge of what the prototype can hold."
       },
       "vow-bound": {
-        "narrative_sid": "The life ends with a vow still broken. The words you spoke in an earlier turn \u2014 the promise, the commitment, the bond \u2014 remain unmet. The Garden does not punish what went unfinished; it does not forgive it either. The broken vow carries forward as a strong attachment echo, and the next chain begins with the weight of what was left unresolved pressing on its first choices."
+        "narrative_sid": "The life ends with a vow still broken. The words you spoke in an earlier turn — the promise, the commitment, the bond — remain unmet. The Garden does not punish what went unfinished; it does not forgive it either. The broken vow carries forward as a strong attachment echo, and the next chain begins with the weight of what was left unresolved pressing on its first choices."
       },
       "gardener-blessing": {
-        "narrative_sid": "The Gardener meets you at the edge where the Garden's pattern thins. Your attention has broken open more than once \u2014 enough that a different shape becomes possible. The Gardener does not name what you have become. A transformed vow is offered for the next chain: the old commitment, loosened and re-spoken, carried forward not as debt but as direction. Rare, and not repeated."
+        "narrative_sid": "The Gardener meets you at the edge where the Garden's pattern thins. Your attention has broken open more than once — enough that a different shape becomes possible. The Gardener does not name what you have become. A transformed vow is offered for the next chain: the old commitment, loosened and re-spoken, carried forward not as debt but as direction. Rare, and not repeated."
       }
     }
   },
   "lineage": {
     "fantasy": {
-      "notes_sid": "Excluded completely and by design, never appearing as characters, places, titles, or allegorical references anywhere in the Garden: Sukh\u0101vat\u012b, Abhirati, Vaid\u016bryanirbh\u0101sa, Amit\u0101bha, Ak\u1e63obhya, Vairocana, Ratnasambhava, Amoghasiddhi, Avalokite\u015bvara, Ma\u00f1ju\u015br\u012b, Samantabhadra, K\u1e63itigarbha, Mah\u0101sth\u0101mapr\u0101pta, T\u0101r\u0101, Maitreya.\n\nThe life that follows, set in the Garden of Arrivals, stands as original fiction inspired by Mah\u0101y\u0101na cosmological imagery. The Garden and the Gardener at the center of the Garden are inventions of the authors of the project, not a representation of any tradition's doctrine or sacred geography. The editorial choice to build an original cosmology rather than depict a named pure land was deliberate. Mah\u0101y\u0101na literature describes several pure lands, each associated with a specific Buddha and a living devotional tradition with practitioners today. To set a game on one of those lands would be to make claims about someone else's sacred geography \u2014 claims the project does not make and does not pretend to be equipped to make. The same caution applies to the great figures of the pantheon: none of the named Buddhas or great practitioners listed above appears here, and the Gardener does not represent any of them.\n\nThe Gardener, stated plainly, has no sutra provenance. The figure was written as an original allegorical character who tends the Garden and receives arriving beings, and the text never claims otherwise. The game does not imply that the Gardener holds a hidden identity or stands as a disguised version of a revered figure. The relationship the player has with the Gardener stays at the level of encounter: questions asked, griefs named, directions offered. The Gardener does not confer a transcendent status, does not adjudicate the life, and does not appear in the endings as a gatekeeper to a named destination.\n\nThe imagery the game does use \u2014 an abstract cosmic garden, stone benches, slow water, a bell that rings once, memory stones \u2014 was chosen because each evokes a contemplative atmosphere without mapping one-to-one onto any recognized devotional art form. There are no thangkas, no mandalas, no mantras, no mudr\u0101s, and no empowerments in the Garden. The Garden operates as a narrative space, not a doctrinal claim about what happens after death. The word that names the in-between state in some Tibetan traditions may appear in these lineage notes as a transparent acknowledgment of inspiration, but the diegetic voice of the game itself does not use that term; the game says 'the Garden' and 'the transition,' and leaves the rest unnamed.\n\nThe vow mechanic draws loose inspiration from the Mah\u0101y\u0101na concept of a commitment to work for the welfare of beings across lives, but the game does not simulate that commitment. A vow here acts as a narrative constraint: once declared, it gates certain choices and colors the echoes that carry into the next life. Breaking a vow produces a narrative consequence \u2014 the broken state carries forward as a strong attachment echo \u2014 not a metaphysical penalty. Transforming a vow, the rarest outcome, becomes available only when a pattern-break echo opens the way, and represents a genuine change of shape while care remains, not an escalation of rank.\n\nThe six lenses through which the player focuses each choice take their names from the six parami found across Mah\u0101y\u0101na and Therav\u0101da ethical literature: generosity, careful conduct, patient courage, joyful effort, collected attention, and discernment. These serve as framing devices for the player's intent, not as claims about the player's attainment. The engine records which lens the player chose and which root each action sprang from \u2014 care, greed, aversion, or delusion \u2014 and those records drive the cross-life echo system. There here no score, no meter, no rank, and no state called awakening, liberation, or realization. The game does not adjudicate whether a life was lived well; it only carries forward what remained unresolved.\n\nThe echoes that pass between lives \u2014 tendencies, attachments, vows, and pattern breaks \u2014 are game-design choices inspired loosely by the idea that action has consequences that persist. They are not a simulation of any doctrine. A tendency echo means the next life begins with a narrative tilt. An attachment echo means the next life begins with an unfinished grief. A pattern-break echo means the next life begins with the possibility of responding differently. None of these constitutes a reward or a punishment; all are narrative seeds for the next chapter.\n\nFor further reading on the doctrinal context the authors drew on for tone rather than for doctrine, see Paul Williams, Mah\u0101y\u0101na Buddhism: The Doctrinal Foundations, and David McMahan, The Making of Buddhist Modernism. The relationship of the project to these texts remains one of ambient inspiration and responsible distance, not of representation or authority. A full disclaimer accompanies the Garden life at first launch: the content of the Garden stands as original fiction, offered in good faith, and nothing here should be read as a teaching of any lineage, school, or teacher."
+      "notes_sid": "Excluded completely and by design, never appearing as characters, places, titles, or allegorical references anywhere in the Garden: Sukhāvatī, Abhirati, Vaidūryanirbhāsa, Amitābha, Akṣobhya, Vairocana, Ratnasambhava, Amoghasiddhi, Avalokiteśvara, Mañjuśrī, Samantabhadra, Kṣitigarbha, Mahāsthāmaprāpta, Tārā, Maitreya.\n\nThe life that follows, set in the Garden of Arrivals, stands as original fiction inspired by Mahāyāna cosmological imagery. The Garden and the Gardener at the center of the Garden are inventions of the authors of the project, not a representation of any tradition's doctrine or sacred geography. The editorial choice to build an original cosmology rather than depict a named pure land was deliberate. Mahāyāna literature describes several pure lands, each associated with a specific Buddha and a living devotional tradition with practitioners today. To set a game on one of those lands would be to make claims about someone else's sacred geography — claims the project does not make and does not pretend to be equipped to make. The same caution applies to the great figures of the pantheon: none of the named Buddhas or great practitioners listed above appears here, and the Gardener does not represent any of them.\n\nThe Gardener, stated plainly, has no sutra provenance. The figure was written as an original allegorical character who tends the Garden and receives arriving beings, and the text never claims otherwise. The game does not imply that the Gardener holds a hidden identity or stands as a disguised version of a revered figure. The relationship the player has with the Gardener stays at the level of encounter: questions asked, griefs named, directions offered. The Gardener does not confer a transcendent status, does not adjudicate the life, and does not appear in the endings as a gatekeeper to a named destination.\n\nThe imagery the game does use — an abstract cosmic garden, stone benches, slow water, a bell that rings once, memory stones — was chosen because each evokes a contemplative atmosphere without mapping one-to-one onto any recognized devotional art form. There are no thangkas, no mandalas, no mantras, no mudrās, and no empowerments in the Garden. The Garden operates as a narrative space, not a doctrinal claim about what happens after death. The word that names the in-between state in some Tibetan traditions may appear in these lineage notes as a transparent acknowledgment of inspiration, but the diegetic voice of the game itself does not use that term; the game says 'the Garden' and 'the transition,' and leaves the rest unnamed.\n\nThe vow mechanic draws loose inspiration from the Mahāyāna concept of a commitment to work for the welfare of beings across lives, but the game does not simulate that commitment. A vow here acts as a narrative constraint: once declared, it gates certain choices and colors the echoes that carry into the next life. Breaking a vow produces a narrative consequence — the broken state carries forward as a strong attachment echo — not a metaphysical penalty. Transforming a vow, the rarest outcome, becomes available only when a pattern-break echo opens the way, and represents a genuine change of shape while care remains, not an escalation of rank.\n\nThe six lenses through which the player focuses each choice take their names from the six parami found across Mahāyāna and Theravāda ethical literature: generosity, careful conduct, patient courage, joyful effort, collected attention, and discernment. These serve as framing devices for the player's intent, not as claims about the player's attainment. The engine records which lens the player chose and which root each action sprang from — care, greed, aversion, or delusion — and those records drive the cross-life echo system. There here no score, no meter, no rank, and no state called awakening, liberation, or realization. The game does not adjudicate whether a life was lived well; it only carries forward what remained unresolved.\n\nThe echoes that pass between lives — tendencies, attachments, vows, and pattern breaks — are game-design choices inspired loosely by the idea that action has consequences that persist. They are not a simulation of any doctrine. A tendency echo means the next life begins with a narrative tilt. An attachment echo means the next life begins with an unfinished grief. A pattern-break echo means the next life begins with the possibility of responding differently. None of these constitutes a reward or a punishment; all are narrative seeds for the next chapter.\n\nFor further reading on the doctrinal context the authors drew on for tone rather than for doctrine, see Paul Williams, Mahāyāna Buddhism: The Doctrinal Foundations, and David McMahan, The Making of Buddhist Modernism. The relationship of the project to these texts remains one of ambient inspiration and responsible distance, not of representation or authority. A full disclaimer accompanies the Garden life at first launch: the content of the Garden stands as original fiction, offered in good faith, and nothing here should be read as a teaching of any lineage, school, or teacher."
     }
   },
   "glossary": {
@@ -559,6 +559,13 @@
       "name_sid": "Test Era",
       "lineage_sid": "Lineage notes for the test era.",
       "rule_sid": "Test rule variation"
+    }
+  },
+  "card": {
+    "tang": {
+      "corrupt-donation-demand": {
+        "give_commodification_sid": "The master spoke of accumulating merit through giving. You gave what you could — but there is no cosmic ledger balancing your gift against your faults. The weight of what you have done remains what it is."
+      }
     }
   }
 }
