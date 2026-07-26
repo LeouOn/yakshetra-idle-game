@@ -16,20 +16,14 @@
  * - The lint is PURE rule-based regex/heuristic logic: no clock primitives,
  *   no RNG, no AI/LLM calls. Given the same pack + the same closed
  *   list file, {@link lintPack} is deterministic.
- * - The closed list is read once at module load from
- *   `advisory/prohibited-names.txt` (resolved against `process.cwd()`, which
- *   is the repo root under both vitest and the CLI). It is read with
- *   `node:fs/promises` via top-level await (the toolchain targets ESNext +
- *   `module: preserve`, which support it), then cached so repeated lint calls
- *   do not touch the filesystem.
+ * - The closed list is embedded as a TypeScript constant in
+ *   `./prohibited-names.ts` (browser-safe — no filesystem access at runtime).
  *
  * See `.omo/plans/buddhist-inspired-incremental-rpg.md` todo 5.
  */
 
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-
 import type { EffectOp, EraPack } from './schema';
+import { PROHIBITED_NAMES } from './prohibited-names';
 
 /* -------------------------------------------------------------------------------------------------
  * Public types
@@ -91,44 +85,14 @@ const DONATION_KEY_RE = /^(donation|alms|merit)_/;
 const HARM_WORDS_RE = /\b(kill|steal|lie|betray)\b/;
 
 /* -------------------------------------------------------------------------------------------------
- * Closed prohibited-names list (loaded once at module import)
+ * Closed prohibited-names list (embedded constant, no disk access)
  * -----------------------------------------------------------------------------------------------*/
 
-const PROHIBITED_NAMES_PATH = resolve(process.cwd(), 'advisory', 'prohibited-names.txt');
+/** The prohibited names — imported from the browser-safe TypeScript constant. */
+const prohibitedNames: readonly string[] = PROHIBITED_NAMES;
 
-/** Parsed entries from the closed list, or empty if the file failed to load. */
-let prohibitedNames: readonly string[] = [];
-
-/** Set when the closed list could not be read; reported fail-closed by R-NO-SACRED-NAMES. */
-let prohibitedNamesLoadError: string | undefined;
-
-/**
- * Parse the raw closed-list file into individual name entries.
- *
- * - One name per line.
- * - Blank lines are skipped.
- * - Lines whose first non-space character is `#` are comments and skipped.
- */
-function parseNameList(raw: string): string[] {
-  const out: string[] = [];
-  for (const line of raw.split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (trimmed.length === 0) continue;
-    if (trimmed.startsWith('#')) continue;
-    out.push(trimmed);
-  }
-  return out;
-}
-
-// Top-level await: read once, cache. Runs under vitest (node env) and tsc
-// (--noEmit, ESNext target). If the file is missing the lint fails closed.
-try {
-  const raw = await readFile(PROHIBITED_NAMES_PATH, 'utf8');
-  prohibitedNames = parseNameList(raw);
-} catch (err) {
-  prohibitedNames = [];
-  prohibitedNamesLoadError = err instanceof Error ? err.message : String(err);
-}
+/** Always undefined now — the embedded constant cannot fail to load. */
+const prohibitedNamesLoadError: string | undefined = undefined;
 
 /**
  * Build a single combined regex from the closed list. Uses Unicode
@@ -271,16 +235,6 @@ function checkNoKarmaMeter(pack: EraPack, out: LintViolation[]): void {
  * with Unicode letter boundaries. Fails closed if the list could not load.
  */
 function checkNoSacredNames(pack: EraPack, out: LintViolation[]): void {
-  if (prohibitedNamesLoadError !== undefined) {
-    out.push(
-      violation(
-        R_NO_SACRED_NAMES,
-        `closed prohibited-names list could not be loaded from disk (${prohibitedNamesLoadError}); cannot verify`,
-        PROHIBITED_NAMES_PATH,
-      ),
-    );
-    return;
-  }
   const re = buildNamesRegex(prohibitedNames);
   if (re === null) return;
 
