@@ -93,6 +93,98 @@ function collectChoices(events: readonly Event[]): readonly Choice[] {
   return out;
 }
 
+/**
+ * Lens-to-event mapping: which event ids each lens surfaces, per era.
+ *
+ * Each lens shows a DIFFERENT 2-3 event subset so the Intend choice is
+ * meaningful — without this every lens sees the full event graph and the
+ * parami choice becomes cosmetic (the first playtest's top complaint).
+ * Events may overlap across lenses (e.g. famine-year appears under both
+ * patient_courage and joyful_effort).
+ *
+ * Keyed by era id (the registry slug, e.g. 'tang-china'). Unknown eras
+ * and empty intersections fall back to the full event set — see
+ * {@link filterEventsForLens} — so the player is never stuck.
+ */
+const LENS_EVENTS_BY_ERA: Readonly<Record<string, Readonly<Record<Lens, readonly string[]>>>> = {
+  'tang-china': {
+    generosity: ['event:tang/sick-traveler', 'event:tang/child-illness'],
+    careful_conduct: ['event:tang/grain-requisition', 'event:tang/persecution-edict'],
+    patient_courage: ['event:tang/conscripted-brother', 'event:tang/famine-year'],
+    joyful_effort: ['event:tang/famine-year', 'event:tang/sick-traveler'],
+    collected_attention: ['event:tang/persecution-edict', 'event:tang/child-illness'],
+    discernment: ['event:tang/corrupt-donation-demand', 'event:tang/grain-requisition'],
+  },
+  'fantasy-mahayana': {
+    generosity: ['event:fantasy/soul-in-torment', 'event:fantasy/gardener-question'],
+    careful_conduct: ['event:fantasy/vow-reminder', 'event:fantasy/storm-at-edge'],
+    patient_courage: ['event:fantasy/offer-to-stay', 'event:fantasy/storm-at-edge'],
+    joyful_effort: ['event:fantasy/storm-at-edge', 'event:fantasy/forgotten-name'],
+    collected_attention: ['event:fantasy/forgotten-name', 'event:fantasy/gardener-question'],
+    discernment: [
+      'event:fantasy/gardener-question',
+      'event:fantasy/court-judgment',
+      'event:fantasy/vow-reminder',
+    ],
+  },
+};
+
+/**
+ * Apply the lens filter on top of the state-filtered events.
+ *
+ * If the chosen lens has a known event subset for the current era, only those
+ * events survive (intersected with whatever {@link filterEventsForState}
+ * already kept). We fall back to the full state-filtered set when:
+ *   - no lens is chosen yet (Intend phase),
+ *   - the era is not mapped in {@link LENS_EVENTS_BY_ERA},
+ *   - the lens has no mapped subset for this era, or
+ *   - the subset is empty after intersection (e.g. trigger predicates filtered
+ *     every candidate out) — so the player is never left without actions.
+ */
+function filterEventsForLens(
+  events: readonly Event[],
+  era: EraId,
+  lens: Lens | null,
+): readonly Event[] {
+  if (lens === null) {
+    return events;
+  }
+  const eraMapping = LENS_EVENTS_BY_ERA[String(era)];
+  if (eraMapping === undefined) {
+    return events;
+  }
+  const allowed = eraMapping[lens];
+  if (allowed === undefined || allowed.length === 0) {
+    return events;
+  }
+  const allowedSet = new Set(allowed);
+  const filtered = events.filter((evt) => allowedSet.has(evt.id));
+  return filtered.length === 0 ? events : filtered;
+}
+
+/**
+ * Resolve a role's localized display name from the era pack's starting_roles.
+ *
+ * Falls back to the raw role id when the pack has no matching role entry
+ * (e.g. test fixtures, or a role id that is not author-defined) so a content
+ * gap never crashes the Orient panel.
+ */
+function resolveRoleLabel(eraPack: EraPack | null, roleId: RoleId): string {
+  if (eraPack !== null && eraPack.starting_roles !== undefined) {
+    const id = String(roleId);
+    for (const role of eraPack.starting_roles) {
+      if (role.id === id) {
+        const sid = role.label_sid ?? role.title_sid;
+        if (sid !== undefined) {
+          return resolveSid(sid);
+        }
+        break;
+      }
+    }
+  }
+  return String(roleId);
+}
+
 /** Pull the intent root a choice springs from, falling back to `care`. */
 function findIntentRoot(choice: Choice): IntentRoot {
   for (const eff of choice.effects) {
@@ -275,7 +367,8 @@ function TurnScreenBody({ eraPack, onDeath }: TurnScreenBodyProps) {
     dispatch({ type: 'ADVANCE_TURN' });
   };
 
-  const visibleEvents = filterEventsForState(eraPack, state);
+  const stateEvents = filterEventsForState(eraPack, state);
+  const visibleEvents = filterEventsForLens(stateEvents, state.era, state.chosen_lens);
   const choices = collectChoices(visibleEvents);
   const noEra = eraPack === null;
 
@@ -351,13 +444,26 @@ interface OrientPanelProps {
 
 function OrientPanel({ state, eraPack }: OrientPanelProps) {
   const eraName = eraPack !== null ? resolveSid(eraPack.name_sid) : String(state.era);
-  const roleName = String(state.role);
+  const roleName = resolveRoleLabel(eraPack, state.role);
   const eraRole = formatSid('life.turn.orient_era_role_sid', {
     era: eraName,
     role: roleName,
   });
 
+  const ageRow = formatSid('life.turn.orient_age_row_sid', { n: state.age });
   const relationshipKeys = Object.keys(state.relationships);
+  const flagsCount = state.flags.size;
+  const flagsRow =
+    flagsCount === 0
+      ? resolveSid('life.turn.orient_flags_none_sid')
+      : formatSid('life.turn.orient_flags_row_sid', { n: flagsCount });
+
+  const lensRow =
+    state.chosen_lens === null
+      ? resolveSid('life.turn.orient_lens_focus_none_sid')
+      : formatSid('life.turn.orient_lens_focus_sid', {
+          lens: resolveSid(lensNameSid(state.chosen_lens)),
+        });
 
   return (
     <View style={styles.orient} accessibilityLabel={resolveSid('life.turn.orient_heading_sid')}>
@@ -366,6 +472,15 @@ function OrientPanel({ state, eraPack }: OrientPanelProps) {
       </Text>
       <Text testID="turn-orient-era-role" style={styles.body}>
         {eraRole}
+      </Text>
+      <Text testID="turn-orient-age" style={styles.body}>
+        {ageRow}
+      </Text>
+      <Text testID="turn-orient-flags" style={styles.body}>
+        {flagsRow}
+      </Text>
+      <Text testID="turn-orient-lens" style={styles.body}>
+        {lensRow}
       </Text>
       <Text style={styles.subheading}>{resolveSid('life.turn.orient_resources_label_sid')}</Text>
       <View style={styles.resourceGrid}>
