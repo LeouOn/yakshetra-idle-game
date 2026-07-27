@@ -36,10 +36,15 @@ function mergeEraPatch(state: LifeState, patch: Partial<LifeState>): LifeState {
   return { ...merged, resources: { ...state.resources, ...patchResources } };
 }
 
-/** Advance one turn. */
-export function advanceTurn(state: LifeState, rng: Rng, eraRules?: EraRules): LifeState {
+/**
+ * Advance exactly one tick's worth of bookkeeping: turn+1, time-1 (clamped at
+ * 0), cooldown-1, and fresh Set clones. Shared by both {@link advanceTurn}
+ * (decision mode, with optional era rules) and {@link advanceIdleTick} (idle
+ * mode, era-agnostic). Returns a NEW state.
+ */
+function baseTick(state: LifeState): LifeState {
   const nextTime = Math.max(0, (state.resources.time ?? 0) - 1);
-  const base: LifeState = {
+  return {
     ...state,
     flags: new Set(state.flags),
     fired_once_per_run: new Set(state.fired_once_per_run),
@@ -47,6 +52,21 @@ export function advanceTurn(state: LifeState, rng: Rng, eraRules?: EraRules): Li
     resources: { ...state.resources, time: nextTime },
     cooldowns: decrementAll(state.cooldowns),
   };
+}
+
+/**
+ * Advance one idle tick. Idle mode is era-agnostic — era-specific life-stage
+ * transitions happen in decision mode via {@link advanceTurn}'s `eraRules`
+ * hook. {@link simulateIdleTicks} calls this per tick so the single-tick
+ * bookkeeping stays owned in one place.
+ */
+export function advanceIdleTick(state: LifeState): LifeState {
+  return baseTick(state);
+}
+
+/** Advance one turn. */
+export function advanceTurn(state: LifeState, rng: Rng, eraRules?: EraRules): LifeState {
+  const base = baseTick(state);
   if (eraRules === undefined) {
     return base;
   }

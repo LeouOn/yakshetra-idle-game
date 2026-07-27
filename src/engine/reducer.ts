@@ -18,6 +18,13 @@ import type { IntentRoot, LifeState, ResourceId, SocialIdentity } from './types'
 import type { Rng } from './rng';
 import { evaluatePredicate } from './predicates';
 
+// IDLE_TICK action surface — the idle reducer lives in ./idle.ts (it needs the
+// schedule + practice modules). Re-exported here so consumers import all
+// reduction actions from one module. The reducer.ts <-> idle.ts edge is a
+// safe cycle: every cross-module binding is used inside function bodies only.
+export { reduceIdleTick, simulateIdleTicks } from './idle';
+export type { IdleTickAction } from './idle';
+
 /** Canonical starting resources for a fresh life (the six {@link ResourceId} keys). */
 const BASE_RESOURCES: Record<ResourceId, number> = {
   time: 100,

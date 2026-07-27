@@ -11,15 +11,20 @@ export type {
   Echo,
   EchoType,
   EffectOp,
+  Ending,
+  EngineMode,
   EraId,
   EraRules,
   Event,
+  IdleState,
+  IdleTickResult,
   IntentRoot,
   KarmaState,
   Lens,
   LifeId,
   LifeState,
   NextLifeSeed,
+  Practice,
   Predicate,
   ResourceId,
   RoleId,
@@ -27,11 +32,17 @@ export type {
   SocialIdentity,
 } from './types';
 
-export { applyChoice, applyEffect, applyEvent, createLifeState } from './reducer';
-export type { CreateLifeStateOptions } from './reducer';
+export { applyChoice, applyEffect, applyEvent, createLifeState, reduceIdleTick } from './reducer';
+export type { CreateLifeStateOptions, IdleTickAction } from './reducer';
 export { evaluatePredicate } from './predicates';
 export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './echo';
-export { advanceTurn } from './turn';
+export { advanceTurn, advanceIdleTick } from './turn';
+export {
+  createIdleState,
+  simulateIdleTicks,
+  applyPracticeEffects,
+  checkEndingTrigger,
+} from './idle';
 export { createRng } from './rng';
 export type { Rng } from './rng';
 export { canonicalStringify, deserializeSaveBlob, serializeSaveBlob, sha256 } from './serialize';

@@ -11,6 +11,8 @@
 // `src/content/schema.ts` (todo 4); the minimal forward declaration of `Choice`
 // here lets the engine compile standalone without depending on the content package.
 
+import type { Choice, EffectOp, Ending, Event, Predicate } from '@/content/schema';
+
 // ---------------------------------------------------------------------------
 // Deterministic RNG (implemented in todo 3 — ./rng-impl.ts + ./rng.ts)
 // ---------------------------------------------------------------------------
@@ -197,6 +199,66 @@ export interface SaveBlob {
 }
 
 // ---------------------------------------------------------------------------
+// Idle-mode types (idle tick reducer)
+// ---------------------------------------------------------------------------
+//
+// The engine alternates between two modes: idle (time passes, the daily
+// schedule drives practice) and decision (the player picks a choice). Idle
+// state is tracked separately from LifeState so the within-life reducer stays
+// focused on choice/event application.
+
+/** The engine can be in idle mode (time passing) or decision mode (player chooses). */
+export type EngineMode = 'idle' | 'decision';
+
+/** State specific to idle mode. */
+export interface IdleState {
+  readonly mode: EngineMode;
+  /** The last absolute tick we simulated up to (0 at life start). */
+  readonly lastSimulatedTick: bigint;
+  /** Cumulative idle ticks simulated across this life. */
+  readonly totalIdleTicks: bigint;
+}
+
+/**
+ * A practice is a recurring activity that progresses over idle time. Practices
+ * are content data: the engine never mutates them; {@link IdleTickResult}
+ * reports the deltas so the caller can construct new Practice values.
+ */
+export interface Practice {
+  readonly id: string;
+  readonly label_sid: string;
+  readonly description_sid: string;
+  /** Which parami lens this practice belongs to. */
+  readonly lens: Lens;
+  /** Progress added per simulated tick (may be fractional). */
+  readonly progressPerTick: number;
+  /** Progress required to advance one level. */
+  readonly maxProgress: number;
+  /** Progress accumulated so far. */
+  readonly currentProgress: number;
+  /** Current practice level. */
+  readonly level: number;
+  /** Effects folded into state on each tick while this practice is active. */
+  readonly effects: readonly EffectOp[];
+}
+
+/** Result of simulating a batch of idle ticks. */
+export interface IdleTickResult {
+  readonly ticksSimulated: bigint;
+  /** Cumulative resource deltas produced by practice effects (raw, pre-clamp). */
+  readonly resourcesGained: Partial<Record<ResourceId, number>>;
+  readonly practicesAdvanced: readonly {
+    readonly id: string;
+    readonly progressGained: number;
+    readonly leveledUp: boolean;
+  }[];
+  /** Event ids fired by `trigger_event` effects during simulation. */
+  readonly eventsTriggered: readonly string[];
+  /** Ending id if a life-ending trigger matched (halts simulation). */
+  readonly endingTriggered: string | null;
+}
+
+// ---------------------------------------------------------------------------
 // Content-schema shapes (canonical Zod types, re-exported type-only from todo 4)
 // ---------------------------------------------------------------------------
 //
@@ -206,4 +268,4 @@ export interface SaveBlob {
 // (zod is already a declared engine dependency; nothing from react/rn/expo or
 // the wall clock / global rng leaks in).
 
-export type { Choice, EffectOp, Event, Predicate } from '@/content/schema';
+export type { Choice, EffectOp, Ending, Event, Predicate };
