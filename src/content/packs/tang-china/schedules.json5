@@ -1,0 +1,63 @@
+{
+  // Tang China daily schedules — sequences of named ScheduleBlocks covering
+  // a full day. The engine's set_schedule effect op switches the active
+  // DailySchedule on a life; each block points at a practice_id (or null for
+  // a free/rest block).
+  //
+  // Hours are 0..24 integer; blocks may overlap or leave gaps at the
+  // schema level (the schema validates shape, not coverage — that is a
+  // future lint concern).
+
+  schedules: [
+    // ──────────────────────────────────────────────────────────────────────
+    // Monastic day — pre-dawn sitting, morning alms, midday work, evening
+    // reflection, night rest.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:tang/monastic-day',
+      name_sid: 'tang.schedule.monastic_day.name_sid',
+      blocks: [
+        {
+          id: 'block:tang/monastic-day/pre-dawn',
+          label_sid: 'tang.block.monastic_day.pre_dawn.label_sid',
+          startHour: 4,
+          endHour: 6,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.monastic_day.pre_dawn.icon_sid',
+        },
+        {
+          id: 'block:tang/monastic-day/morning-alms',
+          label_sid: 'tang.block.monastic_day.morning_alms.label_sid',
+          startHour: 6,
+          endHour: 11,
+          practice_id: 'practice:tang/alms-round',
+          icon_sid: 'tang.block.monastic_day.morning_alms.icon_sid',
+        },
+        {
+          id: 'block:tang/monastic-day/midday-work',
+          label_sid: 'tang.block.monastic_day.midday_work.label_sid',
+          startHour: 11,
+          endHour: 17,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.monastic_day.midday_work.icon_sid',
+        },
+        {
+          id: 'block:tang/monastic-day/evening-reflection',
+          label_sid: 'tang.block.monastic_day.evening_reflection.label_sid',
+          startHour: 17,
+          endHour: 20,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.monastic_day.evening_reflection.icon_sid',
+        },
+        {
+          id: 'block:tang/monastic-day/night-rest',
+          label_sid: 'tang.block.monastic_day.night_rest.label_sid',
+          startHour: 20,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.monastic_day.night_rest.icon_sid',
+        },
+      ],
+    },
+  ],
+}

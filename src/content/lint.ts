@@ -8,7 +8,8 @@
  * the schema cannot reach — sacred names smuggled into a bibliographic
  * citation, a resource `key` named `karma`, a choice that pairs a harm
  * consequence with a donation "offset", a visible "merit meter" identifier,
- * or a real Sanskrit/Tibetan seed syllable embedded in glossary text.
+ * a real Sanskrit/Tibetan seed syllable embedded in glossary text, or a
+ * practice framed as a currency the player optimizes for.
  *
  * Both layers must pass for a content pack to ship.
  *
@@ -22,7 +23,7 @@
  * See `.omo/plans/buddhist-inspired-incremental-rpg.md` todo 5.
  */
 
-import type { EffectOp, EraPack } from './schema';
+import type { EffectOp, EraPack, Practice } from './schema';
 import { PROHIBITED_NAMES } from './prohibited-names';
 
 /* -------------------------------------------------------------------------------------------------
@@ -52,6 +53,7 @@ export const R_NO_SACRED_NAMES = 'R-NO-SACRED-NAMES' as const;
 export const R_NO_DONATION_OFFSET = 'R-NO-DONATION-OFFSET' as const;
 export const R_NO_VISIBLE_KARMA_METER = 'R-NO-VISIBLE-KARMA-METER' as const;
 export const R_NO_REAL_MANTRA = 'R-NO-REAL-MANTRA' as const;
+export const R_NO_PRACTICE_AS_CURRENCY = 'R-NO-PRACTICE-AS-CURRENCY' as const;
 
 /* -------------------------------------------------------------------------------------------------
  * Compiled patterns
@@ -83,6 +85,35 @@ const DONATION_KEY_RE = /^(donation|alms|merit)_/;
 
 /** Narrative-card sids whose name implies a harm action (weak heuristic). */
 const HARM_WORDS_RE = /\b(kill|steal|lie|betray)\b/;
+
+/* -------------------------------------------------------------------------------------------------
+ * R-NO-PRACTICE-AS-CURRENCY patterns
+ *
+ * A practice becomes a "currency" when its outputs read like a score the
+ * player optimizes for: a resource key named `merit_points`, a description
+ * that tells the player to "earn" or "bank" something, or a maxProgress that
+ * looks like a round "complete and cash in" target.
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Resource keys that reify a metaphysical score or money token inside a
+ * practice effect. Substring match, case-insensitive.
+ */
+const PRACTICE_CURRENCY_KEY_RE = /merit|karma|score|points|coin|gold/i;
+
+/**
+ * Player-facing verbs that frame the practice as accumulating or spending a
+ * balance. Word-boundary anchored so "earned" matches but "learns" does not.
+ */
+const PRACTICE_CURRENCY_LANG_RE =
+  /\b(earn\w*|accumulate\w*|bank\w*|spend\w*|invest\w*|return on)\b/i;
+
+/**
+ * Round maxProgress values that suggest a "complete and cash in" target. The
+ * list is intentionally tiny and exact: false-positives on arbitrary round
+ * numbers would drown the signal. Matches produce a WARNING, not an error.
+ */
+const ROUND_MAX_PROGRESS_VALUES: ReadonlySet<number> = new Set([100, 1000]);
 
 /* -------------------------------------------------------------------------------------------------
  * Closed prohibited-names list (embedded constant, no disk access)
@@ -180,6 +211,12 @@ function effectIdentifiers(eff: EffectOp): readonly string[] {
 
 function violation(rule: string, message: string, location?: string): LintViolation {
   const v: LintViolation = { rule, severity: 'error', message };
+  if (location !== undefined) v.location = location;
+  return v;
+}
+
+function warning(rule: string, message: string, location?: string): LintViolation {
+  const v: LintViolation = { rule, severity: 'warning', message };
   if (location !== undefined) v.location = location;
   return v;
 }
@@ -363,24 +400,99 @@ function checkNoRealMantra(pack: EraPack, out: LintViolation[]): void {
   }
 }
 
+/**
+ * R-NO-PRACTICE-AS-CURRENCY: a practice must not be framed as a currency or
+ * score the player optimizes for. Three signals, each producing its own
+ * violation so the author can fix them independently:
+ *
+ *  1. (error) An `add_resource` effect whose key matches `merit|karma|score|
+ *     points|coin|gold` — the practice is literally minting a metaphysical
+ *     or monetary token.
+ *  2. (warning) A `maxProgress` of exactly 100 or 1000 — round "complete and
+ *     cash in" targets. Warning, not error: legitimate progress curves may
+ *     land on these by coincidence.
+ *  3. (error) A description (resolved through the optional i18n map by
+ *     `description_sid`) that uses currency verbs: earn/accumulate/bank/
+ *     spend/invest/"return on". Skipped silently when the sid is absent from
+ *     the map — the lint cannot invent the prose.
+ *
+ * `practices` and `i18n` default to empty so callers that predate this rule
+ * continue to compile and behave identically.
+ */
+function checkNoPracticeAsCurrency(
+  practices: readonly Practice[],
+  i18n: Readonly<Record<string, string>>,
+  out: LintViolation[],
+): void {
+  for (const p of practices) {
+    for (const eff of p.effects) {
+      if (eff.op === 'add_resource' && PRACTICE_CURRENCY_KEY_RE.test(eff.key)) {
+        out.push(
+          violation(
+            R_NO_PRACTICE_AS_CURRENCY,
+            `practice "${p.id}" mints a currency-like token via add_resource key "${eff.key}"`,
+            `practices[${p.id}].effects[add_resource].key`,
+          ),
+        );
+      }
+    }
+    if (ROUND_MAX_PROGRESS_VALUES.has(p.maxProgress)) {
+      out.push(
+        warning(
+          R_NO_PRACTICE_AS_CURRENCY,
+          `practice "${p.id}" has round maxProgress=${p.maxProgress} (suggests "complete and cash in")`,
+          `practices[${p.id}].maxProgress`,
+        ),
+      );
+    }
+    const desc = i18n[p.description_sid];
+    if (desc !== undefined && PRACTICE_CURRENCY_LANG_RE.test(desc)) {
+      out.push(
+        violation(
+          R_NO_PRACTICE_AS_CURRENCY,
+          `practice "${p.id}" description uses currency language: "${desc}"`,
+          `practices[${p.id}].description_sid`,
+        ),
+      );
+    }
+  }
+}
+
 /* -------------------------------------------------------------------------------------------------
  * Entry point
  * -----------------------------------------------------------------------------------------------*/
 
 /**
- * Lint a parsed {@link EraPack} against all five prohibited-mechanics rules.
+ * Lint a parsed {@link EraPack} (plus optional practices and i18n strings)
+ * against all six prohibited-mechanics rules.
  *
- * @returns a {@link LintReport}; `passed` is `true` iff there are zero
- * violations. Deterministic: same pack + same closed-list file ⇒ same report.
+ * `practices` and `i18n` default to empty: callers that predate
+ * R-NO-PRACTICE-AS-CURRENCY continue to compile and produce identical reports.
+ * When practices are supplied, R-NO-PRACTICE-AS-CURRENCY scans each practice's
+ * effects, maxProgress, and (if the description_sid resolves through `i18n`)
+ * description prose for currency framing.
+ *
+ * `passed` is `true` iff there are zero ERROR-severity violations; WARNINGs
+ * (e.g. round maxProgress) are reported but do not fail the pack, so an author
+ * can ship a practice whose only finding is a suspicious-but-defensible round
+ * target without blocking integration.
+ *
+ * @returns a {@link LintReport}. Deterministic: same inputs ⇒ same report.
  */
-export function lintPack(pack: EraPack): LintReport {
+export function lintPack(
+  pack: EraPack,
+  practices: readonly Practice[] = [],
+  i18n: Readonly<Record<string, string>> = {},
+): LintReport {
   const violations: LintViolation[] = [];
   checkNoKarmaMeter(pack, violations);
   checkNoSacredNames(pack, violations);
   checkNoDonationOffset(pack, violations);
   checkNoVisibleKarmaMeter(pack, violations);
   checkNoRealMantra(pack, violations);
-  return { passed: violations.length === 0, violations };
+  checkNoPracticeAsCurrency(practices, i18n, violations);
+  const hasError = violations.some((v) => v.severity === 'error');
+  return { passed: !hasError, violations };
 }
 
 /** Read-only access to the loaded closed list (for self-check tooling/tests). */

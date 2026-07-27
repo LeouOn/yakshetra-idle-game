@@ -1,0 +1,52 @@
+{
+  // Fantasy Mahayana idle-mode practices — original allegorical activities
+  // tied to the six parami-inspired lenses.
+  //
+  // Same representation fence as the rest of the pack: no named sacred
+  // figures, no mantras, no doctrinal claims. The Gardener is an original
+  // allegorical figure, not a disguised sacred being.
+
+  practices: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Garden tending — careful conduct. Mindful work in the Garden's
+    // living hedge; small trust gain per tick.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/garden-tending',
+      label_sid: 'fantasy.practice.garden_tending.label_sid',
+      description_sid: 'fantasy.practice.garden_tending.description_sid',
+      lens: 'careful_conduct',
+      progressPerTick: 0.4,
+      maxProgress: 10,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Listening at the gate — discernment. Sit at the Garden's slow gate
+    // and listen to arriving travelers; grants the `patient-ear` skill.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/listening-at-the-gate',
+      label_sid: 'fantasy.practice.listening_at_the_gate.label_sid',
+      description_sid: 'fantasy.practice.listening_at_the_gate.description_sid',
+      lens: 'discernment',
+      progressPerTick: 0.3,
+      maxProgress: 9,
+      effects: [{ op: 'add_skill', key: 'patient-ear' }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Vow walking — patient courage. Walk the long path between the
+    // Garden's two fountains holding a vow in mind; restores energy.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/vow-walking',
+      label_sid: 'fantasy.practice.vow_walking.label_sid',
+      description_sid: 'fantasy.practice.vow_walking.description_sid',
+      lens: 'patient_courage',
+      progressPerTick: 0.35,
+      maxProgress: 11,
+      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+    },
+  ],
+}

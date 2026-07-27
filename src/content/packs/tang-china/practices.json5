@@ -1,0 +1,57 @@
+{
+  // Tang China idle-mode practices (six-lens daily activities).
+  //
+  // Each practice is an authored activity that progresses over idle ticks.
+  // The engine's runtime Practice type wraps this authored shape with mutable
+  // progress/level state. Practices never carry karma/merit deltas — they
+  // touch only mundane resources (trust, provisions, energy) and grant skills
+  // or set schedule overrides.
+  //
+  // Lens values are the six parami-inspired lenses fixed by the schema's enum.
+  // No named figures, no mantras, no doctrinal claims — same representation
+  // fence as the rest of the pack.
+
+  practices: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Alms round — generosity. Walk the morning route with the bowl;
+    // small trust gain per tick.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/alms-round',
+      label_sid: 'tang.practice.alms_round.label_sid',
+      description_sid: 'tang.practice.alms_round.description_sid',
+      lens: 'generosity',
+      progressPerTick: 0.5,
+      maxProgress: 10,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Sutra copying — joyful effort. Slow, careful brushwork; builds the
+    // `steady-hand` skill on completion.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/sutra-copying',
+      label_sid: 'tang.practice.sutra_copying.label_sid',
+      description_sid: 'tang.practice.sutra_copying.description_sid',
+      lens: 'joyful_effort',
+      progressPerTick: 0.25,
+      maxProgress: 8,
+      effects: [{ op: 'add_skill', key: 'steady-hand' }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Breath sitting — collected attention. Quiet seated stillness; a
+    // foundational practice available in every schedule.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/breath-sitting',
+      label_sid: 'tang.practice.breath_sitting.label_sid',
+      description_sid: 'tang.practice.breath_sitting.description_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.4,
+      maxProgress: 12,
+      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+    },
+  ],
+}

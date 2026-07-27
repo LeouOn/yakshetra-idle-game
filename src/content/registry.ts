@@ -19,14 +19,19 @@
 import tangPack from './packs/tang-china/pack.json5';
 import tangEvents from './packs/tang-china/events.json5';
 import tangEndings from './packs/tang-china/endings.json5';
+import tangPractices from './packs/tang-china/practices.json5';
+import tangSchedules from './packs/tang-china/schedules.json5';
 import fantasyPack from './packs/fantasy-mahayana/pack.json5';
 import fantasyEvents from './packs/fantasy-mahayana/events.json5';
 import fantasyEndings from './packs/fantasy-mahayana/endings.json5';
+import fantasyPractices from './packs/fantasy-mahayana/practices.json5';
+import fantasySchedules from './packs/fantasy-mahayana/schedules.json5';
 
 /**
- * A bundled era: the raw (unvalidated) pack scaffold, events file, and
- * endings file. The loader is responsible for validating and composing these
- * into a {@link LoadedEraPack}; the registry only carries the bytes.
+ * A bundled era: the raw (unvalidated) pack scaffold, events file, endings
+ * file, practices file, and schedules file. The loader is responsible for
+ * validating and composing these into a {@link LoadedEraPack}; the registry
+ * only carries the bytes.
  */
 export interface EraBundle {
   /** Parsed pack.json5 contents. */
@@ -35,6 +40,10 @@ export interface EraBundle {
   readonly events: unknown;
   /** Parsed endings.json5 contents (shape: `{ endings: unknown[] }`). */
   readonly endings: unknown;
+  /** Parsed practices.json5 contents (shape: `{ practices: unknown[] }`). */
+  readonly practices: unknown;
+  /** Parsed schedules.json5 contents (shape: `{ schedules: unknown[] }`). */
+  readonly schedules: unknown;
 }
 
 const REGISTRY: Readonly<Record<string, EraBundle>> = {
@@ -42,11 +51,15 @@ const REGISTRY: Readonly<Record<string, EraBundle>> = {
     pack: tangPack,
     events: tangEvents,
     endings: tangEndings,
+    practices: tangPractices,
+    schedules: tangSchedules,
   },
   'fantasy-mahayana': {
     pack: fantasyPack,
     events: fantasyEvents,
     endings: fantasyEndings,
+    practices: fantasyPractices,
+    schedules: fantasySchedules,
   },
 };
 

@@ -1,0 +1,60 @@
+{
+  // Fantasy Mahayana daily schedules — sequences of named ScheduleBlocks
+  // covering a full day in the Garden of Arrivals.
+  //
+  // Hours are 0..24 integer; the schema validates shape (block bounds and
+  // sid format), not coverage.
+
+  schedules: [
+    // ──────────────────────────────────────────────────────────────────────
+    // Garden day — dawn listening, morning tending, midday rest, afternoon
+    // vow walk, evening reflection.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:fantasy/garden-day',
+      name_sid: 'fantasy.schedule.garden_day.name_sid',
+      blocks: [
+        {
+          id: 'block:fantasy/garden-day/dawn-listening',
+          label_sid: 'fantasy.block.garden_day.dawn_listening.label_sid',
+          startHour: 5,
+          endHour: 8,
+          practice_id: 'practice:fantasy/listening-at-the-gate',
+          icon_sid: 'fantasy.block.garden_day.dawn_listening.icon_sid',
+        },
+        {
+          id: 'block:fantasy/garden-day/morning-tending',
+          label_sid: 'fantasy.block.garden_day.morning_tending.label_sid',
+          startHour: 8,
+          endHour: 12,
+          practice_id: 'practice:fantasy/garden-tending',
+          icon_sid: 'fantasy.block.garden_day.morning_tending.icon_sid',
+        },
+        {
+          id: 'block:fantasy/garden-day/midday-rest',
+          label_sid: 'fantasy.block.garden_day.midday_rest.label_sid',
+          startHour: 12,
+          endHour: 15,
+          practice_id: null,
+          icon_sid: 'fantasy.block.garden_day.midday_rest.icon_sid',
+        },
+        {
+          id: 'block:fantasy/garden-day/afternoon-vow-walk',
+          label_sid: 'fantasy.block.garden_day.afternoon_vow_walk.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:fantasy/vow-walking',
+          icon_sid: 'fantasy.block.garden_day.afternoon_vow_walk.icon_sid',
+        },
+        {
+          id: 'block:fantasy/garden-day/evening-reflection',
+          label_sid: 'fantasy.block.garden_day.evening_reflection.label_sid',
+          startHour: 19,
+          endHour: 22,
+          practice_id: 'practice:fantasy/listening-at-the-gate',
+          icon_sid: 'fantasy.block.garden_day.evening_reflection.icon_sid',
+        },
+      ],
+    },
+  ],
+}

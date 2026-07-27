@@ -1,12 +1,14 @@
 // Era pack loader — the runtime entry point for content packs.
 //
-// Reads pack + events + endings from the statically-bundled registry
-// (./registry), merges the events array into the pack scaffold, validates the
-// merged pack against EraPackSchema (the first enforcement layer), runs
-// lintPack (the second, textual layer), then validates the endings standalone
-// against EndingSchema and attaches them as a sibling field. The schema is
-// strict and intentionally has no `endings` key — endings are a separate
-// artifact per plan todo 18.
+// Reads pack + events + endings + practices + schedules from the
+// statically-bundled registry (./registry), merges the events array into the
+// pack scaffold, validates the merged pack against EraPackSchema (the first
+// enforcement layer), runs lintPack (the second, textual layer), then
+// validates the endings, practices, and schedules standalone against their
+// respective schemas and attaches them as sibling fields. EraPackSchema is
+// strict and intentionally carries none of these as keys — each is a
+// separate artifact (endings per plan todo 18; practices/schedules per the
+// idle-mode todo).
 //
 // This is a PURE, SYNCHRONOUS loader: the registry is bundled at build time
 // (Metro for web/native, Vite for vitest), so there is no disk read and no
@@ -17,19 +19,34 @@
 
 import { lintPack } from './lint';
 import { getEraBundle, hasEraBundle, listEraIds } from './registry';
-import { EndingSchema, EraPackSchema, type Ending, type EraPack } from './schema';
+import {
+  DailyScheduleSchema,
+  EndingSchema,
+  EraPackSchema,
+  PracticeSchema,
+  type Ending,
+  type EraPack,
+  type Practice,
+  type DailySchedule,
+} from './schema';
 
 /**
  * The loaded era pack: the schema-validated {@link EraPack} (with the events
- * array from events.json5 merged in) plus the endings array from endings.json5.
+ * array from events.json5 merged in) plus the endings, practices, and
+ * schedules arrays from their sibling files.
  *
- * `endings` is a sibling field rather than a key on `EraPack` because the
- * schema's strict object check rejects unknown keys; endings are validated
- * standalone (the same pattern events used before this loader merged them).
+ * `endings`, `practices`, and `schedules` are sibling fields rather than keys
+ * on `EraPack` because the schema's strict object check rejects unknown keys;
+ * they are validated standalone (the same pattern events used before this
+ * loader merged them) and attached post-validation.
  */
 export interface LoadedEraPack extends EraPack {
   /** The era's death/transition endings, validated against EndingSchema. */
   readonly endings: readonly Ending[];
+  /** The era's idle-mode practices, validated against PracticeSchema. */
+  readonly practices: readonly Practice[];
+  /** The era's daily schedules, validated against DailyScheduleSchema. */
+  readonly schedules: readonly DailySchedule[];
 }
 
 /**
@@ -75,6 +92,36 @@ function extractEndingsArray(raw: unknown, eraId: string, filename: string): unk
     return (raw as { endings: unknown[] }).endings;
   }
   throw new Error(`loadEraPack("${eraId}"): ${filename} must be an object with an "endings" array`);
+}
+
+/** Pull the `practices` array out of a practices.json5 shape: `{ practices: [...] }`. */
+function extractPracticesArray(raw: unknown, eraId: string, filename: string): unknown[] {
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    'practices' in raw &&
+    Array.isArray((raw as { practices: unknown }).practices)
+  ) {
+    return (raw as { practices: unknown[] }).practices;
+  }
+  throw new Error(
+    `loadEraPack("${eraId}"): ${filename} must be an object with a "practices" array`,
+  );
+}
+
+/** Pull the `schedules` array out of a schedules.json5 shape: `{ schedules: [...] }`. */
+function extractSchedulesArray(raw: unknown, eraId: string, filename: string): unknown[] {
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    'schedules' in raw &&
+    Array.isArray((raw as { schedules: unknown }).schedules)
+  ) {
+    return (raw as { schedules: unknown[] }).schedules;
+  }
+  throw new Error(
+    `loadEraPack("${eraId}"): ${filename} must be an object with a "schedules" array`,
+  );
 }
 
 /**
@@ -129,8 +176,22 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     );
   }
 
+  // --- Practices validation (before lint so R-NO-PRACTICE-AS-CURRENCY can
+  // scan the typed array alongside the pack) --------------------------------
+  const practicesArray = extractPracticesArray(bundle.practices, eraId, 'practices.json5');
+  const practicesResult = PracticeSchema.array().safeParse(practicesArray);
+  if (!practicesResult.success) {
+    const firstIssue = practicesResult.error.issues[0];
+    const fieldPath = firstIssue?.path.join('.') || '(root)';
+    throw new Error(
+      `loadEraPack("${eraId}"): practices schema validation failed at "${fieldPath}": ${
+        firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
   // --- Lint (second enforcement layer) -------------------------------------
-  const lintReport = lintPack(parsedResult.data);
+  const lintReport = lintPack(parsedResult.data, practicesResult.data);
   if (!lintReport.passed) {
     const first = lintReport.violations[0];
     throw new Error(
@@ -157,5 +218,23 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     );
   }
 
-  return { ...parsedResult.data, endings: endingsResult.data };
+  // --- Schedules validation ------------------------------------------------
+  const schedulesArray = extractSchedulesArray(bundle.schedules, eraId, 'schedules.json5');
+  const schedulesResult = DailyScheduleSchema.array().safeParse(schedulesArray);
+  if (!schedulesResult.success) {
+    const firstIssue = schedulesResult.error.issues[0];
+    const fieldPath = firstIssue?.path.join('.') || '(root)';
+    throw new Error(
+      `loadEraPack("${eraId}"): schedules schema validation failed at "${fieldPath}": ${
+        firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
+  return {
+    ...parsedResult.data,
+    endings: endingsResult.data,
+    practices: practicesResult.data,
+    schedules: schedulesResult.data,
+  };
 }

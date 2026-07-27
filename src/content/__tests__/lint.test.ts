@@ -10,11 +10,12 @@ import {
   lintPack,
   R_NO_DONATION_OFFSET,
   R_NO_KARMA_METER,
+  R_NO_PRACTICE_AS_CURRENCY,
   R_NO_REAL_MANTRA,
   R_NO_SACRED_NAMES,
   R_NO_VISIBLE_KARMA_METER,
 } from '../lint';
-import { EraPackSchema, type EraPack } from '../schema';
+import { EraPackSchema, PracticeSchema, type EraPack } from '../schema';
 
 /**
  * Prohibited-mechanics lint tests (plan todo 5).
@@ -220,6 +221,105 @@ describe('R-NO-REAL-MANTRA', () => {
     const pack = await loadFixture('real-mantra-pass');
     pack.glossary['greeting'] = { en: 'welcome to the monastery' };
     const report = lintPack(pack);
+    expect(report.passed).toBe(true);
+  });
+});
+
+describe('R-NO-PRACTICE-AS-CURRENCY', () => {
+  test('FAIL — a practice with add_resource key "merit_points" is flagged', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const practice = PracticeSchema.parse({
+      id: 'chanting',
+      label_sid: 'practice.chanting.label_sid',
+      description_sid: 'practice.chanting.desc_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.5,
+      maxProgress: 10,
+      effects: [{ op: 'add_resource', key: 'merit_points', delta: 1 }],
+    });
+    const report = lintPack(pack, [practice]);
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toContain(R_NO_PRACTICE_AS_CURRENCY);
+    // Isolation contract: existing rules scan pack.events only; an external
+    // practices array must not bleed into R-NO-KARMA-METER even when the
+    // resource key contains the substring "merit".
+    expect(ruleIds(report)).toEqual([R_NO_PRACTICE_AS_CURRENCY]);
+    expect(report.violations[0]!.message).toContain('merit_points');
+    expect(report.violations[0]!.location).toBe('practices[chanting].effects[add_resource].key');
+  });
+
+  test('FAIL — a practice description containing "earn merit" is flagged', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const practice = PracticeSchema.parse({
+      id: 'sutra-copy',
+      label_sid: 'practice.sutra_copy.label_sid',
+      description_sid: 'practice.sutra_copy.desc_sid',
+      lens: 'joyful_effort',
+      progressPerTick: 0.25,
+      maxProgress: 40,
+      effects: [],
+    });
+    const i18n = { 'practice.sutra_copy.desc_sid': 'Earn merit by copying sacred texts.' };
+    const report = lintPack(pack, [practice], i18n);
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toContain(R_NO_PRACTICE_AS_CURRENCY);
+    expect(ruleIds(report)).toEqual([R_NO_PRACTICE_AS_CURRENCY]);
+  });
+
+  test('PASS — a normal practice (no currency framing) lints clean', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const practice = PracticeSchema.parse({
+      id: 'alms-round',
+      label_sid: 'practice.alms_round.label_sid',
+      description_sid: 'practice.alms_round.desc_sid',
+      lens: 'generosity',
+      progressPerTick: 0.5,
+      maxProgress: 12,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    });
+    const i18n = {
+      'practice.alms_round.desc_sid': 'Walk the morning route accepting offered food.',
+    };
+    const report = lintPack(pack, [practice], i18n);
+    expect(report.passed).toBe(true);
+    expect(report.violations).toEqual([]);
+  });
+
+  test('lintPack integration — the rule runs alongside the existing five', async () => {
+    const cleanReport = lintPack(await loadFixture('karma-meter-pass'));
+    expect(cleanReport.passed).toBe(true);
+    const withCurrency = lintPack(await loadFixture('karma-meter-pass'), [
+      PracticeSchema.parse({
+        id: 'greed',
+        label_sid: 'practice.greed.label_sid',
+        description_sid: 'practice.greed.desc_sid',
+        lens: 'generosity',
+        progressPerTick: 1,
+        maxProgress: 50,
+        effects: [{ op: 'add_resource', key: 'gold', delta: 5 }],
+      }),
+    ]);
+    expect(withCurrency.passed).toBe(false);
+    expect(ruleIds(withCurrency)).toContain(R_NO_PRACTICE_AS_CURRENCY);
+  });
+
+  test('warning severity — a round maxProgress of 1000 is flagged but does not fail the pack', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const practice = PracticeSchema.parse({
+      id: 'grand-quest',
+      label_sid: 'practice.grand_quest.label_sid',
+      description_sid: 'practice.grand_quest.desc_sid',
+      lens: 'patient_courage',
+      progressPerTick: 1,
+      maxProgress: 1000,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    });
+    const report = lintPack(pack, [practice]);
+    // Warning present, but no error ⇒ pack still passes.
+    const currencyFindings = report.violations.filter((v) => v.rule === R_NO_PRACTICE_AS_CURRENCY);
+    expect(currencyFindings).toHaveLength(1);
+    expect(currencyFindings[0]!.severity).toBe('warning');
+    expect(currencyFindings[0]!.location).toBe('practices[grand-quest].maxProgress');
     expect(report.passed).toBe(true);
   });
 });

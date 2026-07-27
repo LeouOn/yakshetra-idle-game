@@ -33,10 +33,13 @@ vi.mock('@/ui/hooks/useSaveSlot', () => ({
  * Build a minimal valid LoadedEraPack fixture for the 'tang-china' era. The
  * sids (name_sid, lineage_notes_sid) resolve against the real en.json table;
  * the loader is mocked so schema/lint validation is not re-run here. The
- * `endings` field is required by LoadedEraPack (the loader attaches it as a
- * sibling to the schema-validated EraPack).
+ * `endings`, `practices`, and `schedules` fields are required by LoadedEraPack
+ * (the loader attaches them as siblings to the schema-validated EraPack) but
+ * unused by the LifeStart screen, so empty arrays suffice.
  */
-function makeFixturePack(overrides: Partial<LoadedEraPack> = {}): LoadedEraPack {
+function makeFixturePack(
+  overrides: Partial<Omit<LoadedEraPack, 'endings' | 'practices' | 'schedules'>> = {},
+): LoadedEraPack {
   const event = (id: string) => ({
     id,
     weight: 1,
@@ -84,6 +87,8 @@ function makeFixturePack(overrides: Partial<LoadedEraPack> = {}): LoadedEraPack 
       enforces: 'social-obligation',
     },
     endings: [],
+    practices: [],
+    schedules: [],
     ...overrides,
   };
 }
