@@ -72,6 +72,8 @@ export function createLifeState(opts: CreateLifeStateOptions): LifeState {
     history: [],
     fired_once_per_run: new Set<string>(),
     pending_events: [],
+    schedule_id: null,
+    practice_override_id: null,
   };
 }
 
@@ -88,7 +90,7 @@ function clampNonNegative(n: number): number {
 /**
  * Apply a single {@link EffectOp}, returning a NEW state.
  *
- * The `_rng` slot is reserved for future stochastic effects; none of the nine
+ * The `_rng` slot is reserved for future stochastic effects; none of the eleven
  * current ops consume it, so the pipeline stays deterministic today.
  */
 export function applyEffect(state: LifeState, effect: EffectOp, _rng: Rng): LifeState {
@@ -149,6 +151,10 @@ export function applyEffect(state: LifeState, effect: EffectOp, _rng: Rng): Life
       };
     case 'narrative_card':
       return { ...state, last_narrative_sid: effect.card_sid };
+    case 'set_schedule':
+      return { ...state, schedule_id: effect.schedule_id };
+    case 'set_practice_override':
+      return { ...state, practice_override_id: effect.practice_id };
     default: {
       const _exhaustive: never = effect;
       throw new Error(`applyEffect: unhandled op ${String(_exhaustive)}`);

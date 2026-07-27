@@ -167,6 +167,10 @@ function effectIdentifiers(eff: EffectOp): readonly string[] {
       return [eff.intent_root];
     case 'narrative_card':
       return [eff.card_sid];
+    case 'set_schedule':
+      return [eff.schedule_id];
+    case 'set_practice_override':
+      return eff.practice_id === null ? [] : [eff.practice_id];
   }
 }
 

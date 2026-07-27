@@ -13,6 +13,8 @@
 
 import type { Choice, EffectOp, Ending, Event, Predicate } from '@/content/schema';
 
+import type { CalendarComponents } from './calendar';
+
 // ---------------------------------------------------------------------------
 // Deterministic RNG (implemented in todo 3 — ./rng-impl.ts + ./rng.ts)
 // ---------------------------------------------------------------------------
@@ -134,6 +136,17 @@ export interface LifeState {
   fired_once_per_run: Set<string>;
   /** Event ids queued by `trigger_event` effects, awaiting the turn loop. */
   pending_events: string[];
+  /** Active daily schedule id (null until a `set_schedule` effect fires). */
+  readonly schedule_id: string | null;
+  /** Active practice override id, or null to clear the override. */
+  readonly practice_override_id: string | null;
+  /**
+   * Wall-clock unix seconds of the player's last visit. Set by the offline
+   * catch-up layer (`./offline.ts`) when computing what happened while away;
+   * absent on a freshly created life (defaults to 0). Never read from the
+   * system clock inside the engine — the caller passes `nowUnix` in.
+   */
+  lastVisitedAtUnix?: number;
 }
 
 /**
@@ -197,6 +210,78 @@ export interface SaveBlob {
     current_life_index: number;
   };
 }
+
+// ---------------------------------------------------------------------------
+// Offline progress summary (consumed by ./offline.ts; referenced by SaveBlobV2)
+// ---------------------------------------------------------------------------
+//
+// Produced by the offline catch-up layer when the player closes the app and
+// reopens it later. Stored on the v0.2 blob as `pending_offline_summary` so
+// the UI can surface "while you were away, X happened" exactly once, then
+// clear it. Null when there is nothing to report.
+
+/**
+ * Summary of what happened while the player was away. Produced by the offline
+ * catch-up layer (`./offline.ts`) from an {@link IdleTickResult} plus the
+ * calendar snapshots bracketing the simulated span. Pure: no wall-clock or
+ * global-RNG reads — `nowUnix` and `rngSeed` are passed in by the caller.
+ *
+ * Field naming matches the source {@link IdleTickResult}; the SaveBlob v0.2
+ * envelope (see {@link SaveBlobV2}) uses snake_case for its own fields.
+ */
+export interface OfflineSummary {
+  readonly idleTicksSimulated: bigint;
+  readonly resourcesGained: Partial<Record<ResourceId, number>>;
+  readonly practicesAdvanced: readonly {
+    readonly id: string;
+    readonly progressGained: number;
+    readonly leveledUp: boolean;
+  }[];
+  readonly eventsTriggered: readonly string[];
+  readonly endingTriggered: string | null;
+  readonly calendarBefore: CalendarComponents;
+  readonly calendarAfter: CalendarComponents;
+}
+
+// ---------------------------------------------------------------------------
+// SaveBlob version 0.2 — idle mode (migration target)
+// ---------------------------------------------------------------------------
+
+/**
+ * SaveBlob version 0.2 — adds idle mode fields.
+ *
+ * Produced by migrating a 0.1 blob via {@link ./migration.ts migrateSaveBlob}
+ * or by the engine itself once idle mode has begun ticking. The three new
+ * fields are pure metadata for the idle system; the existing `chain` shape is
+ * unchanged so the within-life reducer and echo reducer keep reading it as
+ * before.
+ */
+export interface SaveBlobV2 {
+  readonly schema_version: '0.2';
+  readonly engine_compat: string;
+  readonly created_at_unix: number;
+  /** When the player last played. Defaults to created_at_unix on migration. */
+  readonly last_visited_at_unix: number;
+  /**
+   * Last absolute tick we simulated up to. Defaults to `0n` on migration; the
+   * idle system populates this on the first idle tick.
+   */
+  readonly last_simulated_tick: bigint;
+  readonly run_id: string;
+  readonly chain: {
+    life_states: LifeState[];
+    karma_state: KarmaState;
+    current_life_index: number;
+  };
+  /** Summary to show on return; null until the idle system computes one. */
+  readonly pending_offline_summary: OfflineSummary | null;
+}
+
+/**
+ * Any supported save blob, regardless of schema version. The migration layer
+ * accepts this union and resolves it to the current {@link SaveBlobV2}.
+ */
+export type AnySaveBlob = SaveBlob | SaveBlobV2;
 
 // ---------------------------------------------------------------------------
 // Idle-mode types (idle tick reducer)

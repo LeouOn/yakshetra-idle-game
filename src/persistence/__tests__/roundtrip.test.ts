@@ -100,6 +100,8 @@ function makeLife(opts: MakeLifeOptions = {}): LifeState {
     history,
     fired_once_per_run: new Set<string>(['evt-birth-complication']),
     pending_events: [],
+    schedule_id: null,
+    practice_override_id: null,
   };
 }
 

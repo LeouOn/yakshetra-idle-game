@@ -132,10 +132,24 @@ const NarrativeCardOpSchema = z
   })
   .strict();
 
+const SetScheduleOpSchema = z
+  .object({
+    op: z.literal('set_schedule'),
+    schedule_id: TokenSchema,
+  })
+  .strict();
+
+const SetPracticeOverrideOpSchema = z
+  .object({
+    op: z.literal('set_practice_override'),
+    practice_id: TokenSchema.nullable(),
+  })
+  .strict();
+
 /**
  * Discriminated union of all permitted effect operations.
  *
- * Intentionally narrow: there are exactly nine variants. Prohibited mechanics
+ * Intentionally narrow: there are exactly eleven variants. Prohibited mechanics
  * are absent by design.
  */
 export const EffectOpSchema = z.discriminatedUnion('op', [
@@ -148,6 +162,8 @@ export const EffectOpSchema = z.discriminatedUnion('op', [
   TriggerEventOpSchema,
   SetIntentRootOpSchema,
   NarrativeCardOpSchema,
+  SetScheduleOpSchema,
+  SetPracticeOverrideOpSchema,
 ]);
 
 export type EffectOp = z.infer<typeof EffectOpSchema>;
@@ -163,6 +179,8 @@ export const PERMITTED_EFFECT_OPS = [
   'trigger_event',
   'set_intent_root',
   'narrative_card',
+  'set_schedule',
+  'set_practice_override',
 ] as const;
 
 /* -------------------------------------------------------------------------------------------------
@@ -418,3 +436,67 @@ export const EndingSchema = z
   .strict();
 
 export type Ending = z.infer<typeof EndingSchema>;
+
+/* -------------------------------------------------------------------------------------------------
+ * Practice, ScheduleBlock, DailySchedule — idle-mode authored content.
+ *
+ * These describe the content packs' daily-rhythm data: a Practice is an
+ * authored activity that progresses over idle ticks (the engine's runtime
+ * Practice type in `./engine/types.ts` adds mutable progress/level state on
+ * top of this authored shape); a DailySchedule is a sequence of named
+ * ScheduleBlocks covering a full day.
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * The six parami-inspired lenses a Practice may belong to. Mirrors the
+ * {@link Lens} string-literal union in the engine without introducing a
+ * runtime dependency on the engine package.
+ */
+const PRACTICE_LENS_VALUES = [
+  'generosity',
+  'careful_conduct',
+  'patient_courage',
+  'joyful_effort',
+  'collected_attention',
+  'discernment',
+] as const;
+
+/** A practice is an activity that progresses over time. */
+export const PracticeSchema = z
+  .object({
+    id: TokenSchema,
+    label_sid: SidSchema,
+    description_sid: SidSchema,
+    lens: z.enum(PRACTICE_LENS_VALUES),
+    progressPerTick: z.number().positive(),
+    maxProgress: z.number().positive(),
+    effects: z.array(EffectOpSchema),
+  })
+  .strict();
+
+export type Practice = z.infer<typeof PracticeSchema>;
+
+/** A named period within a day. */
+export const ScheduleBlockSchema = z
+  .object({
+    id: TokenSchema,
+    label_sid: SidSchema,
+    startHour: z.number().int().min(0).max(23),
+    endHour: z.number().int().min(1).max(24),
+    practice_id: TokenSchema.nullable(),
+    icon_sid: SidSchema,
+  })
+  .strict();
+
+export type ScheduleBlock = z.infer<typeof ScheduleBlockSchema>;
+
+/** A full day's schedule. */
+export const DailyScheduleSchema = z
+  .object({
+    id: TokenSchema,
+    name_sid: SidSchema,
+    blocks: z.array(ScheduleBlockSchema).min(1),
+  })
+  .strict();
+
+export type DailySchedule = z.infer<typeof DailyScheduleSchema>;
