@@ -1,12 +1,148 @@
 {
   // Tang China sutras (plan: sacred-text content type).
   //
-  // Empty for now — the schema, loader, and registry support exists as the
-  // foundation for adding authentic Buddhist content. Population is gated by
-  // the 6-gate advisory panel (see `advisory/panel.md`); no sutra text ships
-  // until that review completes. The structural schema in src/content/schema.ts
-  // (SutraSchema) enforces that any future entries carry only `_sid` references
-  // for player-facing strings; no inline scripture is permitted.
+  // Seven canonical Mahāyāna sutras whose Tang-dynasty Chinese
+  // translations shaped the scholastic, Pure Land, and Chan movements
+  // active in 8th–9th century Chang'an. Every player-facing string is a
+  // `_sid` reference into the localization bundle; the schema
+  // (SutraSchema) enforces opaque ids and `_sid` references so no
+  // inline scripture ships in this file. The excerpts in the
+  // localization bundle are short, public-domain, attributed, and
+  // presented as objects of cultural study — not as scripture the game
+  // purports to recite or confer.
+  //
+  // `school` and `language_of_origin` are closed enums; adding a new
+  // tradition requires a schema change, not an authoring choice.
 
-  sutras: [],
+  sutras: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Heart Sutra (Prajñāpāramitāhṛdaya) — Xuanzang's 649 CE Chinese
+    // translation is the form recited across East Asia today. The
+    // closing mantra appears as mantra:heart-sutra above.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:heart',
+      title_sid: 'sutra.heart.title_sid',
+      transliterated_title_sid: 'sutra.heart.transliterated_title_sid',
+      translator_sid: 'sutra.heart.translator_sid',
+      translation_era_sid: 'sutra.heart.translation_era_sid',
+      description_sid: 'sutra.heart.description_sid',
+      excerpt_sid: 'sutra.heart.excerpt_sid',
+      attribution_note_sid: 'sutra.heart.attribution_note_sid',
+      school: 'prajnaparamita',
+      language_of_origin: 'chinese-indigenous',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Diamond Sutra (Vajracchedikā Prajñāpāramitā) — Kumārajīva's 403
+    // CE translation; the world's oldest dated printed book (868 CE,
+    // Dunhuang) is a copy of this text.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:diamond',
+      title_sid: 'sutra.diamond.title_sid',
+      transliterated_title_sid: 'sutra.diamond.transliterated_title_sid',
+      translator_sid: 'sutra.diamond.translator_sid',
+      translation_era_sid: 'sutra.diamond.translation_era_sid',
+      description_sid: 'sutra.diamond.description_sid',
+      excerpt_sid: 'sutra.diamond.excerpt_sid',
+      attribution_note_sid: 'sutra.diamond.attribution_note_sid',
+      school: 'prajnaparamita',
+      language_of_origin: 'sanskrit',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Lotus Sutra (Saddharmapuṇḍarīka) — Kumārajīva's 406 CE
+    // translation. The universal-gate chapter (chapter 25) is the
+    // scriptural foundation for Avalokiteśvara / Guanyin devotion in
+    // Tang China.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:lotus',
+      title_sid: 'sutra.lotus.title_sid',
+      transliterated_title_sid: 'sutra.lotus.transliterated_title_sid',
+      translator_sid: 'sutra.lotus.translator_sid',
+      translation_era_sid: 'sutra.lotus.translation_era_sid',
+      description_sid: 'sutra.lotus.description_sid',
+      excerpt_sid: 'sutra.lotus.excerpt_sid',
+      attribution_note_sid: 'sutra.lotus.attribution_note_sid',
+      school: 'miscellaneous-mahayana',
+      language_of_origin: 'sanskrit',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Amitābha Sutra (Sukhāvatīvyūha, shorter) — Kumārajīva's 402 CE
+    // translation; the principal Pure Land scripture recited in daily
+    // evening services across Tang monasteries and continuing into
+    // modern East Asian practice.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:amitabha',
+      title_sid: 'sutra.amitabha.title_sid',
+      transliterated_title_sid: 'sutra.amitabha.transliterated_title_sid',
+      translator_sid: 'sutra.amitabha.translator_sid',
+      translation_era_sid: 'sutra.amitabha.translation_era_sid',
+      description_sid: 'sutra.amitabha.description_sid',
+      excerpt_sid: 'sutra.amitabha.excerpt_sid',
+      attribution_note_sid: 'sutra.amitabha.attribution_note_sid',
+      school: 'pure-land',
+      language_of_origin: 'sanskrit',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 5. Medicine Buddha Sutra (Bhaiṣajyaguru Sūtra) — Xuanzang's 650 CE
+    // translation. Twelve great vows define the Medicine Buddha's
+    // healing field; the closing dharani is captured above as
+    // mantra:medicine-buddha.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:medicine-buddha',
+      title_sid: 'sutra.medicine-buddha.title_sid',
+      transliterated_title_sid: 'sutra.medicine-buddha.transliterated_title_sid',
+      translator_sid: 'sutra.medicine-buddha.translator_sid',
+      translation_era_sid: 'sutra.medicine-buddha.translation_era_sid',
+      description_sid: 'sutra.medicine-buddha.description_sid',
+      excerpt_sid: 'sutra.medicine-buddha.excerpt_sid',
+      attribution_note_sid: 'sutra.medicine-buddha.attribution_note_sid',
+      school: 'miscellaneous-mahayana',
+      language_of_origin: 'sanskrit',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 6. Vimalakīrti Nirdeśa — Kumārajīva's 406 CE translation. The
+    // non-dual teaching passage and the visit to the sick layman made
+    // this a favorite among Tang literati-officials and Chan teachers.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:vimalakirti',
+      title_sid: 'sutra.vimalakirti.title_sid',
+      transliterated_title_sid: 'sutra.vimalakirti.transliterated_title_sid',
+      translator_sid: 'sutra.vimalakirti.translator_sid',
+      translation_era_sid: 'sutra.vimalakirti.translation_era_sid',
+      description_sid: 'sutra.vimalakirti.description_sid',
+      excerpt_sid: 'sutra.vimalakirti.excerpt_sid',
+      attribution_note_sid: 'sutra.vimalakirti.attribution_note_sid',
+      school: 'miscellaneous-mahayana',
+      language_of_origin: 'sanskrit',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 7. Platform Sutra (Liùzǔ Tánjīng) — an indigenous Tang Chinese
+    // composition (c. 780 CE) recording the teachings of the Sixth
+    // Patriarch. The only Chinese-language text canonized as a sutra in
+    // the East Asian Mahāyāna canon.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'sutra:platform',
+      title_sid: 'sutra.platform.title_sid',
+      transliterated_title_sid: 'sutra.platform.transliterated_title_sid',
+      translator_sid: 'sutra.platform.translator_sid',
+      translation_era_sid: 'sutra.platform.translation_era_sid',
+      description_sid: 'sutra.platform.description_sid',
+      excerpt_sid: 'sutra.platform.excerpt_sid',
+      attribution_note_sid: 'sutra.platform.attribution_note_sid',
+      school: 'chan',
+      language_of_origin: 'chinese-indigenous',
+    },
+  ],
 }

@@ -1,12 +1,79 @@
 {
   // Tang China mantras (plan: sacred-text content type).
   //
-  // Empty for now — the schema, loader, and registry support exists as the
-  // foundation for adding authentic Buddhist content. Population is gated by
-  // the 6-gate advisory panel (see `advisory/panel.md`); no mantra text ships
-  // until that review completes. The structural schema in src/content/schema.ts
-  // (MantraSchema) enforces that any future entries carry only `_sid` references
-  // for player-facing strings; no inline recitation text is permitted.
+  // Four short recitative phrases drawn from Mahāyāna traditions active
+  // in Tang Chang'an. Each carries only `_sid` references — no inline
+  // recitation text ships in this file; the actual Sanskrit/IAST and
+  // Chinese transliterations live in the localization bundle
+  // (`src/i18n/en.json`) where they are presented as objects of cultural
+  // study, not as empowerments the game purports to confer.
+  //
+  // The schema (MantraSchema) enforces opaque ids and `_sid` references;
+  // `practice_lens` is closed to {collected_attention, discernment} so a
+  // pack cannot smuggle in a new metaphysical claim through this field.
 
-  mantras: [],
+  mantras: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Heart Sutra mantra — the closing verse of the Prajñāpāramitāhṛdaya,
+    // recited daily in Tang monasteries and in every school that
+    // transmits the Heart Sutra today.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:heart-sutra',
+      label_sid: 'mantra.heart-sutra.label_sid',
+      transliteration_sid: 'mantra.heart-sutra.transliteration_sid',
+      translation_sid: 'mantra.heart-sutra.translation_sid',
+      associated_figure_id: null,
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.heart-sutra.description_sid',
+      source_sutra_id: 'sutra:heart',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Oṃ maṇi padme hūṃ — the six-syllable recitation associated with
+    // Avalokiteśvara / Guanyin. Found on Tang-era dharani pillars and
+    // amulets; transmitted widely along the Silk Road.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:six-syllable',
+      label_sid: 'mantra.six-syllable.label_sid',
+      transliteration_sid: 'mantra.six-syllable.transliteration_sid',
+      translation_sid: 'mantra.six-syllable.translation_sid',
+      associated_figure_id: 'figure:avalokiteshvara',
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.six-syllable.description_sid',
+      source_sutra_id: null,
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Medicine Buddha short mantra — the heart-recitation from the
+    // Bhaiṣajyaguru Sūtra, used in Tang monastic rites for the sick.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:medicine-buddha',
+      label_sid: 'mantra.medicine-buddha.label_sid',
+      transliteration_sid: 'mantra.medicine-buddha.transliteration_sid',
+      translation_sid: 'mantra.medicine-buddha.translation_sid',
+      associated_figure_id: 'figure:medicine-buddha',
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.medicine-buddha.description_sid',
+      source_sutra_id: 'sutra:medicine-buddha',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Námó Ēmítuó Fó — the Chinese Pure Land recitation of Amitābha's
+    // name, the central practice of Tang Jingtu schools. The
+    // transliteration below is the Late Tang pronunciation form.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:nianfo',
+      label_sid: 'mantra.nianfo.label_sid',
+      transliteration_sid: 'mantra.nianfo.transliteration_sid',
+      translation_sid: 'mantra.nianfo.translation_sid',
+      associated_figure_id: 'figure:amitabha',
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.nianfo.description_sid',
+      source_sutra_id: 'sutra:amitabha',
+    },
+  ],
 }

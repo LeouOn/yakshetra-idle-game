@@ -572,5 +572,170 @@
         "give_commodification_sid": "The master spoke of accumulating merit through giving. You gave what you could — but there is no cosmic ledger balancing your gift against your faults. The weight of what you have done remains what it is."
       }
     }
+  },
+  "figure": {
+    "shakyamuni": {
+      "display_name_sid": "Śākyamuni",
+      "attribute_sid": "The historical teacher whose discourses ground the early and Mahāyāna canons alike.",
+      "iconography_sid": "Seated in padmāsana, right hand in bhūmisparśa-mudrā (earth-touching gesture), monastic robe draped over the left shoulder, ushnisha crowned by a jewel.",
+      "reverence_sid": "Revered across every school active in Tang Chang'an as the teacher whose first turning of the wheel set the dharma in motion."
+    },
+    "amitabha": {
+      "display_name_sid": "Amitābha",
+      "attribute_sid": "The Buddha of boundless light and the western pure land Sukhāvatī.",
+      "iconography_sid": "Red-skinned, seated in dhyāna-mudrā with a monk's alms-bowl, sometimes flanked by Avalokiteśvara and Mahāsthāmaprāpta.",
+      "reverence_sid": "Honor across the Tang Jingtu schools through the recitation of his name, captured in the nianfo mantra below."
+    },
+    "medicine-buddha": {
+      "display_name_sid": "Bhaiṣajyaguru",
+      "attribute_sid": "The Medicine Buddha whose twelve vows establish a field of healing for body and mind.",
+      "iconography_sid": "Lapis-blue complexion, right hand extended over the knee holding a myrobalan branch, left hand in dhyāna-mudrā cradling a medicine bowl.",
+      "reverence_sid": "Honor in Tang monastic rites for the sick through the recitation of his dharani and the copying of his sutra."
+    },
+    "vairocana": {
+      "display_name_sid": "Vairocana",
+      "attribute_sid": "The cosmic Buddha identified in Tang Huayan scholasticism with the dharmakāya — the truth-body from which all other buddhas emanate.",
+      "iconography_sid": "White-skinned, hands in the bodhyagri-mudrā (wisdom-fist gesture), crowned and ornamented in sambhogakāya form.",
+      "reverence_sid": "Central to the Huayan cosmology that Tang court and monastic scholastics elaborated from the Avataṃsaka literature."
+    },
+    "maitreya": {
+      "display_name_sid": "Maitreya",
+      "attribute_sid": "The bodhisattva of patient hope who dwells in Tuṣita heaven awaiting his future birth as the next historical Buddha.",
+      "iconography_sid": "In Tang iconography, a regal bodhisattva seated western-style with a stupa on the crown; later popular forms depict him as a smiling mendicant.",
+      "reverence_sid": "Revered across Tang scholastic and devotional lineages as both the future teacher and a present source of inspiration."
+    },
+    "avalokiteshvara": {
+      "display_name_sid": "Avalokiteśvara (Guanyin)",
+      "attribute_sid": "The bodhisattva of great compassion who perceives the cries of the world.",
+      "iconography_sid": "Crowned bodhisattva holding a lotus or willow branch; in Tang iconography often eleven-headed or thousand-armed in esoteric forms transmitted by Amoghavajra.",
+      "reverence_sid": "The Lotus Sutra's universal-gate chapter made Guanyin the most widely honored bodhisattva in Tang lay and monastic life."
+    },
+    "manjushri": {
+      "display_name_sid": "Mañjuśrī (Wenshu)",
+      "attribute_sid": "The bodhisattva of discriminative wisdom whose sword cuts through confusion.",
+      "iconography_sid": "Youthful bodhisattva riding a lion, right hand holding a flaming sword raised to cleave ignorance, left hand a palm-leaf manuscript.",
+      "reverence_sid": "Wutai Shan in northern Tang China was honored as his bodhimanda and became a destination for pilgrims from across the empire and beyond."
+    },
+    "samantabhadra": {
+      "display_name_sid": "Samantabhadra (Puxian)",
+      "attribute_sid": "The bodhisattva of great practice whose ten great vows structure the Mahāyāna path of action.",
+      "iconography_sid": "Crowned bodhisattva riding a six-tusked white elephant, often holding a lotus or a sutra-scroll.",
+      "reverence_sid": "Emei Shan in southwestern Tang China was reverenced as his bodhimanda; the Lotus Sutra's closing chapter centers on him."
+    },
+    "ksitigarbha": {
+      "display_name_sid": "Kṣitigarbha (Dizang)",
+      "attribute_sid": "The bodhisattva of the great vow who remains in the world until the hells are emptied.",
+      "iconography_sid": "Shaven-headed monastic with a monk's staff ringing with rings, holding a wish-fulfilling jewel in the left hand.",
+      "reverence_sid": "Jiuhua Shan in southern Tang China was honored as his bodhimanda; the Kṣitigarbha literature spread widely in this period."
+    },
+    "mahasthamaprapta": {
+      "display_name_sid": "Mahāsthāmaprāpta (Dashizhi)",
+      "attribute_sid": "The bodhisattva of the power of wisdom who illuminates all worlds with the light of practice.",
+      "iconography_sid": "Crowned bodhisattva holding a lotus marked with a wisdom-vessel, sometimes shown flanking Amitābha with Avalokiteśvara as one of the three sages of the west.",
+      "reverence_sid": "Honor in Tang Pure Land devotion as one of the three sages of Sukhāvatī, named in the Contemplation Sutra."
+    },
+    "nagarjuna": {
+      "display_name_sid": "Nāgārjuna",
+      "attribute_sid": "The historical founder of the Mādhyamaka school whose Mūlamadhyamakakārikā grounded Tang Prajñāpāramitā scholarship.",
+      "iconography_sid": "Shaved-headed monastic or brahmin-style sage, often shown with a canopy of nāgas overhead referencing the legend of his retrieving the Prajñāpāramitā texts from the nāga realm.",
+      "reverence_sid": "Revered in Tang transmission lineages as the fourteenth patriarch and a foundational authority for Huayan, Sanlun, and Pure Land scholastic traditions."
+    },
+    "bodhidharma": {
+      "display_name_sid": "Bodhidharma (Damo)",
+      "attribute_sid": "The historical teacher traditionally credited with bringing Chan from the west and founding the lineage that became Chinese Chan.",
+      "iconography_sid": "Bearded, hooded or bare-headed South Indian monk, shown seated in meditation facing a wall, often with a single sandal (referencing the legend of his return to the west).",
+      "reverence_sid": "Honor in Tang Chan lineages as the first patriarch; the Platform Sutra carries forward the lineage he is traditionally credited with starting."
+    }
+  },
+  "mantra": {
+    "heart-sutra": {
+      "label_sid": "Heart Sutra mantra",
+      "transliteration_sid": "gate gate pāragate pārasaṃgate bodhi svāhā",
+      "translation_sid": "Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.",
+      "description_sid": "The closing verse of the Prajñāpāramitāhṛdaya, recited daily in Tang monasteries and across every East Asian school that transmits the Heart Sutra today."
+    },
+    "six-syllable": {
+      "label_sid": "Oṃ maṇi padme hūṃ",
+      "transliteration_sid": "oṃ maṇi padme hūṃ",
+      "translation_sid": "Om, the jewel in the lotus, hum.",
+      "description_sid": "The six-syllable recitation of Avalokiteśvara / Guanyin, found on Tang-era dharani pillars, amulets, and silk banners along the Silk Road."
+    },
+    "medicine-buddha": {
+      "label_sid": "Medicine Buddha short mantra",
+      "transliteration_sid": "tadyathā oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja-samudgate svāhā",
+      "translation_sid": "Thus: om, medicine, medicine, great medicine, king arisen, so be it.",
+      "description_sid": "The heart recitation from the Bhaiṣajyaguru Sūtra, used in Tang monastic rites for the sick and the public copying of the sutra."
+    },
+    "nianfo": {
+      "label_sid": "Nianfo — Námó Ēmítuó Fó",
+      "transliteration_sid": "námó ēmítuó fó",
+      "translation_sid": "Homage to Amitābha Buddha.",
+      "description_sid": "The Chinese Pure Land recitation of Amitābha's name, central to Tang Jingtu practice. The transliteration above reflects the Late Tang pronunciation form."
+    }
+  },
+  "sutra": {
+    "heart": {
+      "title_sid": "Heart Sutra",
+      "transliterated_title_sid": "Prajñāpāramitāhṛdaya",
+      "translator_sid": "Translated by Xuanzang (玄奘)",
+      "translation_era_sid": "Tang dynasty, 649 CE",
+      "description_sid": "The shortest and most widely recited Prajñāpāramitā text. Xuanzang's translation is the form chanted today in East Asian temples.",
+      "excerpt_sid": "Form is exactly emptiness, emptiness exactly form; sensation, concept, mental formation, and consciousness are also like this.",
+      "attribution_note_sid": "Excerpt from Xuanzang's Chinese translation (T 251), rendered into English. The sutra itself is anonymous in the Sanskrit manuscript tradition; Xuanzang's colophon dates his translation to 649 CE."
+    },
+    "diamond": {
+      "title_sid": "Diamond Sutra",
+      "transliterated_title_sid": "Vajracchedikā Prajñāpāramitā",
+      "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
+      "translation_era_sid": "Later Qin, 403 CE",
+      "description_sid": "A foundational Prajñāpāramitā discourse on the diamond-like wisdom that cuts through all fixed views. The world's oldest dated printed book (868 CE, Dunhuang) is a copy of this sutra.",
+      "excerpt_sid": "All composed things are like a dream, an illusion, a drop of dew, a flashing lightning — thus should you view them.",
+      "attribution_note_sid": "Excerpt from Kumārajīva's Chinese translation (T 235), rendered into English. The Dunhuang printed copy (British Library Or.8210/P.2) is the earliest dated printed book with a colophon of 868 CE."
+    },
+    "lotus": {
+      "title_sid": "Lotus Sutra",
+      "transliterated_title_sid": "Saddharmapuṇḍarīka",
+      "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
+      "translation_era_sid": "Later Qin, 406 CE",
+      "description_sid": "One of the most influential Mahāyāna sutras in East Asia. The universal-gate chapter (chapter 25) is the scriptural foundation for Avalokiteśvara / Guanyin devotion in Tang China.",
+      "excerpt_sid": "Should any living being hear this Law, even for a single moment, even a single thought, in that instant they will attain unexcelled, perfect awakening.",
+      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 262). The classical English phrasing follows the late-19th-century Bunyiu Nanjio translation (Bibliotheca Otaniensis, 1884), now in the public domain."
+    },
+    "amitabha": {
+      "title_sid": "Amitābha Sutra (Shorter Sukhāvatīvyūha)",
+      "transliterated_title_sid": "Sukhāvatīvyūha (shorter)",
+      "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
+      "translation_era_sid": "Later Qin, 402 CE",
+      "description_sid": "The principal Pure Land scripture recited in evening services across Tang monasteries and continuing into modern East Asian practice. Describes the land of Sukhāvatī and the conditions for awakening there.",
+      "excerpt_sid": "In that land there is no hell, no animal-birth, no hungry-ghost realm; there are only the sounds of the dharma, of wind in jewel-trees, and of birds who speak the teaching.",
+      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 366). The classical English phrasing follows J.J.M. de Groot's 1892 Leiden translation, now in the public domain."
+    },
+    "medicine-buddha": {
+      "title_sid": "Medicine Buddha Sutra",
+      "transliterated_title_sid": "Bhaiṣajyaguru Sūtra",
+      "translator_sid": "Translated by Xuanzang (玄奘)",
+      "translation_era_sid": "Tang dynasty, 650 CE",
+      "description_sid": "The twelve great vows of Bhaiṣajyaguru establish a field of healing for body and mind. The closing dharani is captured above as the Medicine Buddha mantra.",
+      "excerpt_sid": "When living beings hear the name of the Medicine Buddha, they recite it and keep it in mind; all illness departs and all disturbance settles.",
+      "attribution_note_sid": "Paraphrase from Xuanzang's Chinese translation (T 451), rendered into English."
+    },
+    "vimalakirti": {
+      "title_sid": "Vimalakīrti Nirdeśa Sutra",
+      "transliterated_title_sid": "Vimalakīrtinirdeśa",
+      "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
+      "translation_era_sid": "Later Qin, 406 CE",
+      "description_sid": "The layman Vimalakīrti's discourse on non-duality was a favorite among Tang literati-officials and Chan teachers, especially for its portrayal of a wise householder out-teaching the monastic elders.",
+      "excerpt_sid": "The Dharma-door of non-duality is entered when, ceasing to grasp at subject and object, one sees that all dualities are themselves empty of any independent nature.",
+      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 475). The classical English phrasing follows Charles Willemen's 1976 translation references; the phrasing here is the project's own paraphrase."
+    },
+    "platform": {
+      "title_sid": "Platform Sutra of the Sixth Patriarch",
+      "transliterated_title_sid": "Liùzǔ Tánjīng (六祖壇經)",
+      "translator_sid": "Recorded by the disciple Fahai; later Tang recensions",
+      "translation_era_sid": "c. 780 CE (Tang dynasty)",
+      "description_sid": "The only Chinese-language text canonized as a sutra in the East Asian Mahāyāna canon. Records the teachings and life of the Sixth Patriarch of Chan and articulates the doctrine of sudden awakening.",
+      "excerpt_sid": "Bodhi is originally no tree; the bright mirror has no stand. Originally there is not a single thing — where could dust gather?",
+      "attribution_note_sid": "Excerpt from the verse exchange traditionally attributed to Huineng. The Dunhuang recension (c. 780 CE) is the earliest extant form; Philip Yampolsky's 1967 translation is the standard scholarly reference."
+    }
   }
 }

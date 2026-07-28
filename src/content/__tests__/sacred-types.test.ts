@@ -184,15 +184,15 @@ describe('BuddhistFigureSchema', () => {
 });
 
 describe('loadEraPack — sutras + mantras + figures loading', () => {
-  test('LoadedEraPack carries empty arrays for the new content types', async () => {
+  test('LoadedEraPack carries the populated sacred-text collections for tang-china', async () => {
     const { loadEraPack } = await import('../loader');
     const pack = loadEraPack('tang-china');
     expect(Array.isArray(pack.sutras)).toBe(true);
-    expect(pack.sutras.length).toBe(0);
+    expect(pack.sutras.length).toBe(7);
     expect(Array.isArray(pack.mantras)).toBe(true);
-    expect(pack.mantras.length).toBe(0);
+    expect(pack.mantras.length).toBe(4);
     expect(Array.isArray(pack.figures)).toBe(true);
-    expect(pack.figures.length).toBe(0);
+    expect(pack.figures.length).toBe(12);
   });
 
   test('LoadedEraPack carries the new fields for fantasy-mahayana too', async () => {

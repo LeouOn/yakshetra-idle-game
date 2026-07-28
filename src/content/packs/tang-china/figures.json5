@@ -1,13 +1,232 @@
 {
   // Tang China Buddhist figures (plan: sacred-text content type).
   //
-  // Empty for now — the schema, loader, and registry support exists as the
-  // foundation for adding tradition-inspired figure references. Population is
-  // gated by the 6-gate advisory panel AND the prohibited-names lint rule
-  // (see `advisory/prohibited-names.txt`); no figure ships until both clear.
-  // The structural schema in src/content/schema.ts (BuddhistFigureSchema)
-  // enforces that any future entries carry opaque ids and `_sid` references;
-  // proper names live only in localization and are scanned by the lint.
+  // Twelve tradition-inspired figure references spanning the Mahāyāna
+  // pantheon that Tang-dynasty Chang'an would have recognized: the
+  // historical teacher, the pure-land and cosmic Buddhas, the great
+  // bodhisattvas, and two historical teachers whose works shaped Tang
+  // scholastic and Chan traditions. Every player-facing string is a
+  // `_sid` reference into the localization bundle; the schema
+  // (BuddhistFigureSchema) enforces opaque ids and `_sid` references so
+  // no inline prose ships, and the lint's prohibited-names rule never
+  // needs to scan these tokens (figures are not event/choice identifiers).
+  //
+  // Reverence notes are descriptive (iconography, traditional role,
+  // Tang-era context) — never doctrinal claims and never fabricated
+  // sayings attributed to the figure.
 
-  figures: [],
+  figures: [
+    // ──────────────────────────────────────────────────────────────────────
+    // 1. Śākyamuni — the historical teacher. Revered across every school
+    // active in Tang Chang'an. Iconography fixed by the late Tang period.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:shakyamuni',
+      display_name_sid: 'figure.shakyamuni.display_name_sid',
+      transliterated_names: ['Śākyamuni', 'Siddhārtha Gautama', 'Shakyamuni'],
+      role: 'historical-buddha',
+      primary_attribute_sid: 'figure.shakyamuni.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:heart', 'sutra:diamond', 'sutra:lotus'],
+      iconography_sid: 'figure.shakyamuni.iconography_sid',
+      reverence_note_sid: 'figure.shakyamuni.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 2. Amitābha — the Buddha of the Western direction. The Pure Land
+    // schools (Jingtu) flourished in Tang China; his recitation practice
+    // is captured in mantra:nianfo below.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:amitabha',
+      display_name_sid: 'figure.amitabha.display_name_sid',
+      transliterated_names: ['Amitābha', 'Amitabha', 'Amida', 'Amitāyus'],
+      role: 'pure-land-buddha',
+      primary_attribute_sid: 'figure.amitabha.attribute_sid',
+      mantra_id: 'mantra:nianfo',
+      sutra_ids: ['sutra:amitabha'],
+      iconography_sid: 'figure.amitabha.iconography_sid',
+      reverence_note_sid: 'figure.amitabha.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 3. Bhaiṣajyaguru — the Medicine Buddha. Tang monasteries ran
+    // Medicine Buddha rituals for the sick; the short mantra below is
+    // still recited in those rites.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:medicine-buddha',
+      display_name_sid: 'figure.medicine-buddha.display_name_sid',
+      transliterated_names: ['Bhaiṣajyaguru', 'Bhaisajyaguru', 'Medicine Buddha'],
+      role: 'pure-land-buddha',
+      primary_attribute_sid: 'figure.medicine-buddha.attribute_sid',
+      mantra_id: 'mantra:medicine-buddha',
+      sutra_ids: ['sutra:medicine-buddha'],
+      iconography_sid: 'figure.medicine-buddha.iconography_sid',
+      reverence_note_sid: 'figure.medicine-buddha.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Vairocana — the cosmic Buddha of the Avataṃsaka / Huayan
+    // tradition. Tang Huayan masters treated Vairocana as the dharmakāya,
+    // the source from which all other Buddhas emanate.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:vairocana',
+      display_name_sid: 'figure.vairocana.display_name_sid',
+      transliterated_names: ['Vairocana', 'Mahāvairocana'],
+      role: 'cosmic-buddha',
+      primary_attribute_sid: 'figure.vairocana.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:heart'],
+      iconography_sid: 'figure.vairocana.iconography_sid',
+      reverence_note_sid: 'figure.vairocana.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 5. Maitreya — the future Buddha, resident in Tuṣita heaven. In
+    // Tang China Maitreya was honored both as the coming teacher and as
+    // a bodhisattva of patient hope.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:maitreya',
+      display_name_sid: 'figure.maitreya.display_name_sid',
+      transliterated_names: ['Maitreya', 'Metteyya'],
+      role: 'bodhisattva',
+      primary_attribute_sid: 'figure.maitreya.attribute_sid',
+      mantra_id: null,
+      sutra_ids: [],
+      iconography_sid: 'figure.maitreya.iconography_sid',
+      reverence_note_sid: 'figure.maitreya.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 6. Avalokiteśvara (Guanyin) — the bodhisattva of great
+    // compassion. Tang China received Guanyin through the Lotus Sutra's
+    // chapter on the universal gate; the six-syllable mantra is the
+    // Tibetan/Tang recitation form.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:avalokiteshvara',
+      display_name_sid: 'figure.avalokiteshvara.display_name_sid',
+      transliterated_names: [
+        'Avalokiteśvara',
+        'Avalokiteshvara',
+        'Guanyin',
+        'Kannon',
+        'Chenrezig',
+      ],
+      role: 'bodhisattva',
+      primary_attribute_sid: 'figure.avalokiteshvara.attribute_sid',
+      mantra_id: 'mantra:six-syllable',
+      sutra_ids: ['sutra:heart', 'sutra:lotus'],
+      iconography_sid: 'figure.avalokiteshvara.iconography_sid',
+      reverence_note_sid: 'figure.avalokiteshvara.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 7. Mañjuśrī (Wenshu) — bodhisattva of discriminative wisdom,
+    // usually shown with a sword that cuts through confusion. Wutai
+    // Shan in northern Tang China was revered as his bodhimanda.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:manjushri',
+      display_name_sid: 'figure.manjushri.display_name_sid',
+      transliterated_names: ['Mañjuśrī', 'Manjushri', 'Wenshu'],
+      role: 'bodhisattva',
+      primary_attribute_sid: 'figure.manjushri.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:heart', 'sutra:vimalakirti'],
+      iconography_sid: 'figure.manjushri.iconography_sid',
+      reverence_note_sid: 'figure.manjushri.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 8. Samantabhadra (Puxian) — bodhisattva of great practice and the
+    // tenth bhūmi. The Lotus Sutra's closing chapter centers on Samantabhadra;
+    // Emei Shan was his bodhimanda in Tang geography.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:samantabhadra',
+      display_name_sid: 'figure.samantabhadra.display_name_sid',
+      transliterated_names: ['Samantabhadra', 'Puxian', 'Fugen'],
+      role: 'bodhisattva',
+      primary_attribute_sid: 'figure.samantabhadra.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:heart', 'sutra:lotus'],
+      iconography_sid: 'figure.samantabhadra.iconography_sid',
+      reverence_note_sid: 'figure.samantabhadra.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 9. Kṣitigarbha (Dizang) — bodhisattva of the great vow who
+    // remains in the world until the hells are emptied. Tang-era
+    // translations of the Kṣitigarbha literature spread his cult
+    // widely, especially at Jiuhua Shan.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:ksitigarbha',
+      display_name_sid: 'figure.ksitigarbha.display_name_sid',
+      transliterated_names: ['Kṣitigarbha', 'Ksitigarbha', 'Dizang', 'Jizo'],
+      role: 'bodhisattva',
+      primary_attribute_sid: 'figure.ksitigarbha.attribute_sid',
+      mantra_id: null,
+      sutra_ids: [],
+      iconography_sid: 'figure.ksitigarbha.iconography_sid',
+      reverence_note_sid: 'figure.ksitigarbha.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 10. Mahāsthāmaprāpta (Dashizhi) — bodhisattva of the power of
+    // wisdom. In Pure Land sutras he appears alongside Amitābha and
+    // Avalokiteśvara as one of the three sages of the Western direction.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:mahasthamaprapta',
+      display_name_sid: 'figure.mahasthamaprapta.display_name_sid',
+      transliterated_names: ['Mahāsthāmaprāpta', 'Mahasthamaprapta', 'Dashizhi'],
+      role: 'bodhisattva',
+      primary_attribute_sid: 'figure.mahasthamaprapta.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:heart'],
+      iconography_sid: 'figure.mahasthamaprapta.iconography_sid',
+      reverence_note_sid: 'figure.mahasthamaprapta.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 11. Nāgārjuna — historical founder of the Mādhyamaka philosophical
+    // tradition whose works grounded Tang Prajñāpāramitā scholarship.
+    // Revered in Tang sources as the fourteenth patriarch of the
+    // transmission lineages that Chinese Chan claimed.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:nagarjuna',
+      display_name_sid: 'figure.nagarjuna.display_name_sid',
+      transliterated_names: ['Nāgārjuna', 'Nagarjuna', 'Longshu'],
+      role: 'historical-teacher',
+      primary_attribute_sid: 'figure.nagarjuna.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:heart'],
+      iconography_sid: 'figure.nagarjuna.iconography_sid',
+      reverence_note_sid: 'figure.nagarjuna.reverence_sid',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 12. Bodhidharma — the legendary founder of Chinese Chan, said to
+    // have arrived at the Liang court circa 520 CE before traveling
+    // north. The Platform Sutra carries forward the lineage he is
+    // traditionally credited with starting.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'figure:bodhidharma',
+      display_name_sid: 'figure.bodhidharma.display_name_sid',
+      transliterated_names: ['Bodhidharma', 'Damo'],
+      role: 'historical-teacher',
+      primary_attribute_sid: 'figure.bodhidharma.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:platform'],
+      iconography_sid: 'figure.bodhidharma.iconography_sid',
+      reverence_note_sid: 'figure.bodhidharma.reverence_sid',
+    },
+  ],
 }

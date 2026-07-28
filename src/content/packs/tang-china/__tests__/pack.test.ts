@@ -50,4 +50,40 @@ describe('Tang China era pack scaffold', () => {
       expect(parsed.hostname.length).toBeGreaterThan(0);
     }
   });
+
+  test('sacred-text collections have the expected counts', async () => {
+    const pack = await loadEraPack('tang-china');
+
+    expect(pack.figures).toHaveLength(12);
+    expect(pack.mantras).toHaveLength(4);
+    expect(pack.sutras).toHaveLength(7);
+  });
+
+  test('every figure, mantra, and sutra sid resolves through i18n', async () => {
+    const pack = await loadEraPack('tang-china');
+
+    for (const figure of pack.figures) {
+      expect(resolveSid(figure.display_name_sid)).toBeTruthy();
+      expect(resolveSid(figure.primary_attribute_sid)).toBeTruthy();
+      expect(resolveSid(figure.iconography_sid)).toBeTruthy();
+      expect(resolveSid(figure.reverence_note_sid)).toBeTruthy();
+    }
+
+    for (const mantra of pack.mantras) {
+      expect(resolveSid(mantra.label_sid)).toBeTruthy();
+      expect(resolveSid(mantra.transliteration_sid)).toBeTruthy();
+      expect(resolveSid(mantra.translation_sid)).toBeTruthy();
+      expect(resolveSid(mantra.description_sid)).toBeTruthy();
+    }
+
+    for (const sutra of pack.sutras) {
+      expect(resolveSid(sutra.title_sid)).toBeTruthy();
+      expect(resolveSid(sutra.transliterated_title_sid)).toBeTruthy();
+      expect(resolveSid(sutra.translator_sid)).toBeTruthy();
+      expect(resolveSid(sutra.translation_era_sid)).toBeTruthy();
+      expect(resolveSid(sutra.description_sid)).toBeTruthy();
+      expect(resolveSid(sutra.excerpt_sid)).toBeTruthy();
+      expect(resolveSid(sutra.attribution_note_sid)).toBeTruthy();
+    }
+  });
 });
