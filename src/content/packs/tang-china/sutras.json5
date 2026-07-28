@@ -1,0 +1,12 @@
+{
+  // Tang China sutras (plan: sacred-text content type).
+  //
+  // Empty for now — the schema, loader, and registry support exists as the
+  // foundation for adding authentic Buddhist content. Population is gated by
+  // the 6-gate advisory panel (see `advisory/panel.md`); no sutra text ships
+  // until that review completes. The structural schema in src/content/schema.ts
+  // (SutraSchema) enforces that any future entries carry only `_sid` references
+  // for player-facing strings; no inline scripture is permitted.
+
+  sutras: [],
+}

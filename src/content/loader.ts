@@ -20,13 +20,19 @@
 import { lintPack } from './lint';
 import { getEraBundle, hasEraBundle, listEraIds } from './registry';
 import {
+  BuddhistFigureSchema,
   DailyScheduleSchema,
   EndingSchema,
   EraPackSchema,
+  MantraSchema,
   PracticeSchema,
+  SutraSchema,
+  type BuddhistFigure,
   type Ending,
   type EraPack,
+  type Mantra,
   type Practice,
+  type Sutra,
   type DailySchedule,
 } from './schema';
 
@@ -47,6 +53,12 @@ export interface LoadedEraPack extends EraPack {
   readonly practices: readonly Practice[];
   /** The era's daily schedules, validated against DailyScheduleSchema. */
   readonly schedules: readonly DailySchedule[];
+  /** The era's canonical sutras, validated against SutraSchema. */
+  readonly sutras: readonly Sutra[];
+  /** The era's recitative phrases, validated against MantraSchema. */
+  readonly mantras: readonly Mantra[];
+  /** The era's tradition-inspired figure refs, validated against BuddhistFigureSchema. */
+  readonly figures: readonly BuddhistFigure[];
 }
 
 /**
@@ -122,6 +134,45 @@ function extractSchedulesArray(raw: unknown, eraId: string, filename: string): u
   throw new Error(
     `loadEraPack("${eraId}"): ${filename} must be an object with a "schedules" array`,
   );
+}
+
+/** Pull the `sutras` array out of a sutras.json5 shape: `{ sutras: [...] }`. */
+function extractSutrasArray(raw: unknown, eraId: string, filename: string): unknown[] {
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    'sutras' in raw &&
+    Array.isArray((raw as { sutras: unknown }).sutras)
+  ) {
+    return (raw as { sutras: unknown[] }).sutras;
+  }
+  throw new Error(`loadEraPack("${eraId}"): ${filename} must be an object with a "sutras" array`);
+}
+
+/** Pull the `mantras` array out of a mantras.json5 shape: `{ mantras: [...] }`. */
+function extractMantrasArray(raw: unknown, eraId: string, filename: string): unknown[] {
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    'mantras' in raw &&
+    Array.isArray((raw as { mantras: unknown }).mantras)
+  ) {
+    return (raw as { mantras: unknown[] }).mantras;
+  }
+  throw new Error(`loadEraPack("${eraId}"): ${filename} must be an object with a "mantras" array`);
+}
+
+/** Pull the `figures` array out of a figures.json5 shape: `{ figures: [...] }`. */
+function extractFiguresArray(raw: unknown, eraId: string, filename: string): unknown[] {
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    'figures' in raw &&
+    Array.isArray((raw as { figures: unknown }).figures)
+  ) {
+    return (raw as { figures: unknown[] }).figures;
+  }
+  throw new Error(`loadEraPack("${eraId}"): ${filename} must be an object with a "figures" array`);
 }
 
 /**
@@ -231,10 +282,52 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     );
   }
 
+  // --- Sutras validation ---------------------------------------------------
+  const sutrasArray = extractSutrasArray(bundle.sutras, eraId, 'sutras.json5');
+  const sutrasResult = SutraSchema.array().safeParse(sutrasArray);
+  if (!sutrasResult.success) {
+    const firstIssue = sutrasResult.error.issues[0];
+    const fieldPath = firstIssue?.path.join('.') || '(root)';
+    throw new Error(
+      `loadEraPack("${eraId}"): sutras schema validation failed at "${fieldPath}": ${
+        firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
+  // --- Mantras validation --------------------------------------------------
+  const mantrasArray = extractMantrasArray(bundle.mantras, eraId, 'mantras.json5');
+  const mantrasResult = MantraSchema.array().safeParse(mantrasArray);
+  if (!mantrasResult.success) {
+    const firstIssue = mantrasResult.error.issues[0];
+    const fieldPath = firstIssue?.path.join('.') || '(root)';
+    throw new Error(
+      `loadEraPack("${eraId}"): mantras schema validation failed at "${fieldPath}": ${
+        firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
+  // --- Figures validation --------------------------------------------------
+  const figuresArray = extractFiguresArray(bundle.figures, eraId, 'figures.json5');
+  const figuresResult = BuddhistFigureSchema.array().safeParse(figuresArray);
+  if (!figuresResult.success) {
+    const firstIssue = figuresResult.error.issues[0];
+    const fieldPath = firstIssue?.path.join('.') || '(root)';
+    throw new Error(
+      `loadEraPack("${eraId}"): figures schema validation failed at "${fieldPath}": ${
+        firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
   return {
     ...parsedResult.data,
     endings: endingsResult.data,
     practices: practicesResult.data,
     schedules: schedulesResult.data,
+    sutras: sutrasResult.data,
+    mantras: mantrasResult.data,
+    figures: figuresResult.data,
   };
 }

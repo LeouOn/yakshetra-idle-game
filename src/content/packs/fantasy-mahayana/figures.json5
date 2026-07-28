@@ -1,0 +1,14 @@
+{
+  // Fantasy Mahāyāna Buddhist figures (plan: sacred-text content type).
+  //
+  // Empty for now — the schema, loader, and registry support exists as the
+  // foundation for adding tradition-inspired figure references appropriate
+  // to the fantasy setting. Population is gated by the 6-gate advisory panel
+  // AND the prohibited-names lint rule (see `advisory/prohibited-names.txt`);
+  // no figure ships until both clear. The structural schema in
+  // src/content/schema.ts (BuddhistFigureSchema) enforces that any future
+  // entries carry opaque ids and `_sid` references; proper names live only
+  // in localization and are scanned by the lint.
+
+  figures: [],
+}

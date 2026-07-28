@@ -1,0 +1,13 @@
+{
+  // Fantasy Mahāyāna mantras (plan: sacred-text content type).
+  //
+  // Empty for now — the schema, loader, and registry support exists as the
+  // foundation for adding tradition-inspired content appropriate to the
+  // fantasy setting. Population is gated by the 6-gate advisory panel (see
+  // `advisory/panel.md`); no mantra text ships until that review completes.
+  // The structural schema in src/content/schema.ts (MantraSchema) enforces
+  // that any future entries carry only `_sid` references for player-facing
+  // strings; no inline recitation text is permitted.
+
+  mantras: [],
+}

@@ -438,6 +438,114 @@ export const EndingSchema = z
 export type Ending = z.infer<typeof EndingSchema>;
 
 /* -------------------------------------------------------------------------------------------------
+ * Sutra, Mantra, BuddhistFigure — sacred-text content types.
+ *
+ * These three types form the structural foundation for surfacing
+ * tradition-inspired text and figure references inside an era. The schemas
+ * only describe SHAPE — what fields exist and what enum values each accepts.
+ * They do NOT legislate tradition-specific content; that is governed by the
+ * 5-rule lint and the 6-gate advisory panel (see `advisory/panel.md`).
+ *
+ * Invariants carried by shape:
+ *   - Every player-facing string is a `_sid` reference; inline strings are
+ *     rejected by {@link SidSchema}. No fabricated scripture reaches the user.
+ *   - Cross references use opaque {@link TokenSchema} ids, never proper names
+ *     (`source_sutra_id`, `associated_figure_id`, `mantra_id`). The lint's
+ *     prohibited-names rule scans the resolved localization, not these tokens.
+ *   - Enums close the world: school, lens, role, language. Adding a new value
+ *     is a schema change, not an authoring choice.
+ * -----------------------------------------------------------------------------------------------*/
+
+const SUTRA_SCHOOL_VALUES = [
+  'prajnaparamita',
+  'pure-land',
+  'chan',
+  'tiantai',
+  'huayan',
+  'vinaya',
+  'miscellaneous-mahayana',
+] as const;
+
+const LANGUAGE_OF_ORIGIN_VALUES = ['sanskrit', 'chinese-indigenous', 'unknown'] as const;
+
+const MANTRA_LENS_VALUES = ['collected_attention', 'discernment'] as const;
+
+const FIGURE_ROLE_VALUES = [
+  'historical-buddha',
+  'pure-land-buddha',
+  'cosmic-buddha',
+  'bodhisattva',
+  'historical-teacher',
+  'arhat',
+] as const;
+
+/**
+ * A canonical sutra text within an era. Titles, translators, and prose are all
+ * `_sid` references; the schema never carries inline text. `school` and
+ * `language_of_origin` are closed enums so a pack cannot introduce a new
+ * tradition without a schema change.
+ */
+export const SutraSchema = z
+  .object({
+    id: TokenSchema,
+    title_sid: SidSchema,
+    transliterated_title_sid: SidSchema,
+    translator_sid: SidSchema,
+    translation_era_sid: SidSchema,
+    description_sid: SidSchema,
+    excerpt_sid: SidSchema,
+    attribution_note_sid: SidSchema,
+    school: z.enum(SUTRA_SCHOOL_VALUES),
+    language_of_origin: z.enum(LANGUAGE_OF_ORIGIN_VALUES),
+  })
+  .strict();
+
+export type Sutra = z.infer<typeof SutraSchema>;
+
+/**
+ * A short recitative phrase tied to a practice lens. The `associated_figure_id`
+ * and `source_sutra_id` are optional cross-references into the era's
+ * {@link BuddhistFigure} and {@link Sutra} collections (null when none).
+ */
+export const MantraSchema = z
+  .object({
+    id: TokenSchema,
+    label_sid: SidSchema,
+    transliteration_sid: SidSchema,
+    translation_sid: SidSchema,
+    associated_figure_id: TokenSchema.nullable(),
+    practice_lens: z.enum(MANTRA_LENS_VALUES),
+    description_sid: SidSchema,
+    source_sutra_id: TokenSchema.nullable(),
+  })
+  .strict();
+
+export type Mantra = z.infer<typeof MantraSchema>;
+
+/**
+ * A tradition-inspired figure reference (Buddha, bodhisattva, teacher, arhat).
+ * Display name resolvable via `display_name_sid`; the `transliterated_names`
+ * array is a non-empty list of opaque tokens the lint scans against the
+ * prohibited-names closed list (`advisory/prohibited-names.txt`). Cross-links
+ * to {@link Mantra} and {@link Sutra} collections use opaque ids.
+ */
+export const BuddhistFigureSchema = z
+  .object({
+    id: TokenSchema,
+    display_name_sid: SidSchema,
+    transliterated_names: z.array(TokenSchema).min(1),
+    role: z.enum(FIGURE_ROLE_VALUES),
+    primary_attribute_sid: SidSchema,
+    mantra_id: TokenSchema.nullable(),
+    sutra_ids: z.array(TokenSchema),
+    iconography_sid: SidSchema,
+    reverence_note_sid: SidSchema,
+  })
+  .strict();
+
+export type BuddhistFigure = z.infer<typeof BuddhistFigureSchema>;
+
+/* -------------------------------------------------------------------------------------------------
  * Practice, ScheduleBlock, DailySchedule — idle-mode authored content.
  *
  * These describe the content packs' daily-rhythm data: a Practice is an

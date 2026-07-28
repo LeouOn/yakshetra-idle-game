@@ -21,11 +21,17 @@ import tangEvents from './packs/tang-china/events.json5';
 import tangEndings from './packs/tang-china/endings.json5';
 import tangPractices from './packs/tang-china/practices.json5';
 import tangSchedules from './packs/tang-china/schedules.json5';
+import tangSutras from './packs/tang-china/sutras.json5';
+import tangMantras from './packs/tang-china/mantras.json5';
+import tangFigures from './packs/tang-china/figures.json5';
 import fantasyPack from './packs/fantasy-mahayana/pack.json5';
 import fantasyEvents from './packs/fantasy-mahayana/events.json5';
 import fantasyEndings from './packs/fantasy-mahayana/endings.json5';
 import fantasyPractices from './packs/fantasy-mahayana/practices.json5';
 import fantasySchedules from './packs/fantasy-mahayana/schedules.json5';
+import fantasySutras from './packs/fantasy-mahayana/sutras.json5';
+import fantasyMantras from './packs/fantasy-mahayana/mantras.json5';
+import fantasyFigures from './packs/fantasy-mahayana/figures.json5';
 
 /**
  * A bundled era: the raw (unvalidated) pack scaffold, events file, endings
@@ -44,6 +50,12 @@ export interface EraBundle {
   readonly practices: unknown;
   /** Parsed schedules.json5 contents (shape: `{ schedules: unknown[] }`). */
   readonly schedules: unknown;
+  /** Parsed sutras.json5 contents (shape: `{ sutras: unknown[] }`). */
+  readonly sutras: unknown;
+  /** Parsed mantras.json5 contents (shape: `{ mantras: unknown[] }`). */
+  readonly mantras: unknown;
+  /** Parsed figures.json5 contents (shape: `{ figures: unknown[] }`). */
+  readonly figures: unknown;
 }
 
 const REGISTRY: Readonly<Record<string, EraBundle>> = {
@@ -53,6 +65,9 @@ const REGISTRY: Readonly<Record<string, EraBundle>> = {
     endings: tangEndings,
     practices: tangPractices,
     schedules: tangSchedules,
+    sutras: tangSutras,
+    mantras: tangMantras,
+    figures: tangFigures,
   },
   'fantasy-mahayana': {
     pack: fantasyPack,
@@ -60,6 +75,9 @@ const REGISTRY: Readonly<Record<string, EraBundle>> = {
     endings: fantasyEndings,
     practices: fantasyPractices,
     schedules: fantasySchedules,
+    sutras: fantasySutras,
+    mantras: fantasyMantras,
+    figures: fantasyFigures,
   },
 };
 

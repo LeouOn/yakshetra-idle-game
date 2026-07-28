@@ -18,19 +18,27 @@ const { state } = vi.hoisted(() => ({
 }));
 
 vi.mock('../registry', async () => {
-  const [pack, events, endings, practices, schedules] = await Promise.all([
-    import('../packs/tang-china/pack.json5'),
-    import('../packs/tang-china/events.json5'),
-    import('../packs/tang-china/endings.json5'),
-    import('../packs/tang-china/practices.json5'),
-    import('../packs/tang-china/schedules.json5'),
-  ]);
+  const [pack, events, endings, practices, schedules, sutras, mantras, figures] = await Promise.all(
+    [
+      import('../packs/tang-china/pack.json5'),
+      import('../packs/tang-china/events.json5'),
+      import('../packs/tang-china/endings.json5'),
+      import('../packs/tang-china/practices.json5'),
+      import('../packs/tang-china/schedules.json5'),
+      import('../packs/tang-china/sutras.json5'),
+      import('../packs/tang-china/mantras.json5'),
+      import('../packs/tang-china/figures.json5'),
+    ],
+  );
   state.realBundle = {
     pack: pack.default,
     events: events.default,
     endings: endings.default,
     practices: practices.default,
     schedules: schedules.default,
+    sutras: sutras.default,
+    mantras: mantras.default,
+    figures: figures.default,
   };
   return {
     listEraIds: () => ['tang-china'],
