@@ -7,6 +7,7 @@
 // allowlist (zod only).
 
 export type {
+  AnySaveBlob,
   Choice,
   Echo,
   EchoType,
@@ -24,11 +25,13 @@ export type {
   LifeId,
   LifeState,
   NextLifeSeed,
+  OfflineSummary,
   Practice,
   Predicate,
   ResourceId,
   RoleId,
   SaveBlob,
+  SaveBlobV2,
   SocialIdentity,
 } from './types';
 
@@ -45,5 +48,13 @@ export {
 } from './idle';
 export { createRng } from './rng';
 export type { Rng } from './rng';
+export { computeOfflineSummary, formatOfflineSummary } from './offline';
 export { canonicalStringify, deserializeSaveBlob, serializeSaveBlob, sha256 } from './serialize';
+export { SaveBlobSchema } from './serialize';
 export type { DeserializedSave } from './serialize';
+export {
+  CURRENT_SCHEMA_VERSION,
+  getBlobVersion,
+  migrateSaveBlob,
+  needsMigration,
+} from './migration';

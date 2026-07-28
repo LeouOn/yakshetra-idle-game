@@ -117,6 +117,151 @@
       "bell_sid": "The bell that rings once is an original allegorical element of the Garden. It marks transitions without doctrinal significance.",
       "memory_stone_sid": "Memory stones are original allegorical objects in the Garden where the traces of a prior life may be held or released. They are a game-design device, not a reference to any ritual object.",
       "slow_water_sid": "Slow water is an original allegorical feature of the Garden's landscape. It has no doctrinal referent."
+    },
+    "practice": {
+      "garden_tending": {
+        "label_sid": "Tend the Garden's hedge",
+        "description_sid": "Mindful work in the Garden's living hedge. Small trust gained per turn as the hedge learns your hand."
+      },
+      "listening_at_the_gate": {
+        "label_sid": "Listen at the slow gate",
+        "description_sid": "Sit at the Garden's slow gate and listen to travelers arriving. Grants the patient-ear skill on completion."
+      },
+      "vow_walking": {
+        "label_sid": "Walk the vow-path",
+        "description_sid": "Walk the long path between the Garden's two fountains holding a vow in mind. Restores energy as the walk steadies."
+      },
+      "bell_listening": {
+        "label_sid": "Listen for the bell that rings once",
+        "description_sid": "Sit where the Bell That Rings Once can be heard and rest the attention on its single note. Trust deepens as the listening settles."
+      },
+      "memory_stone_touching": {
+        "label_sid": "Touch a memory stone",
+        "description_sid": "Place a hand on a memory stone and read what arrived with you. Grants the patient-ear skill as the impressions clarify."
+      },
+      "slow_water_walking": {
+        "label_sid": "Walk beside the slow water",
+        "description_sid": "Match the pace of the Garden's slow water, step for step. Energy returns as the body slows to meet the current."
+      },
+      "gardener_shadow_following": {
+        "label_sid": "Follow the Gardener's path",
+        "description_sid": "Walk one length behind the Gardener as the day's work is done. Grants the steady-hand skill as the rhythm becomes familiar."
+      },
+      "court_attendant_rounds": {
+        "label_sid": "Walk the Court's rounds",
+        "description_sid": "Perform the rounds the Court requires of its attendants. Trust accrues as the duty is met cleanly."
+      },
+      "vow_recitation": {
+        "label_sid": "Recite your declared vow",
+        "description_sid": "Recite the vow you declared in a prior turn until the words settle into the breath. Energy returns as the recitation steadies."
+      },
+      "garden_pruning": {
+        "label_sid": "Prune the Garden's paths",
+        "description_sid": "Cut back what has overgrown the Garden's intended paths. Trust grows as the way through becomes passable again."
+      },
+      "arrival_listening": {
+        "label_sid": "Listen for new arrivals",
+        "description_sid": "Sit at the Garden's threshold and listen for the next soul coming through. Grants the patient-ear skill on completion."
+      },
+      "storm_edge_watching": {
+        "label_sid": "Watch the storm at the edge",
+        "description_sid": "Stand where the storm at the Garden's edge meets the calmer air within. Energy returns as the watching becomes steady."
+      }
+    },
+    "schedule": {
+      "garden_day": {
+        "name_sid": "A day in the Garden"
+      },
+      "court_day": {
+        "name_sid": "A court attendant's day"
+      },
+      "traveler_day": {
+        "name_sid": "A vow-bound traveler's day"
+      }
+    },
+    "block": {
+      "garden_day": {
+        "pre_dawn_rest": {
+          "label_sid": "Pre-dawn rest",
+          "icon_sid": "pre-dawn-bench"
+        },
+        "dawn_listening": {
+          "label_sid": "Dawn at the gate",
+          "icon_sid": "dawn-gate"
+        },
+        "morning_tending": {
+          "label_sid": "Morning tending",
+          "icon_sid": "morning-hedge"
+        },
+        "midday_rest": {
+          "label_sid": "Midday rest",
+          "icon_sid": "midday-bench"
+        },
+        "afternoon_vow_walk": {
+          "label_sid": "Afternoon vow walk",
+          "icon_sid": "afternoon-path"
+        },
+        "evening_reflection": {
+          "label_sid": "Evening reflection",
+          "icon_sid": "evening-gate"
+        },
+        "night_rest": {
+          "label_sid": "Night rest",
+          "icon_sid": "night-bench"
+        }
+      },
+      "court_day": {
+        "dawn_rounds": {
+          "label_sid": "Dawn rounds",
+          "icon_sid": "dawn-court"
+        },
+        "morning_rounds": {
+          "label_sid": "Morning rounds",
+          "icon_sid": "morning-court"
+        },
+        "midday_slow_water": {
+          "label_sid": "Midday at the slow water",
+          "icon_sid": "midday-water"
+        },
+        "afternoon_rounds": {
+          "label_sid": "Afternoon rounds",
+          "icon_sid": "afternoon-court"
+        },
+        "dusk_vow_recitation": {
+          "label_sid": "Dusk vow recitation",
+          "icon_sid": "dusk-vow"
+        },
+        "night_rest": {
+          "label_sid": "Night rest",
+          "icon_sid": "night-bench"
+        }
+      },
+      "traveler_day": {
+        "dawn_vow_recitation": {
+          "label_sid": "Dawn vow recitation",
+          "icon_sid": "dawn-vow"
+        },
+        "morning_vow_walk": {
+          "label_sid": "Morning vow walk",
+          "icon_sid": "morning-path"
+        },
+        "midday_memory_stone": {
+          "label_sid": "Midday at a memory stone",
+          "icon_sid": "midday-stone"
+        },
+        "afternoon_storm_edge": {
+          "label_sid": "Afternoon at the storm's edge",
+          "icon_sid": "afternoon-storm"
+        },
+        "dusk_bell_listening": {
+          "label_sid": "Dusk bell listening",
+          "icon_sid": "dusk-bell"
+        },
+        "night_rest": {
+          "label_sid": "Night rest",
+          "icon_sid": "night-bench"
+        }
+      }
     }
   },
   "era": {
@@ -416,6 +561,51 @@
         "seek_chan_master": {
           "label_sid": "Seek counsel of a Chan master at the nearby monastery",
           "hint_sid": "A day on the road, an afternoon in the monastery, an evening of questions without easy answers. What you bring back is not a cure. What you bring back is something the household can stand inside of."
+        }
+      },
+      "pilgrim-at-wutai": {
+        "label_sid": "On the road north, a pilgrim rests at the milestone. They are walking to Mount Wutai, the high terraces where the bodhisattva of discriminative wisdom is said to dwell. They ask if you will walk with them for a day.",
+        "join-the-pilgrimage": {
+          "label_sid": "Walk with the pilgrim for a day",
+          "hint_sid": "You fall in step. They speak of the terraces, of the bodhisattva's sword that cuts through confusion, of the long road and what it has taught them. A day is spent; something quieter than coin is gained."
+        },
+        "offer-provisions": {
+          "label_sid": "Offer them provisions for the road ahead",
+          "hint_sid": "You press two days' food into their hands. They bow, name you in a small prayer, and go on alone. The road north remembers your gate, even if the terraces never learn your name."
+        },
+        "decline-and-continue": {
+          "label_sid": "Wish them well and continue on your own road",
+          "hint_sid": "You bow, exchange the small courtesies of the road, and part. They go north; you go on as you were. The bodhisattva of wisdom is not honored less for your refusing what was not yours to give."
+        }
+      },
+      "deathbed-nianfo": {
+        "label_sid": "The household of an elder sends for you. The old one is dying. The family asks if you will sit and recite the name of the Buddha of the Western direction, so that the dying one may be held in attention at the moment of passing.",
+        "sit-and-recite": {
+          "label_sid": "Sit at the deathbed and recite the name for hours",
+          "hint_sid": "You sit through the long hours, the family coming and going around you, the name on the air like a small bell. The breathing thins, settles, thins again. What you give is time and strength. What is left in the room is harder to name."
+        },
+        "teach-the-family": {
+          "label_sid": "Teach the family to recite together",
+          "hint_sid": "You will not stay through the night, but you can teach the family to hold the name together. They gather around the bed; you leave them reciting, the sound following you down the lane. They will remember your teaching, whichever way the night goes."
+        },
+        "respectfully-decline": {
+          "label_sid": "Bow, and explain that you cannot stay",
+          "hint_sid": "You cannot sit with this death. You bow to the elder, to the family, to the small shrine in the corner, and you go. The road is still your road. The name they recite behind you is not yours to carry."
+        }
+      },
+      "sutra-forgery-ring": {
+        "label_sid": "In the market square, a small stall is selling sutra copies to villagers at a price they can ill afford. The colophons claim they are translations of a famous pilgrim who returned from the west with the scriptures. The brushwork is careless; the language does not read like any translation you have seen.",
+        "expose-the-forgery": {
+          "label_sid": "Carry word of the forgery to the county magistrate",
+          "hint_sid": "An honest report, and a costly one. The monastery whose name the forgers borrowed will not soon forget the slight. The magistrate's clerk will note your reliability. The villagers may or may not see their coin again."
+        },
+        "buy-and-burn": {
+          "label_sid": "Buy the forgeries and burn them privately",
+          "hint_sid": "You pay the price they ask, carry the papers to the riverbank, and burn them out of sight. No one is publicly shamed. No one is publicly warned. The coin is gone; the corrupt copies are gone with it."
+        },
+        "ignore-it": {
+          "label_sid": "Walk on. It is not your concern",
+          "hint_sid": "You turn your back on the stall and continue through the market. The villagers buy what they buy; the forgers sell what they sell. The road is long and you have your own road to walk."
         }
       },
       "card": {

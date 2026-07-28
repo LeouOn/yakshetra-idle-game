@@ -75,4 +75,60 @@ describe('Fantasy Mahayana era pack scaffold', () => {
       expect(parsed.hostname.length).toBeGreaterThan(0);
     }
   });
+
+  test('authors 12 practices covering all six lenses, each with a set_intent_root effect', async () => {
+    const pack = await loadEraPack('fantasy-mahayana');
+    expect(pack.practices).toHaveLength(12);
+
+    const lenses = new Set(pack.practices.map((p) => p.lens));
+    expect(lenses.has('careful_conduct')).toBe(true);
+    expect(lenses.has('discernment')).toBe(true);
+    expect(lenses.has('patient_courage')).toBe(true);
+    expect(lenses.has('joyful_effort')).toBe(true);
+    expect(lenses.has('collected_attention')).toBe(true);
+
+    for (const practice of pack.practices) {
+      const hasIntentRoot = practice.effects.some((e) => e.op === 'set_intent_root');
+      expect(hasIntentRoot).toBe(true);
+    }
+  });
+
+  test('authors 3 daily schedules whose blocks enforce 0..24 coverage the schema does not', async () => {
+    const pack = await loadEraPack('fantasy-mahayana');
+    expect(pack.schedules).toHaveLength(3);
+
+    for (const schedule of pack.schedules) {
+      const sorted = [...schedule.blocks].sort((a, b) => a.startHour - b.startHour);
+      const first = sorted[0];
+      const last = sorted[sorted.length - 1];
+      expect(first).toBeDefined();
+      expect(last).toBeDefined();
+      expect(first!.startHour).toBe(0);
+      expect(last!.endHour).toBe(24);
+      for (let i = 1; i < sorted.length; i++) {
+        const prev = sorted[i - 1];
+        const curr = sorted[i];
+        expect(prev).toBeDefined();
+        expect(curr).toBeDefined();
+        expect(curr!.startHour).toBe(prev!.endHour);
+      }
+    }
+  });
+
+  test('every practice and schedule sid resolves through i18n', async () => {
+    const pack = await loadEraPack('fantasy-mahayana');
+
+    for (const practice of pack.practices) {
+      expect(resolveSid(practice.label_sid)).toBeTruthy();
+      expect(resolveSid(practice.description_sid)).toBeTruthy();
+    }
+
+    for (const schedule of pack.schedules) {
+      expect(resolveSid(schedule.name_sid)).toBeTruthy();
+      for (const block of schedule.blocks) {
+        expect(resolveSid(block.label_sid)).toBeTruthy();
+        expect(resolveSid(block.icon_sid)).toBeTruthy();
+      }
+    }
+  });
 });

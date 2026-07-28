@@ -5,6 +5,12 @@
   // Same representation fence as the rest of the pack: no named sacred
   // figures, no mantras, no doctrinal claims. The Gardener is an original
   // allegorical figure, not a disguised sacred being.
+  //
+  // Every practice carries one `set_intent_root` effect so the engine's
+  // cross-life echo reducer records a canonical intent root for each tick
+  // of progress. The root is always 'care' for these contemplative
+  // activities — they are tending, listening, walking, watching, never
+  // grasping or averting.
 
   practices: [
     // ──────────────────────────────────────────────────────────────────────
@@ -18,7 +24,10 @@
       lens: 'careful_conduct',
       progressPerTick: 0.4,
       maxProgress: 10,
-      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+      effects: [
+        { op: 'add_resource', key: 'trust', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
     },
 
     // ──────────────────────────────────────────────────────────────────────
@@ -32,7 +41,10 @@
       lens: 'discernment',
       progressPerTick: 0.3,
       maxProgress: 9,
-      effects: [{ op: 'add_skill', key: 'patient-ear' }],
+      effects: [
+        { op: 'add_skill', key: 'patient-ear' },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
     },
 
     // ──────────────────────────────────────────────────────────────────────
@@ -46,7 +58,164 @@
       lens: 'patient_courage',
       progressPerTick: 0.35,
       maxProgress: 11,
-      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+      effects: [
+        { op: 'add_resource', key: 'energy', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 4. Bell listening — collected attention. Sit where the Bell That Rings
+    // Once can be heard and rest the attention on its single note; small
+    // trust gain per tick.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/bell-listening',
+      label_sid: 'fantasy.practice.bell_listening.label_sid',
+      description_sid: 'fantasy.practice.bell_listening.description_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.3,
+      maxProgress: 10,
+      effects: [
+        { op: 'add_resource', key: 'trust', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 5. Memory stone touching — discernment. Place a hand on a memory
+    // stone and read what arrived with you; grants the `patient-ear` skill.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/memory-stone-touching',
+      label_sid: 'fantasy.practice.memory_stone_touching.label_sid',
+      description_sid: 'fantasy.practice.memory_stone_touching.description_sid',
+      lens: 'discernment',
+      progressPerTick: 0.25,
+      maxProgress: 9,
+      effects: [
+        { op: 'add_skill', key: 'patient-ear' },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 6. Slow water walking — patient courage. Walk beside the Garden's slow
+    // water and match its pace; restores energy.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/slow-water-walking',
+      label_sid: 'fantasy.practice.slow_water_walking.label_sid',
+      description_sid: 'fantasy.practice.slow_water_walking.description_sid',
+      lens: 'patient_courage',
+      progressPerTick: 0.3,
+      maxProgress: 11,
+      effects: [
+        { op: 'add_resource', key: 'energy', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 7. Gardener shadow following — joyful effort. Walk one length behind
+    // the Gardener as the day's work is done; grants the `steady-hand` skill.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/gardener-shadow-following',
+      label_sid: 'fantasy.practice.gardener_shadow_following.label_sid',
+      description_sid: 'fantasy.practice.gardener_shadow_following.description_sid',
+      lens: 'joyful_effort',
+      progressPerTick: 0.25,
+      maxProgress: 8,
+      effects: [
+        { op: 'add_skill', key: 'steady-hand' },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 8. Court attendant rounds — careful conduct. Walk the rounds the Court
+    // requires of its attendants; small trust gain per tick.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/court-attendant-rounds',
+      label_sid: 'fantasy.practice.court_attendant_rounds.label_sid',
+      description_sid: 'fantasy.practice.court_attendant_rounds.description_sid',
+      lens: 'careful_conduct',
+      progressPerTick: 0.4,
+      maxProgress: 10,
+      effects: [
+        { op: 'add_resource', key: 'trust', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 9. Vow recitation — collected attention. Recite the vow you declared
+    // in a prior turn until the words settle; restores energy.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/vow-recitation',
+      label_sid: 'fantasy.practice.vow_recitation.label_sid',
+      description_sid: 'fantasy.practice.vow_recitation.description_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.3,
+      maxProgress: 10,
+      effects: [
+        { op: 'add_resource', key: 'energy', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 10. Garden pruning — careful conduct. Cut back what has overgrown the
+    // Garden's intended paths; small trust gain per tick.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/garden-pruning',
+      label_sid: 'fantasy.practice.garden_pruning.label_sid',
+      description_sid: 'fantasy.practice.garden_pruning.description_sid',
+      lens: 'careful_conduct',
+      progressPerTick: 0.4,
+      maxProgress: 10,
+      effects: [
+        { op: 'add_resource', key: 'trust', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 11. Arrival listening — discernment. Sit at the Garden's threshold and
+    // listen for the next soul coming through; grants the `patient-ear` skill.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/arrival-listening',
+      label_sid: 'fantasy.practice.arrival_listening.label_sid',
+      description_sid: 'fantasy.practice.arrival_listening.description_sid',
+      lens: 'discernment',
+      progressPerTick: 0.3,
+      maxProgress: 9,
+      effects: [
+        { op: 'add_skill', key: 'patient-ear' },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 12. Storm edge watching — patient courage. Stand where the storm at
+    // the Garden's edge meets the calmer air within; restores energy.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:fantasy/storm-edge-watching',
+      label_sid: 'fantasy.practice.storm_edge_watching.label_sid',
+      description_sid: 'fantasy.practice.storm_edge_watching.description_sid',
+      lens: 'patient_courage',
+      progressPerTick: 0.35,
+      maxProgress: 11,
+      effects: [
+        { op: 'add_resource', key: 'energy', delta: 1 },
+        { op: 'set_intent_root', intent_root: 'care' },
+      ],
     },
   ],
 }

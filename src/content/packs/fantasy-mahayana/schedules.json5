@@ -3,7 +3,9 @@
   // covering a full day in the Garden of Arrivals.
   //
   // Hours are 0..24 integer; the schema validates shape (block bounds and
-  // sid format), not coverage.
+  // sid format), not coverage. The authored schedules below cover the full
+  // 0..24 range without gaps or overlaps so the idle-mode engine can hand
+  // every tick to a block.
 
   schedules: [
     // ──────────────────────────────────────────────────────────────────────
@@ -14,6 +16,14 @@
       id: 'schedule:fantasy/garden-day',
       name_sid: 'fantasy.schedule.garden_day.name_sid',
       blocks: [
+        {
+          id: 'block:fantasy/garden-day/pre-dawn-rest',
+          label_sid: 'fantasy.block.garden_day.pre_dawn_rest.label_sid',
+          startHour: 0,
+          endHour: 5,
+          practice_id: null,
+          icon_sid: 'fantasy.block.garden_day.pre_dawn_rest.icon_sid',
+        },
         {
           id: 'block:fantasy/garden-day/dawn-listening',
           label_sid: 'fantasy.block.garden_day.dawn_listening.label_sid',
@@ -53,6 +63,135 @@
           endHour: 22,
           practice_id: 'practice:fantasy/listening-at-the-gate',
           icon_sid: 'fantasy.block.garden_day.evening_reflection.icon_sid',
+        },
+        {
+          id: 'block:fantasy/garden-day/night-rest',
+          label_sid: 'fantasy.block.garden_day.night_rest.label_sid',
+          startHour: 22,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'fantasy.block.garden_day.night_rest.icon_sid',
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Court day — a court attendant's full round. Pre-dawn through dawn
+    // rounds, midmorning rounds, a slow-water walk at midday, afternoon
+    // rounds, dusk vow recitation, night rest. Covers 0..24 without gaps.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:fantasy/court-day',
+      name_sid: 'fantasy.schedule.court_day.name_sid',
+      blocks: [
+        {
+          id: 'block:fantasy/court-day/dawn-rounds',
+          label_sid: 'fantasy.block.court_day.dawn_rounds.label_sid',
+          startHour: 0,
+          endHour: 7,
+          practice_id: 'practice:fantasy/court-attendant-rounds',
+          icon_sid: 'fantasy.block.court_day.dawn_rounds.icon_sid',
+        },
+        {
+          id: 'block:fantasy/court-day/morning-rounds',
+          label_sid: 'fantasy.block.court_day.morning_rounds.label_sid',
+          startHour: 7,
+          endHour: 12,
+          practice_id: 'practice:fantasy/court-attendant-rounds',
+          icon_sid: 'fantasy.block.court_day.morning_rounds.icon_sid',
+        },
+        {
+          id: 'block:fantasy/court-day/midday-slow-water',
+          label_sid: 'fantasy.block.court_day.midday_slow_water.label_sid',
+          startHour: 12,
+          endHour: 15,
+          practice_id: 'practice:fantasy/slow-water-walking',
+          icon_sid: 'fantasy.block.court_day.midday_slow_water.icon_sid',
+        },
+        {
+          id: 'block:fantasy/court-day/afternoon-rounds',
+          label_sid: 'fantasy.block.court_day.afternoon_rounds.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:fantasy/court-attendant-rounds',
+          icon_sid: 'fantasy.block.court_day.afternoon_rounds.icon_sid',
+        },
+        {
+          id: 'block:fantasy/court-day/dusk-vow-recitation',
+          label_sid: 'fantasy.block.court_day.dusk_vow_recitation.label_sid',
+          startHour: 19,
+          endHour: 22,
+          practice_id: 'practice:fantasy/vow-recitation',
+          icon_sid: 'fantasy.block.court_day.dusk_vow_recitation.icon_sid',
+        },
+        {
+          id: 'block:fantasy/court-day/night-rest',
+          label_sid: 'fantasy.block.court_day.night_rest.label_sid',
+          startHour: 22,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'fantasy.block.court_day.night_rest.icon_sid',
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Traveler day — a vow-bound traveler's full day. Pre-dawn vow
+    // recitation, morning vow walk, midday memory-stone reflection,
+    // afternoon storm-edge watching, dusk bell listening, night rest.
+    // Covers 0..24 without gaps.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:fantasy/traveler-day',
+      name_sid: 'fantasy.schedule.traveler_day.name_sid',
+      blocks: [
+        {
+          id: 'block:fantasy/traveler-day/dawn-vow-recitation',
+          label_sid: 'fantasy.block.traveler_day.dawn_vow_recitation.label_sid',
+          startHour: 0,
+          endHour: 7,
+          practice_id: 'practice:fantasy/vow-recitation',
+          icon_sid: 'fantasy.block.traveler_day.dawn_vow_recitation.icon_sid',
+        },
+        {
+          id: 'block:fantasy/traveler-day/morning-vow-walk',
+          label_sid: 'fantasy.block.traveler_day.morning_vow_walk.label_sid',
+          startHour: 7,
+          endHour: 12,
+          practice_id: 'practice:fantasy/vow-walking',
+          icon_sid: 'fantasy.block.traveler_day.morning_vow_walk.icon_sid',
+        },
+        {
+          id: 'block:fantasy/traveler-day/midday-memory-stone',
+          label_sid: 'fantasy.block.traveler_day.midday_memory_stone.label_sid',
+          startHour: 12,
+          endHour: 15,
+          practice_id: 'practice:fantasy/memory-stone-touching',
+          icon_sid: 'fantasy.block.traveler_day.midday_memory_stone.icon_sid',
+        },
+        {
+          id: 'block:fantasy/traveler-day/afternoon-storm-edge',
+          label_sid: 'fantasy.block.traveler_day.afternoon_storm_edge.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:fantasy/storm-edge-watching',
+          icon_sid: 'fantasy.block.traveler_day.afternoon_storm_edge.icon_sid',
+        },
+        {
+          id: 'block:fantasy/traveler-day/dusk-bell-listening',
+          label_sid: 'fantasy.block.traveler_day.dusk_bell_listening.label_sid',
+          startHour: 19,
+          endHour: 22,
+          practice_id: 'practice:fantasy/bell-listening',
+          icon_sid: 'fantasy.block.traveler_day.dusk_bell_listening.icon_sid',
+        },
+        {
+          id: 'block:fantasy/traveler-day/night-rest',
+          label_sid: 'fantasy.block.traveler_day.night_rest.label_sid',
+          startHour: 22,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'fantasy.block.traveler_day.night_rest.icon_sid',
         },
       ],
     },
