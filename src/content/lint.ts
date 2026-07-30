@@ -23,6 +23,7 @@
  * See `.omo/plans/buddhist-inspired-incremental-rpg.md` todo 5.
  */
 
+import type { MinigameDef } from './minigame-schema';
 import type { EffectOp, EraPack, Practice } from './schema';
 import { PROHIBITED_NAMES } from './prohibited-names';
 
@@ -459,18 +460,130 @@ function checkNoPracticeAsCurrency(
 }
 
 /* -------------------------------------------------------------------------------------------------
+ * Minigame reward scanning
+ *
+ * Minigame reward tiers are EffectOp[] drawn from the SAME closed union as
+ * event/choice effects (see ./minigame-schema). They are therefore subject
+ * to the same textual defense-in-depth: an author can still smuggle a
+ * metaphysical score into a free-form resource key, pair a harm consequence
+ * with a donation "offset" inside one tier, or embed a real seed syllable.
+ * The four rules below re-run the existing pattern logic against each tier's
+ * rewards, mirroring how the pack-level rules scan choices.
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Scan every minigame's reward tiers with the existing prohibited-mechanics
+ * rules:
+ *
+ *  - R-NO-KARMA-METER: every string under a reward effect (field name OR
+ *    value) is checked for `karma|merit|spiritual_rank|enlightenment`.
+ *  - R-NO-VISIBLE-KARMA-METER: each effect identifier is checked for a
+ *    visibility suffix paired with a forbidden theme.
+ *  - R-NO-DONATION-OFFSET: applied PER REWARD TIER — the tier's rewards play
+ *    the role a choice's effects play in the pack. A tier that pairs a harm
+ *    consequence with a donation/alms/merit reward is an "offset" mechanic.
+ *  - R-NO-REAL-MANTRA: every string under a reward effect is checked against
+ *    the seed-syllable pattern. Reward prose lives out-of-pack, but the
+ *    identifier strings are scanned as a weak signal (matches the
+ *    `lineage_notes_sid` treatment in the pack-level rule).
+ *
+ * R-NO-SACRED-NAMES is intentionally NOT re-run here: it guards player-facing
+ * `_sid` prose and bibliographic citations, and minigame reward tiers carry no
+ * such fields (their `summary_sid` is a localization key, not prose).
+ *
+ * `minigames` defaults to empty so callers that predate this scan continue to
+ * compile and behave identically.
+ */
+function checkMinigameRewards(minigames: readonly MinigameDef[], out: LintViolation[]): void {
+  for (const mg of minigames) {
+    for (const [ti, tier] of mg.rewardTiers.entries()) {
+      // R-NO-DONATION-OFFSET accumulator (per tier, like per choice in the pack).
+      let hasHarm = false;
+      let hasDonation = false;
+
+      for (const [ei, eff] of tier.rewards.entries()) {
+        const loc = `minigames[${mg.id}].rewardTiers[${ti}].rewards[${ei}]`;
+
+        // R-NO-KARMA-METER + R-NO-REAL-MANTRA: scan every string under the effect.
+        for (const { s, path } of walkStrings(eff, loc)) {
+          if (KARMA_METER_RE.test(s)) {
+            out.push(
+              violation(
+                R_NO_KARMA_METER,
+                `prohibited meter token "${s}" in minigame "${mg.id}" reward tier ${ti}`,
+                path,
+              ),
+            );
+          }
+          if (MANTRA_RE.test(s)) {
+            out.push(
+              violation(
+                R_NO_REAL_MANTRA,
+                `seed-syllable mantra token in minigame "${mg.id}" reward tier ${ti}: "${s}"`,
+                path,
+              ),
+            );
+          }
+        }
+
+        // R-NO-VISIBLE-KARMA-METER: scan effect identifiers.
+        for (const id of effectIdentifiers(eff)) {
+          if (VISIBLE_SUFFIX_RE.test(id) && VISIBLE_THEME_RE.test(id)) {
+            out.push(
+              violation(
+                R_NO_VISIBLE_KARMA_METER,
+                `visible meter identifier "${id}" in minigame "${mg.id}" reward tier ${ti}`,
+                loc,
+              ),
+            );
+          }
+        }
+
+        // R-NO-DONATION-OFFSET accumulator (op-shape mirrors the pack-level rule).
+        if (eff.op === 'add_resource') {
+          if (HARM_KEY_RE.test(eff.key)) hasHarm = true;
+          if (DONATION_KEY_RE.test(eff.key)) hasDonation = true;
+        } else if (eff.op === 'add_relationship') {
+          if (HARM_KEY_RE.test(eff.target)) hasHarm = true;
+          if (DONATION_KEY_RE.test(eff.target)) hasDonation = true;
+        } else if (eff.op === 'narrative_card') {
+          if (HARM_WORDS_RE.test(eff.card_sid)) hasHarm = true;
+        }
+      }
+
+      if (hasHarm && hasDonation) {
+        out.push(
+          violation(
+            R_NO_DONATION_OFFSET,
+            `minigame "${mg.id}" reward tier ${ti} pairs a harm consequence with a donation/alms/merit reward (forbidden "offset" mechanic)`,
+            `minigames[${mg.id}].rewardTiers[${ti}].rewards`,
+          ),
+        );
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------------------------------
  * Entry point
  * -----------------------------------------------------------------------------------------------*/
 
 /**
- * Lint a parsed {@link EraPack} (plus optional practices and i18n strings)
- * against all six prohibited-mechanics rules.
+ * Lint a parsed {@link EraPack} (plus optional practices, i18n strings, and
+ * minigames) against all six prohibited-mechanics rules.
  *
  * `practices` and `i18n` default to empty: callers that predate
  * R-NO-PRACTICE-AS-CURRENCY continue to compile and produce identical reports.
  * When practices are supplied, R-NO-PRACTICE-AS-CURRENCY scans each practice's
  * effects, maxProgress, and (if the description_sid resolves through `i18n`)
  * description prose for currency framing.
+ *
+ * `minigames` defaults to empty: callers that predate minigame reward scanning
+ * continue to compile and behave identically. When minigames are supplied,
+ * R-NO-KARMA-METER, R-NO-VISIBLE-KARMA-METER, R-NO-DONATION-OFFSET, and
+ * R-NO-REAL-MANTRA are re-run against each minigame's `rewardTiers[].rewards`
+ * (the same closed EffectOp union the engine uses), so an author cannot smuggle
+ * a metaphysical score or a harm+donation "offset" through a reward tier.
  *
  * `passed` is `true` iff there are zero ERROR-severity violations; WARNINGs
  * (e.g. round maxProgress) are reported but do not fail the pack, so an author
@@ -483,6 +596,7 @@ export function lintPack(
   pack: EraPack,
   practices: readonly Practice[] = [],
   i18n: Readonly<Record<string, string>> = {},
+  minigames: readonly MinigameDef[] = [],
 ): LintReport {
   const violations: LintViolation[] = [];
   checkNoKarmaMeter(pack, violations);
@@ -491,6 +605,7 @@ export function lintPack(
   checkNoVisibleKarmaMeter(pack, violations);
   checkNoRealMantra(pack, violations);
   checkNoPracticeAsCurrency(practices, i18n, violations);
+  checkMinigameRewards(minigames, violations);
   const hasError = violations.some((v) => v.severity === 'error');
   return { passed: !hasError, violations };
 }

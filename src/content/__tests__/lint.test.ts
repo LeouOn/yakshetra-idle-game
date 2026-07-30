@@ -16,6 +16,7 @@ import {
   R_NO_VISIBLE_KARMA_METER,
 } from '../lint';
 import { EraPackSchema, PracticeSchema, type EraPack } from '../schema';
+import { MinigameDefSchema } from '../minigame-schema';
 
 /**
  * Prohibited-mechanics lint tests (plan todo 5).
@@ -321,6 +322,60 @@ describe('R-NO-PRACTICE-AS-CURRENCY', () => {
     expect(currencyFindings[0]!.severity).toBe('warning');
     expect(currencyFindings[0]!.location).toBe('practices[grand-quest].maxProgress');
     expect(report.passed).toBe(true);
+  });
+});
+
+describe('minigame reward scanning', () => {
+  /**
+   * A minimal breath_count minigame whose only variable is the reward tier's
+   * single add_resource effect. Loaded against the clean karma-meter-pass pack
+   * so the pack itself contributes zero violations and any finding is owed to
+   * the minigame — the isolation contract mirrors the practice-as-currency tests.
+   */
+  function makeBreathMinigame(rewardKey: string) {
+    return MinigameDefSchema.parse({
+      id: `breath-${rewardKey}`,
+      type: 'breath_count',
+      label_sid: `minigame.breath_${rewardKey}.label_sid`,
+      description_sid: `minigame.breath_${rewardKey}.desc_sid`,
+      lens: 'collected_attention',
+      config: { target: 10, maxInputs: 20 },
+      rewardTiers: [
+        {
+          minScore: 5,
+          summary_sid: `minigame.breath_${rewardKey}.tier1_sid`,
+          rewards: [{ op: 'add_resource', key: rewardKey, delta: 1 }],
+        },
+      ],
+    });
+  }
+
+  test('FAIL — a minigame rewarding add_resource key "merit" is flagged (R-NO-KARMA-METER)', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const report = lintPack(pack, [], {}, [makeBreathMinigame('merit')]);
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toContain(R_NO_KARMA_METER);
+    // Isolation: only the minigame-driven R-NO-KARMA-METER fires.
+    expect(ruleIds(report)).toEqual([R_NO_KARMA_METER]);
+    expect(report.violations[0]!.message).toContain('merit');
+    expect(report.violations[0]!.location).toContain('breath-merit');
+  });
+
+  test('FAIL — a minigame rewarding add_resource key "karma" is flagged (R-NO-KARMA-METER)', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const report = lintPack(pack, [], {}, [makeBreathMinigame('karma')]);
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toContain(R_NO_KARMA_METER);
+    expect(ruleIds(report)).toEqual([R_NO_KARMA_METER]);
+    expect(report.violations[0]!.message).toContain('karma');
+    expect(report.violations[0]!.location).toContain('breath-karma');
+  });
+
+  test('PASS — a clean minigame (reward key with no prohibited token) lints clean', async () => {
+    const pack = await loadFixture('karma-meter-pass');
+    const report = lintPack(pack, [], {}, [makeBreathMinigame('focus')]);
+    expect(report.passed).toBe(true);
+    expect(report.violations).toEqual([]);
   });
 });
 
