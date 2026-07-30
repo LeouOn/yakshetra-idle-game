@@ -835,6 +835,128 @@
       "attribute_sid": "The historical teacher traditionally credited with bringing Chan from the west and founding the lineage that became Chinese Chan.",
       "iconography_sid": "Bearded, hooded or bare-headed South Indian monk, shown seated in meditation facing a wall, often with a single sandal (referencing the legend of his return to the west).",
       "reverence_sid": "Honor in Tang Chan lineages as the first patriarch; the Platform Sutra carries forward the lineage he is traditionally credited with starting."
+    },
+    "bhadrakalpa": {
+      "1": {
+        "display_name_sid": "Koṇḍañña",
+        "attribute_sid": "The first teacher of the present auspicious aeon, whose awakening inaugurates the lineage of past Buddhas invoked in confession.",
+        "iconography_sid": "Seated in meditation beneath a great sāla tree, hands in dhyāna-mudrā; the commentarial lineage lists record him as the opening name in the enumeration of past Buddhas.",
+        "reverence_sid": "Invoked as the first of the Buddhas of the past in the confession liturgies that purify broken precept and karmic obstruction."
+      },
+      "2": {
+        "display_name_sid": "Maṅgala",
+        "attribute_sid": "An auspicious awakened teacher whose name signifies blessing and good fortune.",
+        "iconography_sid": "Seated awakened teacher in monastic robes, hands resting in the gesture of meditation; counted second in the lineage of past Buddhas.",
+        "reverence_sid": "Reverenced in the confession liturgy for the purification of misfortune and the restoration of auspicious conduct."
+      },
+      "3": {
+        "display_name_sid": "Sumana",
+        "attribute_sid": "A serene awakened teacher whose name conveys a tranquil and well-settled mind.",
+        "iconography_sid": "Depicted as a seated teacher with the ushṇīṣa and monastic robe, in the collected posture of meditation; the third Buddha of the past.",
+        "reverence_sid": "Reverenced for calming the restless mind and settling the heart in practice."
+      },
+      "4": {
+        "display_name_sid": "Revata",
+        "attribute_sid": "An awakened teacher honored in the lineage for the steadiness of his collected attention.",
+        "iconography_sid": "Seated in meditation posture, the fourth in the enumeration of past Buddhas; his iconographic form follows the standard type of an awakened monastic teacher.",
+        "reverence_sid": "Reverenced for steadying collected attention and dispelling distraction."
+      },
+      "5": {
+        "display_name_sid": "Sobhita",
+        "attribute_sid": "An awakened teacher whose name carries the sense of radiant clarity.",
+        "iconography_sid": "Seated teacher in dhyāna-mudrā, fifth among the past Buddhas; depicted in the standard monastic form with the cranial protuberance.",
+        "reverence_sid": "Reverenced for illuminating obscured understanding with radiant clarity."
+      },
+      "6": {
+        "display_name_sid": "Anomadassī",
+        "attribute_sid": "The incomparable-seeing teacher whose realization is praised as unrivalled in vision.",
+        "iconography_sid": "Seated awakened teacher in meditation; the sixth Buddha of the past, named for his incomparable insight.",
+        "reverence_sid": "Reverenced for the cultivation of incomparable insight and clear seeing."
+      },
+      "7": {
+        "display_name_sid": "Paduma",
+        "attribute_sid": "The lotus teacher, named for the lotus and associated with the unfolding of awakened qualities.",
+        "iconography_sid": "Seated teacher associated with the lotus emblem, hands in meditation; the seventh Buddha of the past.",
+        "reverence_sid": "Reverenced for the unfolding of pure qualities, like a lotus rising undefiled."
+      },
+      "8": {
+        "display_name_sid": "Nārada",
+        "attribute_sid": "An awakened teacher whose compassionate intervention is recorded in the lineage narratives.",
+        "iconography_sid": "Seated teacher in the collected posture of meditation; the eighth Buddha of the past.",
+        "reverence_sid": "Reverenced for compassionate response to those overwhelmed by affliction."
+      },
+      "9": {
+        "display_name_sid": "Padumuttara",
+        "attribute_sid": "The supreme-lotus teacher, associated with the highest excellence of awakened qualities.",
+        "iconography_sid": "Seated awakened teacher in dhyāna-mudrā; the ninth Buddha of the past, named for his supreme lotus-like quality.",
+        "reverence_sid": "Reverenced for the culmination of merit and the supreme excellence of the path."
+      },
+      "10": {
+        "display_name_sid": "Sumedha",
+        "attribute_sid": "The great-wisdom teacher whose aspiration sets the bodhisattva path in motion in the lineage narratives.",
+        "iconography_sid": "Seated teacher in meditation posture; the tenth Buddha of the past, named for his resolute wisdom.",
+        "reverence_sid": "Reverenced for the resolution of wisdom and the aspiration that opens the way to awakening."
+      },
+      "11": {
+        "display_name_sid": "Sujāta",
+        "attribute_sid": "The well-born teacher whose lineage is praised as noble and well-established.",
+        "iconography_sid": "Seated awakened teacher in monastic robes; the eleventh Buddha of the past.",
+        "reverence_sid": "Reverenced for the restoration of noble and upright conduct."
+      },
+      "12": {
+        "display_name_sid": "Piyadassī",
+        "attribute_sid": "The beloved-seeing teacher whose vision is praised as dear to those who seek the way.",
+        "iconography_sid": "Seated teacher in meditation; the twelfth Buddha of the past, named for his endearing clarity of sight.",
+        "reverence_sid": "Reverenced for the clearing of the heart's affections toward what is worthy."
+      },
+      "13": {
+        "display_name_sid": "Atthadassī",
+        "attribute_sid": "The goal-seeing teacher whose vision perceives the meaning and aim of the teaching.",
+        "iconography_sid": "Seated awakened teacher in the posture of meditation; the thirteenth Buddha of the past.",
+        "reverence_sid": "Reverenced for discerning the aim of practice and the meaning of the way."
+      },
+      "14": {
+        "display_name_sid": "Dhammadassī",
+        "attribute_sid": "The dharma-seeing teacher whose realization perceives the nature of things as they are.",
+        "iconography_sid": "Seated teacher in dhyāna-mudrā; the fourteenth Buddha of the past, named for his vision of the teaching.",
+        "reverence_sid": "Reverenced for insight into the nature of phenomena and the clearing of delusion."
+      },
+      "15": {
+        "display_name_sid": "Siddhattha",
+        "attribute_sid": "The aim-accomplished teacher whose name signifies one whose purpose has been fulfilled.",
+        "iconography_sid": "Seated awakened teacher in meditation posture; the fifteenth Buddha of the past, sharing his name with the historical teacher of our own age.",
+        "reverence_sid": "Reverenced for the fulfillment of the aim of practice and the completion of what was undertaken."
+      },
+      "16": {
+        "display_name_sid": "Tissa",
+        "attribute_sid": "An awakened teacher honored in the lineage for the swiftness of his path.",
+        "iconography_sid": "Seated teacher in the collected posture; the sixteenth Buddha of the past.",
+        "reverence_sid": "Reverenced for the swift clearing of lingering obstruction."
+      },
+      "17": {
+        "display_name_sid": "Phussa",
+        "attribute_sid": "An awakened teacher whose name conveys the sense of radiant, shining brilliance.",
+        "iconography_sid": "Seated awakened teacher in meditation; the seventeenth Buddha of the past.",
+        "reverence_sid": "Reverenced for the dispelling of darkness through radiant brilliance."
+      },
+      "18": {
+        "display_name_sid": "Vipassī",
+        "attribute_sid": "The clear-seeing teacher who, in the lineage narratives, first rediscovers the way after it has faded from the world.",
+        "iconography_sid": "Seated teacher in meditation beneath a pāṭalī tree, hands in dhyāna-mudrā; the eighteenth Buddha of the past.",
+        "reverence_sid": "Reverenced for the clear seeing that reopens the lost way."
+      },
+      "19": {
+        "display_name_sid": "Sikhī",
+        "attribute_sid": "The crested teacher, named for the crest-like ushṇīṣa that marks an awakened one.",
+        "iconography_sid": "Seated awakened teacher with the prominent cranial crest, hands in meditation; the nineteenth Buddha of the past.",
+        "reverence_sid": "Reverenced for the mark of awakening and the height of realized understanding."
+      },
+      "20": {
+        "display_name_sid": "Vessabhū",
+        "attribute_sid": "The all-pervading teacher whose influence is described in the lineage as reaching throughout the field of beings.",
+        "iconography_sid": "Seated teacher in meditation posture; the twentieth Buddha of the past, the last in this representative sequence before the three teachers of our own historical era.",
+        "reverence_sid": "Reverenced for the all-pervading field of benefit established by an awakened teacher."
+      }
     }
   },
   "mantra": {
@@ -861,6 +983,42 @@
       "transliteration_sid": "námó ēmítuó fó",
       "translation_sid": "Homage to Amitābha Buddha.",
       "description_sid": "The Chinese Pure Land recitation of Amitābha's name, central to Tang Jingtu practice. The transliteration above reflects the Late Tang pronunciation form."
+    },
+    "heart-dharani": {
+      "label_sid": "Heart Sutra Dharani",
+      "transliteration_sid": "tadyathā gate gate pāragate pārasaṃgate bodhi svāhā",
+      "translation_sid": "Thus it is said: gone, gone, gone beyond, gone utterly beyond, awakening, so be it.",
+      "description_sid": "The full dharani verse that closes the Prajñāpāramitāhṛdaya, carried in the Tang scholastic tradition as a protective condensation of the entire Perfection of Wisdom. Recited as a daily purification and as the seal placed on sutra-copying rites. The tadyathā opening marks it out as a dhāraṇī rather than a short recitative phrase."
+    },
+    "great-compassion-dharani": {
+      "label_sid": "Great Compassion Dharani (Nīlakaṇṭha, opening excerpt)",
+      "transliteration_sid": "namaḥ ratna-trayāya namas āryāvalokiteśvarāya bodhisattvāya mahāsattvāya mahākāruṇikāya sarva-bandhana-cchedana-karāya sarva-bhava-samudra-śoṣaṇa-karāya",
+      "translation_sid": "Homage to the Triple Gem. Homage to the noble Avalokiteśvara, bodhisattva, great being, the greatly compassionate, who severs all bonds and dries up the ocean of becoming.",
+      "description_sid": "Opening excerpt of the Mahākāruṇikacitta Dhāraṇī (Nīlakaṇṭha), brought to Tang Chang'an by the Central Asian monk Bhagavaddharma in the mid-7th century and re-translated by Amoghavajra. Recited across Tang and later East Asian monasteries as a rite of compassion, healing, and protection; the full text runs to several hundred syllables, of which the first invocation is shown here."
+    },
+    "usnijaya-dharani": {
+      "label_sid": "Uṣṇīṣa Vijaya Dharani (opening excerpt)",
+      "transliteration_sid": "oṃ namo bhagavate uṣṇīṣāya vijayāya tathāgatāya tadyathā oṃ bhrūṃ bhrūṃ śodhaya śodhaya viśodhaya viśodhaya",
+      "translation_sid": "Om, homage to the Blessed One, the Uṣṇīṣa Vijaya Tathāgata. Thus: om, bhrūṃ, bhrūṃ — purify, purify, thoroughly purify, thoroughly purify.",
+      "description_sid": "Opening excerpt of the Uṣṇīṣavijayā Dhāraṇī Sūtra, translated into Chinese by Buddhapāli in 676 CE and central to the Tang rite the monk Śiwúwèi later performed at the Fóguāng Temple. Traditionally recited for the purification of karma, the removal of obstacles, and the lengthening of life; shown here as a representative opening passage of the longer full dhāraṇī."
+    },
+    "surangama-mantra": {
+      "label_sid": "Śūraṅgama Mantra (opening excerpt)",
+      "transliteration_sid": "namaḥ sitātapatre apāyajāmunī namaḥ sapta-samyak-saṃbuddha-koṭīnāṃ oṃ anale anale viśada viśada vajra-dhare bandha bandha hana hana vajra-vidhāraṇi phaṭ phaṭ svāhā",
+      "translation_sid": "Homage to the white-canopy queen, the unsurpassed. Homage to the seven perfectly awakened ones. Om: blaze, blaze, shine, shine, vajra-bearer, bind, bind, strike, strike, vajra-holder, phaṭ, phaṭ, so be it.",
+      "description_sid": "Opening invocation and first clauses of the Śūraṅgama Mantra from the Da foding shou Lengyan jing, the Chinese scripture translated by Pāramiti in 705 CE at the Shenzhou monastery. Revered in Tang Chan and esoteric schools as the most comprehensive protective dhāraṇī; the full text is several hundred syllables, of which the opening invocation is shown here."
+    },
+    "rebirth-dharani": {
+      "label_sid": "Rebirth Dharani (Wǎngshēng Zhòu)",
+      "transliteration_sid": "namo amitābhāya tathāgatāya tadyathā amṛtodbhave amṛtasaṃbhave amṛtagarbhe amṛtasiddhe amṛtavikrānte gagana-kīrticchare svāhā",
+      "translation_sid": "Homage to Amitābha Tathāgata. Thus: nectar-arisen, nectar-born, nectar-wombed, nectar-accomplished, nectar-striding, sky-fame-resounding, so be it.",
+      "description_sid": "The Rebirth Dharani (Wǎngshēng Zhòu) appended to the Amitābha Sūtra in the Chinese Pure Land canon. Recited ten times at the close of the evening rite, immediately after the Buddha-name recitation, to direct the recitation toward birth in the Pure Land of Sukhāvatī."
+    },
+    "pure-land-dharani": {
+      "label_sid": "Pure Land Dharani (Amitābha heart)",
+      "transliteration_sid": "oṃ ami deva hrīḥ",
+      "translation_sid": "Om, Amitābha, hrīḥ — the seed-syllable of boundless light and compassion.",
+      "description_sid": "The short heart-mantra of Amitābha, the Buddha of Boundless Light, employed in the esoteric Pure Land rites transmitted to Tang China by Śubhakarasiṃha and Amoghavajra. The seed-syllable hrīḥ seals the recitation, marking it as a wish for awakening in the Pure Land rather than a worldly petition."
     }
   },
   "sutra": {

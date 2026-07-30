@@ -54,8 +54,9 @@ describe('Tang China era pack scaffold', () => {
   test('sacred-text collections have the expected counts', async () => {
     const pack = await loadEraPack('tang-china');
 
-    expect(pack.figures).toHaveLength(12);
-    expect(pack.mantras).toHaveLength(4);
+    // 12 core Tang figures + 20 Buddhas of the past (Bhadrakalpa lineage).
+    expect(pack.figures).toHaveLength(32);
+    expect(pack.mantras).toHaveLength(10);
     expect(pack.sutras).toHaveLength(7);
   });
 

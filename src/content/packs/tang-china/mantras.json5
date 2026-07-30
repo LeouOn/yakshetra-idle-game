@@ -75,5 +75,107 @@
       description_sid: 'mantra.nianfo.description_sid',
       source_sutra_id: 'sutra:amitabha',
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 5. Heart Sutra dharani — the closing verse of the Prajñāpāramitāhṛdaya
+    // recited as a standalone dharani in Tang monasteries, distinct from the
+    // short mantra above in that it carries the "tadyathā" opening formula
+    // that marks a dhāraṇī as a protective condensation of the whole sutra.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:heart-dharani',
+      label_sid: 'mantra.heart-dharani.label_sid',
+      transliteration_sid: 'mantra.heart-dharani.transliteration_sid',
+      translation_sid: 'mantra.heart-dharani.translation_sid',
+      associated_figure_id: null,
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.heart-dharani.description_sid',
+      source_sutra_id: 'sutra:heart',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 6. Great Compassion dharani — the opening of the Mahākāruṇikacitta
+    // (Nīlakaṇṭha) Dhāraṇī, brought to Chang'an by the Central Asian monk
+    // Bhagavaddharma in the mid-7th century. Shown here as a representative
+    // opening excerpt of a text that runs to several hundred syllables.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:great-compassion-dharani',
+      label_sid: 'mantra.great-compassion-dharani.label_sid',
+      transliteration_sid: 'mantra.great-compassion-dharani.transliteration_sid',
+      translation_sid: 'mantra.great-compassion-dharani.translation_sid',
+      associated_figure_id: 'figure:avalokiteshvara',
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.great-compassion-dharani.description_sid',
+      source_sutra_id: null,
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 7. Uṣṇīṣa Vijaya dharani — excerpt from the Uṣṇīṣavijayā Dhāraṇī
+    // Sūtra, translated into Chinese by Buddhapāli in 676 CE. Central to the
+    // Tang rite performed at the Fóguāng Temple; used for the purification of
+    // karma and the lengthening of life. Representative opening excerpt.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:usnijaya-dharani',
+      label_sid: 'mantra.usnijaya-dharani.label_sid',
+      transliteration_sid: 'mantra.usnijaya-dharani.transliteration_sid',
+      translation_sid: 'mantra.usnijaya-dharani.translation_sid',
+      associated_figure_id: null,
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.usnijaya-dharani.description_sid',
+      source_sutra_id: null,
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 8. Śūraṅgama mantra — opening invocation and first clauses of the
+    // mantra from the Da foding shou Lengyan jing, translated by Pāramiti in
+    // 705 CE. Revered in Tang Chan and esoteric schools as the most
+    // comprehensive protective dhāraṇī. Opening excerpt shown here.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:surangama-mantra',
+      label_sid: 'mantra.surangama-mantra.label_sid',
+      transliteration_sid: 'mantra.surangama-mantra.transliteration_sid',
+      translation_sid: 'mantra.surangama-mantra.translation_sid',
+      associated_figure_id: null,
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.surangama-mantra.description_sid',
+      source_sutra_id: null,
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 9. Rebirth dharani — the Wǎngshēng Zhòu appended to the Amitābha
+    // Sūtra in the Chinese Pure Land canon, recited ten times at the close of
+    // the evening rite after the Buddha-name recitation to direct the
+    // recitation toward birth in Sukhāvatī.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:rebirth-dharani',
+      label_sid: 'mantra.rebirth-dharani.label_sid',
+      transliteration_sid: 'mantra.rebirth-dharani.transliteration_sid',
+      translation_sid: 'mantra.rebirth-dharani.translation_sid',
+      associated_figure_id: 'figure:amitabha',
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.rebirth-dharani.description_sid',
+      source_sutra_id: 'sutra:amitabha',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 10. Pure Land dharani — the short heart-mantra of Amitābha employed in
+    // the esoteric Pure Land rites transmitted to Tang China by
+    // Śubhakarasiṃha and Amoghavajra; the seed-syllable hrīḥ seals the
+    // recitation as a wish for awakening in the Pure Land.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'mantra:pure-land-dharani',
+      label_sid: 'mantra.pure-land-dharani.label_sid',
+      transliteration_sid: 'mantra.pure-land-dharani.transliteration_sid',
+      translation_sid: 'mantra.pure-land-dharani.translation_sid',
+      associated_figure_id: 'figure:amitabha',
+      practice_lens: 'collected_attention',
+      description_sid: 'mantra.pure-land-dharani.description_sid',
+      source_sutra_id: 'sutra:amitabha',
+    },
   ],
 }
