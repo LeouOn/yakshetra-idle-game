@@ -18,6 +18,7 @@
 // Plan reference: todo 12 (original loader), T12+T13 integration (real content).
 
 import { lintPack } from './lint';
+import { MinigameDefSchema, type MinigameDef } from './minigame-schema';
 import { getEraBundle, hasEraBundle, listEraIds } from './registry';
 import {
   BuddhistFigureSchema,
@@ -59,6 +60,8 @@ export interface LoadedEraPack extends EraPack {
   readonly mantras: readonly Mantra[];
   /** The era's tradition-inspired figure refs, validated against BuddhistFigureSchema. */
   readonly figures: readonly BuddhistFigure[];
+  /** The era's engagement minigames, validated against MinigameDefSchema. */
+  readonly minigames: readonly MinigameDef[];
 }
 
 /**
@@ -175,6 +178,21 @@ function extractFiguresArray(raw: unknown, eraId: string, filename: string): unk
   throw new Error(`loadEraPack("${eraId}"): ${filename} must be an object with a "figures" array`);
 }
 
+/** Pull the `minigames` array out of a minigames.json5 shape: `{ minigames: [...] }`. */
+function extractMinigamesArray(raw: unknown, eraId: string, filename: string): unknown[] {
+  if (
+    raw !== null &&
+    typeof raw === 'object' &&
+    'minigames' in raw &&
+    Array.isArray((raw as { minigames: unknown }).minigames)
+  ) {
+    return (raw as { minigames: unknown[] }).minigames;
+  }
+  throw new Error(
+    `loadEraPack("${eraId}"): ${filename} must be an object with a "minigames" array`,
+  );
+}
+
 /**
  * Load, merge, schema-validate, and lint an era pack by id.
  *
@@ -241,8 +259,22 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     );
   }
 
+  // --- Minigames validation (before lint so reward-tier EffectOps can be
+  // scanned for forbidden meter tokens alongside the pack) ------------------
+  const minigamesArray = extractMinigamesArray(bundle.minigames, eraId, 'minigames.json5');
+  const minigamesResult = MinigameDefSchema.array().safeParse(minigamesArray);
+  if (!minigamesResult.success) {
+    const firstIssue = minigamesResult.error.issues[0];
+    const fieldPath = firstIssue?.path.join('.') || '(root)';
+    throw new Error(
+      `loadEraPack("${eraId}"): minigames schema validation failed at "${fieldPath}": ${
+        firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
   // --- Lint (second enforcement layer) -------------------------------------
-  const lintReport = lintPack(parsedResult.data, practicesResult.data);
+  const lintReport = lintPack(parsedResult.data, practicesResult.data, {}, minigamesResult.data);
   if (!lintReport.passed) {
     const first = lintReport.violations[0];
     throw new Error(
@@ -329,5 +361,6 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     sutras: sutrasResult.data,
     mantras: mantrasResult.data,
     figures: figuresResult.data,
+    minigames: minigamesResult.data,
   };
 }

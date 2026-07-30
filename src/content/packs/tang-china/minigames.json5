@@ -1,0 +1,7 @@
+{
+  // Engagement minigames for Tang China (stub — populated per the minigame
+  // content roadmap). Validated against MinigameDefSchema in the loader; each
+  // entry's rewardTiers are EffectOp[] scanned by the prohibited-mechanics lint.
+
+  minigames: [],
+}

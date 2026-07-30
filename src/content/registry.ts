@@ -24,6 +24,7 @@ import tangSchedules from './packs/tang-china/schedules.json5';
 import tangSutras from './packs/tang-china/sutras.json5';
 import tangMantras from './packs/tang-china/mantras.json5';
 import tangFigures from './packs/tang-china/figures.json5';
+import tangMinigames from './packs/tang-china/minigames.json5';
 import fantasyPack from './packs/fantasy-mahayana/pack.json5';
 import fantasyEvents from './packs/fantasy-mahayana/events.json5';
 import fantasyEndings from './packs/fantasy-mahayana/endings.json5';
@@ -32,6 +33,7 @@ import fantasySchedules from './packs/fantasy-mahayana/schedules.json5';
 import fantasySutras from './packs/fantasy-mahayana/sutras.json5';
 import fantasyMantras from './packs/fantasy-mahayana/mantras.json5';
 import fantasyFigures from './packs/fantasy-mahayana/figures.json5';
+import fantasyMinigames from './packs/fantasy-mahayana/minigames.json5';
 
 /**
  * A bundled era: the raw (unvalidated) pack scaffold, events file, endings
@@ -56,6 +58,8 @@ export interface EraBundle {
   readonly mantras: unknown;
   /** Parsed figures.json5 contents (shape: `{ figures: unknown[] }`). */
   readonly figures: unknown;
+  /** Parsed minigames.json5 contents (shape: `{ minigames: unknown[] }`). */
+  readonly minigames: unknown;
 }
 
 const REGISTRY: Readonly<Record<string, EraBundle>> = {
@@ -68,6 +72,7 @@ const REGISTRY: Readonly<Record<string, EraBundle>> = {
     sutras: tangSutras,
     mantras: tangMantras,
     figures: tangFigures,
+    minigames: tangMinigames,
   },
   'fantasy-mahayana': {
     pack: fantasyPack,
@@ -78,6 +83,7 @@ const REGISTRY: Readonly<Record<string, EraBundle>> = {
     sutras: fantasySutras,
     mantras: fantasyMantras,
     figures: fantasyFigures,
+    minigames: fantasyMinigames,
   },
 };
 

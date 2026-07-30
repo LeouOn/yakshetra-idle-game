@@ -18,8 +18,8 @@ const { state } = vi.hoisted(() => ({
 }));
 
 vi.mock('../registry', async () => {
-  const [pack, events, endings, practices, schedules, sutras, mantras, figures] = await Promise.all(
-    [
+  const [pack, events, endings, practices, schedules, sutras, mantras, figures, minigames] =
+    await Promise.all([
       import('../packs/tang-china/pack.json5'),
       import('../packs/tang-china/events.json5'),
       import('../packs/tang-china/endings.json5'),
@@ -28,8 +28,8 @@ vi.mock('../registry', async () => {
       import('../packs/tang-china/sutras.json5'),
       import('../packs/tang-china/mantras.json5'),
       import('../packs/tang-china/figures.json5'),
-    ],
-  );
+      import('../packs/tang-china/minigames.json5'),
+    ]);
   state.realBundle = {
     pack: pack.default,
     events: events.default,
@@ -39,6 +39,7 @@ vi.mock('../registry', async () => {
     sutras: sutras.default,
     mantras: mantras.default,
     figures: figures.default,
+    minigames: minigames.default,
   };
   return {
     listEraIds: () => ['tang-china'],
@@ -157,6 +158,49 @@ describe('loadEraPack — practices + schedules loading', () => {
     state.override = { ...real, practices: { wrongKey: [] } };
     expect(() => loadEraPack('tang-china')).toThrowError(
       /must be an object with a "practices" array/,
+    );
+  });
+});
+
+describe('loadEraPack — minigames loading', () => {
+  beforeEach(() => {
+    state.override = null;
+  });
+
+  test('reads minigames.json5 and exposes a minigames array on LoadedEraPack', () => {
+    const pack = loadEraPack('tang-china');
+    expect(Array.isArray(pack.minigames)).toBe(true);
+  });
+
+  test('throws when a minigame fails MinigameDefSchema (invalid type discriminator)', () => {
+    const real = state.realBundle!;
+    const badMinigames = clone(real.minigames as { minigames: unknown[] });
+    badMinigames.minigames.push({ id: 'minigame:tang/test', type: 'not_a_real_type' });
+    state.override = { ...real, minigames: badMinigames };
+    expect(() => loadEraPack('tang-china')).toThrowError(/minigames schema validation failed/);
+  });
+
+  test('throws when a minigame fails MinigameDefSchema (rewardTiers missing)', () => {
+    const real = state.realBundle!;
+    const badMinigames = clone(real.minigames as { minigames: unknown[] });
+    // Valid discriminator + lens but the required rewardTiers array is absent.
+    badMinigames.minigames.push({
+      id: 'minigame:tang/test',
+      type: 'breath_count',
+      label_sid: 'sid:tang/test',
+      description_sid: 'sid:tang/test-desc',
+      lens: 'collected_attention',
+      config: { maxInputs: 10 },
+    });
+    state.override = { ...real, minigames: badMinigames };
+    expect(() => loadEraPack('tang-china')).toThrowError(/minigames schema validation failed/);
+  });
+
+  test('throws when minigames.json5 lacks a minigames array', () => {
+    const real = state.realBundle!;
+    state.override = { ...real, minigames: { wrongKey: [] } };
+    expect(() => loadEraPack('tang-china')).toThrowError(
+      /must be an object with a "minigames" array/,
     );
   });
 });

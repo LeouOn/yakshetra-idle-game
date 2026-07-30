@@ -1,0 +1,8 @@
+{
+  // Engagement minigames for the Garden of Arrivals (stub — populated per the
+  // minigame content roadmap). Validated against MinigameDefSchema in the
+  // loader; each entry's rewardTiers are EffectOp[] scanned by the
+  // prohibited-mechanics lint.
+
+  minigames: [],
+}

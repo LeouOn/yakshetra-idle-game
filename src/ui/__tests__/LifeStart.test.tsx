@@ -40,7 +40,10 @@ vi.mock('@/ui/hooks/useSaveSlot', () => ({
  */
 function makeFixturePack(
   overrides: Partial<
-    Omit<LoadedEraPack, 'endings' | 'practices' | 'schedules' | 'sutras' | 'mantras' | 'figures'>
+    Omit<
+      LoadedEraPack,
+      'endings' | 'practices' | 'schedules' | 'sutras' | 'mantras' | 'figures' | 'minigames'
+    >
   > = {},
 ): LoadedEraPack {
   const event = (id: string) => ({
@@ -95,6 +98,7 @@ function makeFixturePack(
     sutras: [],
     mantras: [],
     figures: [],
+    minigames: [],
     ...overrides,
   };
 }
