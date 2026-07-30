@@ -35,7 +35,14 @@ export type {
   SocialIdentity,
 } from './types';
 
-export { applyChoice, applyEffect, applyEvent, createLifeState, reduceIdleTick } from './reducer';
+export {
+  applyChoice,
+  applyEffect,
+  applyEffects,
+  applyEvent,
+  createLifeState,
+  reduceIdleTick,
+} from './reducer';
 export type { CreateLifeStateOptions, IdleTickAction } from './reducer';
 export { evaluatePredicate } from './predicates';
 export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './echo';

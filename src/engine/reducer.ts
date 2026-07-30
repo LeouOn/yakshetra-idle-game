@@ -162,6 +162,17 @@ export function applyEffect(state: LifeState, effect: EffectOp, _rng: Rng): Life
   }
 }
 
+/**
+ * Fold an array of {@link EffectOp} into a LifeState, returning a NEW state.
+ *
+ * Pure: no mutation, no side effects. Used by minigame rewards and any caller
+ * that needs to apply a batch of effects without a {@link Choice} wrapper.
+ * Empty input returns the same state reference (reduce no-op).
+ */
+export function applyEffects(state: LifeState, effects: readonly EffectOp[], rng: Rng): LifeState {
+  return effects.reduce((acc, effect) => applyEffect(acc, effect, rng), state);
+}
+
 /* -------------------------------------------------------------------------------------------------
  * Choice & event application
  * -----------------------------------------------------------------------------------------------*/

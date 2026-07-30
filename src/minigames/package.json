@@ -1,0 +1,8 @@
+{
+  "name": "@yakshetra/minigames",
+  "private": true,
+  "dependencies": {
+    "@yakshetra/engine": "*",
+    "zod": "*"
+  }
+}

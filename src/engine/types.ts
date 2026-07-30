@@ -325,6 +325,8 @@ export interface Practice {
   readonly level: number;
   /** Effects folded into state on each tick while this practice is active. */
   readonly effects: readonly EffectOp[];
+  /** Optional minigame associated with this practice (null/absent = none). */
+  readonly minigame_id?: string | null;
 }
 
 /** Result of simulating a batch of idle ticks. */

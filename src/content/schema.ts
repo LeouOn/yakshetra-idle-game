@@ -57,7 +57,7 @@ export const LocalizedTextSchema = z
 export type LocalizedText = z.infer<typeof LocalizedTextSchema>;
 
 /** A non-empty token (used for resource keys, skill keys, flags, etc.). */
-const TokenSchema = z.string().min(1);
+export const TokenSchema = z.string().min(1);
 
 /* -------------------------------------------------------------------------------------------------
  * EffectOp — discriminated union of permitted effect operations.
@@ -290,6 +290,7 @@ export const EventSchema = z
     trigger: PredicateSchema.optional(),
     choices: z.array(ChoiceSchema).min(1, 'an event must have 1..4 choices').max(4),
     content_warnings: z.array(z.string()),
+    minigame_id: TokenSchema.nullable().optional(),
   })
   .strict();
 
@@ -579,6 +580,7 @@ export const PracticeSchema = z
     progressPerTick: z.number().positive(),
     maxProgress: z.number().positive(),
     effects: z.array(EffectOpSchema),
+    minigame_id: TokenSchema.nullable().optional(),
   })
   .strict();
 
@@ -592,6 +594,7 @@ export const ScheduleBlockSchema = z
     startHour: z.number().int().min(0).max(23),
     endHour: z.number().int().min(1).max(24),
     practice_id: TokenSchema.nullable(),
+    minigame_id: TokenSchema.nullable().optional(),
     icon_sid: SidSchema,
   })
   .strict();

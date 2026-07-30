@@ -94,6 +94,29 @@ describe('PracticeSchema', () => {
     const r = PracticeSchema.safeParse(rest);
     expect(r.success).toBe(false);
   });
+
+  test('accepts a practice with minigame_id', () => {
+    const r = PracticeSchema.safeParse({ ...VALID_PRACTICE, minigame_id: 'breath-counting' });
+    expect(r.success).toBe(true);
+  });
+
+  test('accepts a practice without minigame_id (backward compatible)', () => {
+    const r = PracticeSchema.safeParse(VALID_PRACTICE);
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.minigame_id).toBeUndefined();
+    }
+  });
+
+  test('accepts a null minigame_id', () => {
+    const r = PracticeSchema.safeParse({ ...VALID_PRACTICE, minigame_id: null });
+    expect(r.success).toBe(true);
+  });
+
+  test('rejects an empty-string minigame_id', () => {
+    const r = PracticeSchema.safeParse({ ...VALID_PRACTICE, minigame_id: '' });
+    expect(r.success).toBe(false);
+  });
 });
 
 describe('ScheduleBlockSchema', () => {
@@ -124,6 +147,21 @@ describe('ScheduleBlockSchema', () => {
 
   test('rejects a player-facing string in icon_sid (must be a _sid)', () => {
     const r = ScheduleBlockSchema.safeParse({ ...VALID_BLOCK, icon_sid: 'plain text' });
+    expect(r.success).toBe(false);
+  });
+
+  test('accepts a block with minigame_id', () => {
+    const r = ScheduleBlockSchema.safeParse({ ...VALID_BLOCK, minigame_id: 'breath-counting' });
+    expect(r.success).toBe(true);
+  });
+
+  test('accepts a block without minigame_id (backward compatible)', () => {
+    const r = ScheduleBlockSchema.safeParse(VALID_BLOCK);
+    expect(r.success).toBe(true);
+  });
+
+  test('rejects an empty-string minigame_id on a block', () => {
+    const r = ScheduleBlockSchema.safeParse({ ...VALID_BLOCK, minigame_id: '' });
     expect(r.success).toBe(false);
   });
 });
