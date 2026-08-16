@@ -7,6 +7,7 @@ import { z } from 'zod';
 import type { KindRule } from '@/engine/kind-registry';
 
 import { getProgressionBundle } from './registry';
+import { lintProgression } from './lint';
 import {
   CompendiumEntrySchema,
   EndowmentTrackSchema,
@@ -103,5 +104,24 @@ export function loadProgression(): ProgressionRegistries {
     'compendium.json5',
   );
   const kindRules: KindRule[] = kindRows.map((row) => ({ kind: row.id, match: row.match }));
-  return { tiers, kindRows, kindRules, milestones, policies, endowment, visitors, compendium };
+  const registries: ProgressionRegistries = {
+    tiers,
+    kindRows,
+    kindRules,
+    milestones,
+    policies,
+    endowment,
+    visitors,
+    compendium,
+  };
+  const lintReport = lintProgression(registries);
+  if (!lintReport.passed) {
+    const first = lintReport.violations[0];
+    throw new Error(
+      `loadProgression: lint rejected progression content (rule ${first?.rule ?? 'unknown'}): ${
+        first?.message ?? 'unknown violation'
+      }`,
+    );
+  }
+  return registries;
 }
