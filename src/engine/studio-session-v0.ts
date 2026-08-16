@@ -107,6 +107,19 @@ export const PracticeSliceSchema = z
   })
   .strict();
 
+export const MemberSliceSchema = z
+  .object({
+    life: LifeSliceSchema,
+    practices: z.array(PracticeSliceSchema),
+  })
+  .strict();
+
+export const WorldDraftReferenceSchema = z
+  .object({
+    scale: z.string().min(1),
+  })
+  .strict();
+
 export const StudioSessionV0Schema = z
   .object({
     schema_version: z.literal(STUDIO_SESSION_V0_VERSION),
@@ -150,6 +163,8 @@ export function migrateStudioSessionV0(v0: StudioSessionV0): StudioSession {
     idle: v0.idle,
     life: v0.life,
     practices: v0.practices,
+    members: {},
+    world_drafts: [],
     ...(v0.last_visited_at_unix === undefined
       ? {}
       : { last_visited_at_unix: v0.last_visited_at_unix }),

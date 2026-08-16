@@ -97,3 +97,67 @@ describe('v1 round-trip', () => {
     expect(hydrated.progression).toEqual(defaultProgression());
   });
 });
+
+describe('v1.1 additive — members slice + world drafts', () => {
+  const V1_0_PAYLOAD = {
+    schema_version: 'studio_session/v1',
+    benches: {
+      person: {
+        residue: [],
+        last_harvest_index: -1,
+        bay: null,
+        quality_tier: 0,
+        harvest_count: 0,
+        play_import: null,
+        pinned: null,
+        surplus: 0,
+      },
+    },
+    archive: [],
+    tiers: {},
+    milestones_done: [],
+    compendium_done: [],
+    embodied_member: null,
+    idle: { mode: 'idle', last_simulated_tick: '0', total_idle_ticks: '0' },
+    life: { turn: 0, resources: {}, skills: {}, residue: [] },
+    practices: [],
+  } as const;
+
+  it('parses a v1.0 payload (no members, no world_drafts) with both defaulted', () => {
+    const session = parseStudioSession(V1_0_PAYLOAD);
+    expect(session.members).toEqual({});
+    expect(session.world_drafts).toEqual([]);
+  });
+
+  it('snapshot -> parse -> hydrate preserves members and world_drafts', () => {
+    const base = emptyHydratedSession();
+    const members = {
+      'member:chen': {
+        life: { turn: 3, resources: { gold: 5 }, skills: { fishing: 1 }, residue: [] },
+        practices: [{ id: 'p:zazen', currentProgress: 0.5, level: 1 }],
+      },
+    };
+    const world_drafts = [{ scale: 'street' }, { scale: 'household' }];
+    const snapshot = snapshotStudioSession(
+      base.studio,
+      base.idle,
+      base.life,
+      base.practices,
+      undefined,
+      defaultProgression(),
+      { members, world_drafts },
+    );
+    const parsed = parseStudioSession(JSON.parse(JSON.stringify(snapshot)));
+    const hydrated = hydrateStudioSession(parsed, base.life, []);
+    expect(parsed.members).toEqual(members);
+    expect(parsed.world_drafts).toEqual(world_drafts);
+    expect(hydrated.members).toEqual(members);
+    expect(hydrated.world_drafts).toEqual(world_drafts);
+  });
+
+  it('v0 migration yields empty members and empty world_drafts', () => {
+    const session = parseStudioSession(V0_SESSION);
+    expect(session.members).toEqual({});
+    expect(session.world_drafts).toEqual([]);
+  });
+});

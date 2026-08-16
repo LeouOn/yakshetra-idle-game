@@ -16,10 +16,12 @@ import {
   DevelopOperationSchema,
   IdleSliceSchema,
   LifeSliceSchema,
+  MemberSliceSchema,
   PracticeSliceSchema,
   ResidueEventSchema,
   STUDIO_SESSION_V0_VERSION,
   StudioSessionV0Schema,
+  WorldDraftReferenceSchema,
   migrateStudioSessionV0,
 } from './studio-session-v0';
 import { TierStateSchema, createTierState, type TierState } from './tier-state';
@@ -77,6 +79,8 @@ export const StudioSessionSchema = z
     idle: IdleSliceSchema,
     life: LifeSliceSchema,
     practices: z.array(PracticeSliceSchema),
+    members: z.record(z.string(), MemberSliceSchema).default(() => ({})),
+    world_drafts: z.array(WorldDraftReferenceSchema).default(() => []),
     last_visited_at_unix: z.number().optional(),
   })
   .strict();
@@ -106,7 +110,13 @@ export function snapshotStudioSession(
   practices: readonly Practice[],
   lastVisitedAtUnix?: number,
   progression: SessionProgression = defaultProgression(),
+  extras?: {
+    members?: Record<string, z.infer<typeof MemberSliceSchema>>;
+    world_drafts?: readonly z.infer<typeof WorldDraftReferenceSchema>[];
+  },
 ): StudioSession {
+  const members = extras?.members ?? {};
+  const world_drafts = extras?.world_drafts ?? [];
   return StudioSessionSchema.parse({
     schema_version: STUDIO_SESSION_VERSION,
     benches: {
@@ -142,6 +152,8 @@ export function snapshotStudioSession(
       currentProgress: p.currentProgress,
       level: p.level,
     })),
+    members,
+    world_drafts,
     ...(lastVisitedAtUnix === undefined ? {} : { last_visited_at_unix: lastVisitedAtUnix }),
   });
 }
@@ -164,7 +176,12 @@ export interface HydratedStudioSession {
   readonly life: LifeState;
   readonly practices: Practice[];
   readonly progression: SessionProgression;
+  readonly members: Record<string, MemberSlice>;
+  readonly world_drafts: readonly WorldDraftReference[];
 }
+
+export type MemberSlice = z.infer<typeof MemberSliceSchema>;
+export type WorldDraftReference = z.infer<typeof WorldDraftReferenceSchema>;
 
 /** Overlay a snapshot onto a fresh bench (identity/era stay on `baseLife`). */
 export function hydrateStudioSession(
@@ -223,6 +240,8 @@ export function hydrateStudioSession(
       compendium_done: session.compendium_done,
       embodied_member: session.embodied_member,
     },
+    members: session.members,
+    world_drafts: session.world_drafts,
   };
 }
 
@@ -248,5 +267,7 @@ export function emptyHydratedSession(baseLife?: LifeState): HydratedStudioSessio
     life,
     practices: [],
     progression: defaultProgression(),
+    members: {},
+    world_drafts: [],
   };
 }
