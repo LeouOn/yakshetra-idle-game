@@ -5,28 +5,21 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 
 import {
-  getProhibitedNames,
-  getProhibitedNamesLoadError,
   lintPack,
   R_NO_DONATION_OFFSET,
   R_NO_KARMA_METER,
   R_NO_PRACTICE_AS_CURRENCY,
-  R_NO_REAL_MANTRA,
-  R_NO_SACRED_NAMES,
   R_NO_VISIBLE_KARMA_METER,
 } from '../lint';
 import { EraPackSchema, PracticeSchema, type EraPack } from '../schema';
 import { MinigameDefSchema } from '../minigame-schema';
 
 /**
- * Prohibited-mechanics lint tests (plan todo 5).
+ * Game-design lint tests.
  *
- * For each of the 5 rules there is a PASS fixture (clean pack, zero
- * violations) and a FAIL fixture (schema-valid pack that injects exactly one
- * violation targeting that rule). Each fixture is loaded from disk and
- * round-tripped through {@link EraPackSchema} so the test also confirms the
- * lint operates on packs the schema accepts (the second-line-of-defense
- * contract): the schema is the first line, the lint is the second.
+ * Remaining rules (karma meter, donation-offset, visible meter, practice-as-
+ * currency) still have PASS/FAIL fixtures. Retired sacred-name and mantra
+ * rules have a single "this is allowed now" check so they cannot sneak back.
  */
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -44,75 +37,6 @@ function ruleIds(report: ReturnType<typeof lintPack>): string[] {
   return report.violations.map((v) => v.rule);
 }
 
-describe('prohibited-mechanics lint — closed list self-check', () => {
-  test('the prohibited-names file loaded successfully from disk', () => {
-    expect(
-      getProhibitedNamesLoadError(),
-      'closed list must be readable at lint time',
-    ).toBeUndefined();
-  });
-
-  test('the closed list contains the 40 canonical names, including diacritics', async () => {
-    const names = getProhibitedNames();
-    // The closed list defined in the plan (ASCII + diacritic pairs).
-    const expected = [
-      'Shakyamuni',
-      'Buddha',
-      'Amitabha',
-      'Amida',
-      'Amitayus',
-      'Avalokiteshvara',
-      'Avalokiteśvara',
-      'Guanyin',
-      'Kannon',
-      'Chenrezig',
-      'Manjushri',
-      'Mañjuśrī',
-      'Wenshu',
-      'Monju',
-      'Samantabhadra',
-      'Puxian',
-      'Fugen',
-      'Ksitigarbha',
-      'Kṣitigarbha',
-      'Dizang',
-      'Jizo',
-      'Mahasthamaprapta',
-      'Mahāsthāmaprāpta',
-      'Dashizhi',
-      'Daesaeji',
-      'Seishi',
-      'Tara',
-      'Tārā',
-      'Drolma',
-      'Maitreya',
-      'Mila',
-      'Milarepa',
-      'Padmasambhava',
-      'Tsongkhapa',
-      'Nagarjuna',
-      'Nāgārjuna',
-      'Atisha',
-      'Shantideva',
-      'Śāntideva',
-      'Bodhidharma',
-    ];
-    expect(names.length).toBe(expected.length);
-    for (const name of expected) {
-      expect(names, `closed list must include "${name}"`).toContain(name);
-    }
-  });
-
-  test('the on-disk file matches the in-memory list exactly', async () => {
-    const raw = await readFile(resolve(process.cwd(), 'advisory', 'prohibited-names.txt'), 'utf8');
-    const onDisk = raw
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0 && !l.startsWith('#'));
-    expect(onDisk).toEqual([...getProhibitedNames()]);
-  });
-});
-
 describe('R-NO-KARMA-METER', () => {
   test('PASS — clean pack lints with zero violations', async () => {
     const report = lintPack(await loadFixture('karma-meter-pass'));
@@ -129,37 +53,11 @@ describe('R-NO-KARMA-METER', () => {
   });
 });
 
-describe('R-NO-SACRED-NAMES', () => {
-  test('PASS — clean pack lints with zero violations', async () => {
-    const report = lintPack(await loadFixture('sacred-names-pass'));
-    expect(report.passed).toBe(true);
-    expect(report.violations).toEqual([]);
-  });
-
-  test('FAIL — a citation mentioning "Buddha" is flagged', async () => {
+describe('retired R-NO-SACRED-NAMES', () => {
+  test('a citation naming a Buddha is allowed', async () => {
     const report = lintPack(await loadFixture('sacred-names-fail'));
-    expect(report.passed).toBe(false);
-    expect(ruleIds(report)).toContain(R_NO_SACRED_NAMES);
-    expect(ruleIds(report)).toEqual([R_NO_SACRED_NAMES]);
-  });
-
-  test('word-boundary precision — "Buddhahood" does NOT false-positive as "Buddha"', async () => {
-    // "Buddhahood" is a common noun, not the proper-name reference we forbid.
-    // The Unicode-letter boundary must prevent a substring match.
-    const pack = await loadFixture('sacred-names-pass');
-    pack.source_bibliography[0]!.citation = 'A study of Buddhahood in later literature.';
-    const report = lintPack(pack);
     expect(report.passed).toBe(true);
-  });
-
-  test('diacritic names are caught — "Śāntideva" with leading diacritic', async () => {
-    // Names beginning/ending with a diacritic (Ś, ī) defeat ASCII \b; the
-    // Unicode-letter boundary must still match them.
-    const pack = await loadFixture('sacred-names-pass');
-    pack.source_bibliography[0]!.citation = 'A commentary by Śāntideva.';
-    const report = lintPack(pack);
-    expect(report.passed).toBe(false);
-    expect(ruleIds(report)).toContain(R_NO_SACRED_NAMES);
+    expect(ruleIds(report)).not.toContain('R-NO-SACRED-NAMES');
   });
 });
 
@@ -204,25 +102,11 @@ describe('R-NO-VISIBLE-KARMA-METER', () => {
   });
 });
 
-describe('R-NO-REAL-MANTRA', () => {
-  test('PASS — clean pack lints with zero violations', async () => {
-    const report = lintPack(await loadFixture('real-mantra-pass'));
-    expect(report.passed).toBe(true);
-    expect(report.violations).toEqual([]);
-  });
-
-  test('FAIL — a glossary value of "oṁ" is flagged', async () => {
+describe('retired R-NO-REAL-MANTRA', () => {
+  test('a glossary seed syllable is allowed', async () => {
     const report = lintPack(await loadFixture('real-mantra-fail'));
-    expect(report.passed).toBe(false);
-    expect(ruleIds(report)).toContain(R_NO_REAL_MANTRA);
-    expect(ruleIds(report)).toEqual([R_NO_REAL_MANTRA]);
-  });
-
-  test('line-anchored precision — "om" buried in "welcome" does NOT fire', async () => {
-    const pack = await loadFixture('real-mantra-pass');
-    pack.glossary['greeting'] = { en: 'welcome to the monastery' };
-    const report = lintPack(pack);
     expect(report.passed).toBe(true);
+    expect(ruleIds(report)).not.toContain('R-NO-REAL-MANTRA');
   });
 });
 
