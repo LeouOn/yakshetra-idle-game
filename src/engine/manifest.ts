@@ -1,16 +1,28 @@
-// Manifest v0 — a thing, outcome, change, person, or place compiled from residue.
-// Table-fill is deterministic given (window, brief, rng). Pure: no Date, no fetch.
+// Manifest v1 — a thing, outcome, change, person, or place compiled from residue.
+// v1 widens `kind` to `string` and adds `scale` so registry rules may introduce
+// higher-scale kinds without bumping the schema. v0 entries migrate via
+// `manifest-migration.ts`. Table-fill is deterministic given (window, brief, rng).
+// Pure: no Date, no fetch.
 
 import { z } from 'zod';
 
 import type { ManifestFocus } from './focus';
-import { DEFAULT_KIND_RULES, pickKindFromRegistry, type CoreManifestKind } from './kind-registry';
+import {
+  DEFAULT_KIND_RULES,
+  pickKindFromRegistry,
+  type CoreManifestKind,
+  type KindRule,
+} from './kind-registry';
 import type { LifeContext } from './life-context';
 import { CATALOG } from './manifest-catalog';
 import type { Rng } from './rng';
 import { residueWindowId, summarizeResidue, type ResidueEvent } from './residue';
 
-export const MANIFEST_SCHEMA_VERSION = 'manifest/v0' as const;
+export const MANIFEST_SCHEMA_VERSION = 'manifest/v1' as const;
+export const MANIFEST_LEGACY_VERSION = 'manifest/v0' as const;
+export const SCALE_VALUES = ['person', 'household', 'org', 'town', 'city', 'region'] as const;
+export type ManifestScale = (typeof SCALE_VALUES)[number];
+
 export const TABLE_FILL_REVISION = 'table/v0' as const;
 
 export type ManifestKind = CoreManifestKind;
@@ -29,7 +41,8 @@ export interface Manifest {
   readonly rng_seed: string;
   readonly brief: string | null;
   readonly residue_window_id: string;
-  readonly kind: ManifestKind;
+  readonly kind: string;
+  readonly scale: ManifestScale;
   readonly name: string;
   readonly one_liner: string;
   readonly subject: string;
@@ -43,7 +56,6 @@ export interface Manifest {
   readonly about_name?: string | undefined;
 }
 
-const KIND_VALUES = ['thing', 'outcome', 'change', 'person', 'place'] as const;
 const RARITY_VALUES = ['common', 'uncommon', 'rare'] as const;
 const FILL_VALUES = ['latent', 'table', 'model'] as const;
 
@@ -54,7 +66,8 @@ export const ManifestSchema = z
     rng_seed: z.string().min(1),
     brief: z.string().nullable(),
     residue_window_id: z.string().min(1),
-    kind: z.enum(KIND_VALUES),
+    kind: z.string().min(1),
+    scale: z.enum(SCALE_VALUES),
     name: z.string().min(1),
     one_liner: z.string().min(1),
     subject: z.string().min(1),
@@ -107,10 +120,15 @@ export function tableFillManifest(
   id: string,
   focus: ManifestFocus | null = null,
   lifeContext: LifeContext | null = null,
+  scale: ManifestScale = 'person',
+  kindRules: readonly KindRule[] = DEFAULT_KIND_RULES,
 ): Manifest {
   const summary = summarizeResidue(window);
-  const kind = pickKindFromRegistry(summary, DEFAULT_KIND_RULES);
+  const kind = pickKindFromRegistry(summary, kindRules);
   const catalog = CATALOG[kind];
+  if (catalog === undefined) {
+    throw new Error(`tableFillManifest: no table catalog for kind "${kind}"`);
+  }
   const entry = rng.pick(catalog);
   const rarity = pickRarity(summary.count, qualityTier, rng);
   const subjectId = summary.ids[0];
@@ -149,6 +167,7 @@ export function tableFillManifest(
     brief,
     residue_window_id: residueWindowId(window),
     kind,
+    scale,
     name: entry.name,
     one_liner: entry.one_liner,
     subject,
