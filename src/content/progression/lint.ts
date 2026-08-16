@@ -6,6 +6,7 @@ import type { ProgressionRegistries } from './loader';
 
 export const R_PROG_REF_INTEGRITY = 'R-PROG-REF-INTEGRITY' as const;
 export const R_PROG_CORE_KINDS = 'R-PROG-CORE-KINDS' as const;
+export const R_PROG_KIND_CATALOG = 'R-PROG-KIND-CATALOG' as const;
 export const R_PROG_NO_METER = 'R-PROG-NO-METER' as const;
 
 const CORE_KIND_IDS = ['thing', 'outcome', 'change', 'person', 'place'] as const;
@@ -20,6 +21,8 @@ function error(rule: string, message: string, location: string): LintViolation {
  *    at rows that exist.
  *  - R-PROG-CORE-KINDS: the five SPEC §6 core kinds all have registry rows,
  *    so the table fallback can never lose a person-scale kind.
+ *  - R-PROG-KIND-CATALOG: every kind row has ≥1 catalog entry — the table
+ *    fallback is mandatory, so a kind without a table cannot ship.
  *  - R-PROG-NO-METER: no metaphysical-meter token in any progression row.
  */
 export function lintProgression(registries: ProgressionRegistries): LintReport {
@@ -58,12 +61,26 @@ export function lintProgression(registries: ProgressionRegistries): LintReport {
     }
   }
 
+  for (const row of registries.kindRows) {
+    const entries = registries.catalogs[row.id];
+    if (entries === undefined || entries.length === 0) {
+      violations.push(
+        error(
+          R_PROG_KIND_CATALOG,
+          `kind "${row.id}" has no catalog entries (table fallback is mandatory)`,
+          `catalogs[${row.id}]`,
+        ),
+      );
+    }
+  }
+
   const meterScope = {
     milestones: registries.milestones,
     policies: registries.policies,
     endowment: registries.endowment,
     visitors: registries.visitors,
     compendium: registries.compendium,
+    catalogs: registries.catalogs,
   };
   for (const { s, path } of walkStrings(meterScope)) {
     if (containsMeterToken(s)) {

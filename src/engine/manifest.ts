@@ -14,9 +14,12 @@ import {
   type KindRule,
 } from './kind-registry';
 import type { LifeContext } from './life-context';
-import { CATALOG } from './manifest-catalog';
+// Structurally identical to CatalogMap in ./table-catalog (its local
+// CatalogEntry has the same shape), so the default slots into the param.
+import { CATALOG as DEFAULT_CATALOG } from './manifest-catalog';
 import type { Rng } from './rng';
 import { residueWindowId, summarizeResidue, type ResidueEvent } from './residue';
+import type { CatalogMap } from './table-catalog';
 
 export const MANIFEST_SCHEMA_VERSION = 'manifest/v1' as const;
 export const MANIFEST_LEGACY_VERSION = 'manifest/v0' as const;
@@ -122,14 +125,15 @@ export function tableFillManifest(
   lifeContext: LifeContext | null = null,
   scale: ManifestScale = 'person',
   kindRules: readonly KindRule[] = DEFAULT_KIND_RULES,
+  catalog: CatalogMap = DEFAULT_CATALOG,
 ): Manifest {
   const summary = summarizeResidue(window);
   const kind = pickKindFromRegistry(summary, kindRules);
-  const catalog = CATALOG[kind];
-  if (catalog === undefined) {
+  const entries = catalog[kind];
+  if (entries === undefined) {
     throw new Error(`tableFillManifest: no table catalog for kind "${kind}"`);
   }
-  const entry = rng.pick(catalog);
+  const entry = rng.pick(entries);
   const rarity = pickRarity(summary.count, qualityTier, rng);
   const subjectId = summary.ids[0];
   const subject =

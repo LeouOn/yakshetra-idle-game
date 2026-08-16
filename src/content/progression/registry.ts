@@ -2,6 +2,7 @@
 // the bundler (Metro transformer / Vite plugin) inlines parsed JSON5 at
 // build time, so there is no disk read at runtime.
 
+import catalogs from './base/catalogs.json5';
 import compendium from './base/compendium.json5';
 import endowment from './base/endowment.json5';
 import kinds from './base/kinds.json5';
@@ -13,6 +14,7 @@ import visitors from './base/visitors.json5';
 export interface ProgressionBundle {
   readonly tiers: unknown;
   readonly kinds: unknown;
+  readonly catalogs: unknown;
   readonly milestones: unknown;
   readonly policies: unknown;
   readonly endowment: unknown;
@@ -21,5 +23,5 @@ export interface ProgressionBundle {
 }
 
 export function getProgressionBundle(): ProgressionBundle {
-  return { tiers, kinds, milestones, policies, endowment, visitors, compendium };
+  return { tiers, kinds, catalogs, milestones, policies, endowment, visitors, compendium };
 }

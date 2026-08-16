@@ -238,10 +238,24 @@ vi.mock('../registry', () => {
       grants: { tier: 'region', ceremony_sid: 'graduation.region' },
     },
   ];
+  // Minimal but schema-valid: one entry per kind row id, so the catalog
+  // lint passes and the ref-integrity violation is the one that throws.
+  const catalogEntry = (kind: string) => ({
+    name: `Table ${kind}`,
+    one_liner: `${kind} one-liner`,
+    subject: `a ${kind} subject`,
+    detail: `${kind} detail`,
+    tags: [kind],
+  });
+  const catalogs = ['change', 'outcome', 'person', 'place', 'thing'].map((kind) => ({
+    kind,
+    entries: [catalogEntry(kind)],
+  }));
   return {
     getProgressionBundle: () => ({
       tiers: { tiers },
       kinds: { kinds },
+      catalogs: { catalogs },
       milestones: { milestones },
       policies: { policies: [] },
       endowment: { endowment: [] },

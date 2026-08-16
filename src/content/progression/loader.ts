@@ -5,10 +5,12 @@
 import { z } from 'zod';
 
 import type { KindRule } from '@/engine/kind-registry';
+import { buildCatalog, type CatalogEntry, type CatalogMap } from '@/engine/table-catalog';
 
 import { getProgressionBundle } from './registry';
 import { lintProgression } from './lint';
 import {
+  CatalogTableSchema,
   CompendiumEntrySchema,
   EndowmentTrackSchema,
   KindRowSchema,
@@ -30,6 +32,8 @@ export interface ProgressionRegistries {
   readonly kindRows: readonly KindRow[];
   /** Engine-shaped rules, in file order. First match wins at compile. */
   readonly kindRules: readonly KindRule[];
+  /** Table catalogs keyed by kind id — the table-fill fallback data. */
+  readonly catalogs: CatalogMap;
   readonly milestones: readonly Milestone[];
   readonly policies: readonly Policy[];
   readonly endowment: readonly EndowmentTrack[];
@@ -78,6 +82,15 @@ export function loadProgression(): ProgressionRegistries {
     extractArray(bundle.kinds, 'kinds', 'kinds.json5'),
     'kinds.json5',
   );
+  const catalogTables = parseFile(
+    CatalogTableSchema,
+    extractArray(bundle.catalogs, 'catalogs', 'catalogs.json5'),
+    'catalogs.json5',
+  );
+  const byKind: Record<string, readonly CatalogEntry[]> = {};
+  for (const table of catalogTables) {
+    byKind[table.kind] = [...(byKind[table.kind] ?? []), ...table.entries];
+  }
   const milestones = parseFile(
     MilestoneSchema,
     extractArray(bundle.milestones, 'milestones', 'milestones.json5'),
@@ -108,6 +121,7 @@ export function loadProgression(): ProgressionRegistries {
     tiers,
     kindRows,
     kindRules,
+    catalogs: byKind,
     milestones,
     policies,
     endowment,
@@ -123,5 +137,11 @@ export function loadProgression(): ProgressionRegistries {
       }`,
     );
   }
-  return registries;
+  return {
+    ...registries,
+    catalogs: buildCatalog(
+      kindRows.map((row) => row.id),
+      byKind,
+    ),
+  };
 }

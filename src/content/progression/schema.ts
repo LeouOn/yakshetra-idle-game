@@ -53,6 +53,30 @@ export const KindRowSchema = z
   .strict();
 export type KindRow = z.infer<typeof KindRowSchema>;
 
+/* ---- catalog/v0 ---------------------------------------------------------- */
+
+// Plain strings by design: compiled card output (SPEC §7), NOT SIDs —
+// the one content row where prose is allowed to live outside en.json.
+
+export const CatalogEntrySchema = z
+  .object({
+    name: z.string().min(1),
+    one_liner: z.string().min(1),
+    subject: z.string().min(1),
+    detail: z.string().min(1),
+    tags: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+export type CatalogEntryRow = z.infer<typeof CatalogEntrySchema>;
+
+export const CatalogTableSchema = z
+  .object({
+    kind: z.string().min(1),
+    entries: z.array(CatalogEntrySchema).min(1),
+  })
+  .strict();
+export type CatalogTable = z.infer<typeof CatalogTableSchema>;
+
 /* ---- tier/v0 ------------------------------------------------------------ */
 
 export const TIER_VERSION = 'tier/v0' as const;
