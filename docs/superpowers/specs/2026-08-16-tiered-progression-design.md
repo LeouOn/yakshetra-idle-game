@@ -418,9 +418,9 @@ The existing prohibited-mechanics lint (`R-NO-KARMA-METER`,
 track, visitor effect, or compendium reward that mints a metaphysical meter
 fails lint exactly as a pack effect would today. Content lint also requires:
 
-- every `kind/v0` row has ≥ 1 table catalog entry and a valid `sid_ns`
+- every `kind/v0` row has ≥ 1 table catalog entry and a valid `sid_ns` _(deferred to Phase 1 — see §14)_
 - every SID referenced exists in `src/i18n/en.json` (`resolveSid` throws on
-  missing keys — lint catches it first)
+  missing keys — lint catches it first) _(deferred to Phase 1 — see §14)_
 - every milestone/compendium predicate parses under the predicate schema
 
 ### 8.4 Versioning rules
@@ -566,3 +566,112 @@ recorded as decisions (§0.1): tiers compose literally rather than running as
 parallel slots, and exactly one member is embodied at a time. Either can be
 revisited before Phase 1 without schema churn — both are behavior policy, not
 data shape.
+
+---
+
+## 14. Phase 0 Deviation Log
+
+Recorded post-implementation (commit range 2613648..2f2adfb on
+`feat/phase-0-progression-foundation`) so Phase 1 agents and SPEC amendments
+work against truth, not sketches.
+
+### 14.1 Sketches that drifted from the landed code
+
+- **§3.1 kind registry — `compile_rule` renamed to `match`.** The landed
+  `KindRuleSchema` field is named `match` (and `KindMatchSchema`); the §3.1
+  sketch used `compile_rule`. Field shape is unchanged. Phase 1 code should
+  read/write `match`.
+- **§3.1 kind registry — added `pinnable` field.** The landed `KindRowSchema`
+  carries `pinnable: boolean` (default false), not in the sketch. Person and
+  place rows in `kinds.json5` set it true. Phase 1 schema-aware pin logic
+  reads `pinnable`; the engine `isPinnableKind(kind: string)` keeps its
+  person/place membership check for backwards compatibility.
+- **§7 sketch — manifest migration lives in `src/engine/manifest-migration.ts`.**
+  The §7 sketch implied a single `src/engine/migration.ts` path; that file is
+  already the SaveBlob migrator (`migrateSaveBlob`, `CURRENT_SCHEMA_VERSION
+= '0.2'`). A second migration file with the same name would collide, so
+  the manifest migration is its own module. The barrel exports it
+  separately.
+- **§7 studio session sketch — `BenchSchema` makes `play_import`/`pinned`/
+  ` `surplus`required.** The sketch said optional; the landed schema makes
+them required-nullable / required (since the runtime`StudioState`always
+carries them, and the migration normalizes absent v0 keys to`null`/`null`/`0`). Migration is additive; fixtures in
+`studio-session-v1.test.ts` assert the defaults.
+
+### 14.2 Deferrals — must land before Phase 1 closes a tier with new kinds
+
+- **§8.3 catalog-entry-per-kind lint is not yet enforced.** The lint
+  verifies referential integrity (every tier unlock resolves, every
+  milestone grant resolves), core-kind coverage, and meter-token bans. It
+  does NOT yet require that a `kind/v0` row's `catalog_ref` resolves to a
+  real catalog. Today, `catalog_ref` is decorative: adding a kind still
+  requires editing `src/engine/manifest-catalog.ts` (the `CATALOG` Record)
+  because that file remains engine-resident. The shipped 8 core-kind rows
+  use `catalog_ref: 'core/<id>'` by convention; runtime loud-failure is
+  enforced by `tableFillManifest`'s `CATALOG[kind] === undefined` throw
+  (tested). **Phase 1 entry condition:** relocate table catalogs from
+  `src/engine/manifest-catalog.ts` into content data, wire
+  `loadProgression` to build the runtime `CATALOG`, and add the lint rule.
+- **§8.3 i18n SID existence check is not yet enforced.** Player-facing SIDs
+  arrive with their UI surfaces in Phase 3 (StudioShell, next-action rail,
+  ceremonies). Until those read `kind.<id>.name` etc., an early check would
+  produce dead-code warnings. **Phase 1 entry condition:** when the first
+  household kind row lands, add `resolveSid`-style existence validation
+  against `src/i18n/en.json` and the kind's `sid_ns` namespace.
+- **`ArchivePredicate.key` is free-form.** A typo'd key (`pinned.traditon`)
+  yields a silently-never-true milestone. Phase 1's evaluator must validate
+  keys against the archive-stats vocabulary
+  (`pinned.<kind-or-scale>`, `world_drafts.<scale-or-total>`, `harvests.<rarity>`).
+
+### 14.3 Deviations the plan called out but are now resolved
+
+- **Manifest vs. SaveBlob migration files split.** Implemented as
+  `src/engine/manifest-migration.ts` and `src/engine/studio-session-v0.ts`
+  respectively, with `src/engine/migration.ts` unchanged as the SaveBlob
+  migrator. This is the right separation; no SPEC amendment needed.
+- **Studio-session v1 re-parses a v0 archive card per-element.** The brief's
+  verbatim `v0.studio.archive.map((card) => parseManifest(card))` failed tsc
+  because `parseManifest` returns the engine `Manifest` (readonly `tags`)
+  while the `StudioSession['archive']` slot demands mutable `string[]`. The
+  landed fix `ManifestSchema.parse(parseManifest(card))` is minimal, the
+  runtime is identical, and the cost is one redundant validation pass on
+  a once-per-payload migration path. Documented inline at
+  `studio-session-v0.ts:113`.
+- **Play-bridge hand-rolled a session-level splice.** The plan did not
+  enumerate `src/persistence/play-bridge.ts` as a consumer of the v0 session
+  shape; it crashed against v1 and was adapted in a standalone commit. The
+  splice preserves v0 semantics by construction (`{...base, benches: {...}}`
+  spread keeps idle/life/practices/tiers/milestones/compendium/
+  `last_visited_at_unix`; the saved archive is `base.archive`
+  unconditionally). Fix `2f2adfb` adds the archive-survival regression test
+  that locks this invariant.
+
+### 14.4 Minor findings deferred to Phase 1
+
+These are noted by the final whole-branch review and ride to Phase 1:
+
+- `manifest-catalog.ts` is 257 lines (over the ~250 ceiling). Phase 1's
+  catalog relocation to content resolves it naturally.
+- `studio-session.ts` is 252 lines. Split when extracting
+  `hydrateStudioSession` / `emptyHydratedSession` into a hydrate module for
+  multi-bench support.
+- The bench↔studio field mapping appears three times (engine hydrate, the
+  play-bridge reassembly, the save splice). Extract `benchToStudio` /
+  `studioToBench` helpers when the second tier lands.
+- The progression meter scan excludes `tiers` and `kindRows` rows. Extend
+  `meterScope` when those fields start carrying player-visible strings.
+- `ArchivePredicateSchema: z.ZodType<ArchivePredicate>` creates a drift seam
+  tsc won't catch. If the interfaces and sub-schemas ever diverge, the
+  schema tests are the guard.
+
+### 14.5 Process notes (not code changes)
+
+- `pnpm tsc --noEmit` as documented in AGENTS.md prints "Already up to date"
+  in this repo's pnpm version — the working invocation is
+  `node node_modules/typescript/bin/tsc --noEmit`. Worth a one-line
+  `package.json` script fix at convenience time.
+- `src/persistence/studio-kv.ts` deletes the session key on parse failure
+  (pre-existing). With v0→v1 migration running inside that try, one
+  unparseable card now destroys the whole session with no diagnostic.
+  Phase 1 should consider quarantine-before-delete when the persistence
+  layer is next touched.
