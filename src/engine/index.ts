@@ -41,9 +41,72 @@ export {
   applyEffects,
   applyEvent,
   createLifeState,
+  intendLens,
   reduceIdleTick,
 } from './reducer';
 export type { CreateLifeStateOptions, IdleTickAction } from './reducer';
+export {
+  appendResidue,
+  recordLifeResidue,
+  residueLog,
+  residueWindowId,
+  summarizeResidue,
+  windowSince,
+} from './residue';
+export type { ResidueEvent, ResidueEventType, ResidueSummary } from './residue';
+export {
+  MANIFEST_LEGACY_VERSION,
+  MANIFEST_SCHEMA_VERSION,
+  ManifestSchema,
+  SCALE_VALUES,
+  TABLE_FILL_REVISION,
+  tableFillManifest,
+} from './manifest';
+export type {
+  FillStatus,
+  Manifest,
+  ManifestKind,
+  ManifestProvenance,
+  ManifestRarity,
+  ManifestScale,
+} from './manifest';
+export {
+  MIN_RESIDUE_TO_DEVELOP,
+  QUALITY_UPGRADE_HARVESTS,
+  STUDIO_TEND_TICKS,
+  applyPracticeProgress,
+  canHarvest,
+  canQueueDevelop,
+  canUpgradeQuality,
+  createStudioState,
+  harvestTableFill,
+  harvestWithFiller,
+  importPlayResidue,
+  pinFocus,
+  absorbSurplus,
+  pendingResidue,
+  queueDevelop,
+  recordStudioResidue,
+  recordStudioResidues,
+  tickStudio,
+  upgradeQuality,
+} from './operations';
+export type {
+  DevelopOperation,
+  HarvestResult,
+  OperationStatus,
+  PlayImportCursor,
+  StudioState,
+} from './operations';
+export {
+  STUDIO_SESSION_VERSION,
+  StudioSessionSchema,
+  emptyHydratedSession,
+  hydrateStudioSession,
+  parseStudioSession,
+  snapshotStudioSession,
+} from './studio-session';
+export type { HydratedStudioSession, StudioSession } from './studio-session';
 export { evaluatePredicate } from './predicates';
 export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './echo';
 export { advanceTurn, advanceIdleTick } from './turn';
@@ -56,6 +119,41 @@ export {
 export { createRng } from './rng';
 export type { Rng } from './rng';
 export { computeOfflineSummary, formatOfflineSummary } from './offline';
+export {
+  STUDIO_AWAY_TICK_CAP,
+  STUDIO_SECONDS_PER_TICK,
+  catchUpStudio,
+  stepStudio,
+  studioTicksAway,
+} from './studio-offline';
+export type { StudioAwaySummary, StudioCatchUpResult } from './studio-offline';
+export {
+  MANIFEST_COMPILE_VERSION,
+  compileRequestFromBay,
+  fillManifestSafe,
+  tableFiller,
+} from './fill-adapter';
+export type { CompileBayInput, ManifestCompileRequest, ManifestFiller } from './fill-adapter';
+export {
+  WORLD_DRAFT_VERSION,
+  WorldDraftSchema,
+  assembleWorldDraft,
+  canAssembleWorld,
+  stringifyWorldDraft,
+} from './world-draft';
+export type { WorldDraft, WorldDraftBond, WorldDraftMember } from './world-draft';
+export { focusFromManifest, isPinnableKind, nextPinned, pinnableCards } from './focus';
+export { activityFamilyForLens, emptyActivityTotals, summarizeActivities } from './activities';
+export {
+  LIFE_CONTEXT_VERSION,
+  LifeContextSchema,
+  classifyBond,
+  evaluateLifeContext,
+  stringifyLifeContext,
+} from './life-context';
+export type { BondKind, LifeContext, LifeSetting, LifeTie } from './life-context';
+export type { ActivityFamily, ActivityTotals } from './activities';
+export type { ManifestFocus } from './focus';
 export { canonicalStringify, deserializeSaveBlob, serializeSaveBlob, sha256 } from './serialize';
 export { SaveBlobSchema } from './serialize';
 export type { DeserializedSave } from './serialize';
@@ -65,3 +163,24 @@ export {
   migrateSaveBlob,
   needsMigration,
 } from './migration';
+export {
+  DEFAULT_KIND_RULES,
+  isSocialWindow,
+  isSpatialWindow,
+  pickKindFromRegistry,
+} from './kind-registry';
+export type { CoreManifestKind, KindMatch, KindRule } from './kind-registry';
+export { migrateManifestV0, parseManifest } from './manifest-migration';
+export type { ManifestV0 } from './manifest-migration';
+export {
+  TIER_STATE_VERSION,
+  ActiveVisitorSchema,
+  RosterMemberSchema,
+  RosterSchema,
+  TierStateSchema,
+  createTierState,
+} from './tier-state';
+export type { ActiveVisitor, Roster, RosterMember, TierState } from './tier-state';
+export { migrateStudioSessionV0, STUDIO_SESSION_V0_VERSION } from './studio-session-v0';
+export { defaultProgression } from './studio-session';
+export type { BenchState, SessionProgression } from './studio-session';
