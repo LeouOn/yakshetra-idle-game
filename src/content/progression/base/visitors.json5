@@ -1,0 +1,4 @@
+// Visitor definition extension slot — empty for the base content.
+{
+  visitors: [],
+}

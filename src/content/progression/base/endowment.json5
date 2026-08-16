@@ -1,0 +1,4 @@
+// Endowment track extension slot — empty for the base content.
+{
+  endowment: [],
+}

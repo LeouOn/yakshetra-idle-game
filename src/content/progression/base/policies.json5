@@ -1,0 +1,5 @@
+// Policy extension slot — empty for the base content; future packs may add
+// per-tier practice/schedule/weights rules.
+{
+  policies: [],
+}

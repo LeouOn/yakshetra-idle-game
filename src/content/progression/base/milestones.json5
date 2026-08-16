@@ -1,0 +1,68 @@
+// Unlock milestones — one per non-person tier. Each predicate is an
+// archive-style conjunction over world_drafts and pinned counts.
+{
+  milestones: [
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-household',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'world_drafts.total', value: 1 },
+          { op: 'gte', key: 'pinned.person', value: 3 },
+        ],
+      },
+      grants: { tier: 'household', ceremony_sid: 'graduation.household' },
+    },
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-org',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'pinned.tradition', value: 2 },
+          { op: 'gte', key: 'world_drafts.household', value: 1 },
+        ],
+      },
+      grants: { tier: 'org', ceremony_sid: 'graduation.org' },
+    },
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-town',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'pinned.charter', value: 1 },
+          { op: 'gte', key: 'world_drafts.org', value: 2 },
+        ],
+      },
+      grants: { tier: 'town', ceremony_sid: 'graduation.town' },
+    },
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-city',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'pinned.festival', value: 1 },
+          { op: 'gte', key: 'pinned.landmark', value: 1 },
+          { op: 'gte', key: 'world_drafts.town', value: 2 },
+        ],
+      },
+      grants: { tier: 'city', ceremony_sid: 'graduation.city' },
+    },
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-region',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'pinned.institution', value: 1 },
+          { op: 'gte', key: 'pinned.monument', value: 1 },
+          { op: 'gte', key: 'world_drafts.city', value: 2 },
+        ],
+      },
+      grants: { tier: 'region', ceremony_sid: 'graduation.region' },
+    },
+  ],
+}

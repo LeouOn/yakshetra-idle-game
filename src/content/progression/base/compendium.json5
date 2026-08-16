@@ -1,0 +1,4 @@
+// Compendium entry extension slot — empty for the base content.
+{
+  compendium: [],
+}
