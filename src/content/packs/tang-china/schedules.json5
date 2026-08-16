@@ -59,5 +59,69 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Household-morning — the second cadence in the tang pack. Coverage
+    // [0, 24) with no gaps; null-practice blocks bookend the working hours so
+    // `validateSchedule` accepts it. Resolved by `policy:household-base`.
+    //
+    // Note: id drops the `tang/` namespace prefix on purpose — `policy:household-base`
+    // references `schedule:household-morning` verbatim so the policy and
+    // schedule ids pair cleanly without the pack prefix.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:household-morning',
+      name_sid: 'tang.schedule.household_morning.name_sid',
+      blocks: [
+        {
+          id: 'block:household-morning/night-rest',
+          label_sid: 'tang.block.household_morning.night_rest.label_sid',
+          startHour: 0,
+          endHour: 4,
+          practice_id: null,
+          icon_sid: 'tang.block.household_morning.night_rest.icon_sid',
+        },
+        {
+          id: 'block:household-morning/pre-dawn-sweeping',
+          label_sid: 'tang.block.household_morning.pre_dawn_sweeping.label_sid',
+          startHour: 4,
+          endHour: 7,
+          practice_id: null,
+          icon_sid: 'tang.block.household_morning.pre_dawn_sweeping.icon_sid',
+        },
+        {
+          id: 'block:household-morning/alms-round',
+          label_sid: 'tang.block.household_morning.alms_round.label_sid',
+          startHour: 7,
+          endHour: 10,
+          practice_id: 'practice:tang/alms-round',
+          icon_sid: 'tang.block.household_morning.alms_round.icon_sid',
+        },
+        {
+          id: 'block:household-morning/courtyard-beings',
+          label_sid: 'tang.block.household_morning.courtyard_beings.label_sid',
+          startHour: 10,
+          endHour: 13,
+          practice_id: 'practice:tang/courtyard-beings',
+          icon_sid: 'tang.block.household_morning.courtyard_beings.icon_sid',
+        },
+        {
+          id: 'block:household-morning/extra-bowl',
+          label_sid: 'tang.block.household_morning.extra_bowl.label_sid',
+          startHour: 13,
+          endHour: 16,
+          practice_id: 'practice:tang/extra-bowl',
+          icon_sid: 'tang.block.household_morning.extra_bowl.icon_sid',
+        },
+        {
+          id: 'block:household-morning/evening-rest',
+          label_sid: 'tang.block.household_morning.evening_rest.label_sid',
+          startHour: 16,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.household_morning.evening_rest.icon_sid',
+        },
+      ],
+    },
   ],
 }

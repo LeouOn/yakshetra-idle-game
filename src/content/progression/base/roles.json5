@@ -1,0 +1,10 @@
+// Roles table for the bench. Plain strings — compiled card output, not SIDs.
+// The bundle is keyed by tier scale; future tiers (org, town, city, region)
+// will append their own block once authored. Loader/lint pass-through mirrors
+// the catalogs pattern: Zod-parse → include in registries → meter-token lint.
+{
+  household: {
+    roles: ['elder', 'cook', 'runner'],
+    names: ['Second Aunt', 'Old Wen', 'Little Shu'],
+  },
+}

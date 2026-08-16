@@ -8,6 +8,7 @@ import endowment from './base/endowment.json5';
 import kinds from './base/kinds.json5';
 import milestones from './base/milestones.json5';
 import policies from './base/policies.json5';
+import roles from './base/roles.json5';
 import tiers from './base/tiers.json5';
 import visitors from './base/visitors.json5';
 
@@ -20,8 +21,19 @@ export interface ProgressionBundle {
   readonly endowment: unknown;
   readonly visitors: unknown;
   readonly compendium: unknown;
+  readonly roles: unknown;
 }
 
 export function getProgressionBundle(): ProgressionBundle {
-  return { tiers, kinds, catalogs, milestones, policies, endowment, visitors, compendium };
+  return {
+    tiers,
+    kinds,
+    catalogs,
+    milestones,
+    policies,
+    endowment,
+    visitors,
+    compendium,
+    roles,
+  };
 }

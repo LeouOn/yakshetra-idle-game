@@ -16,6 +16,7 @@ import {
   KindRowSchema,
   MilestoneSchema,
   PolicySchema,
+  RolesFileSchema,
   TierSchema,
   VisitorSchema,
   type CompendiumEntry,
@@ -23,6 +24,7 @@ import {
   type KindRow,
   type Milestone,
   type Policy,
+  type RolesFile,
   type Tier,
   type Visitor,
 } from './schema';
@@ -39,6 +41,7 @@ export interface ProgressionRegistries {
   readonly endowment: readonly EndowmentTrack[];
   readonly visitors: readonly Visitor[];
   readonly compendium: readonly CompendiumEntry[];
+  readonly roles: RolesFile;
 }
 
 function extractArray(raw: unknown, key: string, filename: string): unknown[] {
@@ -68,6 +71,24 @@ function parseFile<S extends z.ZodType>(
     );
   }
   return result.data as z.infer<S>[];
+}
+
+function parseSingleton<S extends z.ZodType>(
+  schema: S,
+  raw: unknown,
+  filename: string,
+): z.infer<S> {
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    const issue = result.error.issues[0];
+    const path = issue?.path.join('.') ?? '(root)';
+    throw new Error(
+      `loadProgression: ${filename} validation failed at "${path}": ${
+        issue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+  return result.data as z.infer<S>;
 }
 
 export function loadProgression(): ProgressionRegistries {
@@ -116,6 +137,7 @@ export function loadProgression(): ProgressionRegistries {
     extractArray(bundle.compendium, 'compendium', 'compendium.json5'),
     'compendium.json5',
   );
+  const roles = parseSingleton(RolesFileSchema, bundle.roles, 'roles.json5');
   const kindRules: KindRule[] = kindRows.map((row) => ({ kind: row.id, match: row.match }));
   const registries: ProgressionRegistries = {
     tiers,
@@ -127,6 +149,7 @@ export function loadProgression(): ProgressionRegistries {
     endowment,
     visitors,
     compendium,
+    roles,
   };
   const lintReport = lintProgression(registries);
   if (!lintReport.passed) {

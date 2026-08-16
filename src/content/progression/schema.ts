@@ -238,3 +238,23 @@ export const CompendiumEntrySchema = z
   })
   .strict();
 export type CompendiumEntry = z.infer<typeof CompendiumEntrySchema>;
+
+/* ---- roles/v0 ----------------------------------------------------------- */
+
+// Roles are compiled card output (plain strings, NOT SIDs): role labels and
+// the names the bench fills them with. Each scale-level block is its own
+// keyed table so future scales append without touching this schema.
+
+const RolesBlockSchema = z
+  .object({
+    roles: z.array(z.string().min(1)).min(1),
+    names: z.array(z.string().min(1)).min(1),
+  })
+  .strict();
+
+export const RolesFileSchema = z
+  .object({
+    household: RolesBlockSchema,
+  })
+  .strict();
+export type RolesFile = z.infer<typeof RolesFileSchema>;

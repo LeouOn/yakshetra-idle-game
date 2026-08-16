@@ -1,5 +1,19 @@
-// Policy extension slot — empty for the base content; future packs may add
-// per-tier practice/schedule/weights rules.
+// Policy extension slot — per-tier practice/schedule/weights rules.
+// `policy:household-base` is the first real row: a household-morning cadence
+// that the household bench leans on by default (Task 6 wires policy lookups
+// into the scale-filtered compile step).
 {
-  policies: [],
+  policies: [
+    {
+      schema_version: 'policy/v0',
+      id: 'policy:household-base',
+      practices: [
+        'practice:tang/alms-round',
+        'practice:tang/courtyard-beings',
+        'practice:tang/extra-bowl',
+      ],
+      schedule_ref: 'schedule:household-morning',
+      choice_weights: {},
+    },
+  ],
 }

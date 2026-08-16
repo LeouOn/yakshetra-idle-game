@@ -252,5 +252,85 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Household-scale kinds (Task 4). Each table-fill entry is compiled card
+    // output — plain strings, NOT SIDs. Objects with weight; a room that
+    // remembers a winter; the fold a hand learns before the hand forgets.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'tradition',
+      entries: [
+        {
+          name: 'The dumpling fold',
+          one_liner: 'A pinch the family passes before the new year.',
+          subject: 'a fold kept by hand',
+          detail:
+            'Grandmother showed your mother. Your mother showed you. The pinch lands slightly off-center each time, and that is how you know which hands taught you.',
+          tags: ['fold', 'kitchen'],
+        },
+        {
+          name: 'The needle case',
+          one_liner: 'A bamboo tube with three needles and a story per slot.',
+          subject: 'a case of three needles',
+          detail:
+            'The longest needle embroidered the wedding robe. The middle one restitched the funeral banner. The shortest is for the everyday mends no one will sign.',
+          tags: ['needle', 'mend'],
+        },
+        {
+          name: 'The hall beam',
+          one_liner: 'The plank that holds up the room where everyone argues.',
+          subject: 'a load-bearing beam',
+          detail:
+            'The grain runs the long way. The household has met under it for four generations; its cracks match the ones in the family.',
+          tags: ['beam', 'hall'],
+        },
+        {
+          name: 'The new-year verse',
+          one_liner: 'A couplet that gets re-painted on the door every spring.',
+          subject: 'a verse re-painted each year',
+          detail:
+            'The same brush, the same characters, the same door. The hand that paints it changes. The slant of the last stroke changes with it, on purpose.',
+          tags: ['verse', 'door'],
+        },
+      ],
+    },
+    {
+      kind: 'heirloom',
+      entries: [
+        {
+          name: 'The copper key',
+          one_liner: 'A key that opens the storehouse and no other door.',
+          subject: 'a copper storehouse key',
+          detail:
+            'The bow is warm from your father\'s pocket. The bit wears to his hand on one side and to yours on the other. The lock remembers both.',
+          tags: ['key', 'storehouse'],
+        },
+        {
+          name: 'The clay bowl',
+          one_liner: 'A bowl with a chip that lives on the shelf, not the table.',
+          subject: 'a chipped shelf-bowl',
+          detail:
+            'The chip happened the year the well went bad. The bowl was retired but kept. It holds dried chilies now and the memory of clean water.',
+          tags: ['bowl', 'chipped'],
+        },
+        {
+          name: 'The winter quilt',
+          one_liner: 'A quilt that is heavier than its fabric should be.',
+          subject: 'a winter-weight quilt',
+          detail:
+            'The batting is cotton from a field the family no longer farms. Each square was sewn by a person the quilt outlived. It is the warmest thing in the house.',
+          tags: ['quilt', 'winter'],
+        },
+        {
+          name: 'The tea canister',
+          one_liner: 'A canister that always smells like the last person who opened it.',
+          subject: 'a tea canister',
+          detail:
+            'The lid sits a finger-width off true. Whoever first opened it left their scent in the tin and the next opener carried it forward, one cup at a time.',
+          tags: ['tea', 'canister'],
+        },
+      ],
+    },
   ],
 }

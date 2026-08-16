@@ -83,5 +83,31 @@
       min_quality: 0,
       match: { dominant_in: ['practice_tick', 'lens_chosen'] },
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Household-scale rows (Task 6 passes scale-filtered rules, so these
+    // never run against person-tier residue — person picks stay byte-identical
+    // to DEFAULT_KIND_RULES).
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'tradition',
+      scale: 'household',
+      pinnable: false,
+      catalog_ref: 'core/tradition',
+      sid_ns: 'studio.kind_tradition_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'heirloom',
+      scale: 'household',
+      pinnable: false,
+      catalog_ref: 'core/heirloom',
+      sid_ns: 'studio.kind_heirloom_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
   ],
 }

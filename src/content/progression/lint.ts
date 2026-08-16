@@ -81,6 +81,7 @@ export function lintProgression(registries: ProgressionRegistries): LintReport {
     visitors: registries.visitors,
     compendium: registries.compendium,
     catalogs: registries.catalogs,
+    roles: registries.roles,
   };
   for (const { s, path } of walkStrings(meterScope)) {
     if (containsMeterToken(s)) {

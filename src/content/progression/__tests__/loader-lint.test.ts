@@ -261,6 +261,7 @@ vi.mock('../registry', () => {
       endowment: { endowment: [] },
       visitors: { visitors: [] },
       compendium: { compendium: [] },
+      roles: { household: { roles: ['elder', 'cook', 'runner'], names: ['A', 'B', 'C'] } },
     }),
   };
 });

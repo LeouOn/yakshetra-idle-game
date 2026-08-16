@@ -21,7 +21,12 @@ describe('shipped catalogs', () => {
     }
   });
 
-  it('mirrors the engine default catalog entry-for-entry while both exist', () => {
-    expect(registries.catalogs).toEqual(CATALOG);
+  it('mirrors the engine default catalog entry-for-entry for the five core kinds', () => {
+    // Tradition + heirloom (Task 4) are progression-only and intentionally
+    // absent from the engine default CATALOG; only the five SPEC §6 core
+    // kinds must still match entry-for-entry.
+    for (const kind of ['thing', 'outcome', 'change', 'person', 'place'] as const) {
+      expect(registries.catalogs[kind]).toEqual(CATALOG[kind]);
+    }
   });
 });
