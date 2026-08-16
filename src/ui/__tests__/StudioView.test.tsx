@@ -3,17 +3,28 @@ import { createElement } from 'react';
 import { AccessibilityInfo } from 'react-native';
 
 import StudioView from '@/ui/components/StudioView';
-import { resolveSid } from '@/i18n';
+import { resolveSid, formatSid } from '@/i18n';
 import { act, render } from '@/test/rntl';
+import { loadProgression } from '@/content/progression/loader';
 import {
   createRng,
   createStudioState,
+  createTierState,
+  emptyHydratedSession,
+  graduateToHousehold,
   queueDevelop,
   recordStudioResidues,
+  snapshotStudioSession,
+  StudioSessionSchema,
   tableFillManifest,
   tickStudio,
+  type Manifest,
+  type Practice,
+  type ResidueEvent,
+  type StudioSession,
+  type StudioState,
+  type TierState,
 } from '@/engine';
-import type { Practice, ResidueEvent, StudioState } from '@/engine';
 import type { DailySchedule } from '@/engine/schedule';
 import type { TestInstance } from 'test-renderer';
 
@@ -287,5 +298,185 @@ describe('StudioView', () => {
     const guidance = resolveSid('studio.world_empty_sid');
     expect(guidance).toContain('life');
     expect(() => getByTextContent(guidance)).not.toThrow();
+  });
+
+  /* ---- graduation: rail, progress, ceremony, household harvest ------------- */
+
+  function personCard(id: string, seed: bigint): Manifest {
+    return tableFillManifest(PERSON_WINDOW, null, 0, createRng(seed), String(seed), id);
+  }
+
+  function personTier(focusIds: readonly string[]): TierState {
+    return {
+      ...createTierState('person', true),
+      roster: {
+        tier: 'person',
+        members: focusIds.map((focus_id, index) => ({
+          id: `p-member-${index}`,
+          name: `Focus ${index}`,
+          role: 'keeper',
+          policy: 'policy:household-base',
+          embodied: false,
+          focus_id,
+          seed: index,
+        })),
+      },
+    };
+  }
+
+  function sessionAt(parts: {
+    readonly cards: readonly Manifest[];
+    readonly pinnedId: string | null;
+    readonly focusIds: readonly string[];
+  }): StudioSession {
+    const cards = [...parts.cards];
+    const pinnedCard = cards.find((card) => card.id === parts.pinnedId) ?? null;
+    const hydrated = emptyHydratedSession();
+    return snapshotStudioSession(
+      {
+        ...hydrated.studio,
+        archive: cards,
+        pinned:
+          pinnedCard === null
+            ? null
+            : {
+                id: pinnedCard.id,
+                name: pinnedCard.name,
+                kind: 'person',
+                one_liner: pinnedCard.one_liner,
+              },
+      },
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: { person: personTier(parts.focusIds) },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+  }
+
+  it('shows the household ladder progress badge at 2 of 3 pinned', () => {
+    const cards = [personCard('m-1', 11n), personCard('m-2', 13n), personCard('m-3', 17n)];
+    const session = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2'] });
+
+    const { getByTestID, getByText } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+      }),
+    );
+
+    expect(() => getByTestID('studio-rail')).not.toThrow();
+    expect(() => getByTestID('studio-rail-tier-person')).not.toThrow();
+    expect(() => getByTestID('studio-rail-tier-household')).not.toThrow();
+    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
+    expect(() =>
+      getByText(formatSid('studio.tier_progress_badge_sid', { n: 2, m: 3 })),
+    ).not.toThrow();
+  });
+
+  it('graduates with a ceremony when the milestone crosses and dismiss persists', () => {
+    const cards = [personCard('m-1', 19n), personCard('m-2', 23n), personCard('m-3', 29n)];
+    const session = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2', 'm-3'] });
+
+    const { getByTestID, getByText, queryByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+      }),
+    );
+
+    expect(() => getByTestID('graduation-overlay')).not.toThrow();
+    expect(() => getByText(resolveSid('graduation.household_title_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('graduation.household_line_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('graduation.dismiss_button_sid'))).not.toThrow();
+
+    press(getByTestID('graduation-dismiss'));
+    expect(queryByText(resolveSid('graduation.household_title_sid'))).toBeNull();
+    // The tier stays graduated after the ceremony: the rail names it, unlocked.
+    expect(() => getByText(resolveSid('studio.tier_household_sid'))).not.toThrow();
+  });
+
+  it('harvests a ready household bay as a household-scale tradition or heirloom', async () => {
+    const probe = vi.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const cards = [personCard('m-1', 31n), personCard('m-2', 37n), personCard('m-3', 41n)];
+    const crossing = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2', 'm-3'] });
+    const graduated = graduateToHousehold(
+      crossing,
+      loadProgression().roles.household,
+      createRng(7n),
+    );
+
+    const folded: ResidueEvent[] = [
+      { tick: 1, type: 'lens_chosen', ids: ['lens.test', 'member:m1'], numbers: {} },
+      {
+        tick: 2,
+        type: 'practice_tick',
+        ids: ['practice.test', 'member:m1'],
+        numbers: { progress: 2 },
+      },
+      {
+        tick: 3,
+        type: 'practice_tick',
+        ids: ['practice.test', 'member:m2'],
+        numbers: { progress: 2 },
+      },
+    ];
+    let bench: StudioState = recordStudioResidues(createStudioState(), folded);
+    bench = queueDevelop(bench, null, createRng(97n));
+    bench = tickStudio(bench, bench.bay?.cook_ticks_total ?? 0);
+    expect(bench.bay?.status).toBe('ready');
+
+    const session = StudioSessionSchema.parse({
+      ...graduated,
+      benches: {
+        ...graduated.benches,
+        household: {
+          residue: folded,
+          last_harvest_index: bench.last_harvest_index,
+          bay: bench.bay,
+          quality_tier: 0,
+          harvest_count: 0,
+          play_import: null,
+          pinned: null,
+          surplus: 0,
+        },
+      },
+    });
+
+    const onExport = vi.fn();
+    const { getByTestID, getByText, press, container } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+        onExport,
+      }),
+    );
+
+    // Let the reduced-motion probe land before harvesting (no flourish timer).
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // The rail flags the ready household bench before the harvest.
+    expect(() => getByText(formatSid('studio.tier_ready_badge_sid', { n: 1 }))).not.toThrow();
+
+    press(getByTestID('studio-harvest'));
+    const kinds = kindBadges(container);
+    expect(kinds).toContain(resolveSid('studio.kind_tradition_sid'));
+
+    press(getByTestID('studio-export'));
+    expect(onExport).toHaveBeenCalledTimes(1);
+    const json = onExport.mock.calls[0]?.[0] as string;
+    expect(json).toContain('"scale":"household"');
+    expect(json).toContain('"kind":"tradition"');
+    probe.mockRestore();
   });
 });

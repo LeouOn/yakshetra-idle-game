@@ -183,4 +183,15 @@ export {
 export type { ActiveVisitor, Roster, RosterMember, TierState } from './tier-state';
 export { migrateStudioSessionV0, STUDIO_SESSION_V0_VERSION } from './studio-session-v0';
 export { defaultProgression } from './studio-session';
-export type { BenchState, SessionProgression } from './studio-session';
+export type {
+  BenchState,
+  MemberSlice,
+  SessionProgression,
+  WorldDraftReference,
+} from './studio-session';
+export { checkMilestones } from './milestones';
+export type { MilestoneLike } from './milestones';
+export { computeArchiveStats } from './archive-stats';
+export type { ArchiveStats, WorldDraftStatSource } from './archive-stats';
+export { graduateToHousehold } from './graduation';
+export type { HouseholdRolesTable } from './graduation';

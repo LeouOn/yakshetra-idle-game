@@ -1,0 +1,965 @@
+// Manifest bench — tend work, cook a residue window, harvest a card.
+//
+// Presentational + local session state. The engine stays pure; this view
+// calls simulateIdleTicks / queueDevelop / harvestTableFill. All copy is SIDs.
+//
+// Graduation: the session's progression slices (tiers, milestones, members,
+// world drafts, household bench) live here, are persisted with the bench, and
+// are checked against the content milestones after every change — crossing
+// `unlock-household` graduates through the engine and raises the ceremony.
+
+import { useEffect, useRef, useState } from 'react';
+import {
+  AccessibilityInfo,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+
+import type { Ending } from '@/content/schema';
+import { loadProgression, type ProgressionRegistries } from '@/content/progression/loader';
+import {
+  MIN_RESIDUE_TO_DEVELOP,
+  QUALITY_UPGRADE_HARVESTS,
+  STUDIO_TEND_TICKS,
+  assembleWorldDraft,
+  canHarvest,
+  canQueueDevelop,
+  canUpgradeQuality,
+  canonicalStringify,
+  catchUpStudio,
+  checkMilestones,
+  compileRequestFromBay,
+  computeArchiveStats,
+  createIdleState,
+  createLifeState,
+  createRng,
+  createStudioState,
+  defaultProgression,
+  evaluateLifeContext,
+  graduateToHousehold,
+  harvestTableFill,
+  hydrateStudioSession,
+  pendingResidue,
+  pinFocus,
+  queueDevelop,
+  snapshotStudioSession,
+  stepStudio,
+  tableFillManifest,
+  upgradeQuality,
+  type ArchiveStats,
+  type BenchState,
+  type IdleState,
+  type KindRule,
+  type LifeState,
+  type Manifest,
+  type ManifestScale,
+  type MemberSlice,
+  type Practice,
+  type Rng,
+  type SessionProgression,
+  type StudioAwaySummary,
+  type StudioSession,
+  type StudioState,
+  type WorldDraftReference,
+} from '@/engine';
+import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persistence';
+import type { CalendarEpoch } from '@/engine/calendar';
+import type { DailySchedule } from '@/engine/schedule';
+import { resolveScheduleState } from '@/engine/schedule';
+import { formatSid, resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
+import StudioActivities from './StudioActivities';
+import StudioArchive from './StudioArchive';
+import StudioJuice from './StudioJuice';
+import StudioLife from './StudioLife';
+import StudioRail, { type RailTier } from './StudioRail';
+import StudioWorld from './StudioWorld';
+
+export const STUDIO_TEND_COUNT = STUDIO_TEND_TICKS;
+
+const DEFAULT_EPOCH: CalendarEpoch = { year: 1, month: 1, day: 1, hour: 0 };
+
+/** Phase 1: the embodied bench life is the person tier; the household rides beside it. */
+const EMBODIED_SCALE: ManifestScale = 'person';
+const HOUSEHOLD_SCALE: ManifestScale = 'household';
+const UNLOCK_HOUSEHOLD = 'unlock-household';
+
+/** The two gte operands of `unlock-household`, hardcoded for Phase 1. */
+const HOUSEHOLD_GATE: readonly { readonly key: string; readonly m: number }[] = [
+  { key: 'pinned.person', m: 3 },
+  { key: 'world_drafts.total', m: 1 },
+];
+
+let registriesCache: ProgressionRegistries | null = null;
+
+function registries(): ProgressionRegistries {
+  if (registriesCache === null) {
+    registriesCache = loadProgression();
+  }
+  return registriesCache;
+}
+
+let rulesByScaleCache: Readonly<Record<string, readonly KindRule[]>> | null = null;
+
+/** Loader kind rules regrouped by row scale, file order preserved. */
+function kindRulesByScale(): Readonly<Record<string, readonly KindRule[]>> {
+  if (rulesByScaleCache === null) {
+    const { kindRows, kindRules } = registries();
+    const out: Record<string, KindRule[]> = {};
+    kindRows.forEach((row, index) => {
+      const rule = kindRules[index];
+      if (rule === undefined) {
+        throw new Error('studio: progression kind rows and rules are out of parallel order');
+      }
+      out[row.scale] = [...(out[row.scale] ?? []), rule];
+    });
+    rulesByScaleCache = out;
+  }
+  return rulesByScaleCache;
+}
+
+function statValue(stats: ArchiveStats, key: string): number {
+  const dot = key.indexOf('.');
+  if (dot <= 0) {
+    return 0;
+  }
+  const section = key.slice(0, dot);
+  const tail = key.slice(dot + 1);
+  if (section === 'pinned') {
+    return stats.pinned[tail] ?? 0;
+  }
+  if (section === 'world_drafts') {
+    return stats.world_drafts[tail] ?? 0;
+  }
+  if (section === 'harvests') {
+    return stats.harvests[tail] ?? 0;
+  }
+  return 0;
+}
+
+/** The least-satisfied gte operand of the household gate, as n/m. */
+function householdProgress(stats: ArchiveStats): { n: number; m: number } {
+  let worstKey = HOUSEHOLD_GATE[0]?.key ?? 'pinned.person';
+  let worstM = HOUSEHOLD_GATE[0]?.m ?? 1;
+  let worstRatio = Number.POSITIVE_INFINITY;
+  for (const gate of HOUSEHOLD_GATE) {
+    const ratio = Math.min(1, statValue(stats, gate.key) / gate.m);
+    if (ratio < worstRatio) {
+      worstRatio = ratio;
+      worstKey = gate.key;
+      worstM = gate.m;
+    }
+  }
+  return { n: Math.min(statValue(stats, worstKey), worstM), m: worstM };
+}
+
+export interface StudioViewProps {
+  readonly onBack?: () => void;
+  readonly practices: readonly Practice[];
+  readonly schedule: DailySchedule;
+  readonly endings?: readonly Ending[];
+  readonly initialLife?: LifeState;
+  readonly initialIdle?: IdleState;
+  readonly initialStudio?: StudioState;
+  /** Full session to open the bench from (tests, embeds); overrides the piecemeal initials. */
+  readonly initialSession?: StudioSession;
+  readonly rng?: Rng;
+  readonly onExport?: (json: string) => void;
+  /** When true, load/save the bench through {@link storage}. */
+  readonly persist?: boolean;
+  readonly storage?: StudioKv;
+  /** Unix seconds. Injected so catch-up stays testable. */
+  readonly clock?: () => number;
+  readonly epoch?: CalendarEpoch;
+}
+
+function defaultClock(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+function defaultLife(): LifeState {
+  return createLifeState({
+    id: 'studio-bench' as LifeState['id'],
+    era: 'studio-bench@0.1.0' as LifeState['era'],
+    role: 'operator' as LifeState['role'],
+    identity: {
+      gender: 'unspecified',
+      social_class: 'operator',
+      family_wealth_at_birth: 'unspecified',
+      caste_status: 'none',
+      disability_status: 'none',
+    },
+  });
+}
+
+export const HARVEST_FLOURISH_MS = 1600;
+/** Wall-clock gap between automatic single-tick pulses while the bench is running. */
+export const STUDIO_PULSE_MS = 4000;
+
+function usePrefersReducedMotion(): boolean {
+  const [reduced, setReduced] = useState<boolean>(readWebReducedMotion);
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+        return;
+      }
+      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const handler = (event: MediaQueryListEvent): void => setReduced(event.matches);
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
+    }
+    let cancelled = false;
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled: boolean) => {
+      // Asymmetric on purpose: motion-on is the initial state; a false probe
+      // would dispatch a no-op update.
+      if (!cancelled && enabled) {
+        setReduced(true);
+      }
+    });
+    const subscription = AccessibilityInfo.addEventListener(
+      'reduceMotionChanged',
+      (enabled: boolean) => {
+        if (!cancelled) {
+          setReduced(enabled);
+        }
+      },
+    );
+    return () => {
+      cancelled = true;
+      subscription.remove();
+    };
+  }, []);
+  return reduced;
+}
+
+function readWebReducedMotion(): boolean {
+  if (
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function'
+  ) {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  return false;
+}
+
+function activePracticeLine(
+  schedule: DailySchedule,
+  idle: IdleState,
+  practices: readonly Practice[],
+): string {
+  const block = resolveScheduleState(schedule, idle.lastSimulatedTick + 1n).currentBlock;
+  if (block.practice_id === null) {
+    return resolveSid('studio.practice_rest_sid');
+  }
+  const practice = practices.find((row) => row.id === block.practice_id);
+  if (practice === undefined) {
+    return resolveSid('studio.practice_rest_sid');
+  }
+  let label = practice.label_sid;
+  try {
+    label = resolveSid(practice.label_sid);
+  } catch {
+    label = practice.id;
+  }
+  return formatSid('studio.practice_now_sid', { practice: label });
+}
+
+function awayDuration(ticks: number): string {
+  if (ticks < 60) {
+    return `${ticks} min`;
+  }
+  const hours = Math.floor(ticks / 60);
+  const minutes = ticks % 60;
+  return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
+}
+
+/**
+ * World-draft ledger: once the archive assembles a draft at the embodied
+ * scale, the assembly is recorded (once) in the session. Called wherever the
+ * archive can grow — mount, persisted load, and each harvest.
+ */
+function withRecordedDraft(
+  archive: readonly Manifest[],
+  drafts: readonly WorldDraftReference[],
+): readonly WorldDraftReference[] {
+  if (assembleWorldDraft(archive) === null) {
+    return drafts;
+  }
+  if (drafts.some((entry) => entry.scale === EMBODIED_SCALE)) {
+    return drafts;
+  }
+  return [...drafts, { scale: EMBODIED_SCALE }];
+}
+
+export default function StudioView({
+  onBack,
+  practices,
+  schedule,
+  endings = [],
+  initialLife,
+  initialIdle,
+  initialStudio,
+  initialSession,
+  rng,
+  onExport,
+  persist = false,
+  storage,
+  clock = defaultClock,
+  epoch = DEFAULT_EPOCH,
+}: StudioViewProps) {
+  const rngRef = useRef<Rng>(rng ?? createRng(0x5eedn));
+  const packPracticesRef = useRef(practices);
+  const [bootstrap] = useState(() =>
+    initialSession === undefined
+      ? null
+      : hydrateStudioSession(initialSession, initialLife ?? defaultLife(), practices),
+  );
+  const [life, setLife] = useState<LifeState>(
+    () => bootstrap?.life ?? initialLife ?? defaultLife(),
+  );
+  const [idle, setIdle] = useState<IdleState>(
+    () => bootstrap?.idle ?? initialIdle ?? createIdleState(),
+  );
+  const [studio, setStudio] = useState<StudioState>(
+    () => bootstrap?.studio ?? initialStudio ?? createStudioState(),
+  );
+  const [runtimePractices, setRuntimePractices] = useState<Practice[]>(() =>
+    bootstrap === null ? [...practices] : [...bootstrap.practices],
+  );
+  const [progression, setProgression] = useState<SessionProgression>(
+    () => bootstrap?.progression ?? defaultProgression(),
+  );
+  const [members, setMembers] = useState<Record<string, MemberSlice>>(
+    () => bootstrap?.members ?? {},
+  );
+  const [worldDrafts, setWorldDrafts] = useState<readonly WorldDraftReference[]>(() =>
+    withRecordedDraft(
+      (bootstrap?.studio ?? initialStudio ?? createStudioState()).archive,
+      bootstrap?.world_drafts ?? [],
+    ),
+  );
+  const [householdBench, setHouseholdBench] = useState<BenchState | null>(
+    () => initialSession?.benches['household'] ?? null,
+  );
+  const [graduationCeremony, setGraduationCeremony] = useState<string | null>(null);
+  const [brief, setBrief] = useState('');
+  const [exported, setExported] = useState(false);
+  const [worldExported, setWorldExported] = useState(false);
+  const [juiceBurst, setJuiceBurst] = useState(0);
+  const [ready, setReady] = useState(!persist);
+  const [away, setAway] = useState<StudioAwaySummary | null>(null);
+  const [freshHarvestId, setFreshHarvestId] = useState<string | null>(null);
+  const [running, setRunning] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const benchRef = useRef({
+    studio,
+    idle,
+    life,
+    practices: runtimePractices,
+  });
+
+  useEffect(() => {
+    benchRef.current = {
+      studio,
+      idle,
+      life,
+      practices: runtimePractices,
+    };
+  }, [studio, idle, life, runtimePractices]);
+
+  useEffect(() => {
+    if (freshHarvestId === null) {
+      return;
+    }
+    const timer = setTimeout(() => setFreshHarvestId(null), HARVEST_FLOURISH_MS);
+    return () => clearTimeout(timer);
+  }, [freshHarvestId]);
+
+  useEffect(() => {
+    if (!persist) {
+      return;
+    }
+    let cancelled = false;
+    void loadStudioSession(storage).then((session) => {
+      if (cancelled) {
+        return;
+      }
+      if (session !== null) {
+        const hydrated = hydrateStudioSession(
+          session,
+          initialLife ?? defaultLife(),
+          packPracticesRef.current,
+        );
+        const lastVisited = session.last_visited_at_unix ?? 0;
+        const caught = catchUpStudio(
+          hydrated.studio,
+          hydrated.idle,
+          hydrated.life,
+          hydrated.practices,
+          schedule,
+          endings,
+          lastVisited,
+          clock(),
+          rngRef.current,
+        );
+        setLife(caught.life);
+        setIdle(caught.idle);
+        setStudio(caught.studio);
+        setRuntimePractices(caught.practices);
+        setProgression(hydrated.progression);
+        setMembers({ ...hydrated.members });
+        setWorldDrafts(withRecordedDraft(hydrated.studio.archive, hydrated.world_drafts));
+        setHouseholdBench(session.benches['household'] ?? null);
+        if (caught.summary.ticksSimulated > 0) {
+          setAway(caught.summary);
+        }
+      }
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [persist, storage, initialLife, schedule, endings, clock]);
+
+  /** Session as it stands right now, household bench included. */
+  function buildSession(lastVisitedAtUnix?: number): StudioSession {
+    const base = snapshotStudioSession(
+      studio,
+      idle,
+      life,
+      runtimePractices,
+      lastVisitedAtUnix,
+      progression,
+      { members, world_drafts: worldDrafts },
+    );
+    return householdBench === null
+      ? base
+      : { ...base, benches: { ...base.benches, household: householdBench } };
+  }
+
+  useEffect(() => {
+    if (!persist || !ready) {
+      return;
+    }
+    void saveStudioSession(buildSession(clock()), storage);
+    // buildSession folds the current render's state into the snapshot; listing
+    // the underlying values keeps this effect honest without a memo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    persist,
+    ready,
+    storage,
+    clock,
+    studio,
+    idle,
+    life,
+    runtimePractices,
+    progression,
+    members,
+    worldDrafts,
+    householdBench,
+  ]);
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    const current = buildSession();
+    const fired = checkMilestones(current, worldDrafts, registries().milestones);
+    if (!fired.includes(UNLOCK_HOUSEHOLD)) {
+      return;
+    }
+    const graduated = graduateToHousehold(current, registries().roles.household, rngRef.current);
+    setProgression({
+      tiers: graduated.tiers,
+      milestones_done: graduated.milestones_done,
+      compendium_done: graduated.compendium_done,
+      embodied_member: graduated.embodied_member,
+    });
+    setMembers({ ...graduated.members });
+    setWorldDrafts([...graduated.world_drafts]);
+    setHouseholdBench((current2) => current2 ?? graduated.benches['household'] ?? null);
+    setGraduationCeremony(UNLOCK_HOUSEHOLD);
+    // Same rationale as the save effect: buildSession reads the listed values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    ready,
+    studio,
+    idle,
+    life,
+    runtimePractices,
+    progression,
+    members,
+    worldDrafts,
+    householdBench,
+  ]);
+
+  const pending = pendingResidue(studio);
+  const charge = pending.length;
+  const chargeRatio = Math.min(1, charge / MIN_RESIDUE_TO_DEVELOP);
+  const householdUnlocked = progression.tiers['household']?.unlocked === true;
+  const householdBayReady =
+    householdBench !== null && householdBench.bay !== null && householdBench.bay.status === 'ready';
+  const harvestable = canHarvest(studio) || householdBayReady;
+  const developable = canQueueDevelop(studio);
+  const upgradable = canUpgradeQuality(studio);
+  const remainingForUpgrade = Math.max(0, QUALITY_UPGRADE_HARVESTS - studio.harvest_count);
+  const latest = studio.archive[studio.archive.length - 1];
+  const stats = computeArchiveStats(buildSession(), worldDrafts);
+  const railTiers: readonly RailTier[] = [
+    {
+      id: 'person',
+      labelSid: 'studio.tier_person_sid',
+      unlocked: progression.tiers['person']?.unlocked !== false,
+      readyCount: canHarvest(studio) ? 1 : 0,
+      progress: null,
+    },
+    {
+      id: 'household',
+      labelSid: 'studio.tier_household_sid',
+      unlocked: householdUnlocked,
+      readyCount: householdBayReady ? 1 : 0,
+      progress: householdUnlocked ? null : householdProgress(stats),
+    },
+  ];
+
+  function applyTicks(ticks: number): void {
+    const bench = benchRef.current;
+    const stepped = stepStudio(
+      bench.studio,
+      bench.idle,
+      bench.life,
+      bench.practices,
+      schedule,
+      endings,
+      ticks,
+      rngRef.current,
+    );
+    setLife(stepped.life);
+    setIdle(stepped.idle);
+    setStudio(stepped.studio);
+    setRuntimePractices(stepped.practices);
+    setExported(false);
+    if (ticks > 0) {
+      setJuiceBurst((n) => n + 1);
+    }
+  }
+
+  function tend(): void {
+    applyTicks(STUDIO_TEND_TICKS);
+  }
+
+  useEffect(() => {
+    if (!running || !ready) {
+      return;
+    }
+    const timer = setInterval(() => {
+      applyTicks(1);
+    }, STUDIO_PULSE_MS);
+    return () => clearInterval(timer);
+    // applyTicks reads benchRef; listing it would reset the interval every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, ready, schedule, endings]);
+
+  function develop(): void {
+    const trimmed = brief.trim();
+    setStudio(queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current));
+  }
+
+  const lifeContext = evaluateLifeContext({
+    life,
+    idle,
+    epoch,
+    practices: runtimePractices,
+    archive: studio.archive,
+  });
+
+  function harvest(): void {
+    if (
+      householdBench !== null &&
+      householdBench.bay !== null &&
+      householdBench.bay.status === 'ready'
+    ) {
+      harvestHousehold(householdBench);
+      return;
+    }
+    const result = harvestTableFill(studio, rngRef.current, lifeContext);
+    if (result === null) {
+      return;
+    }
+    setStudio(result.studio);
+    setWorldDrafts(withRecordedDraft(result.studio.archive, worldDrafts));
+    setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
+    setExported(false);
+  }
+
+  /** Folded-residue bays fill at household scale with the household rule set. */
+  function harvestHousehold(bench: BenchState): void {
+    const bay = bench.bay;
+    if (bay === null) {
+      return;
+    }
+    const rules = kindRulesByScale()[HOUSEHOLD_SCALE];
+    if (rules === undefined) {
+      throw new Error('studio: no kind rules registered for the household scale');
+    }
+    const request = compileRequestFromBay(
+      { ...bay, focus: bay.focus ?? null },
+      bench.quality_tier,
+      bench.harvest_count,
+      null,
+      HOUSEHOLD_SCALE,
+    );
+    const manifest = tableFillManifest(
+      request.residue,
+      request.brief,
+      request.quality_tier,
+      rngRef.current,
+      request.rng_seed,
+      request.id,
+      request.focus,
+      request.life_context,
+      request.scale,
+      rules,
+      registries().catalogs,
+    );
+    setStudio((current) => ({ ...current, archive: [...current.archive, manifest] }));
+    setWorldDrafts(withRecordedDraft([...studio.archive, manifest], worldDrafts));
+    setHouseholdBench({ ...bench, bay: null, harvest_count: bench.harvest_count + 1 });
+    setFreshHarvestId(prefersReducedMotion ? null : manifest.id);
+    setExported(false);
+  }
+
+  function deepen(): void {
+    setStudio(upgradeQuality(studio));
+  }
+
+  function pin(card: Manifest): void {
+    setStudio(pinFocus(studio, card));
+  }
+
+  function exportWorld(json: string): void {
+    onExport?.(json);
+    setWorldExported(true);
+  }
+
+  function exportLatest(): void {
+    if (latest === undefined) {
+      return;
+    }
+    const json = canonicalStringify(latest);
+    onExport?.(json);
+    setExported(true);
+  }
+
+  if (!ready) {
+    return (
+      <View testID="studio-screen" role="main" style={[styles.container, styles.screen]}>
+        <Text style={styles.hint}>{resolveSid('studio.loading_sid')}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.shell}>
+      <StudioRail tiers={railTiers} />
+      <ScrollView
+        testID="studio-screen"
+        role="main"
+        style={styles.screen}
+        contentContainerStyle={styles.container}
+      >
+        {onBack === undefined ? null : (
+          <Pressable
+            role="button"
+            accessibilityLabel={resolveSid('studio.back_button_sid')}
+            onPress={onBack}
+            style={styles.back}
+          >
+            <Text style={styles.backText}>{resolveSid('studio.back_button_sid')}</Text>
+          </Pressable>
+        )}
+
+        <Text accessibilityRole="header" style={styles.title}>
+          {resolveSid('studio.title_sid')}
+        </Text>
+        <Text style={styles.subtitle}>{resolveSid('studio.subtitle_sid')}</Text>
+
+        {away === null ? null : (
+          <View testID="studio-away" style={styles.away}>
+            <Text style={styles.awayText}>
+              {formatSid('studio.away_sid', {
+                duration: awayDuration(away.ticksSimulated),
+                residue: away.residueGained,
+              })}
+            </Text>
+            {away.capped ? (
+              <Text style={styles.hint}>{resolveSid('studio.away_capped_sid')}</Text>
+            ) : null}
+            {away.bayReady ? (
+              <Text style={styles.ready}>{resolveSid('studio.away_ready_sid')}</Text>
+            ) : null}
+            <Pressable
+              role="button"
+              testID="studio-away-dismiss"
+              accessibilityLabel={resolveSid('studio.away_dismiss_sid')}
+              onPress={() => setAway(null)}
+            >
+              <Text style={styles.backText}>{resolveSid('studio.away_dismiss_sid')}</Text>
+            </Pressable>
+          </View>
+        )}
+
+        <View style={styles.panel}>
+          <Text style={styles.panelLabel}>
+            {formatSid('studio.charge_label_sid', { n: charge, min: MIN_RESIDUE_TO_DEVELOP })}
+          </Text>
+          <View
+            style={styles.barTrack}
+            accessibilityLabel={formatSid('studio.charge_label_sid', {
+              n: charge,
+              min: MIN_RESIDUE_TO_DEVELOP,
+            })}
+          >
+            <View style={[styles.barFill, { width: `${Math.round(chargeRatio * 100)}%` }]} />
+          </View>
+          <Text style={styles.hint}>
+            {developable
+              ? resolveSid('studio.charge_ready_sid')
+              : resolveSid('studio.charge_hint_sid')}
+          </Text>
+          <Text testID="studio-practice-now" style={styles.hint}>
+            {activePracticeLine(schedule, idle, runtimePractices)}
+          </Text>
+          {studio.surplus <= 0 ? null : (
+            <Text testID="studio-surplus" style={styles.gold}>
+              {formatSid('studio.surplus_sid', { n: studio.surplus })}
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.tendWrap}>
+          <Pressable
+            role="button"
+            testID="studio-tend"
+            accessibilityLabel={resolveSid('studio.tend_button_sid')}
+            onPress={tend}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>{resolveSid('studio.tend_button_sid')}</Text>
+          </Pressable>
+          <StudioJuice burstId={juiceBurst} reducedMotion={prefersReducedMotion} />
+        </View>
+
+        <Pressable
+          role="button"
+          testID="studio-run"
+          accessibilityLabel={
+            running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')
+          }
+          onPress={() => setRunning((value) => !value)}
+          style={[styles.button, styles.buttonSecondary]}
+        >
+          <Text style={styles.buttonText}>
+            {running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')}
+          </Text>
+        </Pressable>
+
+        <Text style={styles.panelLabel}>{resolveSid('studio.brief_label_sid')}</Text>
+        <TextInput
+          testID="studio-brief"
+          accessibilityLabel={resolveSid('studio.brief_label_sid')}
+          placeholder={resolveSid('studio.brief_placeholder_sid')}
+          value={brief}
+          onChangeText={setBrief}
+          style={styles.input}
+        />
+
+        <Pressable
+          role="button"
+          testID="studio-develop"
+          accessibilityLabel={resolveSid('studio.develop_button_sid')}
+          disabled={!developable}
+          onPress={developable ? develop : undefined}
+          style={[styles.button, developable ? null : styles.buttonDisabled]}
+        >
+          <Text style={styles.buttonText}>
+            {developable
+              ? resolveSid('studio.develop_button_sid')
+              : resolveSid('studio.develop_locked_sid')}
+          </Text>
+        </Pressable>
+
+        <View style={styles.panel}>
+          {studio.bay === null ? (
+            householdBayReady ? (
+              <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
+            ) : (
+              <Text style={styles.hint}>{resolveSid('studio.bay_empty_sid')}</Text>
+            )
+          ) : studio.bay.status === 'ready' ? (
+            <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
+          ) : (
+            <Text style={styles.hint}>
+              {formatSid('studio.bay_cooking_sid', {
+                done: studio.bay.cook_ticks_done,
+                total: studio.bay.cook_ticks_total,
+              })}
+            </Text>
+          )}
+        </View>
+
+        <Pressable
+          role="button"
+          testID="studio-harvest"
+          accessibilityLabel={resolveSid('studio.harvest_button_sid')}
+          disabled={!harvestable}
+          onPress={harvestable ? harvest : undefined}
+          style={[styles.button, harvestable ? styles.buttonHarvest : styles.buttonDisabled]}
+        >
+          <Text style={styles.buttonText}>{resolveSid('studio.harvest_button_sid')}</Text>
+        </Pressable>
+
+        {upgradable ? (
+          <Pressable
+            role="button"
+            testID="studio-upgrade"
+            accessibilityLabel={resolveSid('studio.upgrade_button_sid')}
+            onPress={deepen}
+            style={[styles.button, styles.buttonSecondary]}
+          >
+            <Text style={styles.buttonText}>{resolveSid('studio.upgrade_button_sid')}</Text>
+          </Pressable>
+        ) : remainingForUpgrade > 0 ? (
+          <Text style={styles.hint}>
+            {formatSid('studio.upgrade_hint_sid', { n: remainingForUpgrade })}
+          </Text>
+        ) : null}
+
+        <StudioLife context={lifeContext} {...(onExport === undefined ? {} : { onExport })} />
+
+        <StudioActivities practices={runtimePractices} />
+
+        <StudioWorld
+          archive={studio.archive}
+          pinned={studio.pinned}
+          onPin={pin}
+          onExportWorld={exportWorld}
+          worldExported={worldExported}
+        />
+
+        <Text accessibilityRole="header" style={styles.archiveHeading}>
+          {resolveSid('studio.archive_heading_sid')}
+        </Text>
+        <StudioArchive archive={studio.archive} freshId={freshHarvestId} />
+
+        {latest === undefined ? null : (
+          <Pressable
+            role="button"
+            testID="studio-export"
+            accessibilityLabel={resolveSid('studio.export_button_sid')}
+            onPress={exportLatest}
+            style={[styles.button, styles.buttonSecondary]}
+          >
+            <Text style={styles.buttonText}>
+              {exported
+                ? resolveSid('studio.export_copied_sid')
+                : resolveSid('studio.export_button_sid')}
+            </Text>
+          </Pressable>
+        )}
+      </ScrollView>
+
+      {graduationCeremony === null ? null : (
+        <View testID="graduation-overlay" style={styles.overlay}>
+          <Text style={styles.overlayTitle}>{resolveSid('graduation.household_title_sid')}</Text>
+          <Text style={styles.overlayLine}>{resolveSid('graduation.household_line_sid')}</Text>
+          <Pressable
+            role="button"
+            testID="graduation-dismiss"
+            accessibilityLabel={resolveSid('graduation.dismiss_button_sid')}
+            onPress={() => setGraduationCeremony(null)}
+            style={[styles.button, styles.buttonSecondary, styles.overlayButton]}
+          >
+            <Text style={styles.buttonText}>{resolveSid('graduation.dismiss_button_sid')}</Text>
+          </Pressable>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  shell: { flex: 1, flexDirection: 'row', backgroundColor: t.bg },
+  screen: { flex: 1, backgroundColor: t.bg },
+  container: { padding: 24, gap: 12, paddingBottom: 48, backgroundColor: t.bg },
+  back: { alignSelf: 'flex-start', paddingVertical: 8 },
+  backText: { fontSize: 16, color: t.muted },
+  title: { fontSize: 32, fontWeight: '700', color: t.text },
+  subtitle: { fontSize: 16, color: t.muted, marginBottom: 8 },
+  away: {
+    borderWidth: 1,
+    borderColor: t.line,
+    borderRadius: 12,
+    padding: 12,
+    gap: 6,
+    backgroundColor: t.surface,
+  },
+  awayText: { fontSize: 15, color: t.text },
+  panel: { gap: 8, marginTop: 4 },
+  panelLabel: { fontSize: 14, fontWeight: '600', color: t.text },
+  barTrack: {
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: t.chip,
+    overflow: 'hidden',
+  },
+  barFill: { height: 12, backgroundColor: t.accent },
+  hint: { fontSize: 14, color: t.muted },
+  gold: { fontSize: 14, color: t.gold, fontWeight: '600' },
+  ready: { fontSize: 16, fontWeight: '600', color: t.harvestText },
+  tendWrap: { position: 'relative' },
+  input: {
+    borderWidth: 1,
+    borderColor: t.line,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    color: t.text,
+    backgroundColor: t.surface,
+  },
+  button: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: t.accentDeep,
+    alignItems: 'center',
+  },
+  buttonSecondary: { backgroundColor: t.chip },
+  buttonHarvest: { backgroundColor: t.harvest },
+  buttonDisabled: { backgroundColor: '#3f3a4a' },
+  buttonText: { color: t.text, fontSize: 16, fontWeight: '600' },
+  archiveHeading: { fontSize: 20, fontWeight: '700', marginTop: 16, color: t.text },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: t.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    gap: 12,
+  },
+  overlayTitle: { fontSize: 28, fontWeight: '700', color: t.gold, textAlign: 'center' },
+  overlayLine: { fontSize: 16, color: t.muted, textAlign: 'center' },
+  overlayButton: { alignSelf: 'center' },
+});

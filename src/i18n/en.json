@@ -1,4 +1,14 @@
 {
+  "home": {
+    "title_sid": "Yakshetra",
+    "subtitle_sid": "Work a day. The residue cooks. A world takes shape.",
+    "new_life_button_sid": "Go work a day",
+    "new_life_label_sid": "Begin a new life of work",
+    "continue_button_sid": "Back to work",
+    "continue_label_sid": "Continue from your last save",
+    "settings_button_sid": "Settings",
+    "settings_label_sid": "Open settings"
+  },
   "life": {
     "reflect": {
       "intended_heading_sid": "What you intended",
@@ -55,8 +65,96 @@
       "end_life_button_sid": "End life early",
       "dev_tools_label_sid": "Dev tools",
       "dev_skip_turn_button_sid": "Skip turn (dev)",
-      "dev_die_button_sid": "Die now (dev)"
+      "dev_die_button_sid": "Die now (dev)",
+      "manifest_charge_sid": "This life is charging Manifest.",
+      "manifest_open_sid": "Open Manifest"
     }
+  },
+  "studio": {
+    "home_button_sid": "Manifest",
+    "title_sid": "Manifest",
+    "subtitle_sid": "Work leaves a trace. Harvest what changed.",
+    "charge_label_sid": "Residue {n} / {min}",
+    "charge_ready_sid": "Enough residue to develop",
+    "charge_hint_sid": "Tend the work until the bar fills.",
+    "tend_button_sid": "Tend the work",
+    "brief_label_sid": "Optional brief",
+    "brief_placeholder_sid": "a lighter morning, a kept promise…",
+    "develop_button_sid": "Begin a working",
+    "develop_locked_sid": "Need more residue",
+    "bay_empty_sid": "The bay is empty.",
+    "bay_cooking_sid": "Cooking {done} / {total}",
+    "bay_ready_sid": "Ready to harvest",
+    "harvest_button_sid": "Harvest",
+    "upgrade_button_sid": "Deepen the next working",
+    "upgrade_hint_sid": "Harvest {n} more to unlock a deeper fill.",
+    "archive_heading_sid": "Archive",
+    "archive_empty_sid": "Nothing harvested yet.",
+    "archive_filter_empty_sid": "No cards of that kind yet.",
+    "filter_all_sid": "All",
+    "export_button_sid": "Export latest JSON",
+    "export_copied_sid": "Copied the latest manifest.",
+    "kind_thing_sid": "Thing",
+    "kind_outcome_sid": "Outcome",
+    "kind_change_sid": "Change",
+    "kind_person_sid": "Person",
+    "kind_place_sid": "Place",
+    "kind_tradition_sid": "Tradition",
+    "kind_heirloom_sid": "Heirloom",
+    "tier_person_sid": "One life",
+    "tier_household_sid": "Household",
+    "tier_locked_sid": "Locked",
+    "tier_ready_badge_sid": "{n} ready",
+    "tier_progress_badge_sid": "{n}/{m}",
+    "rail_heading_sid": "The ladder",
+    "rarity_common_sid": "Common",
+    "rarity_uncommon_sid": "Uncommon",
+    "rarity_rare_sid": "Rare",
+    "back_button_sid": "Back",
+    "unavailable_sid": "The bench cannot load a practice schedule yet.",
+    "loading_sid": "Opening the bench…",
+    "away_sid": "While you were away, the bench ran for {duration}. Residue +{residue}.",
+    "away_capped_sid": "Catch-up stopped at the four-hour cap.",
+    "away_ready_sid": "A working finished — ready to harvest.",
+    "away_dismiss_sid": "Dismiss",
+    "world_heading_sid": "World taking shape",
+    "world_empty_sid": "Play a life for people, or tend for a place, and a world starts to form.",
+    "world_counts_sid": "{places} places · {people} people",
+    "world_places_label_sid": "Places",
+    "world_cast_label_sid": "Cast",
+    "world_cast_row_sid": "Cast: {name}",
+    "world_place_row_sid": "Place: {name}",
+    "pin_label_sid": "Pin {name} to the next working",
+    "pin_chip_sid": "About {name}",
+    "pinned_sid": "Next working is about {name}.",
+    "export_world_sid": "Export world JSON",
+    "export_world_copied_sid": "Copied the world draft.",
+    "run_off_sid": "Let the bench run",
+    "run_on_sid": "The bench is running",
+    "practice_now_sid": "Now: {practice}",
+    "practice_rest_sid": "The bench is between practices.",
+    "surplus_sid": "Overflow +{n} — extra cook, not waste.",
+    "activities_heading_sid": "How the time went",
+    "activity_work_sid": "Work",
+    "activity_generosity_sid": "Generosity",
+    "activity_beings_sid": "Other beings",
+    "activity_learning_sid": "Learning",
+    "activity_meditation_sid": "Meditation",
+    "activity_other_sid": "Other",
+    "activity_value_sid": "{n}",
+    "life_heading_sid": "This life",
+    "life_when_sid": "Year {year}, month {month}, day {day}",
+    "life_who_sid": "{role} · age {age}",
+    "life_world_sid": "World: {world}",
+    "life_world_none_sid": "still forming",
+    "life_ties_empty_sid": "No named ties yet — play, or harvest people.",
+    "life_tie_sid": "{name} ({bond})",
+    "export_life_sid": "Export life context JSON"
+  },
+  "graduation": {
+    "household_title_sid": "The household gathers",
+    "household_line_sid": "Three lives now leave residue under one roof.",
+    "dismiss_button_sid": "To the bench"
   },
   "tang": {
     "name_sid": "Late Tang China",
@@ -85,6 +183,32 @@
       "chan_sid": "Chan is a Chinese Buddhist vocabulary for contemplative practice and the communities, texts, and institutions associated with it. The game uses the term descriptively, without assigning a single uniform doctrine to every person or monastery.",
       "literati_sid": "The literati are educated writers, clerks, teachers, and officials whose learning can open administrative work and whose obligations connect them to both superiors and local households.",
       "sangha_sid": "Sangha refers here to a monastic community and its shared life of work, study, care, discipline, and dependence on surrounding society. It is a social description, not a spiritual ranking."
+    },
+    "practice": {
+      "alms_round": {
+        "label_sid": "Walk the morning alms route",
+        "description_sid": "Carry the bowl along the usual streets. Trust grows as faces become familiar."
+      },
+      "sutra_copying": {
+        "label_sid": "Copy a page slowly",
+        "description_sid": "Brushwork that teaches the hand to stay. Grants a steadier line over time."
+      },
+      "breath_sitting": {
+        "label_sid": "Sit with the breath",
+        "description_sid": "Quiet sitting. Energy returns as the count evens out."
+      },
+      "extra_bowl": {
+        "label_sid": "Set out an extra bowl",
+        "description_sid": "Leave a second portion where someone or something else can find it."
+      },
+      "courtyard_beings": {
+        "label_sid": "Look after the courtyard beings",
+        "description_sid": "Water, crumbs, a quiet check on whoever shares the yard — stray, neighbor, or guest."
+      },
+      "evening_visit": {
+        "label_sid": "Stop by someone else's door",
+        "description_sid": "A short visit with no errand. Energy returns as the evening is shared."
+      }
     }
   },
   "fantasy": {
@@ -408,11 +532,11 @@
     }
   },
   "disclaimer": {
-    "title_sid": "A Note Before You Begin",
-    "body_sid": "Yakshetra is a work of fiction inspired by Buddhist ethical and contemplative traditions. It does not represent itself as doctrine, nor as a teaching of any lineage, teacher, or school. The six parami-inspired lenses, the cross-life echoes, and the narrative situations are game design choices made in good faith, not claims about how the world works. An advisory panel of practitioners helped shape the content-warning taxonomy so that difficult themes can be surfaced or set aside. A full glossary and lineage notes are available in About.",
-    "understand_button_sid": "I understand",
-    "read_more_button_sid": "Read more",
-    "advisory_credit_sid": "Developed with guidance from an advisory panel of Buddhist practitioners."
+    "title_sid": "Just a game",
+    "body_sid": "Fiction with a contemplative vibe — not a teaching, not a lineage. Play.",
+    "understand_button_sid": "Got it",
+    "read_more_button_sid": "About",
+    "advisory_credit_sid": "The long notes live in About, if you want them."
   },
   "warning": {
     "death-of-self": {
