@@ -1,8 +1,23 @@
 import { describe, expect, it } from 'vitest';
 
-import { intendLens, applyChoice, createLifeState, createRng, residueLog } from '@/engine';
-import type { Choice, LifeState } from '@/engine';
-import { createMemoryStudioKv, loadStudioSession, syncPlayResidueToStudio } from '@/persistence';
+import {
+  createLifeState,
+  createRng,
+  createStudioState,
+  createTierState,
+  intendLens,
+  applyChoice,
+  residueLog,
+  snapshotStudioSession,
+  tableFillManifest,
+} from '@/engine';
+import type { Choice, LifeState, ResidueEvent } from '@/engine';
+import {
+  createMemoryStudioKv,
+  loadStudioSession,
+  saveStudioSession,
+  syncPlayResidueToStudio,
+} from '@/persistence';
 
 function makeLife(id: string): LifeState {
   return createLifeState({
@@ -44,5 +59,48 @@ describe('syncPlayResidueToStudio', () => {
     const saved = await loadStudioSession(kv);
     expect(saved?.benches['person']?.residue).toHaveLength(2);
     expect(saved?.benches['person']?.play_import?.index).toBe(1);
+  });
+
+  it('preserves archive and progression state through a sync', async () => {
+    const social: readonly ResidueEvent[] = [
+      { tick: 1, type: 'lens_chosen', ids: ['lens.test'], numbers: {} },
+      { tick: 2, type: 'practice_tick', ids: ['practice.test'], numbers: { progress: 2 } },
+      { tick: 3, type: 'practice_tick', ids: ['practice.test'], numbers: { progress: 2 } },
+    ];
+    const card = tableFillManifest(social, null, 0, createRng(11n), '11', 'm-person-seed');
+
+    const intended = intendLens(makeLife('life-a'), 'generosity');
+    const after = applyChoice(intended, CHOICE, createRng(1n));
+    const log = residueLog(after);
+
+    const seededStudio = { ...createStudioState(), archive: [card] };
+    const seededSession = snapshotStudioSession(
+      seededStudio,
+      { mode: 'idle', lastSimulatedTick: 0n, totalIdleTicks: 0n },
+      after,
+      [],
+      undefined,
+      {
+        tiers: { person: createTierState('person', true) },
+        milestones_done: ['unlock-household'],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+
+    const kv = createMemoryStudioKv();
+    await saveStudioSession(seededSession, kv);
+
+    await syncPlayResidueToStudio('life-a', log, kv);
+
+    const saved = await loadStudioSession(kv);
+    expect(saved?.archive).toHaveLength(1);
+    expect(saved?.archive[0]?.id).toBe('m-person-seed');
+    expect(saved?.milestones_done).toEqual(['unlock-household']);
+    expect(saved?.benches['person']?.residue.length).toBeGreaterThanOrEqual(log.length);
+    expect(saved?.benches['person']?.play_import).toEqual({
+      life_id: 'life-a',
+      index: log.length - 1,
+    });
   });
 });

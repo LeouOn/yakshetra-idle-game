@@ -77,6 +77,13 @@ describe('parseStudioSession v0 migration', () => {
     expect(hydrated.studio.residue).toHaveLength(2);
     expect(hydrated.progression.tiers['person']?.unlocked).toBe(true);
   });
+
+  it('migrates absent optional bench fields to their v1 defaults', () => {
+    const session = parseStudioSession(V0_SESSION);
+    expect(session.benches['person']?.play_import).toBeNull();
+    expect(session.benches['person']?.pinned).toBeNull();
+    expect(session.benches['person']?.surplus).toBe(0);
+  });
 });
 
 describe('v1 round-trip', () => {
