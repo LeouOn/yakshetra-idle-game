@@ -1,7 +1,9 @@
 // Manifest bench — tend work, cook a residue window, harvest a card.
 //
 // Presentational + local session state. The engine stays pure; this view
-// calls simulateIdleTicks / queueDevelop / harvestTableFill. All copy is SIDs.
+// steps the whole session through stepSession (embodied bench, autonomous
+// members, household cook) and fills harvests via the table fallback.
+// All copy is SIDs.
 //
 // Graduation: the session's progression slices (tiers, milestones, members,
 // world drafts, household bench) live here, are persisted with the bench, and
@@ -20,7 +22,8 @@ import {
   View,
 } from 'react-native';
 
-import type { Ending } from '@/content/schema';
+import { loadEraPack } from '@/content/loader';
+import type { Ending, Practice as ContentPractice } from '@/content/schema';
 import { loadProgression, type ProgressionRegistries } from '@/content/progression/loader';
 import {
   MIN_RESIDUE_TO_DEVELOP,
@@ -31,7 +34,6 @@ import {
   canQueueDevelop,
   canUpgradeQuality,
   canonicalStringify,
-  catchUpStudio,
   checkMilestones,
   compileRequestFromBay,
   computeArchiveStats,
@@ -48,7 +50,8 @@ import {
   pinFocus,
   queueDevelop,
   snapshotStudioSession,
-  stepStudio,
+  stepSession,
+  studioTicksAway,
   tableFillManifest,
   upgradeQuality,
   type ArchiveStats,
@@ -62,6 +65,7 @@ import {
   type Practice,
   type Rng,
   type SessionProgression,
+  type SessionStepContext,
   type StudioAwaySummary,
   type StudioSession,
   type StudioState,
@@ -105,6 +109,91 @@ function registries(): ProgressionRegistries {
 }
 
 let rulesByScaleCache: Readonly<Record<string, readonly KindRule[]>> | null = null;
+
+/** Shared default so the `endings` prop keeps one identity across renders. */
+const NO_ENDINGS: readonly Ending[] = [];
+
+/** Phase 1 residue-source pack; roster policies resolve against it. */
+const POLICY_PACK = 'tang-china';
+
+/**
+ * Stable session seed for the autonomous member rng streams: roster
+ * `memberSeed` derives each member's stream from `<sessionSeed>:<memberId>`,
+ * so member days replay identically across reloads and devices.
+ */
+const SESSION_SEED = 'yakshetra-studio';
+
+interface PolicyRuntime {
+  readonly practices: readonly Practice[];
+  readonly schedule: DailySchedule;
+}
+
+let policyRuntimeCache: ReadonlyMap<string, PolicyRuntime> | null = null;
+
+function toRuntimePractice(practice: ContentPractice): Practice {
+  const { minigame_id, ...rest } = practice;
+  return {
+    ...rest,
+    currentProgress: 0,
+    level: 0,
+    ...(minigame_id === undefined ? {} : { minigame_id }),
+  };
+}
+
+/** Roster policy rows resolved to pack runtime practices + schedule. */
+function policyRuntime(): ReadonlyMap<string, PolicyRuntime> {
+  if (policyRuntimeCache === null) {
+    const pack = loadEraPack(POLICY_PACK);
+    const schedules = new Map(pack.schedules.map((row) => [row.id, row]));
+    const practices = new Map(pack.practices.map((row) => [row.id, toRuntimePractice(row)]));
+    const out = new Map<string, PolicyRuntime>();
+    for (const policy of registries().policies) {
+      const schedule = schedules.get(policy.schedule_ref);
+      if (schedule === undefined) {
+        throw new Error(`studio: policy "${policy.id}" has no schedule "${policy.schedule_ref}"`);
+      }
+      out.set(policy.id, {
+        practices: policy.practices.map((id) => {
+          const found = practices.get(id);
+          if (found === undefined) {
+            throw new Error(`studio: policy "${policy.id}" has no practice "${id}"`);
+          }
+          return found;
+        }),
+        schedule,
+      });
+    }
+    policyRuntimeCache = out;
+  }
+  return policyRuntimeCache;
+}
+
+/** The session-relevant state slices, in the shape snapshotStudioSession eats. */
+interface BenchSlices {
+  readonly studio: StudioState;
+  readonly idle: IdleState;
+  readonly life: LifeState;
+  readonly practices: readonly Practice[];
+  readonly progression: SessionProgression;
+  readonly members: Record<string, MemberSlice>;
+  readonly worldDrafts: readonly WorldDraftReference[];
+  readonly householdBench: BenchState | null;
+}
+
+function sessionFromSlices(slices: BenchSlices, lastVisitedAtUnix?: number): StudioSession {
+  const base = snapshotStudioSession(
+    slices.studio,
+    slices.idle,
+    slices.life,
+    slices.practices,
+    lastVisitedAtUnix,
+    slices.progression,
+    { members: slices.members, world_drafts: slices.worldDrafts },
+  );
+  return slices.householdBench === null
+    ? base
+    : { ...base, benches: { ...base.benches, household: slices.householdBench } };
+}
 
 /** Loader kind rules regrouped by row scale, file order preserved. */
 function kindRulesByScale(): Readonly<Record<string, readonly KindRule[]>> {
@@ -301,7 +390,7 @@ export default function StudioView({
   onBack,
   practices,
   schedule,
-  endings = [],
+  endings = NO_ENDINGS,
   initialLife,
   initialIdle,
   initialStudio,
@@ -357,11 +446,15 @@ export default function StudioView({
   const [freshHarvestId, setFreshHarvestId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
-  const benchRef = useRef({
+  const benchRef = useRef<BenchSlices>({
     studio,
     idle,
     life,
     practices: runtimePractices,
+    progression,
+    members,
+    worldDrafts,
+    householdBench,
   });
 
   useEffect(() => {
@@ -370,8 +463,45 @@ export default function StudioView({
       idle,
       life,
       practices: runtimePractices,
+      progression,
+      members,
+      worldDrafts,
+      householdBench,
     };
-  }, [studio, idle, life, runtimePractices]);
+  }, [studio, idle, life, runtimePractices, progression, members, worldDrafts, householdBench]);
+
+  const stepCtxRef = useRef<SessionStepContext | null>(null);
+
+  /**
+   * Session-step context built once per mount from already-loaded content;
+   * props are pack constants, so the capture never goes stale.
+   */
+  function stepCtx(): SessionStepContext {
+    if (stepCtxRef.current === null) {
+      const policies = policyRuntime();
+      const resolve = (id: string): PolicyRuntime => {
+        const found = policies.get(id);
+        if (found === undefined) {
+          throw new Error(`studio: no runtime registered for policy "${id}"`);
+        }
+        return found;
+      };
+      stepCtxRef.current = {
+        practices,
+        embodiedSchedule: schedule,
+        memberScheduleFor: (id) => resolve(id).schedule,
+        memberPracticesFor: (id) => resolve(id).practices,
+        endings,
+        sessionSeed: SESSION_SEED,
+        tiers: registries().tiers.map((tier) => ({
+          id: tier.id,
+          scale: tier.scale,
+          fold_cadence: tier.fold_cadence,
+        })),
+      };
+    }
+    return stepCtxRef.current;
+  }
 
   useEffect(() => {
     if (freshHarvestId === null) {
@@ -391,33 +521,36 @@ export default function StudioView({
         return;
       }
       if (session !== null) {
+        // Catch-up rides the same stepSession path as live ticks (ticks math
+        // via studioTicksAway) so autonomous members and the household bench
+        // advance during absence too; a household-locked session reduces to
+        // the old person-only catch-up by stepSession's golden invariant.
+        const awayTicks = studioTicksAway(session.last_visited_at_unix ?? 0, clock());
+        const stepped =
+          awayTicks.ticks > 0
+            ? stepSession(session, stepCtx(), awayTicks.ticks, rngRef.current)
+            : null;
+        const next = stepped === null ? session : stepped.session;
         const hydrated = hydrateStudioSession(
-          session,
+          next,
           initialLife ?? defaultLife(),
           packPracticesRef.current,
         );
-        const lastVisited = session.last_visited_at_unix ?? 0;
-        const caught = catchUpStudio(
-          hydrated.studio,
-          hydrated.idle,
-          hydrated.life,
-          hydrated.practices,
-          schedule,
-          endings,
-          lastVisited,
-          clock(),
-          rngRef.current,
-        );
-        setLife(caught.life);
-        setIdle(caught.idle);
-        setStudio(caught.studio);
-        setRuntimePractices(caught.practices);
+        setLife(hydrated.life);
+        setIdle(hydrated.idle);
+        setStudio(hydrated.studio);
+        setRuntimePractices(hydrated.practices);
         setProgression(hydrated.progression);
         setMembers({ ...hydrated.members });
         setWorldDrafts(withRecordedDraft(hydrated.studio.archive, hydrated.world_drafts));
-        setHouseholdBench(session.benches['household'] ?? null);
-        if (caught.summary.ticksSimulated > 0) {
-          setAway(caught.summary);
+        setHouseholdBench(next.benches['household'] ?? null);
+        if (stepped !== null && stepped.summary.embodiedTicks > 0) {
+          setAway({
+            ticksSimulated: stepped.summary.embodiedTicks,
+            residueGained: next.life.residue.length - session.life.residue.length,
+            bayReady: stepped.summary.benchesReady.length > 0,
+            capped: awayTicks.capped,
+          });
         }
       }
       setReady(true);
@@ -425,22 +558,26 @@ export default function StudioView({
     return () => {
       cancelled = true;
     };
+    // stepCtx reads mount-stable refs/props; listing the render-scoped
+    // function would re-run the load on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [persist, storage, initialLife, schedule, endings, clock]);
 
   /** Session as it stands right now, household bench included. */
   function buildSession(lastVisitedAtUnix?: number): StudioSession {
-    const base = snapshotStudioSession(
-      studio,
-      idle,
-      life,
-      runtimePractices,
+    return sessionFromSlices(
+      {
+        studio,
+        idle,
+        life,
+        practices: runtimePractices,
+        progression,
+        members,
+        worldDrafts,
+        householdBench,
+      },
       lastVisitedAtUnix,
-      progression,
-      { members, world_drafts: worldDrafts },
     );
-    return householdBench === null
-      ? base
-      : { ...base, benches: { ...base.benches, household: householdBench } };
   }
 
   useEffect(() => {
@@ -529,22 +666,28 @@ export default function StudioView({
     },
   ];
 
+  /** Drive the person-bench slices, members, and household bench from a stepped session. */
+  function adoptSteppedSession(next: StudioSession): void {
+    const back = hydrateStudioSession(next, benchRef.current.life, benchRef.current.practices);
+    setLife(back.life);
+    setIdle(back.idle);
+    setStudio(back.studio);
+    setRuntimePractices(back.practices);
+    setMembers({ ...back.members });
+    setHouseholdBench(next.benches['household'] ?? null);
+  }
+
   function applyTicks(ticks: number): void {
-    const bench = benchRef.current;
-    const stepped = stepStudio(
-      bench.studio,
-      bench.idle,
-      bench.life,
-      bench.practices,
-      schedule,
-      endings,
+    // stepSession keeps the embodied bench on exact stepStudio semantics (its
+    // golden-tested invariant) and adds autonomous members plus the household
+    // cook once the tier unlocks; a locked session is indistinguishable here.
+    const stepped = stepSession(
+      sessionFromSlices(benchRef.current),
+      stepCtx(),
       ticks,
       rngRef.current,
     );
-    setLife(stepped.life);
-    setIdle(stepped.idle);
-    setStudio(stepped.studio);
-    setRuntimePractices(stepped.practices);
+    adoptSteppedSession(stepped.session);
     setExported(false);
     if (ticks > 0) {
       setJuiceBurst((n) => n + 1);

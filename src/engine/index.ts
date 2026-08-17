@@ -191,7 +191,24 @@ export type {
 } from './studio-session';
 export { checkMilestones } from './milestones';
 export type { MilestoneLike } from './milestones';
-export { computeArchiveStats } from './archive-stats';
-export type { ArchiveStats, WorldDraftStatSource } from './archive-stats';
+export {
+  computeArchiveStats,
+  evaluateArchivePredicate,
+  validateArchivePredicateKeys,
+} from './archive-stats';
+export type {
+  ArchiveComparisonLike,
+  ArchiveJunctionLike,
+  ArchiveNegationLike,
+  ArchivePredicateLike,
+  ArchiveStats,
+  WorldDraftStatSource,
+} from './archive-stats';
 export { graduateToHousehold } from './graduation';
 export type { HouseholdRolesTable } from './graduation';
+export { createMemberLife, memberSeed, runAutonomousMember } from './roster';
+export { foldUpEvents, swapEmbodiment } from './roster-fold';
+export { stepSession } from './session-step';
+export type { SessionStepContext, SessionStepResult, SessionStepSummary } from './session-step';
+export { buildCatalog } from './table-catalog';
+export type { CatalogEntry, CatalogMap } from './table-catalog';

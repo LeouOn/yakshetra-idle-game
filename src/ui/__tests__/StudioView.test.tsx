@@ -7,6 +7,7 @@ import { resolveSid, formatSid } from '@/i18n';
 import { act, render } from '@/test/rntl';
 import { loadProgression } from '@/content/progression/loader';
 import {
+  STUDIO_SECONDS_PER_TICK,
   createRng,
   createStudioState,
   createTierState,
@@ -25,6 +26,7 @@ import {
   type StudioState,
   type TierState,
 } from '@/engine';
+import { STUDIO_SESSION_KEY, createMemoryStudioKv, loadStudioSession } from '@/persistence';
 import type { DailySchedule } from '@/engine/schedule';
 import type { TestInstance } from 'test-renderer';
 
@@ -87,6 +89,33 @@ const PLACE_WINDOW: ResidueEvent[] = [
   { tick: 2, type: 'practice_tick', ids: ['practice.b'], numbers: { progress: 2 } },
   { tick: 3, type: 'practice_tick', ids: ['practice.b'], numbers: { progress: 2 } },
 ];
+
+/** Six practices in 4h blocks: one tend batch moves several at once, so a
+ * single large batch (away catch-up) folds every 4th person event up. */
+const SIX_PRACTICES: Practice[] = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'].map((name) => ({
+  id: `practice:${name}`,
+  label_sid: 'studio.tend_button_sid',
+  description_sid: 'studio.title_sid',
+  lens: 'joyful_effort',
+  progressPerTick: 1,
+  maxProgress: 1000,
+  currentProgress: 0,
+  level: 0,
+  effects: [{ op: 'add_resource', key: 'skill', delta: 1 }],
+}));
+
+const SIX_SCHEDULE: DailySchedule = {
+  id: 'six-blocks',
+  name_sid: 'studio.title_sid',
+  blocks: SIX_PRACTICES.map((practice, i) => ({
+    id: `b${i}`,
+    label_sid: 'studio.tend_button_sid',
+    startHour: i * 4,
+    endHour: i * 4 + 4,
+    practice_id: practice.id,
+    icon_sid: 'studio.title_sid',
+  })),
+};
 
 interface StyledNode {
   readonly props: { readonly style?: unknown };
@@ -478,5 +507,114 @@ describe('StudioView', () => {
     expect(json).toContain('"scale":"household"');
     expect(json).toContain('"kind":"tradition"');
     probe.mockRestore();
+  });
+
+  /* ---- live session stepping: household accrual on the tick path ---------- */
+
+  function graduatedSession(seeds: readonly bigint[]): StudioSession {
+    const cards = seeds.map((seed, index) => personCard(`m-${index + 1}`, seed));
+    const crossing = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2', 'm-3'] });
+    return graduateToHousehold(crossing, loadProgression().roles.household, createRng(7n));
+  }
+
+  it('accrues folded household residue when live tend ticks run after graduation', async () => {
+    const graduated = graduatedSession([101n, 103n, 107n]);
+    const storage = createMemoryStudioKv();
+
+    const { getByTestID, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: graduated,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    press(getByTestID('studio-tend'));
+    press(getByTestID('studio-tend'));
+    press(getByTestID('studio-tend'));
+    press(getByTestID('studio-tend'));
+
+    const saved = await loadStudioSession(storage);
+    expect(saved).not.toBeNull();
+    const household = saved?.benches['household'];
+    expect(household).toBeDefined();
+    // Autonomous members folded their morning practice onto the household
+    // bench; the person fold-up marker lands from larger batches (see the
+    // away test) because the fold counter bootstraps from existing marks.
+    expect(household?.residue.some((e) => e.ids.includes('member:m1'))).toBe(true);
+    expect(household?.residue.some((e) => e.ids.includes('member:m3'))).toBe(true);
+    // Member slices advanced four tend pulses (4 × 8 ticks) and persist.
+    expect(saved?.members['m1']?.life.turn).toBe(32);
+    expect(saved?.members['m3']?.life.turn).toBe(32);
+  });
+
+  it('catches autonomous members up through the away path after graduation', async () => {
+    const awayTicks = 120; // 5 days at 60s/tick, under the 240 cap
+    const seeded = StudioSessionSchema.parse({
+      ...graduatedSession([109n, 113n, 127n]),
+      last_visited_at_unix: 1_000_000 - awayTicks * STUDIO_SECONDS_PER_TICK,
+    });
+    const storage = createMemoryStudioKv({
+      [STUDIO_SESSION_KEY]: JSON.stringify(seeded),
+    });
+
+    const { getByTestID } = render(
+      createElement(StudioView, {
+        practices: SIX_PRACTICES,
+        schedule: SIX_SCHEDULE,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(() => getByTestID('studio-away')).not.toThrow();
+    const saved = await loadStudioSession(storage);
+    // Members ran the whole absence; the single large embodied batch folds
+    // every 4th person event up (6 events → 1 bench:person mark).
+    expect(saved?.members['m1']?.life.turn).toBe(awayTicks);
+    expect(saved?.members['m2']?.life.turn).toBe(awayTicks);
+    const household = saved?.benches['household'];
+    expect(household?.residue.some((e) => e.ids.includes('member:m1'))).toBe(true);
+    expect(household?.residue.some((e) => e.ids.includes('bench:person'))).toBe(true);
+  });
+
+  it('keeps the household bench out of the saved session while the tier is locked', async () => {
+    // Regression guard: the locked tick path stays person-only (stepSession's
+    // golden invariant), asserted here at the persistence layer.
+    const cards = [personCard('m-1', 131n), personCard('m-2', 137n), personCard('m-3', 139n)];
+    const locked = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2'] });
+    const storage = createMemoryStudioKv();
+
+    const { getByTestID, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: locked,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    press(getByTestID('studio-tend'));
+
+    const saved = await loadStudioSession(storage);
+    expect(saved).not.toBeNull();
+    expect(saved && 'household' in saved.benches).toBe(false);
+    // The person bench still accrues through the same tick path.
+    expect(saved?.benches['person']?.residue.length).toBeGreaterThan(0);
   });
 });
