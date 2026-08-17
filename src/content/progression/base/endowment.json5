@@ -1,4 +1,43 @@
-// Endowment track extension slot — empty for the base content.
+// Endowment tracks — permanent card → bench modifier conversions.
+//
+// `slot_cost` sums against `tier.endowment_slots` (plus any compendium slot
+// bonus from the global modifiers) to gate how many a tier can carry at
+// once. Every `add_resource` key MUST belong to the bench modifier
+// vocabulary (R-PROG-MODIFIER-KEYS); off-vocabulary keys fail the design
+// lint and the loader refuses to build a session.
 {
-  endowment: [],
+  endowment: [
+    {
+      schema_version: 'endowment/v0',
+      id: 'endow/person/swift-cook',
+      tier: 'person',
+      requires: null,
+      slot_cost: 1,
+      effects: [{ op: 'add_resource', key: 'cook_speed', delta: 1 }],
+    },
+    {
+      schema_version: 'endowment/v0',
+      id: 'endow/person/deep-window',
+      tier: 'person',
+      requires: null,
+      slot_cost: 1,
+      effects: [{ op: 'add_resource', key: 'window_min', delta: 1 }],
+    },
+    {
+      schema_version: 'endowment/v0',
+      id: 'endow/household/hearth-surplus',
+      tier: 'household',
+      requires: 'unlock-household',
+      slot_cost: 1,
+      effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 1 }],
+    },
+    {
+      schema_version: 'endowment/v0',
+      id: 'endow/household/long-absence',
+      tier: 'household',
+      requires: 'unlock-household',
+      slot_cost: 2,
+      effects: [{ op: 'add_resource', key: 'offline_cap', delta: 120 }],
+    },
+  ],
 }

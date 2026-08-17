@@ -1,13 +1,17 @@
 // Progression design lint — referential integrity plus the game-design
 // meter ban, applied to the progression registries. Pure and deterministic.
 
+import { MODIFIER_KEY_WHITELIST } from '@/engine/endowment';
+
 import { containsMeterToken, walkStrings, type LintReport, type LintViolation } from '../lint';
+import type { EffectOp } from '../schema';
 import type { ProgressionRegistries } from './loader';
 
 export const R_PROG_REF_INTEGRITY = 'R-PROG-REF-INTEGRITY' as const;
 export const R_PROG_CORE_KINDS = 'R-PROG-CORE-KINDS' as const;
 export const R_PROG_KIND_CATALOG = 'R-PROG-KIND-CATALOG' as const;
 export const R_PROG_NO_METER = 'R-PROG-NO-METER' as const;
+export const R_PROG_MODIFIER_KEYS = 'R-PROG-MODIFIER-KEYS' as const;
 
 const CORE_KIND_IDS = ['thing', 'outcome', 'change', 'person', 'place'] as const;
 
@@ -24,6 +28,10 @@ function error(rule: string, message: string, location: string): LintViolation {
  *  - R-PROG-KIND-CATALOG: every kind row has ≥1 catalog entry — the table
  *    fallback is mandatory, so a kind without a table cannot ship.
  *  - R-PROG-NO-METER: no metaphysical-meter token in any progression row.
+ *  - R-PROG-MODIFIER-KEYS: every `add_resource` key in endowment, visitor
+ *    and compendium rows belongs to the five-key bench modifier vocabulary
+ *    exported by the engine. Off-vocabulary keys can never be summed, so
+ *    they are rejected at content-load time.
  */
 export function lintProgression(registries: ProgressionRegistries): LintReport {
   const violations: LintViolation[] = [];
@@ -88,6 +96,36 @@ export function lintProgression(registries: ProgressionRegistries): LintReport {
       violations.push(
         error(R_PROG_NO_METER, `prohibited meter token "${s}" in progression data`, path),
       );
+    }
+  }
+
+  const modifierScopes: readonly { effects: readonly EffectOp[]; location: string }[] = [
+    ...registries.endowment.map((row) => ({
+      effects: row.effects,
+      location: `endowment[${row.id}]`,
+    })),
+    ...registries.visitors.flatMap((row) =>
+      row.effects === undefined
+        ? ([] as readonly { effects: readonly EffectOp[]; location: string }[])
+        : [{ effects: row.effects, location: `visitors[${row.id}]` }],
+    ),
+    ...registries.compendium.flatMap((row) =>
+      row.reward.effects === undefined
+        ? ([] as readonly { effects: readonly EffectOp[]; location: string }[])
+        : [{ effects: row.reward.effects, location: `compendium[${row.id}]` }],
+    ),
+  ];
+  for (const { effects, location } of modifierScopes) {
+    for (const op of effects) {
+      if (op.op === 'add_resource' && !MODIFIER_KEY_WHITELIST.includes(op.key)) {
+        violations.push(
+          error(
+            R_PROG_MODIFIER_KEYS,
+            `add_resource key "${op.key}" is not in the bench modifier vocabulary [${MODIFIER_KEY_WHITELIST.join(', ')}]`,
+            `${location}.effects`,
+          ),
+        );
+      }
     }
   }
 

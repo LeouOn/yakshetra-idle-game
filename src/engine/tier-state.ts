@@ -43,6 +43,10 @@ export const TierStateSchema = z
     roster: RosterSchema,
     endowed: z.array(z.string().min(1)),
     active_visitor: ActiveVisitorSchema.nullable(),
+    // Visitor windows already burned while the current active_visitor sat at
+    // the bench (consumed by the visitor cadence in Phase 2 Task 3). Additive
+    // with a default so sessions saved before it exists parse unchanged.
+    visitor_ticks: z.number().int().min(0).default(0),
   })
   .strict();
 export type TierState = z.infer<typeof TierStateSchema>;
@@ -55,5 +59,6 @@ export function createTierState(tier: string, unlocked: boolean): TierState {
     roster: { tier, members: [] },
     endowed: [],
     active_visitor: null,
+    visitor_ticks: 0,
   };
 }
