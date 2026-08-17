@@ -1,4 +1,29 @@
-// Visitor definition extension slot — empty for the base content.
+// Visitor definition rows. Effects use the bench modifier vocabulary
+// (R-PROG-MODIFIER-KEYS); arrivals are deterministic per (session seed,
+// tier, visitor id). Phase 2 Task 3 amendments, recorded for the design
+// doc's deviation log: gate-yaksa grants cook_speed (not surplus_rate) so
+// it bites on the person bench, whose surplus path is golden-protected
+// inside stepStudio; festival-day is household-only so its surplus_rate
+// bites at the household absorb site.
 {
-  visitors: [],
+  visitors: [
+    {
+      schema_version: 'visitor/v0', id: 'visitor/gate-yaksa', tiers: ['person'],
+      cadence_ticks: 240, jitter_ticks: 60, duration_windows: 2,
+      effects: [{ op: 'add_resource', key: 'cook_speed', delta: 1 }],
+      sid_ns: 'visitor.gate_yaksa',
+    },
+    {
+      schema_version: 'visitor/v0', id: 'visitor/traveling-teacher', tiers: ['household'],
+      cadence_ticks: 360, jitter_ticks: 120, duration_windows: 2,
+      effects: [{ op: 'add_resource', key: 'cook_speed', delta: 1 }],
+      sid_ns: 'visitor.traveling_teacher',
+    },
+    {
+      schema_version: 'visitor/v0', id: 'visitor/festival-day', tiers: ['household'],
+      cadence_ticks: 720, jitter_ticks: 240, duration_windows: 3,
+      effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 2 }],
+      sid_ns: 'visitor.festival_day',
+    },
+  ],
 }

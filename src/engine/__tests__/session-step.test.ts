@@ -48,6 +48,7 @@ import {
 } from '../studio-session';
 import { swapEmbodiment } from '../roster-fold';
 import { createTierState, type RosterMember } from '../tier-state';
+import type { VisitorLike } from '../visitors';
 import type { DailySchedule } from '../schedule';
 import type { ResidueEvent } from '../residue';
 
@@ -796,5 +797,47 @@ describe('stepSession (endowment modifiers)', () => {
     };
     const out = stepSession(session, ctx, 24, createRng(2n));
     expect('household' in out.session.benches).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (h) Visitors arrive through the step path
+// ---------------------------------------------------------------------------
+
+describe('stepSession (visitors)', () => {
+  const TINY: VisitorLike = {
+    id: 'visitor/tiny',
+    tiers: ['household'],
+    cadence_ticks: 5,
+    jitter_ticks: 0,
+    duration_windows: 2,
+    effects: [{ op: 'add_resource', key: 'cook_speed', delta: 1 }],
+  };
+
+  it('seats a visitor on the household tier once the counter crosses cadence', () => {
+    const session = householdSession({ roster: [] });
+    expect(session.tiers['household']?.visitor_ticks).toBe(0);
+    const ctx: SessionStepContext = { ...MEMBER_CTX, visitors: [TINY] };
+    const out = stepSession(session, ctx, 5, createRng(3n));
+    expect(out.session.tiers['household']?.active_visitor).toEqual({
+      id: 'visitor/tiny',
+      windows_left: 2,
+    });
+    expect(out.session.tiers['household']?.visitor_ticks).toBe(0);
+  });
+
+  it('accumulates the counter below cadence and leaves the seat empty', () => {
+    const session = householdSession({ roster: [] });
+    const ctx: SessionStepContext = { ...MEMBER_CTX, visitors: [TINY] };
+    const out = stepSession(session, ctx, 4, createRng(3n));
+    expect(out.session.tiers['household']?.active_visitor).toBeNull();
+    expect(out.session.tiers['household']?.visitor_ticks).toBe(4);
+  });
+
+  it('leaves tiers untouched when the ctx carries no rows', () => {
+    const session = householdSession({ roster: [] });
+    const out = stepSession(session, MEMBER_CTX, 24, createRng(3n));
+    expect(out.session.tiers['household']?.active_visitor).toBeNull();
+    expect(out.session.tiers['household']?.visitor_ticks).toBe(0);
   });
 });

@@ -30,6 +30,43 @@ export const EMPTY_BENCH_MODIFIERS: BenchModifiers = {
   endowmentSlots: 0,
 };
 
+/** Pointwise sum of two modifier views (endowment + visitor overlays compose this way). */
+export function addBenchModifiers(a: BenchModifiers, b: BenchModifiers): BenchModifiers {
+  return {
+    cookSpeed: a.cookSpeed + b.cookSpeed,
+    windowMin: a.windowMin + b.windowMin,
+    surplusRate: a.surplusRate + b.surplusRate,
+    offlineCap: a.offlineCap + b.offlineCap,
+    endowmentSlots: a.endowmentSlots + b.endowmentSlots,
+  };
+}
+
+/**
+ * Fold add_resource deltas into a BenchModifiers view. Shared by endowment
+ * (track effects) and visitors (guest overlays). Off-vocabulary or
+ * malformed ops are ignored here — the progression lint rejects them at
+ * content load; the engine tolerates what slips through parsed rows.
+ */
+export function modifiersFromEffects(effects: readonly unknown[]): BenchModifiers {
+  const sum: Record<string, number> = {};
+  for (const op of effects) {
+    if (typeof op === 'object' && op !== null && (op as { op?: unknown }).op === 'add_resource') {
+      const key = (op as { key?: unknown }).key;
+      const delta = (op as { delta?: unknown }).delta;
+      if (typeof key === 'string' && typeof delta === 'number') {
+        sum[key] = (sum[key] ?? 0) + delta;
+      }
+    }
+  }
+  return {
+    cookSpeed: sum['cook_speed'] ?? 0,
+    windowMin: sum['window_min'] ?? 0,
+    surplusRate: sum['surplus_rate'] ?? 0,
+    offlineCap: sum['offline_cap'] ?? 0,
+    endowmentSlots: sum['endowment_slots'] ?? 0,
+  };
+}
+
 /* ---- structural op + track views ----------------------------------------- */
 
 export interface AddResourceLike {

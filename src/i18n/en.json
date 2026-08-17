@@ -117,6 +117,8 @@
     "away_capped_sid": "Catch-up stopped at the four-hour cap.",
     "away_ready_sid": "A working finished — ready to harvest.",
     "away_dismiss_sid": "Dismiss",
+    "visitor_banner_sid": "A guest: {name}",
+    "visitor_windows_sid": "{n} windows",
     "world_heading_sid": "World taking shape",
     "world_empty_sid": "Play a life for people, or tend for a place, and a world starts to form.",
     "world_counts_sid": "{places} places · {people} people",
@@ -155,6 +157,20 @@
     "household_title_sid": "The household gathers",
     "household_line_sid": "Three lives now leave residue under one roof.",
     "dismiss_button_sid": "To the bench"
+  },
+  "visitor": {
+    "gate_yaksa": {
+      "name_sid": "The yakṣa at the gate",
+      "line_sid": "It watches the yard and the work goes faster."
+    },
+    "traveling_teacher": {
+      "name_sid": "The traveling teacher",
+      "line_sid": "She corrects one motion and the whole day shortens."
+    },
+    "festival_day": {
+      "name_sid": "Festival day",
+      "line_sid": "The household cooks as if for a hundred."
+    }
   },
   "tang": {
     "name_sid": "Late Tang China",

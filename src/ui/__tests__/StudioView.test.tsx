@@ -773,4 +773,83 @@ describe('StudioView', () => {
     expect(() => getByText(resolveSid('studio.develop_locked_sid'))).not.toThrow();
     expect(queryByText(resolveSid('studio.develop_button_sid'))).toBeNull();
   });
+
+  /* ---- visitors: seated guest banner, harvest decay, overlay composition --- */
+
+  function sessionWithSeatedGuest(opts: { readyBay: boolean }): StudioSession {
+    const hydrated = emptyHydratedSession();
+    const base = recordStudioResidues(hydrated.studio, THING_WINDOW);
+    const studio = opts.readyBay
+      ? (() => {
+          const queued = queueDevelop(base, null, createRng(21n));
+          return tickStudio(queued, queued.bay?.cook_ticks_total ?? 0);
+        })()
+      : base;
+    const seated: TierState = {
+      ...createTierState('person', true),
+      active_visitor: { id: 'visitor/gate-yaksa', windows_left: 2 },
+    };
+    return snapshotStudioSession(
+      studio,
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: { person: seated },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+  }
+
+  it('renders the seated guest banner with name and windows', () => {
+    const { getByTestID, getByText } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionWithSeatedGuest({ readyBay: false }),
+      }),
+    );
+
+    expect(() => getByTestID('studio-visitor')).not.toThrow();
+    expect(() =>
+      getByText(
+        formatSid('studio.visitor_banner_sid', {
+          name: resolveSid('visitor.gate_yaksa.name_sid'),
+        }),
+      ),
+    ).not.toThrow();
+    expect(() => getByText(formatSid('studio.visitor_windows_sid', { n: 2 }))).not.toThrow();
+  });
+
+  it('decays the guest seat when its tier is harvested', () => {
+    const { getByTestID, getByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionWithSeatedGuest({ readyBay: true }),
+      }),
+    );
+
+    press(getByTestID('studio-harvest'));
+    expect(() => getByText(formatSid('studio.visitor_windows_sid', { n: 1 }))).not.toThrow();
+  });
+
+  it('composes the guest overlay into the develop cook discount', () => {
+    const { getByTestID, getByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionWithSeatedGuest({ readyBay: false }),
+      }),
+    );
+
+    press(getByTestID('studio-develop'));
+    // Window 3 → cookTicksFor(3) = 7; gate-yaksa's cook_speed 1 discounts to 6.
+    expect(() =>
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+    ).not.toThrow();
+  });
 });

@@ -25,6 +25,7 @@ import { EMPTY_BENCH_MODIFIERS, type BenchModifiers } from './endowment-validato
 import { stepStudio } from './studio-offline';
 import { FOLD_IDS, memberSeed, runAutonomousMember } from './roster';
 import { createRng, type Rng } from './rng';
+import { stepVisitors, type VisitorLike } from './visitors';
 import { benchIdle, benchLife, foldCopies, overlayPractices } from './session-step-internal';
 import type { BenchState, MemberSlice, StudioSession } from './studio-session';
 import type { DailySchedule } from './schedule';
@@ -57,6 +58,8 @@ export interface SessionStepContext {
    * every gate and tick keeps its unmodified value. Never consulted while
    * the household tier is locked. */
   readonly modifiersFor?: (tierId: string) => BenchModifiers;
+  /** Visitor rows (content, UI-supplied). Absent → no guest ever arrives. */
+  readonly visitors?: readonly VisitorLike[];
 }
 
 export interface SessionStepSummary {
@@ -86,6 +89,11 @@ export function stepSession(
     };
   }
 
+  // 0. Visitors — deterministic arrivals seat on unlocked tiers before any
+  // bench cooks. Tiers-only and reference-preserving without rows, so a ctx
+  // carrying no visitors (the golden person path) never observes this step.
+  const withVisitors = stepVisitors(session, ctx, ticks);
+
   // 1. Embodied life on the person bench — stepStudio semantics unchanged.
   const personPrev = session.benches[PERSON_BENCH] ?? emptyBench();
   const embodied = stepStudio(
@@ -107,7 +115,7 @@ export function stepSession(
   let memberTicks = 0;
   let folded = 0;
 
-  if (session.tiers[HOUSEHOLD_BENCH]?.unlocked === true) {
+  if (withVisitors.tiers[HOUSEHOLD_BENCH]?.unlocked === true) {
     const householdPrev = session.benches[HOUSEHOLD_BENCH] ?? emptyBench();
     let household = benchToStudio(householdPrev, session.archive);
     const mods = ctx.modifiersFor?.(HOUSEHOLD_BENCH) ?? EMPTY_BENCH_MODIFIERS;
@@ -119,7 +127,7 @@ export function stepSession(
     // 2. Autonomous members — rng seeded from the persisted roster row
     // (graduation derives it once and it survives reloads), residue folds at
     // cadence 1.
-    for (const tier of Object.values(session.tiers)) {
+    for (const tier of Object.values(withVisitors.tiers)) {
       for (const member of tier.roster.members) {
         const stored = members[member.id];
         if (member.embodied || stored === undefined) {
@@ -198,7 +206,7 @@ export function stepSession(
   const lifePrevLen = session.life.residue.length;
   const lifeLog = embodied.life.residue ?? [];
   const nextSession: StudioSession = {
-    ...session,
+    ...withVisitors,
     benches,
     idle: {
       mode: embodied.idle.mode,

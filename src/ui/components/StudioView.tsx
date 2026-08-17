@@ -70,7 +70,13 @@ import {
   type StudioState,
   type WorldDraftReference,
 } from '@/engine';
-import { computeBenchModifiers, effectiveAwayCap, type BenchModifiers } from '@/engine/endowment';
+import {
+  addBenchModifiers,
+  computeBenchModifiers,
+  effectiveAwayCap,
+  type BenchModifiers,
+} from '@/engine/endowment';
+import { activeVisitorFor, noteVisitorHarvest, visitorModifierOverlay } from '@/engine/visitors';
 import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persistence';
 import type { CalendarEpoch } from '@/engine/calendar';
 import type { DailySchedule } from '@/engine/schedule';
@@ -91,6 +97,8 @@ const DEFAULT_EPOCH: CalendarEpoch = { year: 1, month: 1, day: 1, hour: 0 };
 /** Phase 1: the embodied bench life is the person tier; the household rides beside it. */
 const EMBODIED_SCALE: ManifestScale = 'person';
 const HOUSEHOLD_SCALE: ManifestScale = 'household';
+const EMBODIED_TIER = 'person';
+const HOUSEHOLD_TIER = 'household';
 const UNLOCK_HOUSEHOLD = 'unlock-household';
 
 /** The two gte operands of `unlock-household`, hardcoded for Phase 1. */
@@ -213,14 +221,20 @@ function kindRulesByScale(): Readonly<Record<string, readonly KindRule[]>> {
 }
 
 /**
- * Endowment modifiers for one session's tiers. The track rows are
- * mount-stable content; the endowed lists live on the session, so the
- * resolver is rebuilt per session (global modifiers stay EMPTY until the
- * compendium task wires them).
+ * Endowment modifiers for one session's tiers, composed with the seated
+ * visitor's overlay. Track rows and visitor rows are mount-stable content;
+ * the endowed lists and visitor seats live on the session, so the resolver
+ * is rebuilt per session (global modifiers stay EMPTY until the compendium
+ * task wires them).
  */
 function modifiersForSession(session: StudioSession): (tierId: string) => BenchModifiers {
   const tracks = registries().endowment;
-  return (tierId: string): BenchModifiers => computeBenchModifiers(tierId, session, tracks);
+  const visitorRows = registries().visitors;
+  return (tierId: string): BenchModifiers =>
+    addBenchModifiers(
+      computeBenchModifiers(tierId, session, tracks),
+      visitorModifierOverlay(visitorRows, activeVisitorFor(session, tierId)?.id ?? null),
+    );
 }
 
 function statValue(stats: ArchiveStats, key: string): number {
@@ -505,6 +519,7 @@ export default function StudioView({
         memberPracticesFor: (id) => resolve(id).practices,
         endings,
         sessionSeed: SESSION_SEED,
+        visitors: registries().visitors,
         tiers: registries().tiers.map((tier) => ({
           id: tier.id,
           scale: tier.scale,
@@ -672,6 +687,20 @@ export default function StudioView({
   const remainingForUpgrade = Math.max(0, QUALITY_UPGRADE_HARVESTS - studio.harvest_count);
   const latest = studio.archive[studio.archive.length - 1];
   const stats = computeArchiveStats(buildSession(), worldDrafts);
+  const seatedVisitors: readonly { readonly sidNs: string; readonly windows: number }[] = (
+    [EMBODIED_TIER, HOUSEHOLD_TIER] as const
+  )
+    .map((tierId) => {
+      const seat = progression.tiers[tierId]?.active_visitor;
+      if (seat === undefined || seat === null) {
+        return null;
+      }
+      const row = registries().visitors.find((candidate) => candidate.id === seat.id);
+      return row === undefined ? null : { sidNs: row.sid_ns, windows: seat.windows_left };
+    })
+    .filter(
+      (entry): entry is { readonly sidNs: string; readonly windows: number } => entry !== null,
+    );
   const railTiers: readonly RailTier[] = [
     {
       id: 'person',
@@ -689,7 +718,8 @@ export default function StudioView({
     },
   ];
 
-  /** Drive the person-bench slices, members, and household bench from a stepped session. */
+  /** Drive the person-bench slices, members, household bench, and visitor
+   * seats (they live on the tiers slice) from a stepped session. */
   function adoptSteppedSession(next: StudioSession): void {
     const back = hydrateStudioSession(next, benchRef.current.life, benchRef.current.practices);
     setLife(back.life);
@@ -697,6 +727,7 @@ export default function StudioView({
     setStudio(back.studio);
     setRuntimePractices(back.practices);
     setMembers({ ...back.members });
+    setProgression((current) => ({ ...current, tiers: next.tiers }));
     setHouseholdBench(next.benches['household'] ?? null);
   }
 
@@ -751,6 +782,12 @@ export default function StudioView({
     archive: studio.archive,
   });
 
+  /** A harvest from a tier's bench sees its guest off — the seat's windows decay. */
+  function decayVisitorSeat(tierId: string): void {
+    const noted = noteVisitorHarvest(buildSession(), tierId);
+    setProgression((current) => ({ ...current, tiers: noted.tiers }));
+  }
+
   function harvest(): void {
     if (
       householdBench !== null &&
@@ -764,6 +801,7 @@ export default function StudioView({
     if (result === null) {
       return;
     }
+    decayVisitorSeat(EMBODIED_TIER);
     setStudio(result.studio);
     setWorldDrafts(withRecordedDraft(result.studio.archive, worldDrafts));
     setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
@@ -802,6 +840,7 @@ export default function StudioView({
     );
     setStudio((current) => ({ ...current, archive: [...current.archive, manifest] }));
     setWorldDrafts(withRecordedDraft([...studio.archive, manifest], worldDrafts));
+    decayVisitorSeat(HOUSEHOLD_TIER);
     setHouseholdBench({ ...bench, bay: null, harvest_count: bench.harvest_count + 1 });
     setFreshHarvestId(prefersReducedMotion ? null : manifest.id);
     setExported(false);
@@ -886,6 +925,17 @@ export default function StudioView({
             </Pressable>
           </View>
         )}
+
+        {seatedVisitors.map(({ sidNs, windows }) => (
+          <View key={sidNs} testID="studio-visitor" style={styles.away}>
+            <Text style={styles.awayText}>
+              {formatSid('studio.visitor_banner_sid', { name: resolveSid(`${sidNs}.name_sid`) })}
+            </Text>
+            <Text style={styles.hint}>
+              {formatSid('studio.visitor_windows_sid', { n: windows })}
+            </Text>
+          </View>
+        ))}
 
         <View style={styles.panel}>
           <Text style={styles.panelLabel}>

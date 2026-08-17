@@ -12,8 +12,10 @@
 
 import {
   EMPTY_BENCH_MODIFIERS,
+  addBenchModifiers,
   endowBlocker,
   endowedTracksOf,
+  modifiersFromEffects,
   type BenchModifiers,
   type EndowmentTrackLike,
 } from './endowment-validators';
@@ -46,25 +48,11 @@ export function computeBenchModifiers(
   tracks: readonly EndowmentTrackLike[],
   global: BenchModifiers = EMPTY_BENCH_MODIFIERS,
 ): BenchModifiers {
-  const sum: Record<string, number> = {};
+  let total = EMPTY_BENCH_MODIFIERS;
   for (const track of endowedTracksOf(tierId, session, tracks)) {
-    for (const op of track.effects) {
-      if (typeof op === 'object' && op !== null && (op as { op?: unknown }).op === 'add_resource') {
-        const key = (op as { key: unknown }).key;
-        const delta = (op as { delta: unknown }).delta;
-        if (typeof key === 'string' && typeof delta === 'number') {
-          sum[key] = (sum[key] ?? 0) + delta;
-        }
-      }
-    }
+    total = addBenchModifiers(total, modifiersFromEffects(track.effects));
   }
-  return {
-    cookSpeed: (sum['cook_speed'] ?? 0) + global.cookSpeed,
-    windowMin: (sum['window_min'] ?? 0) + global.windowMin,
-    surplusRate: (sum['surplus_rate'] ?? 0) + global.surplusRate,
-    offlineCap: (sum['offline_cap'] ?? 0) + global.offlineCap,
-    endowmentSlots: (sum['endowment_slots'] ?? 0) + global.endowmentSlots,
-  };
+  return addBenchModifiers(total, global);
 }
 
 /* ---- cascade -------------------------------------------------------------- */
@@ -148,7 +136,13 @@ export function effectiveAwayCap(
 
 /* ---- re-exports for the public surface ----------------------------------- */
 
-export { canEndow, EMPTY_BENCH_MODIFIERS, endowableSlots } from './endowment-validators';
+export {
+  addBenchModifiers,
+  canEndow,
+  EMPTY_BENCH_MODIFIERS,
+  endowableSlots,
+  modifiersFromEffects,
+} from './endowment-validators';
 export type {
   BenchModifiers,
   EndowBlockReason,

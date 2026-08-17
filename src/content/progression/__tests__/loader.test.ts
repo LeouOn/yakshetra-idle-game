@@ -55,7 +55,11 @@ describe('loadProgression', () => {
       'endow/household/hearth-surplus',
       'endow/household/long-absence',
     ]);
-    expect(registries.visitors).toEqual([]);
+    expect(registries.visitors.map((row) => row.id)).toEqual([
+      'visitor/gate-yaksa',
+      'visitor/traveling-teacher',
+      'visitor/festival-day',
+    ]);
     expect(registries.compendium).toEqual([]);
     // `policies` carries `policy:household-base` since Task 4; covered by
     // the household-scale suite below.
