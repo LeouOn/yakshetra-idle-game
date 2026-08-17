@@ -35,7 +35,9 @@
     {
       schema_version: 'compendium/v0',
       id: 'compendium/househeld',
-      predicate: { op: 'gte', key: 'pinned.tradition', value: 1 },
+      // Tradition/heirloom ship pinnable: false — a pinned.tradition operand
+      // would be permanently dead; the live path is archived tradition cards.
+      predicate: { op: 'gte', key: 'archived.tradition', value: 1 },
       reward: { effects: [{ op: 'add_resource', key: 'offline_cap', delta: 60 }] },
       sid_ns: 'compendium.househeld',
     },

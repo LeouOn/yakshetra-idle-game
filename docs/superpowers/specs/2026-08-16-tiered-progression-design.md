@@ -742,3 +742,10 @@ Recorded so later agents work against truth.
   focus writes only the roster row (key-omitted clear).
 - **`endow/person/deep-window`'s `window_min` gates the manual develop
   button in the UI** (person engine path untouched, golden preserved).
+- **`compendium/househeld` amended from `pinned.tradition` to
+  `archived.tradition`** — tradition/heirloom ship `pinnable: false`, so a
+  pinned operand was permanently dead; household harvests produce archived
+  tradition cards (the live path). The org→region milestone ladder
+  (`pinned.charter/festival/landmark/institution/monument`) is a Phase 3
+  entry condition: either ship those kinds `pinnable: true` or switch the
+  operands to `archived.*`, decided before org content lands.

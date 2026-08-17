@@ -130,11 +130,11 @@ const FIVE_HARVESTS: CompendiumEntryLike = {
 
 const HOUSEHELD: CompendiumEntryLike = {
   id: 'compendium/househeld',
-  predicate: { op: 'gte', key: 'pinned.tradition', value: 1 },
+  predicate: { op: 'gte', key: 'archived.tradition', value: 1 },
   reward: { effects: [{ op: 'add_resource', key: 'offline_cap', delta: 60 }] },
 };
 
-/** A session that satisfies first-harvest + five-harvests + househeld (one bench pin + two focus_ids of tradition). */
+/** A session that satisfies first-harvest + five-harvests + househeld (one archived tradition). */
 function crossedHouseheldAndFive(): StudioSession {
   const traditionCard: SessionCard = {
     ...personCard('t-1'),
@@ -150,7 +150,7 @@ function crossedHouseheldAndFive(): StudioSession {
       personCard('m-5'),
       traditionCard,
     ],
-    tiers: { person: makeTier('person', ['t-1']) },
+    tiers: { person: makeTier('person', []) },
   });
 }
 
@@ -204,7 +204,7 @@ describe('grantCompendium', () => {
 
   it('preserves input order across mixed grants and skips unsatisfied rows', () => {
     const session = crossedHouseheldAndFive();
-    // 5 common harvests → first-harvest + five-harvests; pinned.tradition ≥1 → househeld.
+    // 5 common harvests → first-harvest + five-harvests; archived.tradition ≥1 → househeld.
     const entries: readonly CompendiumEntryLike[] = [
       FIRST_HARVEST,
       FIRST_WORLD, // no draft in this session

@@ -59,6 +59,14 @@ describe('loadProgression', () => {
     });
   });
 
+  it('gates the househeld compendium row on one archived tradition', () => {
+    // Tradition/heirloom ship pinnable: false, so a pinned.tradition operand
+    // can never flip through the UI; the live path counts archived tradition
+    // cards (household harvests produce them).
+    const househeld = registries.compendium.find((entry) => entry.id === 'compendium/househeld');
+    expect(househeld?.predicate).toEqual({ op: 'gte', key: 'archived.tradition', value: 1 });
+  });
+
   it('ships empty extension files as valid empty registries', () => {
     // Endowment ships four base rows since Phase 2 Task 1 (the rest still
     // empty). The R-PROG-MODIFIER-KEYS lint guarantees every key here is
