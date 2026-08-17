@@ -209,6 +209,64 @@
         "label_sid": "Stop by someone else's door",
         "description_sid": "A short visit with no errand. Energy returns as the evening is shared."
       }
+    },
+    "schedule": {
+      "monastic_day": {
+        "name_sid": "A monastic day"
+      },
+      "household_morning": {
+        "name_sid": "A household morning"
+      }
+    },
+    "block": {
+      "monastic_day": {
+        "pre_dawn": {
+          "label_sid": "Pre-dawn sitting",
+          "icon_sid": "star"
+        },
+        "morning_alms": {
+          "label_sid": "Morning alms",
+          "icon_sid": "bowl"
+        },
+        "midday_work": {
+          "label_sid": "Midday work",
+          "icon_sid": "brush"
+        },
+        "evening_reflection": {
+          "label_sid": "Evening sitting",
+          "icon_sid": "lamp"
+        },
+        "night_rest": {
+          "label_sid": "Night rest",
+          "icon_sid": "moon"
+        }
+      },
+      "household_morning": {
+        "night_rest": {
+          "label_sid": "Small hours",
+          "icon_sid": "moon"
+        },
+        "pre_dawn_sweeping": {
+          "label_sid": "Water and fire",
+          "icon_sid": "kettle"
+        },
+        "alms_round": {
+          "label_sid": "Morning rounds",
+          "icon_sid": "bowl"
+        },
+        "courtyard_beings": {
+          "label_sid": "Midday bread",
+          "icon_sid": "yard"
+        },
+        "extra_bowl": {
+          "label_sid": "Afternoon tasks",
+          "icon_sid": "rice"
+        },
+        "evening_rest": {
+          "label_sid": "Lamps down",
+          "icon_sid": "lamp"
+        }
+      }
     }
   },
   "fantasy": {

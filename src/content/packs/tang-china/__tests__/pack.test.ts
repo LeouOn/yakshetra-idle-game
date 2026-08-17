@@ -40,6 +40,19 @@ describe('Tang China era pack scaffold', () => {
     }
   });
 
+  test('every sid referenced by the tang schedules resolves through i18n', async () => {
+    const pack = await loadEraPack('tang-china');
+    expect(pack.schedules.length).toBeGreaterThanOrEqual(2);
+
+    for (const schedule of pack.schedules) {
+      expect(resolveSid(schedule.name_sid), `schedule ${schedule.id} name_sid`).toBeTruthy();
+      for (const block of schedule.blocks) {
+        expect(resolveSid(block.label_sid), `block ${block.id} label_sid`).toBeTruthy();
+        expect(resolveSid(block.icon_sid), `block ${block.id} icon_sid`).toBeTruthy();
+      }
+    }
+  });
+
   test('every bibliography url is a parseable https url', async () => {
     const pack = await loadEraPack('tang-china');
     expect(pack.source_bibliography.length).toBeGreaterThanOrEqual(5);
