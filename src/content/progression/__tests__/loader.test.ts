@@ -60,7 +60,13 @@ describe('loadProgression', () => {
       'visitor/traveling-teacher',
       'visitor/festival-day',
     ]);
-    expect(registries.compendium).toEqual([]);
+    expect(registries.compendium.map((entry) => entry.id)).toEqual([
+      'compendium/first-harvest',
+      'compendium/first-world',
+      'compendium/three-pins',
+      'compendium/five-harvests',
+      'compendium/househeld',
+    ]);
     // `policies` carries `policy:household-base` since Task 4; covered by
     // the household-scale suite below.
   });

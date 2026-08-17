@@ -1,4 +1,43 @@
-// Compendium entry extension slot — empty for the base content.
+// Compendium rows — long-lived thresholds drawn from archive stats. The
+// engine reads them through ./@/engine/compendium (grantCompendium +
+// computeGlobalRewards); the predicate vocabulary mirrors milestones and is
+// linted by ./progression/lint (R-PROG-MODIFIER-KEYS).
 {
-  compendium: [],
+  compendium: [
+    {
+      schema_version: 'compendium/v0',
+      id: 'compendium/first-harvest',
+      predicate: { op: 'gte', key: 'harvests.common', value: 1 },
+      reward: { effects: [{ op: 'add_resource', key: 'offline_cap', delta: 30 }] },
+      sid_ns: 'compendium.first_harvest',
+    },
+    {
+      schema_version: 'compendium/v0',
+      id: 'compendium/first-world',
+      predicate: { op: 'gte', key: 'world_drafts.total', value: 1 },
+      reward: { unlock: 'title/worldwright' },
+      sid_ns: 'compendium.first_world',
+    },
+    {
+      schema_version: 'compendium/v0',
+      id: 'compendium/three-pins',
+      predicate: { op: 'gte', key: 'pinned.person', value: 3 },
+      reward: { unlock: 'title/keeper-of-three' },
+      sid_ns: 'compendium.three_pins',
+    },
+    {
+      schema_version: 'compendium/v0',
+      id: 'compendium/five-harvests',
+      predicate: { op: 'gte', key: 'harvests.common', value: 5 },
+      reward: { effects: [{ op: 'add_resource', key: 'endowment_slots', delta: 1 }] },
+      sid_ns: 'compendium.five_harvests',
+    },
+    {
+      schema_version: 'compendium/v0',
+      id: 'compendium/househeld',
+      predicate: { op: 'gte', key: 'pinned.tradition', value: 1 },
+      reward: { effects: [{ op: 'add_resource', key: 'offline_cap', delta: 60 }] },
+      sid_ns: 'compendium.househeld',
+    },
+  ],
 }

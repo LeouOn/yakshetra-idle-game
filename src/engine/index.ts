@@ -191,6 +191,8 @@ export type {
 } from './studio-session';
 export { checkMilestones } from './milestones';
 export type { MilestoneLike } from './milestones';
+export { grantCompendium, computeGlobalRewards } from './compendium';
+export type { CompendiumEntryLike, CompendiumGrantResult } from './compendium';
 export {
   computeArchiveStats,
   evaluateArchivePredicate,

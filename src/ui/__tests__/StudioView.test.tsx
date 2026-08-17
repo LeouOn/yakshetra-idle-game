@@ -8,6 +8,7 @@ import { act, render } from '@/test/rntl';
 import { loadProgression } from '@/content/progression/loader';
 import {
   STUDIO_SECONDS_PER_TICK,
+  TABLE_FILL_REVISION,
   createRng,
   createStudioState,
   createTierState,
@@ -851,5 +852,99 @@ describe('StudioView', () => {
     expect(() =>
       getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
     ).not.toThrow();
+  });
+
+  /* ---- compendium: panel smoke, grant + persistence round-trip, cross-state --- */
+
+  function commonCard(id: string, seq: number): Manifest {
+    return {
+      schema_version: 'manifest/v1',
+      id,
+      rng_seed: `seed-${seq}`,
+      brief: null,
+      residue_window_id: 'w-1-3-1',
+      kind: 'person',
+      scale: 'person',
+      name: `Card ${id}`,
+      one_liner: 'A fixture one-liner.',
+      subject: 'a fixture subject',
+      detail: 'Fixture detail.',
+      tags: ['fixture'],
+      rarity: 'common',
+      fill_status: 'table',
+      quality_tier: 0,
+      provenance: { source: 'table', revision: TABLE_FILL_REVISION },
+    };
+  }
+
+  function sessionAtNCommonHarvests(n: number): StudioSession {
+    const hydrated = emptyHydratedSession();
+    const cards: Manifest[] = [];
+    for (let index = 0; index < n; index += 1) {
+      cards.push(commonCard(`m-${index + 1}`, index + 1));
+    }
+    return snapshotStudioSession(
+      { ...hydrated.studio, archive: cards },
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: { person: createTierState('person', true) },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+  }
+
+  it('renders the compendium panel with all rows and marks a done row', () => {
+    const { getByTestID, getByText, container } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionAtNCommonHarvests(1),
+      }),
+    );
+
+    expect(() => getByTestID('studio-compendium')).not.toThrow();
+    expect(() => getByTestID('studio-compendium-row-compendium/first-harvest')).not.toThrow();
+    expect(() => getByText(resolveSid('compendium.first_harvest.name_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('compendium.first_harvest.desc_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('studio.compendium_done_sid'))).not.toThrow();
+    const lockedText = resolveSid('studio.compendium_locked_sid');
+    const lockedRows = container.queryAll(
+      (node) =>
+        node.type === 'Text' && node.children.length === 1 && node.children[0] === lockedText,
+    );
+    expect(lockedRows.length).toBeGreaterThanOrEqual(4);
+    expect(() => getByTestID('studio-compendium-row-compendium/five-harvests')).not.toThrow();
+  });
+
+  it('persists a granted compendium id through snapshotStudioSession → parseStudioSession', () => {
+    const session = sessionAtNCommonHarvests(1);
+    expect(session.compendium_done).toEqual([]);
+    const seeded: StudioSession = StudioSessionSchema.parse({
+      ...session,
+      compendium_done: ['compendium/first-harvest'],
+    });
+    expect(seeded.compendium_done).toEqual(['compendium/first-harvest']);
+    const reparsed = StudioSessionSchema.parse(seeded);
+    expect(reparsed.compendium_done).toEqual(['compendium/first-harvest']);
+  });
+
+  it('flips the five-harvests row to done when the initial archive has 5 commons', () => {
+    const { getByTestID, getByText } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionAtNCommonHarvests(5),
+      }),
+    );
+
+    expect(() => getByTestID('studio-compendium')).not.toThrow();
+    expect(() => getByText(resolveSid('compendium.five_harvests.name_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('compendium.five_harvests.desc_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('compendium.first_harvest.name_sid'))).not.toThrow();
   });
 });

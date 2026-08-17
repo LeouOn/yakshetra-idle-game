@@ -151,12 +151,37 @@
     "life_world_none_sid": "still forming",
     "life_ties_empty_sid": "No named ties yet — play, or harvest people.",
     "life_tie_sid": "{name} ({bond})",
-    "export_life_sid": "Export life context JSON"
+    "export_life_sid": "Export life context JSON",
+    "compendium_heading_sid": "Compendium",
+    "compendium_done_sid": "Kept",
+    "compendium_locked_sid": "Not yet"
   },
   "graduation": {
     "household_title_sid": "The household gathers",
     "household_line_sid": "Three lives now leave residue under one roof.",
     "dismiss_button_sid": "To the bench"
+  },
+  "compendium": {
+    "first_harvest": {
+      "name_sid": "First harvest",
+      "desc_sid": "A card came off the bench and stayed."
+    },
+    "first_world": {
+      "name_sid": "First world",
+      "desc_sid": "The archive grew enough that a place knew itself."
+    },
+    "three_pins": {
+      "name_sid": "Three pins",
+      "desc_sid": "Three people stayed in the work at once."
+    },
+    "five_harvests": {
+      "name_sid": "Five harvests",
+      "desc_sid": "Five common cards. A sixth slot opened on the bench."
+    },
+    "househeld": {
+      "name_sid": "Househeld",
+      "desc_sid": "A tradition answered to the door."
+    }
   },
   "visitor": {
     "gate_yaksa": {

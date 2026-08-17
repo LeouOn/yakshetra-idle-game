@@ -34,6 +34,7 @@ import {
   canUpgradeQuality,
   canonicalStringify,
   checkMilestones,
+  computeGlobalRewards,
   compileRequestFromBay,
   computeArchiveStats,
   createIdleState,
@@ -43,6 +44,7 @@ import {
   defaultProgression,
   evaluateLifeContext,
   graduateToHousehold,
+  grantCompendium,
   harvestTableFill,
   hydrateStudioSession,
   pendingResidue,
@@ -222,17 +224,18 @@ function kindRulesByScale(): Readonly<Record<string, readonly KindRule[]>> {
 
 /**
  * Endowment modifiers for one session's tiers, composed with the seated
- * visitor's overlay. Track rows and visitor rows are mount-stable content;
- * the endowed lists and visitor seats live on the session, so the resolver
- * is rebuilt per session (global modifiers stay EMPTY until the compendium
- * task wires them).
+ * visitor's overlay and the compendium's per-session global bonus. Track
+ * rows and visitor rows are mount-stable content; the endowed lists,
+ * visitor seats, and compendium_done list live on the session, so the
+ * resolver is rebuilt per session.
  */
 function modifiersForSession(session: StudioSession): (tierId: string) => BenchModifiers {
   const tracks = registries().endowment;
   const visitorRows = registries().visitors;
+  const global = computeGlobalRewards(session.compendium_done, registries().compendium);
   return (tierId: string): BenchModifiers =>
     addBenchModifiers(
-      computeBenchModifiers(tierId, session, tracks),
+      computeBenchModifiers(tierId, session, tracks, global),
       visitorModifierOverlay(visitorRows, activeVisitorFor(session, tierId)?.id ?? null),
     );
 }
@@ -556,7 +559,11 @@ export default function StudioView({
         const awayTicks = studioTicksAway(
           session.last_visited_at_unix ?? 0,
           clock(),
-          effectiveAwayCap(session, registries().endowment),
+          effectiveAwayCap(
+            session,
+            registries().endowment,
+            computeGlobalRewards(session.compendium_done, registries().compendium),
+          ),
         );
         const stepped =
           awayTicks.ticks > 0
@@ -640,21 +647,36 @@ export default function StudioView({
       return;
     }
     const current = buildSession();
-    const fired = checkMilestones(current, worldDrafts, registries().milestones);
-    if (!fired.includes(UNLOCK_HOUSEHOLD)) {
+    const compendiumResult = grantCompendium(current, worldDrafts, registries().compendium);
+    const sessionAfterGrant = compendiumResult.session;
+    const compendiumChanged = compendiumResult.granted.length > 0;
+    const fired = checkMilestones(sessionAfterGrant, worldDrafts, registries().milestones);
+    const graduationNeeded = fired.includes(UNLOCK_HOUSEHOLD);
+    if (!compendiumChanged && !graduationNeeded) {
       return;
     }
-    const graduated = graduateToHousehold(current, registries().roles.household, rngRef.current);
-    setProgression({
-      tiers: graduated.tiers,
-      milestones_done: graduated.milestones_done,
-      compendium_done: graduated.compendium_done,
-      embodied_member: graduated.embodied_member,
-    });
-    setMembers({ ...graduated.members });
-    setWorldDrafts([...graduated.world_drafts]);
-    setHouseholdBench((current2) => current2 ?? graduated.benches['household'] ?? null);
-    setGraduationCeremony(UNLOCK_HOUSEHOLD);
+    if (graduationNeeded) {
+      const graduated = graduateToHousehold(
+        sessionAfterGrant,
+        registries().roles.household,
+        rngRef.current,
+      );
+      setProgression({
+        tiers: graduated.tiers,
+        milestones_done: graduated.milestones_done,
+        compendium_done: graduated.compendium_done,
+        embodied_member: graduated.embodied_member,
+      });
+      setMembers({ ...graduated.members });
+      setWorldDrafts([...graduated.world_drafts]);
+      setHouseholdBench((current2) => current2 ?? graduated.benches['household'] ?? null);
+      setGraduationCeremony(UNLOCK_HOUSEHOLD);
+      return;
+    }
+    setProgression((prev) => ({
+      ...prev,
+      compendium_done: sessionAfterGrant.compendium_done,
+    }));
     // Same rationale as the save effect: buildSession reads the listed values.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -1095,6 +1117,34 @@ export default function StudioView({
             </Text>
           </Pressable>
         )}
+
+        <View testID="studio-compendium" style={styles.compendium}>
+          <Text accessibilityRole="header" style={styles.archiveHeading}>
+            {resolveSid('studio.compendium_heading_sid')}
+          </Text>
+          {registries().compendium.map((entry) => {
+            const done = progression.compendium_done.includes(entry.id);
+            return (
+              <View
+                key={entry.id}
+                testID={`studio-compendium-row-${entry.id}`}
+                style={styles.compendiumRow}
+              >
+                <Text style={styles.compendiumName}>{resolveSid(`${entry.sid_ns}.name_sid`)}</Text>
+                {done ? (
+                  <>
+                    <Text style={styles.hint}>{resolveSid(`${entry.sid_ns}.desc_sid`)}</Text>
+                    <Text style={styles.compendiumStatus}>
+                      {resolveSid('studio.compendium_done_sid')}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.hint}>{resolveSid('studio.compendium_locked_sid')}</Text>
+                )}
+              </View>
+            );
+          })}
+        </View>
       </ScrollView>
 
       {graduationCeremony === null ? null : (
@@ -1168,6 +1218,17 @@ const styles = StyleSheet.create({
   buttonDisabled: { backgroundColor: '#3f3a4a' },
   buttonText: { color: t.text, fontSize: 16, fontWeight: '600' },
   archiveHeading: { fontSize: 20, fontWeight: '700', marginTop: 16, color: t.text },
+  compendium: { gap: 8, marginTop: 8 },
+  compendiumRow: {
+    borderWidth: 1,
+    borderColor: t.line,
+    borderRadius: 10,
+    padding: 10,
+    gap: 4,
+    backgroundColor: t.surface,
+  },
+  compendiumName: { fontSize: 15, fontWeight: '600', color: t.text },
+  compendiumStatus: { fontSize: 13, fontWeight: '600', color: t.gold },
   overlay: {
     position: 'absolute',
     top: 0,
