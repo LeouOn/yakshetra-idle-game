@@ -46,7 +46,15 @@ describe('loadProgression', () => {
   });
 
   it('ships empty extension files as valid empty registries', () => {
-    expect(registries.endowment).toEqual([]);
+    // Endowment ships four base rows since Phase 2 Task 1 (the rest still
+    // empty). The R-PROG-MODIFIER-KEYS lint guarantees every key here is
+    // a whitelisted bench modifier — exercised by progression/lint.test.ts.
+    expect(registries.endowment.map((t) => t.id)).toEqual([
+      'endow/person/swift-cook',
+      'endow/person/deep-window',
+      'endow/household/hearth-surplus',
+      'endow/household/long-absence',
+    ]);
     expect(registries.visitors).toEqual([]);
     expect(registries.compendium).toEqual([]);
     // `policies` carries `policy:household-base` since Task 4; covered by

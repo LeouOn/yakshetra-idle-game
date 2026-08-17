@@ -92,6 +92,7 @@ function makeTier(tier: string, focusIds: readonly (string | undefined)[]): Tier
     },
     endowed: [],
     active_visitor: null,
+    visitor_ticks: 0,
   };
 }
 

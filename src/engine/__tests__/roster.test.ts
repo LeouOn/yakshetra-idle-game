@@ -332,6 +332,7 @@ const householdTier: TierState = {
   },
   endowed: [],
   active_visitor: null,
+  visitor_ticks: 0,
 };
 
 function memberSlice(turn: number, gold: number, practiceId: string): MemberSlice {
