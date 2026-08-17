@@ -92,9 +92,11 @@ export function grantCompendium(
  * Fold the granted rows' reward `effects` add_resource deltas into a single
  * BenchModifiers view. Unknown ids in `done` are tolerated (the player may
  * have granted something not currently loaded), `unlock`-type rows contribute
- * nothing, and duplicates inside `done` are folded exactly once. Pure: the
- * engine stays sync and the modifiers cache this produces is fed to
- * computeBenchModifiers and effectiveAwayCap at call time.
+ * nothing, and every occurrence in `done` folds its row's effects — multiset
+ * per-occurrence semantics (the sole writer, grantCompendium, never appends
+ * duplicates; a writer bug that did would surface as an over-bonus, not pass
+ * silently). Pure: the engine stays sync and the modifiers cache this
+ * produces is fed to computeBenchModifiers and effectiveAwayCap at call time.
  */
 export function computeGlobalRewards(
   done: readonly string[],
@@ -110,11 +112,7 @@ export function computeGlobalRewards(
     if (entry === undefined || entry.reward.effects === undefined) {
       continue;
     }
-    const effects = entry.reward.effects;
-    if (effects === undefined) {
-      continue;
-    }
-    total = addBenchModifiers(total, modifiersFromEffects(effects));
+    total = addBenchModifiers(total, modifiersFromEffects(entry.reward.effects));
   }
   return total;
 }

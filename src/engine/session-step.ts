@@ -121,8 +121,9 @@ export function stepSession(
     const mods = ctx.modifiersFor?.(HOUSEHOLD_BENCH) ?? EMPTY_BENCH_MODIFIERS;
     // window_min lowers the auto-queue minimum, floored at 2 events.
     const effectiveMin = Math.max(2, MIN_RESIDUE_TO_DEVELOP - mods.windowMin);
-    // The cook gate snapshots the charge BEFORE any appends (stepStudio's gate).
-    const alreadyCharged = pendingResidue(household).length >= MIN_RESIDUE_TO_DEVELOP;
+    // The cook gate snapshots the charge BEFORE any appends (stepStudio's
+    // gate), against the same window_min-lowered minimum the auto-queue uses.
+    const alreadyCharged = pendingResidue(household).length >= effectiveMin;
 
     // 2. Autonomous members — rng seeded from the persisted roster row
     // (graduation derives it once and it survives reloads), residue folds at

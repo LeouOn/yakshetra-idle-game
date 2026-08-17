@@ -714,6 +714,24 @@ describe('stepSession (endowment modifiers)', () => {
     expect(hh.last_harvest_index).toBe(1);
   });
 
+  it('absorbs tend ticks once the charge meets the window_min-lowered minimum', () => {
+    // The bench holds exactly the effective minimum (2 with windowMin 1), so
+    // it counts as already charged: the auto-queue cooks the direct tick AND
+    // the absorbed one (2 done ticks, not 1).
+    const session = withHouseholdBench(
+      householdSession({ roster: [], practices: [] }),
+      hhBench({ residue: benchResidue(2) }),
+    );
+    const ctx: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, windowMin: 1 }),
+    };
+    const out = stepSession(session, ctx, 1, createRng(4n));
+    const hh = benchOf(out.session, 'household');
+    expect(hh.bay).not.toBeNull();
+    expect(hh.bay?.cook_ticks_done).toBe(2);
+  });
+
   it('never auto-queues below a 2-event window even with heavy windowMin', () => {
     // max(2, 3 − 9) clamps at 2, so a 1-window bench still waits.
     const session = withHouseholdBench(

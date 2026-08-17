@@ -19,6 +19,7 @@ import {
   type BenchModifiers,
   type EndowmentTrackLike,
 } from './endowment-validators';
+import { STUDIO_AWAY_TICK_CAP } from './studio-offline';
 import type { BenchState, StudioSession } from './studio-session';
 import type { RosterMember, TierState } from './tier-state';
 
@@ -37,8 +38,13 @@ export type ModifierKey = (typeof MODIFIER_KEY_WHITELIST)[number];
 // are re-exported below so the public import path (@/engine/endowment) stays
 // stable for tests, the StudioView, and the progression lint.
 
-/** Base idle cap, added before any track / global offline_cap modifiers. */
-export const BASE_AWAY_CAP = 240;
+/**
+ * Base idle cap, added before any track / global offline_cap modifiers.
+ * Derived from STUDIO_AWAY_TICK_CAP (studio-offline) so the unmodified 240s
+ * ceiling exists exactly once; endowment → studio-offline is cycle-free
+ * (studio-offline imports operations only).
+ */
+export const BASE_AWAY_CAP = STUDIO_AWAY_TICK_CAP;
 
 /* ---- computeBenchModifiers ------------------------------------------------ */
 
