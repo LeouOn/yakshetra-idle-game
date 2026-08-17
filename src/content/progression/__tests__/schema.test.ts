@@ -7,6 +7,7 @@ import {
   KindRowSchema,
   MilestoneSchema,
   PolicySchema,
+  RolesFileSchema,
   TierSchema,
   VisitorSchema,
 } from '@/content/progression/schema';
@@ -150,5 +151,33 @@ describe('remaining progression schemas', () => {
       sid_ns: 'compendium.first-world',
     };
     expect(CompendiumEntrySchema.parse(entry).id).toBe('compendium/first-world');
+  });
+});
+
+describe('RolesFileSchema', () => {
+  const household = {
+    roles: ['elder', 'cook', 'runner'],
+    names: ['Second Aunt', 'Old Wen', 'Little Shu'],
+  };
+
+  it('requires the household block and accepts an optional org block', () => {
+    expect(() => RolesFileSchema.parse({})).toThrow();
+    expect(RolesFileSchema.parse({ household }).household.roles).toHaveLength(3);
+    const withOrg = RolesFileSchema.parse({
+      household: { ...household, policy: 'policy:household-base' },
+      org: { roles: ['steward'], names: ['Auntie Ji'], policy: 'policy:household-base' },
+    });
+    expect(withOrg.org?.policy).toBe('policy:household-base');
+  });
+
+  it('makes the policy field optional per block', () => {
+    const parsed = RolesFileSchema.parse({ household });
+    expect(parsed.household.policy).toBeUndefined();
+  });
+
+  it('rejects unknown tier blocks', () => {
+    expect(() =>
+      RolesFileSchema.parse({ household, city: { roles: ['ward'], names: ['ward'] } }),
+    ).toThrow();
   });
 });

@@ -207,6 +207,17 @@ describe('loadProgression household scale', () => {
     expect(registries.roles.household.names).toEqual(['Second Aunt', 'Old Wen', 'Little Shu']);
   });
 
+  it('loads the seated policy on the household roles block', () => {
+    expect(registries.roles.household.policy).toBe('policy:household-base');
+  });
+
+  it('loads the org roles block with its seated policy', () => {
+    expect(registries.roles.org).toBeDefined();
+    expect(registries.roles.org?.policy).toBe('policy:household-base');
+    expect((registries.roles.org?.roles ?? []).length).toBeGreaterThanOrEqual(2);
+    expect((registries.roles.org?.names ?? []).length).toBeGreaterThanOrEqual(2);
+  });
+
   it('household rule list is total across every residue window shape', () => {
     const householdRules = registries.kindRows.flatMap((row, index) => {
       const rule = registries.kindRules[index];

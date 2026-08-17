@@ -1,7 +1,4 @@
 // Develop-from-residue operations — one print bay, classic idle cook.
-//
-// StudioState is fiction-agnostic. The engine queues a job on a residue
-// window, cooks it on ticks, and harvests a Manifest via table-fill.
 // Pure: no Date, no Math.random, no fetch.
 
 import {
@@ -13,9 +10,14 @@ import {
 import type { LifeContext } from './life-context';
 import { nextPinned, type ManifestFocus } from './focus';
 import type { Manifest } from './manifest';
-import type { Practice } from './types';
+import type { PlayImportCursor } from './play-cursor';
 import type { Rng } from './rng';
 import { residueWindowId, windowSince, type ResidueEvent } from './residue';
+
+// Back-compat re-exports of the BD6 splits (play-cursor, practice-progress);
+// both modules import this one TYPE-ONLY, so no runtime cycle exists.
+export { importPlayResidue, type PlayImportCursor } from './play-cursor';
+export { applyPracticeProgress } from './practice-progress';
 
 /** Minimum window size before a develop job can start. */
 export const MIN_RESIDUE_TO_DEVELOP = 3;
@@ -39,12 +41,6 @@ export interface DevelopOperation {
   readonly status: OperationStatus;
   readonly rng_seed: string;
   readonly focus: ManifestFocus | null;
-}
-
-/** How far this bench has already imported a campaign life's residue log. */
-export interface PlayImportCursor {
-  readonly life_id: string;
-  readonly index: number;
 }
 
 export interface StudioState {
@@ -109,35 +105,6 @@ export function recordStudioResidues(
   return { ...studio, residue: [...studio.residue, ...events] };
 }
 
-/**
- * Fold a campaign life's residue log into the bench.
- * Same life: only events after `play_import.index`. New life: import all.
- */
-export function importPlayResidue(
-  studio: StudioState,
-  lifeId: string,
-  lifeLog: readonly ResidueEvent[],
-): StudioState {
-  if (lifeLog.length === 0) {
-    const cursor = studio.play_import;
-    if (cursor !== null && cursor.life_id === lifeId && cursor.index === -1) {
-      return studio;
-    }
-    return { ...studio, play_import: { life_id: lifeId, index: -1 } };
-  }
-  const sameLife = studio.play_import !== null && studio.play_import.life_id === lifeId;
-  const start = sameLife ? studio.play_import.index + 1 : 0;
-  const last = lifeLog.length - 1;
-  if (start > last) {
-    return studio;
-  }
-  const fresh = lifeLog.slice(start);
-  return {
-    ...recordStudioResidues(studio, fresh),
-    play_import: { life_id: lifeId, index: last },
-  };
-}
-
 function cookTicksFor(windowLength: number): number {
   const extra = windowLength < 8 ? windowLength : 8;
   return 4 + extra;
@@ -157,13 +124,10 @@ export function absorbSurplus(studio: StudioState, extraTicks: number): StudioSt
 }
 
 /**
- * Snapshot the pending window into the single bay. The window is spent even
- * if harvest later fails — charge must be earned again.
- *
- * `opts.cookTicksDiscount` (endowment cook_speed) shortens the cook but never
- * below MIN_COOK_TICKS; `opts.minResidue` lowers the queue gate (default
- * MIN_RESIDUE_TO_DEVELOP) so a window_min modifier can start earlier cooks,
- * floored at 1 so no modifier can ever queue an empty window.
+ * Snapshot the pending window into the single bay — the window is spent even
+ * if harvest fails; charge must be earned again. cookTicksDiscount shortens
+ * the cook (floored at MIN_COOK_TICKS); minResidue lowers the queue gate
+ * (floored at 1, so no modifier can ever queue an empty window).
  */
 export function queueDevelop(
   studio: StudioState,
@@ -267,28 +231,4 @@ export function upgradeQuality(studio: StudioState): StudioState {
     return studio;
   }
   return { ...studio, quality_tier: 1 };
-}
-
-/** Fold idle practice deltas back onto runtime Practice values. */
-export function applyPracticeProgress(
-  practices: readonly Practice[],
-  advanced: readonly { readonly id: string; readonly progressGained: number }[],
-): Practice[] {
-  return practices.map((practice) => {
-    const row = advanced.find((a) => a.id === practice.id);
-    if (row === undefined || row.progressGained === 0) {
-      return practice;
-    }
-    const max = practice.maxProgress;
-    const raw = practice.currentProgress + row.progressGained;
-    if (max <= 0) {
-      return { ...practice, currentProgress: raw };
-    }
-    const gainedLevels = Math.floor(raw / max);
-    return {
-      ...practice,
-      currentProgress: raw - gainedLevels * max,
-      level: practice.level + gainedLevels,
-    };
-  });
 }

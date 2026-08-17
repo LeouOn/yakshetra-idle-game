@@ -1,10 +1,20 @@
 // Roles table for the bench. Plain strings — compiled card output, not SIDs.
-// The bundle is keyed by tier scale; future tiers (org, town, city, region)
-// will append their own block once authored. Loader/lint pass-through mirrors
-// the catalogs pattern: Zod-parse → include in registries → meter-token lint.
+// The bundle is keyed by tier scale; city/region append their own block once
+// authored. `policy` is what graduation stamps on seeded member rows
+// (member-bearing tiers require it; town's unit rows never read it).
 {
   household: {
     roles: ['elder', 'cook', 'runner'],
     names: ['Second Aunt', 'Old Wen', 'Little Shu'],
+    policy: 'policy:household-base',
+  },
+  org: {
+    roles: ['abbot', 'kilnmaster', 'clerk'],
+    names: ['Master Yun', 'Old Shi', 'Young Bao'],
+    policy: 'policy:household-base',
+  },
+  town: {
+    roles: ['ward'],
+    names: ['the wards'],
   },
 }

@@ -1236,3 +1236,25 @@ describe('stepSession (ladder fold to town)', () => {
     expect(step2(a.session)).toEqual(step2(b.session));
   });
 });
+
+// ---------------------------------------------------------------------------
+// (o) missing-tier guard — an unlocked session tier absent from ctx.tiers
+//     throws loudly instead of being silently skipped
+// ---------------------------------------------------------------------------
+
+describe('stepSession (missing ctx.tiers row)', () => {
+  it('throws naming the tier when an unlocked session tier is absent from ctx.tiers', () => {
+    const session = ladderSession({ household: true, org: true, town: false });
+    const ctx: SessionStepContext = {
+      ...LADDER_CTX,
+      tiers: LADDER_CTX.tiers.filter((t) => t.id !== 'org'),
+    };
+    expect(() => stepSession(session, ctx, 4, createRng(9n))).toThrowError(/"org"/);
+  });
+
+  it('does not throw when the full ladder context is supplied', () => {
+    const session = ladderSession({ household: true, org: true, town: true });
+    const out = stepSession(session, LADDER_CTX, 4, createRng(9n));
+    expect(out.summary.embodiedTicks).toBe(4);
+  });
+});

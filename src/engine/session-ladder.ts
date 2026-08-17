@@ -83,6 +83,17 @@ export function stepTierLadder(
   personDelta: readonly ResidueEvent[],
   ticks: number,
 ): LadderResult {
+  // A tier unlocked in the session but missing from ctx.tiers would be
+  // silently skipped below (bench, members, folds all vanish) — fail loudly.
+  for (const [id, tier] of Object.entries(session.tiers)) {
+    if (id === PERSON_BENCH || tier.unlocked !== true) {
+      continue;
+    }
+    if (!ctx.tiers.some((row) => row.id === id)) {
+      throw new Error(`stepTierLadder: session tier "${id}" is unlocked but absent from ctx.tiers`);
+    }
+  }
+
   let members = session.members;
   let memberTicks = 0;
   let folded = 0;

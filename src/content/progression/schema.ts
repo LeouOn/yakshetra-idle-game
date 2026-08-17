@@ -244,17 +244,22 @@ export type CompendiumEntry = z.infer<typeof CompendiumEntrySchema>;
 // Roles are compiled card output (plain strings, NOT SIDs): role labels and
 // the names the bench fills them with. Each scale-level block is its own
 // keyed table so future scales append without touching this schema.
+// `policy` is the seated policy graduation stamps on member rows — REQUIRED
+// by the engine for member-bearing tiers (org), unused by unit tiers (town).
 
 const RolesBlockSchema = z
   .object({
     roles: z.array(z.string().min(1)).min(1),
     names: z.array(z.string().min(1)).min(1),
+    policy: z.string().min(1).optional(),
   })
   .strict();
 
 export const RolesFileSchema = z
   .object({
     household: RolesBlockSchema,
+    org: RolesBlockSchema.optional(),
+    town: RolesBlockSchema.optional(),
   })
   .strict();
 export type RolesFile = z.infer<typeof RolesFileSchema>;
