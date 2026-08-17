@@ -11,10 +11,10 @@
   org: {
     roles: ['abbot', 'kilnmaster', 'clerk'],
     names: ['Master Yun', 'Old Shi', 'Young Bao'],
-    policy: 'policy:household-base',
+    policy: 'policy:org-base',
   },
   town: {
-    roles: ['ward'],
-    names: ['the wards'],
+    roles: ['headman', 'market-warden', 'ferry-keeper'],
+    names: ['House of Yun', 'the Kilnhouse', 'the River Office'],
   },
 }

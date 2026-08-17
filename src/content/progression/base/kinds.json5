@@ -139,5 +139,118 @@
       min_quality: 0,
       match: { no_dominant: true },
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Org-scale rows. Charter carries the people-facing windows (agreements
+    // are who swore to what); ware carries the practice-shaped and empty
+    // windows (the work leaves a thing). Three fallback rows keep the org
+    // rule list TOTAL — no legal window may fail to match.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'charter',
+      scale: 'org',
+      pinnable: false,
+      catalog_ref: 'core/charter',
+      sid_ns: 'studio.kind_charter_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'ware',
+      scale: 'org',
+      pinnable: false,
+      catalog_ref: 'core/ware',
+      sid_ns: 'studio.kind_ware_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'charter',
+      scale: 'org',
+      pinnable: false,
+      catalog_ref: 'core/charter',
+      sid_ns: 'studio.kind_charter_sid',
+      min_quality: 0,
+      match: { dominant_in: ['event_resolved', 'resource_edge', 'life_ended'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'ware',
+      scale: 'org',
+      pinnable: false,
+      catalog_ref: 'core/ware',
+      sid_ns: 'studio.kind_ware_sid',
+      min_quality: 0,
+      match: { dominant_in: ['practice_tick', 'lens_chosen'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'ware',
+      scale: 'org',
+      pinnable: false,
+      catalog_ref: 'core/ware',
+      sid_ns: 'studio.kind_ware_sid',
+      min_quality: 0,
+      match: { no_dominant: true },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Town-scale rows. Festival carries the people-facing windows (a town
+    // event is a crowd); landmark carries the practice-shaped and empty
+    // windows (the town's fixtures stay put). Same TOTAL distribution as org.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'festival',
+      scale: 'town',
+      pinnable: false,
+      catalog_ref: 'core/festival',
+      sid_ns: 'studio.kind_festival_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'landmark',
+      scale: 'town',
+      pinnable: false,
+      catalog_ref: 'core/landmark',
+      sid_ns: 'studio.kind_landmark_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'festival',
+      scale: 'town',
+      pinnable: false,
+      catalog_ref: 'core/festival',
+      sid_ns: 'studio.kind_festival_sid',
+      min_quality: 0,
+      match: { dominant_in: ['event_resolved', 'resource_edge', 'life_ended'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'landmark',
+      scale: 'town',
+      pinnable: false,
+      catalog_ref: 'core/landmark',
+      sid_ns: 'studio.kind_landmark_sid',
+      min_quality: 0,
+      match: { dominant_in: ['practice_tick', 'lens_chosen'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'landmark',
+      scale: 'town',
+      pinnable: false,
+      catalog_ref: 'core/landmark',
+      sid_ns: 'studio.kind_landmark_sid',
+      min_quality: 0,
+      match: { no_dominant: true },
+    },
   ],
 }

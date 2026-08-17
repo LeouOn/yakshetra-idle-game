@@ -123,5 +123,74 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Workshop day — the org cadence (Phase 3 Task 3). Sitting before the
+    // wheels turn, two bench blocks of copying, an evening round of calls,
+    // rest bookending both ends. Resolved by `policy:org-base`; id drops
+    // the `tang/` prefix for the same reason household-morning does.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:workshop-day',
+      name_sid: 'tang.schedule.workshop_day.name_sid',
+      blocks: [
+        {
+          id: 'block:workshop-day/night-rest',
+          label_sid: 'tang.block.workshop_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 5,
+          practice_id: null,
+          icon_sid: 'tang.block.workshop_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:workshop-day/first-sitting',
+          label_sid: 'tang.block.workshop_day.first_sitting.label_sid',
+          startHour: 5,
+          endHour: 8,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.workshop_day.first_sitting.icon_sid',
+        },
+        {
+          id: 'block:workshop-day/morning-bench',
+          label_sid: 'tang.block.workshop_day.morning_bench.label_sid',
+          startHour: 8,
+          endHour: 13,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.workshop_day.morning_bench.icon_sid',
+        },
+        {
+          id: 'block:workshop-day/midday-rest',
+          label_sid: 'tang.block.workshop_day.midday_rest.label_sid',
+          startHour: 13,
+          endHour: 15,
+          practice_id: null,
+          icon_sid: 'tang.block.workshop_day.midday_rest.icon_sid',
+        },
+        {
+          id: 'block:workshop-day/afternoon-bench',
+          label_sid: 'tang.block.workshop_day.afternoon_bench.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.workshop_day.afternoon_bench.icon_sid',
+        },
+        {
+          id: 'block:workshop-day/evening-rounds',
+          label_sid: 'tang.block.workshop_day.evening_rounds.label_sid',
+          startHour: 19,
+          endHour: 21,
+          practice_id: 'practice:tang/evening-visit',
+          icon_sid: 'tang.block.workshop_day.evening_rounds.icon_sid',
+        },
+        {
+          id: 'block:workshop-day/lamps-down',
+          label_sid: 'tang.block.workshop_day.lamps_down.label_sid',
+          startHour: 21,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.workshop_day.lamps_down.icon_sid',
+        },
+      ],
+    },
   ],
 }

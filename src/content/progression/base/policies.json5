@@ -1,7 +1,7 @@
 // Policy extension slot — per-tier practice/schedule/weights rules.
-// `policy:household-base` is the first real row: a household-morning cadence
-// that the household bench leans on by default (Task 6 wires policy lookups
-// into the scale-filtered compile step).
+// `policy:household-base` is the household-morning cadence the household
+// bench leans on; `policy:org-base` is the workshop rhythm the org seats
+// run on (seated by roles.json5's org block since Phase 3 Task 3).
 {
   policies: [
     {
@@ -13,6 +13,17 @@
         'practice:tang/extra-bowl',
       ],
       schedule_ref: 'schedule:household-morning',
+      choice_weights: {},
+    },
+    {
+      schema_version: 'policy/v0',
+      id: 'policy:org-base',
+      practices: [
+        'practice:tang/sutra-copying',
+        'practice:tang/breath-sitting',
+        'practice:tang/evening-visit',
+      ],
+      schedule_ref: 'schedule:workshop-day',
       choice_weights: {},
     },
   ],

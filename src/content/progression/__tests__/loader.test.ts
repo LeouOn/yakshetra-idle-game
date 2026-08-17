@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_KIND_RULES, pickKindFromRegistry } from '@/engine/kind-registry';
 import type { ResidueEvent, ResidueEventType } from '@/engine/residue';
 import { summarizeResidue } from '@/engine/residue';
+import { validateSchedule } from '@/engine/schedule';
 
 import { loadProgression } from '@/content/progression/loader';
 import { loadEraPack } from '@/content/loader';
@@ -33,6 +34,41 @@ describe('loadProgression', () => {
     // picking the same kind for any residue summary the engine sees at
     // compile time.
     expect(registries.kindRules.slice(0, DEFAULT_KIND_RULES.length)).toEqual(DEFAULT_KIND_RULES);
+  });
+
+  it('pins the full kind row order: 8 person, 5 household, 5 org, 5 town', () => {
+    // Order is load-bearing (first match wins at compile). The pin includes
+    // the TOTAL fallback rows so no scale can ship a partial rule list.
+    expect(registries.kindRows.map((r) => r.id)).toEqual([
+      // person (8) — mirrors DEFAULT_KIND_RULES
+      'change',
+      'outcome',
+      'person',
+      'place',
+      'thing',
+      'change',
+      'outcome',
+      'thing',
+      // household (5)
+      'tradition',
+      'heirloom',
+      'tradition',
+      'tradition',
+      'tradition',
+      // org (5)
+      'charter',
+      'ware',
+      'charter',
+      'ware',
+      'ware',
+      // town (5)
+      'festival',
+      'landmark',
+      'festival',
+      'landmark',
+      'landmark',
+    ]);
+    expect(registries.kindRows).toHaveLength(23);
   });
 
   it('ships one unlock milestone per non-person tier', () => {
@@ -181,9 +217,10 @@ describe('loadProgression household scale', () => {
     expect(traditionIdx).toBeLessThan(heirloomIdx);
   });
 
-  it('ships four or more catalog entries for tradition and heirloom', () => {
-    expect((registries.catalogs['tradition'] ?? []).length).toBeGreaterThanOrEqual(4);
-    expect((registries.catalogs['heirloom'] ?? []).length).toBeGreaterThanOrEqual(4);
+  it('ships four or more catalog entries for every kind past person', () => {
+    for (const kind of ['tradition', 'heirloom', 'charter', 'ware', 'festival', 'landmark']) {
+      expect((registries.catalogs[kind] ?? []).length, `kind "${kind}"`).toBeGreaterThanOrEqual(4);
+    }
   });
 
   it('parses policy:household-base with three real tang practice ids', () => {
@@ -196,10 +233,38 @@ describe('loadProgression household scale', () => {
     expect(policy?.schedule_ref).toBe('schedule:household-morning');
   });
 
-  it('resolves the policy schedule_ref in the tang pack', () => {
+  it('parses policy:org-base with three real tang practice ids distinct from the household set', () => {
+    const org = registries.policies.find((p) => p.id === 'policy:org-base');
+    expect(org).toBeDefined();
+    expect(org?.practices.length).toBe(3);
+    expect(org?.practices).toContain('practice:tang/sutra-copying');
+    expect(org?.practices).toContain('practice:tang/breath-sitting');
+    expect(org?.practices).toContain('practice:tang/evening-visit');
+    expect(org?.schedule_ref).toBe('schedule:workshop-day');
+  });
+
+  it('ships exactly the two seated policies in file order', () => {
+    expect(registries.policies.map((p) => p.id)).toEqual([
+      'policy:household-base',
+      'policy:org-base',
+    ]);
+  });
+
+  it('resolves both policy schedule_refs in the tang pack', () => {
     const pack = loadEraPack('tang-china');
     const scheduleIds = pack.schedules.map((s) => s.id);
     expect(scheduleIds).toContain('schedule:household-morning');
+    expect(scheduleIds).toContain('schedule:workshop-day');
+  });
+
+  it('covers [0, 24) with no gaps on the org workshop-day schedule', () => {
+    const pack = loadEraPack('tang-china');
+    const schedule = pack.schedules.find((s) => s.id === 'schedule:workshop-day');
+    if (schedule === undefined) {
+      throw new Error('tang pack is missing schedule:workshop-day');
+    }
+    const validation = validateSchedule(schedule);
+    expect(validation.valid, validation.errors.join('; ')).toBe(true);
   });
 
   it('loads the roles file with three roles and three names at household scale', () => {
@@ -211,11 +276,24 @@ describe('loadProgression household scale', () => {
     expect(registries.roles.household.policy).toBe('policy:household-base');
   });
 
-  it('loads the org roles block with its seated policy', () => {
+  it('loads the org roles block with its own seated policy and real content', () => {
     expect(registries.roles.org).toBeDefined();
-    expect(registries.roles.org?.policy).toBe('policy:household-base');
-    expect((registries.roles.org?.roles ?? []).length).toBeGreaterThanOrEqual(2);
-    expect((registries.roles.org?.names ?? []).length).toBeGreaterThanOrEqual(2);
+    expect(registries.roles.org?.policy).toBe('policy:org-base');
+    expect(registries.roles.org?.roles).toEqual(['abbot', 'kilnmaster', 'clerk']);
+    expect(registries.roles.org?.names).toEqual(['Master Yun', 'Old Shi', 'Young Bao']);
+  });
+
+  it('loads the town roles block as real unit content without a policy', () => {
+    // Town is a unit tier: its roster rows never run autonomously, so the
+    // seated policy field stays absent by design (schema allows omission).
+    expect(registries.roles.town).toBeDefined();
+    expect(registries.roles.town?.policy).toBeUndefined();
+    expect(registries.roles.town?.roles).toEqual(['headman', 'market-warden', 'ferry-keeper']);
+    expect(registries.roles.town?.names).toEqual([
+      'House of Yun',
+      'the Kilnhouse',
+      'the River Office',
+    ]);
   });
 
   it('household rule list is total across every residue window shape', () => {
@@ -251,5 +329,102 @@ describe('loadProgression household scale', () => {
     const emptySummary = summarizeResidue([]);
     const emptyPicked = pickKindFromRegistry(emptySummary, householdRules);
     expect(['tradition', 'heirloom']).toContain(emptyPicked);
+  });
+});
+
+describe('loadProgression org and town scales', () => {
+  const registries = loadProgression();
+
+  const rulesAtScale = (scale: 'org' | 'town') =>
+    registries.kindRows.flatMap((row, index) => {
+      const rule = registries.kindRules[index];
+      if (rule === undefined || row.scale !== scale) {
+        return [];
+      }
+      return [rule];
+    });
+
+  it('ships charter and ware rows at org scale with pinnable false', () => {
+    const charter = registries.kindRows.find((r) => r.id === 'charter');
+    const ware = registries.kindRows.find((r) => r.id === 'ware');
+    expect(charter?.scale).toBe('org');
+    expect(charter?.pinnable).toBe(false);
+    expect(ware?.scale).toBe('org');
+    expect(ware?.pinnable).toBe(false);
+  });
+
+  it('ships festival and landmark rows at town scale with pinnable false', () => {
+    const festival = registries.kindRows.find((r) => r.id === 'festival');
+    const landmark = registries.kindRows.find((r) => r.id === 'landmark');
+    expect(festival?.scale).toBe('town');
+    expect(festival?.pinnable).toBe(false);
+    expect(landmark?.scale).toBe('town');
+    expect(landmark?.pinnable).toBe(false);
+  });
+
+  it('appends org rows after the household rows and town rows after org', () => {
+    const scales = registries.kindRows.map((r) => r.scale);
+    const firstOrg = scales.indexOf('org');
+    const firstTown = scales.indexOf('town');
+    const lastHousehold = scales.lastIndexOf('household');
+    const lastOrg = scales.lastIndexOf('org');
+    expect(firstOrg).toBeGreaterThan(lastHousehold);
+    expect(firstTown).toBeGreaterThan(lastOrg);
+    expect(scales.filter((s) => s === 'org')).toHaveLength(5);
+    expect(scales.filter((s) => s === 'town')).toHaveLength(5);
+  });
+
+  it('org rule list is total across every residue window shape', () => {
+    const orgRules = rulesAtScale('org');
+    const eventTypes: readonly ResidueEventType[] = [
+      'practice_tick',
+      'practice_level',
+      'lens_chosen',
+      'event_resolved',
+      'resource_edge',
+      'life_ended',
+    ];
+
+    for (const type of eventTypes) {
+      const event: ResidueEvent = {
+        tick: 0,
+        type,
+        ids: ['practice:tang/sutra-copying'],
+        numbers: {},
+      };
+      const summary = summarizeResidue([event]);
+      const picked = pickKindFromRegistry(summary, orgRules);
+      expect(['charter', 'ware']).toContain(picked);
+    }
+
+    const emptyPicked = pickKindFromRegistry(summarizeResidue([]), orgRules);
+    expect(['charter', 'ware']).toContain(emptyPicked);
+  });
+
+  it('town rule list is total across every residue window shape', () => {
+    const townRules = rulesAtScale('town');
+    const eventTypes: readonly ResidueEventType[] = [
+      'practice_tick',
+      'practice_level',
+      'lens_chosen',
+      'event_resolved',
+      'resource_edge',
+      'life_ended',
+    ];
+
+    for (const type of eventTypes) {
+      const event: ResidueEvent = {
+        tick: 0,
+        type,
+        ids: ['practice:tang/sutra-copying'],
+        numbers: {},
+      };
+      const summary = summarizeResidue([event]);
+      const picked = pickKindFromRegistry(summary, townRules);
+      expect(['festival', 'landmark']).toContain(picked);
+    }
+
+    const emptyPicked = pickKindFromRegistry(summarizeResidue([]), townRules);
+    expect(['festival', 'landmark']).toContain(emptyPicked);
   });
 });

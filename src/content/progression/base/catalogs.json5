@@ -332,5 +332,164 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Org-scale kinds (Phase 3 Task 3). Charter: agreements the workshop
+    // runs on. Ware: what the workshop puts into the world. Four entries
+    // each, same compiled-card register as the household tables.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'charter',
+      entries: [
+        {
+          name: 'The weavers\' charter',
+          one_liner: 'One width of cloth, one price, sworn before the looms.',
+          subject: 'a weavers\' charter',
+          detail:
+            'The guild scratched its rule into a doorpost: the bolt stays honest, the dyer gets his share, and no one undercuts a widow\'s price. It has outlasted three guildmasters and one flood.',
+          tags: ['charter', 'loom'],
+        },
+        {
+          name: 'The rice covenant',
+          one_liner: 'The monastery and the village split both the harvest and the hunger.',
+          subject: 'a rice covenant',
+          detail:
+            'Every autumn the abbey\'s storehouse opens to the same tally: so many sacks for the kitchen, so many back to the fields that grew them. The brush that writes it is kept in a lacquer box.',
+          tags: ['covenant', 'harvest'],
+        },
+        {
+          name: 'The kiln agreement',
+          one_liner: 'The potters and the woodcutters swore on the same stack of fuel.',
+          subject: 'a fuel-sharing agreement',
+          detail:
+            'First firing of the season belongs to the kiln; the second goes to whoever hauled the wood. The deal is chalked on the kiln shed\'s post and re-chalked each spring, a little lower each year as the hills thin.',
+          tags: ['kiln', 'fuel'],
+        },
+        {
+          name: 'The ferry compact',
+          one_liner: 'Both banks keep the boat, so the river cannot raise the fare alone.',
+          subject: 'a two-bank ferry compact',
+          detail:
+            'East bank pays for the rope, west bank for the hull, and the crossing stays one coin for anyone carrying their own load. The compact\'s copy hangs in two customs sheds, damp at both ends.',
+          tags: ['ferry', 'compact'],
+        },
+      ],
+    },
+    {
+      kind: 'ware',
+      entries: [
+        {
+          name: 'The celadon glaze',
+          one_liner: 'A green the kiln finds once in twenty firings.',
+          subject: 'a measured celadon glaze',
+          detail:
+            'Ash, iron, and a long patient fire. The recipe is not written down; it lives in the kilnmaster\'s hands and in the cracked cup he compares every batch against.',
+          tags: ['glaze', 'kiln'],
+        },
+        {
+          name: 'The bitter tonic',
+          one_liner: 'The clinic\'s worst-tasting jar and its most argued-over.',
+          subject: 'a clinic\'s bitter tonic',
+          detail:
+            'Willow bark, tangerine peel, and three roots nobody names aloud. Children cry at the smell and grown travelers ask for a second flask. It works either way.',
+          tags: ['tonic', 'clinic'],
+        },
+        {
+          name: 'The stamped roof tile',
+          one_liner: 'Every tile on the hall carries the same thumb-wide seal.',
+          subject: 'a workshop-stamped tile',
+          detail:
+            'The stamp is the kiln\'s own: a roof that sheds the rains and a claim the workshop can point to from the road. When one cracks, the mason reads the seal and knows who owes him a replacement.',
+          tags: ['tile', 'stamp'],
+        },
+        {
+          name: 'The fair-copy ledger',
+          one_liner: 'The office\'s clean book, written by the steadiest hand in the house.',
+          subject: 'a fair-copy ledger',
+          detail:
+            'Scraps go in the rough book; the fair copy goes to the clerk with the best brush. Its columns are straight enough to rest a ruler on, and the guildmaster signs the last page of every month.',
+          tags: ['ledger', 'office'],
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Town-scale kinds (Phase 3 Task 3). Festival: what the town repeats
+    // together. Landmark: what the town cannot imagine itself without.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'festival',
+      entries: [
+        {
+          name: 'The lantern market',
+          one_liner: 'One night a year the stalls stay open until the oil runs out.',
+          subject: 'a night lantern market',
+          detail:
+            'Paper shades go up at dusk along the whole street, and the rule is simple: everything sold tonight is priced for a friend. Children who fall asleep are carried home by whoever is standing nearest.',
+          tags: ['lantern', 'market'],
+        },
+        {
+          name: 'The grain-counting day',
+          one_liner: 'The whole town spends a day agreeing on the number.',
+          subject: 'an autumn grain tally',
+          detail:
+            'Baskets in rows, the headman\'s abacus, and a crowd that argues every scoop. By dark the tally is read aloud twice, and even the farmers who lost the argument nod along.',
+          tags: ['grain', 'tally'],
+        },
+        {
+          name: 'The river opening',
+          one_liner: 'The first ferry of spring, with everyone aboard who can climb on.',
+          subject: 'a spring river opening',
+          detail:
+            'After the ice goes out, the ferry makes one free crossing, loaded with the old, the small, and anyone who has never seen the far bank. The ferryman is paid in dumplings and does not complain.',
+          tags: ['river', 'spring'],
+        },
+        {
+          name: 'The bell night',
+          one_liner: 'Midwinter, one bell, and a town that walks out to hear it.',
+          subject: 'a midwinter bell night',
+          detail:
+            'The watchman strikes the tower bell a hundred times, one for each boat the river took and one for the year itself. Nobody speaks on the walk home; the boots in the snow are loud enough.',
+          tags: ['bell', 'midwinter'],
+        },
+      ],
+    },
+    {
+      kind: 'landmark',
+      entries: [
+        {
+          name: 'The west bridge',
+          one_liner: 'Nine stone arches, and every arrival into town crosses them.',
+          subject: 'a nine-arch stone bridge',
+          detail:
+            'Built by a mason nobody can name and repaired by everyone since. Lovers carve nothing into it; the stone is too hard. The middle arch has a flood mark from a year the oldest residents still argue about.',
+          tags: ['bridge', 'stone'],
+        },
+        {
+          name: 'The bell tower at dusk',
+          one_liner: 'The town tells its time by a tower with no clock face.',
+          subject: 'a bell tower',
+          detail:
+            'The stairs are closed to the public, which is why every child in town knows them by heart. At dusk the bell sounds once, and the market packs up on the third echo.',
+          tags: ['tower', 'bell'],
+        },
+        {
+          name: 'The ferry landing',
+          one_liner: 'A worn stone quay where the town both greets and forgives.',
+          subject: 'the town ferry landing',
+          detail:
+            'The steps are dished from a century of feet. Departures stand on the upper stone; arrivals on the lower, so the town always looks slightly downhill at people coming home.',
+          tags: ['landing', 'ferry'],
+        },
+        {
+          name: 'The town well',
+          one_liner: 'The one place every household meets every day.',
+          subject: 'the common well',
+          detail:
+            'A drum of stone, an iron winch, and a rope the rope-maker renews each year without being asked. The water is ordinary. The gossip is not.',
+          tags: ['well', 'common'],
+        },
+      ],
+    },
   ],
 }

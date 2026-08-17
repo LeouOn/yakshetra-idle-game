@@ -101,6 +101,10 @@
     "kind_place_sid": "Place",
     "kind_tradition_sid": "Tradition",
     "kind_heirloom_sid": "Heirloom",
+    "kind_charter_sid": "Charter",
+    "kind_ware_sid": "Ware",
+    "kind_festival_sid": "Festival",
+    "kind_landmark_sid": "Landmark",
     "tier_person_sid": "One life",
     "tier_household_sid": "Household",
     "tier_locked_sid": "Locked",
@@ -268,6 +272,9 @@
       },
       "household_morning": {
         "name_sid": "A household morning"
+      },
+      "workshop_day": {
+        "name_sid": "A workshop day"
       }
     },
     "block": {
@@ -317,6 +324,36 @@
         "evening_rest": {
           "label_sid": "Lamps down",
           "icon_sid": "lamp"
+        }
+      },
+      "workshop_day": {
+        "night_rest": {
+          "label_sid": "Cold hearth",
+          "icon_sid": "moon"
+        },
+        "first_sitting": {
+          "label_sid": "First sitting",
+          "icon_sid": "star"
+        },
+        "morning_bench": {
+          "label_sid": "Morning bench",
+          "icon_sid": "brush"
+        },
+        "midday_rest": {
+          "label_sid": "Rice and shade",
+          "icon_sid": "rice"
+        },
+        "afternoon_bench": {
+          "label_sid": "Afternoon bench",
+          "icon_sid": "brush"
+        },
+        "evening_rounds": {
+          "label_sid": "Evening rounds",
+          "icon_sid": "lamp"
+        },
+        "lamps_down": {
+          "label_sid": "Lamps down",
+          "icon_sid": "moon"
         }
       }
     }
