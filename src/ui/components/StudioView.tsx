@@ -76,10 +76,12 @@ import {
   withRecordedDrafts,
 } from '@/ui/hooks/useStudioSession';
 import { useStudioProgression } from '@/ui/hooks/useStudioProgression';
+import { nextAction } from '@/ui/hooks/next-action';
 import StudioActivities from './StudioActivities';
 import StudioArchive, { type EndowChipState } from './StudioArchive';
 import StudioJuice from './StudioJuice';
 import StudioLife from './StudioLife';
+import StudioNextAction from './StudioNextAction';
 import StudioRail, { type RailTier } from './StudioRail';
 import StudioRoster from './StudioRoster';
 import StudioWorld from './StudioWorld';
@@ -785,6 +787,8 @@ export default function StudioView({
           </View>
         ))}
 
+        <StudioNextAction action={nextAction(buildSession(), worldDrafts, registries())} />
+
         <View style={styles.panel}>
           <Text style={styles.panelLabel}>
             {formatSid('studio.charge_label_sid', { n: charge, min: MIN_RESIDUE_TO_DEVELOP })}
@@ -1068,7 +1072,7 @@ const styles = StyleSheet.create({
   },
   buttonSecondary: { backgroundColor: t.chip },
   buttonHarvest: { backgroundColor: t.harvest },
-  buttonDisabled: { backgroundColor: '#3f3a4a' },
+  buttonDisabled: { backgroundColor: t.disabled },
   buttonText: { color: t.text, fontSize: 16, fontWeight: '600' },
   archiveHeading: { fontSize: 20, fontWeight: '700', marginTop: 16, color: t.text },
   compendium: { gap: 8, marginTop: 8 },

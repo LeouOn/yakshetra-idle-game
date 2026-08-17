@@ -289,4 +289,33 @@ describe('StudioView tier generalization', () => {
     ).not.toThrow();
     expect(() => getByText(formatSid('studio.visitor_windows_sid', { n: 2 }))).not.toThrow();
   });
+
+  it('graduates with an org ceremony when the milestone crosses and dismiss works', () => {
+    // unlock-org predicate: archived.tradition >= 2 AND world_drafts.household >= 1.
+    // Two tradition cards + a household world draft (assembled by the second
+    // tradition) satisfy both halves; the mounted ceremony shows the org copy.
+    const graduated = graduatedHousehold([101n, 103n, 107n]);
+    const session = StudioSessionSchema.parse({
+      ...graduated,
+      archive: [
+        ...graduated.archive,
+        householdCard('hh-tradition-1', 'tradition', 1),
+        householdCard('hh-tradition-2', 'tradition', 2),
+      ],
+      world_drafts: [...graduated.world_drafts, { scale: 'household' }],
+    });
+
+    const { getByTestID, getByText, queryByText, press } = renderStudio(session);
+
+    expect(() => getByTestID('graduation-overlay')).not.toThrow();
+    expect(() => getByText(resolveSid('graduation.org_title_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('graduation.org_line_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('graduation.dismiss_button_sid'))).not.toThrow();
+
+    press(getByTestID('graduation-dismiss'));
+    // The overlay hides on dismiss; the rinse also keeps the rail naming the
+    // graduated rung so the player can see the org tier unlocked.
+    expect(queryByText(resolveSid('graduation.org_title_sid'))).toBeNull();
+    expect(() => getByText(resolveSid('studio.tier_org_sid'))).not.toThrow();
+  });
 });

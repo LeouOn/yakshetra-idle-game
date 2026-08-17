@@ -13,4 +13,6 @@ export const studioTheme = {
   harvestText: '#d8fff0',
   danger: '#9ca3af',
   chip: '#2a2238',
+  /** Inert button surface (disabled develop/harvest). Dimmer than chip. */
+  disabled: '#3f3a4a',
 } as const;
