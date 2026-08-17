@@ -66,7 +66,10 @@ export function foldCopies(
   sourceId: string,
   cadence: number,
   counter: number,
-): readonly ResidueEvent[] {
-  const { events: marked } = foldUpEvents(events, sourceId, cadence, counter);
-  return marked.filter((event) => event.ids.includes(sourceId));
+): { copies: readonly ResidueEvent[]; nextCounter: number } {
+  const { events: marked, nextCounter } = foldUpEvents(events, sourceId, cadence, counter);
+  return {
+    copies: marked.filter((event) => event.ids.includes(sourceId)),
+    nextCounter,
+  };
 }

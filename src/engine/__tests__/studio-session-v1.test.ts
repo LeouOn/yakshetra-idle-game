@@ -45,6 +45,30 @@ const V0_SESSION = {
   practices: [],
 } as const;
 
+const V1_0_PAYLOAD = {
+  schema_version: 'studio_session/v1',
+  benches: {
+    person: {
+      residue: [],
+      last_harvest_index: -1,
+      bay: null,
+      quality_tier: 0,
+      harvest_count: 0,
+      play_import: null,
+      pinned: null,
+      surplus: 0,
+    },
+  },
+  archive: [],
+  tiers: {},
+  milestones_done: [],
+  compendium_done: [],
+  embodied_member: null,
+  idle: { mode: 'idle', last_simulated_tick: '0', total_idle_ticks: '0' },
+  life: { turn: 0, resources: {}, skills: {}, residue: [] },
+  practices: [],
+} as const;
+
 describe('parseStudioSession v0 migration', () => {
   it('wraps the v0 bay as the person bench', () => {
     const session = parseStudioSession(V0_SESSION);
@@ -99,30 +123,6 @@ describe('v1 round-trip', () => {
 });
 
 describe('v1.1 additive — members slice + world drafts', () => {
-  const V1_0_PAYLOAD = {
-    schema_version: 'studio_session/v1',
-    benches: {
-      person: {
-        residue: [],
-        last_harvest_index: -1,
-        bay: null,
-        quality_tier: 0,
-        harvest_count: 0,
-        play_import: null,
-        pinned: null,
-        surplus: 0,
-      },
-    },
-    archive: [],
-    tiers: {},
-    milestones_done: [],
-    compendium_done: [],
-    embodied_member: null,
-    idle: { mode: 'idle', last_simulated_tick: '0', total_idle_ticks: '0' },
-    life: { turn: 0, resources: {}, skills: {}, residue: [] },
-    practices: [],
-  } as const;
-
   it('parses a v1.0 payload (no members, no world_drafts) with both defaulted', () => {
     const session = parseStudioSession(V1_0_PAYLOAD);
     expect(session.members).toEqual({});
@@ -159,5 +159,31 @@ describe('v1.1 additive — members slice + world drafts', () => {
     const session = parseStudioSession(V0_SESSION);
     expect(session.members).toEqual({});
     expect(session.world_drafts).toEqual([]);
+  });
+});
+
+describe('v1.2 additive — bench fold_position', () => {
+  it('parses a v1.1 bench payload (no fold_position) with 0', () => {
+    const session = parseStudioSession(V1_0_PAYLOAD);
+    expect(session.benches['person']?.fold_position).toBe(0);
+  });
+
+  it('rejects a negative fold_position', () => {
+    const payload = {
+      ...V1_0_PAYLOAD,
+      benches: {
+        person: { ...V1_0_PAYLOAD.benches.person, fold_position: -1 },
+      },
+    };
+    expect(() => parseStudioSession(payload)).toThrow();
+  });
+
+  it('snapshot → parse round-trips the person bench with fold_position 0', () => {
+    // fold_position is household-bench state; person-bench snapshots carry 0
+    // and stepSession persists the household position when the tier unlocks.
+    const base = emptyHydratedSession();
+    const snapshot = snapshotStudioSession(base.studio, base.idle, base.life, base.practices);
+    const parsed = parseStudioSession(JSON.parse(JSON.stringify(snapshot)));
+    expect(parsed.benches['person']?.fold_position).toBe(0);
   });
 });

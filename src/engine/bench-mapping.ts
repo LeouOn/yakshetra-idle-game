@@ -25,6 +25,7 @@ export function emptyBench(): BenchState {
     play_import: null,
     pinned: null,
     surplus: 0,
+    fold_position: 0,
   };
 }
 
@@ -58,8 +59,9 @@ function schemaEvents(log: readonly ResidueEvent[]): BenchState['residue'] {
 /** Runtime StudioState → storage bench slice. The archive is NOT stored on
  * the bench. Residue logs and the queued bay window are copied into mutable
  * schema shape; use benchAfterStep on the step path instead, where the
- * append-only discipline reuses the persisted prefix. */
-export function studioToBench(studio: StudioState): BenchState {
+ * append-only discipline reuses the persisted prefix. `foldPosition` is
+ * household-bench state; person-bench snapshots carry 0. */
+export function studioToBench(studio: StudioState, foldPosition = 0): BenchState {
   return {
     residue: schemaEvents(studio.residue),
     last_harvest_index: studio.last_harvest_index,
@@ -69,6 +71,7 @@ export function studioToBench(studio: StudioState): BenchState {
     play_import: studio.play_import,
     pinned: studio.pinned,
     surplus: studio.surplus,
+    fold_position: foldPosition,
   };
 }
 
@@ -97,7 +100,9 @@ function bayAfterStep(studio: StudioState, prevBay: BenchState['bay']): BenchSta
 }
 
 /** Bench slice after a step. Logs are append-only, so the persisted prefix
- * array is reused and only the fresh tail is copied. */
+ * array is reused and only the fresh tail is copied. fold_position rides
+ * along from `prev`; the household call site overwrites it with the fold's
+ * next counter. */
 export function benchAfterStep(studio: StudioState, prev: BenchState): BenchState {
   const prevLen = prev.residue.length;
   return {
@@ -112,5 +117,6 @@ export function benchAfterStep(studio: StudioState, prev: BenchState): BenchStat
     play_import: studio.play_import,
     pinned: studio.pinned,
     surplus: studio.surplus,
+    fold_position: prev.fold_position,
   };
 }

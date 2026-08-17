@@ -6,8 +6,9 @@
 //       slices are carried by reference
 //   (b) autonomous member residue lands on the household bench with
 //       member:<id> markers (cadence 1) while member slices advance
-//   (c) every-4th person event folds up with the bench:person marker, the
-//       fold counter derived from existing marks across SEPARATE calls
+//   (c) every-4th CUMULATIVE person event folds up with the bench:person
+//       marker — the ordinal base persists on the household bench's
+//       fold_position across SEPARATE calls, including sub-cadence batches
 //   (d) the household bay cooks under the alreadyCharged gate (cook to
 //       ready, absorb to surplus, and the not-charged skip)
 //   (e) determinism: same session + ctx + rng → same result
@@ -385,36 +386,70 @@ describe('stepSession (autonomous members)', () => {
 // ---------------------------------------------------------------------------
 
 describe('stepSession (person fold-up)', () => {
-  it('folds every 4th person event, deriving the counter from existing marks', () => {
+  it('folds every 4th CUMULATIVE person event across separate 24-tick calls', () => {
+    // Invariant: cadence 4, N calls of 6 events each → exactly floor(6N/4)
+    // bench:person marks on the household bench.
     const ctx: SessionStepContext = { ...MEMBER_CTX, sessionSeed: 'fold-test' };
     const session = withHouseholdBench(householdSession({ roster: [] }), hhBench());
 
-    // Call 1: ordinals 1..6, counter 0 → the 4th event (p4) folds.
+    // Call 1: ordinals 1..6 → ordinal 4 (p4) folds; position carries 6.
     const first = stepSession(session, ctx, 24, createRng(1n));
     expect(first.summary.folded).toBe(1);
     expect(benchOf(first.session, 'household').residue.map((e) => e.ids)).toEqual([
       ['practice:p4', 'bench:person'],
     ]);
-    expect(benchOf(first.session, 'person').residue).toHaveLength(6);
+    expect(benchOf(first.session, 'household').fold_position).toBe(6);
 
-    // Call 2: counter = 1 mark → ordinals 2..7 → ordinal 4 is the 3rd event (p3).
+    // Call 2: ordinals 7..12 → ordinals 8 (p2) and 12 (p6) fold.
     const second = stepSession(first.session, ctx, 24, createRng(1n));
-    expect(second.summary.folded).toBe(1);
+    expect(second.summary.folded).toBe(2);
     expect(benchOf(second.session, 'household').residue.map((e) => e.ids)).toEqual([
       ['practice:p4', 'bench:person'],
-      ['practice:p3', 'bench:person'],
-    ]);
-
-    // Call 3: counter = 2 marks → ordinals 3..8 → ordinal 4 (p2) and 8 (p6).
-    const third = stepSession(second.session, ctx, 24, createRng(1n));
-    expect(third.summary.folded).toBe(2);
-    expect(benchOf(third.session, 'household').residue.map((e) => e.ids)).toEqual([
-      ['practice:p4', 'bench:person'],
-      ['practice:p3', 'bench:person'],
       ['practice:p2', 'bench:person'],
       ['practice:p6', 'bench:person'],
     ]);
+    expect(benchOf(second.session, 'household').fold_position).toBe(12);
+
+    // Call 3: ordinals 13..18 → ordinal 16 (p4). floor(18/4) = 4 marks total.
+    const third = stepSession(second.session, ctx, 24, createRng(1n));
+    expect(third.summary.folded).toBe(1);
+    expect(benchOf(third.session, 'household').residue).toHaveLength(4);
+    expect(benchOf(third.session, 'household').fold_position).toBe(18);
     expect(benchOf(third.session, 'person').residue).toHaveLength(18);
+  });
+
+  it('seeds the first fold across sub-cadence batches (small batches, cadence 4)', () => {
+    // Regression: the old marks-derived counter restarted every call, so
+    // batches smaller than the cadence never reached a fold. The persisted
+    // fold_position carries the remainder across calls: fold_position
+    // ALWAYS equals cumulative person-bench events, and total folds equal
+    // floor(cumulativeEvents / cadence).
+    const ctx: SessionStepContext = { ...MEMBER_CTX, sessionSeed: 'fold-sub' };
+    const session = withHouseholdBench(householdSession({ roster: [] }), hhBench());
+    const step = (s: StudioSession, ticks: number) => stepSession(s, ctx, ticks, createRng(1n));
+
+    // Run five sub-cadence 8-tick calls (always < cadence 4) and probe only
+    // the contracts the carry guarantees, regardless of which practice_tick
+    // events each 8-tick window happens to emit.
+    let s: StudioSession = session;
+    let totalFolded = 0;
+    let lastFp = s.benches['household']?.fold_position ?? 0;
+    let lastPerson = s.benches['person']?.residue.length ?? 0;
+    for (let i = 0; i < 5; i++) {
+      const out = step(s, 8);
+      const personNow = out.session.benches['person']?.residue.length ?? 0;
+      const fpNow = out.session.benches['household']?.fold_position ?? 0;
+      expect(fpNow).toBe(lastFp + (personNow - lastPerson));
+      totalFolded += out.summary.folded;
+      lastFp = fpNow;
+      lastPerson = personNow;
+      s = out.session;
+    }
+    // Carry contract: total folds == floor(cumulativeEvents / cadence).
+    expect(totalFolded).toBe(Math.floor(lastPerson / 4));
+    // Sub-cadence batches alone must produce some folds (the old derivation
+    // gave 0 here because each call restarted the counter).
+    expect(totalFolded).toBeGreaterThan(0);
   });
 });
 

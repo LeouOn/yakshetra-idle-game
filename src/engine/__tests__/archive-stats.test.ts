@@ -65,6 +65,7 @@ function makeBench(pinned: BenchState['pinned']): BenchState {
     play_import: null,
     pinned,
     surplus: 0,
+    fold_position: 0,
   };
 }
 

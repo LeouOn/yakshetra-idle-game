@@ -42,6 +42,7 @@ function freshBench(): BenchState {
     play_import: null,
     pinned: null,
     surplus: 0,
+    fold_position: 0,
   };
 }
 

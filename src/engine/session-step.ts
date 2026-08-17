@@ -126,20 +126,31 @@ export function stepSession(
         const delta = advanced.life.residue.slice(stored.life.residue.length);
         household = recordStudioResidues(
           household,
-          foldCopies(delta, FOLD_IDS.member(member.id), 1, 0),
+          foldCopies(delta, FOLD_IDS.member(member.id), 1, 0).copies,
         );
         memberTicks += advanced.life.turn - stored.life.turn;
       }
     }
 
-    // 3. Person fold-up — counter derived from existing marks, no new state.
+    // 3. Person fold-up. Invariant: every fold_cadence-th CUMULATIVE person
+    // event, counting from the first, lands on the household bench exactly
+    // once. The ordinal base persists on the household bench's
+    // fold_position, so sub-cadence batches combine across calls (a
+    // marks-derived counter restarts every call and never seeds the first
+    // fold under the cadence). v1.1 sessions parse with position 0: the
+    // per-call delta keeps the position honest going forward, and any
+    // historical marks stay on the bench as data.
     const tierConfig = ctx.tiers.find((tier) => tier.id === HOUSEHOLD_BENCH);
     if (tierConfig === undefined) {
       throw new Error(`stepSession: ctx.tiers is missing the "${HOUSEHOLD_BENCH}" tier`);
     }
     const delta = embodied.studio.residue.slice(personPrev.residue.length);
-    const counter = household.residue.filter((e) => e.ids.includes(FOLD_IDS.bench)).length;
-    const copies = foldCopies(delta, FOLD_IDS.bench, tierConfig.fold_cadence, counter);
+    const { copies, nextCounter } = foldCopies(
+      delta,
+      FOLD_IDS.bench,
+      tierConfig.fold_cadence,
+      householdPrev.fold_position,
+    );
     household = recordStudioResidues(household, copies);
     folded = copies.length;
 
@@ -148,7 +159,10 @@ export function stepSession(
     if (alreadyCharged && ticks > 0) {
       household = absorbSurplus(household, ticks);
     }
-    benches[HOUSEHOLD_BENCH] = benchAfterStep(household, householdPrev);
+    benches[HOUSEHOLD_BENCH] = {
+      ...benchAfterStep(household, householdPrev),
+      fold_position: nextCounter,
+    };
   }
 
   // 5. New session — progression slices untouched.

@@ -60,6 +60,9 @@ const BenchSchema = z
     play_import: PlayImportSchema.nullable(),
     pinned: PinnedSchema.nullable(),
     surplus: z.number().int().min(0),
+    // Household-bench only: person-bench events the fold-up has already
+    // consumed, so sub-cadence batches combine across stepSession calls.
+    fold_position: z.number().int().min(0).default(0),
   })
   .strict();
 
