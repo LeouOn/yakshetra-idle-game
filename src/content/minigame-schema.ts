@@ -118,6 +118,13 @@ export const WalkingConfigSchema = z
   })
   .strict();
 
+export type BreathCountConfig = z.infer<typeof BreathCountConfigSchema>;
+export type RhythmConfig = z.infer<typeof RhythmConfigSchema>;
+export type TraceConfig = z.infer<typeof TraceConfigSchema>;
+export type AllocationConfig = z.infer<typeof AllocationConfigSchema>;
+export type ReflectionConfig = z.infer<typeof ReflectionConfigSchema>;
+export type WalkingConfig = z.infer<typeof WalkingConfigSchema>;
+
 /* -------------------------------------------------------------------------------------------------
  * Minigame definition (discriminated union)
  * -----------------------------------------------------------------------------------------------*/

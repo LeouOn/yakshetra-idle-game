@@ -53,6 +53,32 @@ export interface AppSettings {
   readonly disclaimerAccepted: boolean;
 }
 
+const DISCLAIMER_KEY = 'yakshetra.disclaimer.v1';
+
+function readStoredDisclaimer(): boolean {
+  try {
+    const store = globalThis.localStorage;
+    if (typeof store !== 'object' || store === null || typeof store.getItem !== 'function') {
+      return false;
+    }
+    return store.getItem(DISCLAIMER_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeStoredDisclaimer(): void {
+  try {
+    const store = globalThis.localStorage;
+    if (typeof store !== 'object' || store === null || typeof store.setItem !== 'function') {
+      return;
+    }
+    store.setItem(DISCLAIMER_KEY, '1');
+  } catch {
+    // Toast memory is enough if storage is missing.
+  }
+}
+
 /** Build the default settings (all nine categories on, motion on, medium text). */
 export function defaultAppSettings(): AppSettings {
   return {
@@ -181,7 +207,10 @@ export interface UseSaveSlotResult {
 export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   const [state, setState] = useState<SaveBlob | null>(null);
   const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState<AppSettings>(defaultAppSettings);
+  const [settings, setSettings] = useState<AppSettings>(() => ({
+    ...defaultAppSettings(),
+    disclaimerAccepted: readStoredDisclaimer(),
+  }));
   const [allSlots, setAllSlots] = useState<readonly SlotSummary[]>([]);
 
   const refreshAllSlots = useCallback(async (): Promise<void> => {
@@ -220,6 +249,9 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   }, [slot]);
 
   const updateSettings = useCallback((patch: Partial<AppSettings>): void => {
+    if (patch.disclaimerAccepted === true) {
+      writeStoredDisclaimer();
+    }
     setSettings((prev) => ({ ...prev, ...patch }));
   }, []);
 

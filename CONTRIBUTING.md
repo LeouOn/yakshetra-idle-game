@@ -1,9 +1,14 @@
 # Contributing
 
-> How to extend Yakshetra — adding events, era packs, lenses, and tests.
-> Every contribution must respect the two load-bearing contracts:
-> the **code-quality contract** (F2) and the **content-authoring contract**
-> (the 5 prohibited mechanics).
+**Current law:** [`SPEC.md`](SPEC.md) and [`AGENTS.md`](AGENTS.md).
+
+The code-quality contract below still stands (engine purity, no `as any`,
+no empty catch, file size). The content-authoring contract is the remaining
+game-design rules only: no karma meter, no pay-to-absolve, no visible
+spiritual score. Named figures and real mantras are allowed.
+
+> Historical note: this file was written for an ethically-restrained
+> two-life RPG. Use it as a how-to for packs and tests, not as product law.
 
 ---
 
@@ -53,17 +58,16 @@ node scripts/audit-plan.mjs   # F1 plan compliance
 
 ## Content-authoring contract
 
-These are the 5 prohibited mechanics. The content schema (`src/content/schema.ts`)
-enforces them at parse time; the lint (`src/content/lint.ts`) catches textual
-violations. Both must pass for any era pack to ship.
+These are the remaining game-design rules. The schema (`src/content/schema.ts`)
+and lint (`src/content/lint.ts`) still enforce them. Named figures and real
+mantras are allowed.
 
-| Rule                         | Mechanic                                                                                                                  | Why it's prohibited                                                                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **R-NO-KARMA-METER**         | Any effect that adds/subtracts a "karma" or "merit" or "spiritual_rank" or "enlightenment" value                          | Numeric karmic accounting trivializes the tradition's qualitative ethical framework and produces the "score rises by giving" anti-pattern. |
-| **R-NO-SACRED-NAMES**        | Any use of the 40 names in `advisory/prohibited-names.txt` in narrative text, source bibliography, or glossary            | The game does not depict named Buddhas, bodhisattvas, arahants, or historical teachers as characters.                                      |
-| **R-NO-DONATION-OFFSET**     | Any choice that offsets a harm-consequence with a donation/merit effect                                                   | This creates the morally bankrupt "I can sin if I donate" pattern the tradition explicitly rejects.                                        |
-| **R-NO-VISIBLE-KARMA-METER** | Any field that exposes karma/merit/spiritual as a numeric meter to the player UI                                          | Same as R-NO-KARMA-METER but at the UI layer.                                                                                              |
-| **R-NO-REAL-MANTRA**         | Any use of Sanskrit/Tibetan seed syllables (ॐ, oṁ, aḥ, hūṁ, hrih, hrīḥ, dhih, dhīḥ, bhrūm, vajra, etc.) in narrative text | Real mantras are devotional practice, not game content. Using them trivializes living religious practice.                                  |
+| Rule                          | Mechanic                                                                                         | Why                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| **R-NO-KARMA-METER**          | An effect key named `karma`, `merit`, `spiritual_rank`, or `enlightenment`                       | Residue → Manifest is the economy. A soul score is a worse game. |
+| **R-NO-DONATION-OFFSET**      | A choice that pairs a harm consequence with a donation/alms/merit effect                         | Pay-to-absolve is a dead loop.                                   |
+| **R-NO-VISIBLE-KARMA-METER**  | An identifier that exposes karma/merit/spiritual as a `_meter` / `_score` / `_visible` to the UI | Same as R-NO-KARMA-METER at the UI layer.                        |
+| **R-NO-PRACTICE-AS-CURRENCY** | A practice that mints `merit`/`karma`/`gold` or tells the player to "earn" a balance             | Practices produce residue. They do not mint a second currency.   |
 
 ---
 
@@ -318,11 +322,11 @@ Test files live next to the code they test:
 3. **Lint test** — add to `src/content/__tests__/lint.test.ts`:
 
    ```ts
-   it('rejects sacred-name mention', () => {
-     const pack = makePackWith('lineage_notes_sid', 's:lineage.includes.Amitabha');
+   it('rejects a karma resource key', () => {
+     const pack = makePackWithResourceKey('karma');
      const report = lintPack(pack);
      expect(report.passed).toBe(false);
-     expect(report.violations[0].rule).toBe('R-NO-SACRED-NAMES');
+     expect(report.violations[0].rule).toBe('R-NO-KARMA-METER');
    });
    ```
 

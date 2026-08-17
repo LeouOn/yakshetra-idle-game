@@ -18,7 +18,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { advanceTurn, applyChoice, createRng, evaluatePredicate } from '@/engine';
+import { advanceTurn, applyChoice, createRng, evaluatePredicate, intendLens } from '@/engine';
 import type { LifeState, Lens, Rng } from '@/engine';
 import type { Choice, EraPack, Event } from '@/content/schema';
 
@@ -86,7 +86,7 @@ export function EngineProvider({ initial, eraPack, rng, children }: EngineProvid
     return (state: LifeState, action: EngineAction): LifeState => {
       switch (action.type) {
         case 'INTEND_LENS':
-          return { ...state, chosen_lens: action.lens };
+          return intendLens(state, action.lens);
         case 'CHOOSE_ACTION': {
           const choice = choicesById.get(action.choiceId);
           if (choice === undefined) {

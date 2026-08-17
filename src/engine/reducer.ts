@@ -14,9 +14,10 @@
 
 import type { Choice, EffectOp, Event } from '@/content/schema';
 
-import type { IntentRoot, LifeState, ResourceId, SocialIdentity } from './types';
+import type { IntentRoot, Lens, LifeState, ResourceId, SocialIdentity } from './types';
 import type { Rng } from './rng';
 import { evaluatePredicate } from './predicates';
+import { recordLifeResidue } from './residue';
 
 // IDLE_TICK action surface — the idle reducer lives in ./idle.ts (it needs the
 // schedule + practice modules). Re-exported here so consumers import all
@@ -74,6 +75,7 @@ export function createLifeState(opts: CreateLifeStateOptions): LifeState {
     pending_events: [],
     schedule_id: null,
     practice_override_id: null,
+    residue: [],
   };
 }
 
@@ -192,7 +194,26 @@ export function applyChoice(state: LifeState, choice: Choice, rng: Rng): LifeSta
     (acc, effect) => applyEffect(acc, effect, rng),
     state,
   );
-  return { ...afterEffects, history: [...afterEffects.history, choice.id] };
+  const recorded = recordLifeResidue(afterEffects, {
+    tick: afterEffects.turn,
+    type: 'event_resolved',
+    ids: [choice.id],
+    numbers: {},
+  });
+  return { ...recorded, history: [...recorded.history, choice.id] };
+}
+
+/** Set the intended lens and stamp a residue event. */
+export function intendLens(state: LifeState, lens: Lens): LifeState {
+  return recordLifeResidue(
+    { ...state, chosen_lens: lens },
+    {
+      tick: state.turn,
+      type: 'lens_chosen',
+      ids: [lens],
+      numbers: {},
+    },
+  );
 }
 
 /**

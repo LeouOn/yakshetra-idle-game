@@ -21,3 +21,14 @@ export {
 export { MemoryStorageAdapter } from './memory';
 export { NativeStorageAdapter } from './native';
 export { WebStorageAdapter } from './web';
+export {
+  STUDIO_SESSION_KEY,
+  clearStudioSession,
+  createMemoryStudioKv,
+  loadStudioSession,
+  resetStudioKv,
+  saveStudioSession,
+  setStudioKv,
+} from './studio-kv';
+export type { StudioKv } from './studio-kv';
+export { syncPlayResidueToStudio } from './play-bridge';

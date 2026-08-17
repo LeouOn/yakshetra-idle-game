@@ -18,6 +18,7 @@ import { createLifeState } from '@/engine';
 import type { Choice, EraPack } from '@/content/schema';
 
 import { TurnScreen } from '../../../app/life/[lifeId]';
+import { resolveSid } from '@/i18n';
 import { render } from '@/test/rntl';
 
 // expo-router imports real RN transitively; mock it before importing the screen.
@@ -145,6 +146,25 @@ describe('TurnScreen', () => {
     expect(() => getByText('Joyful Effort')).not.toThrow();
     expect(() => getByText('Collected Attention')).not.toThrow();
     expect(() => getByText('Discernment')).not.toThrow();
+  });
+
+  it('offers an open-bench affordance when the life charges Manifest', () => {
+    const onDeath = vi.fn();
+    const onOpenStudio = vi.fn();
+    const { getByTestID, getByText, press } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: fixtureEraPack,
+        onDeath,
+        syncStudio: true,
+        onOpenStudio,
+      }),
+    );
+
+    const button = getByTestID('turn-open-studio');
+    expect(() => getByText(resolveSid('life.turn.manifest_open_sid'))).not.toThrow();
+    press(button);
+    expect(onOpenStudio).toHaveBeenCalledTimes(1);
   });
 
   it('completes the full orient -> intend -> act -> resolve flow', () => {

@@ -25,6 +25,7 @@ import {
   filterEventsForState,
   useEngineReducer,
 } from '@/ui/hooks/useEngineReducer';
+import { usePlayResidueBridge } from '@/ui/hooks/usePlayResidueBridge';
 
 // `__DEV__` is injected by Metro/Expo at build time (true in dev, false in
 // production). It is absent under Vitest; the helper below reads it defensively
@@ -276,6 +277,10 @@ export default function LifeTurnScreen() {
       onDeath={() => {
         router.push('/bardo');
       }}
+      syncStudio
+      onOpenStudio={() => {
+        router.push('/studio');
+      }}
     />
   );
 }
@@ -288,12 +293,26 @@ export interface TurnScreenProps {
   readonly initialState: LifeState;
   readonly eraPack: EraPack | null;
   readonly onDeath: () => void;
+  /** When true, this life's residue charges the Manifest bench. */
+  readonly syncStudio?: boolean;
+  readonly onOpenStudio?: () => void;
 }
 
-export function TurnScreen({ initialState, eraPack, onDeath }: TurnScreenProps) {
+export function TurnScreen({
+  initialState,
+  eraPack,
+  onDeath,
+  syncStudio = false,
+  onOpenStudio,
+}: TurnScreenProps) {
   return (
     <EngineProvider initial={initialState} eraPack={eraPack}>
-      <TurnScreenBody eraPack={eraPack} onDeath={onDeath} />
+      <TurnScreenBody
+        eraPack={eraPack}
+        onDeath={onDeath}
+        syncStudio={syncStudio}
+        {...(onOpenStudio === undefined ? {} : { onOpenStudio })}
+      />
     </EngineProvider>
   );
 }
@@ -301,11 +320,14 @@ export function TurnScreen({ initialState, eraPack, onDeath }: TurnScreenProps) 
 interface TurnScreenBodyProps {
   readonly eraPack: EraPack | null;
   readonly onDeath: () => void;
+  readonly syncStudio: boolean;
+  readonly onOpenStudio?: () => void;
 }
 
-function TurnScreenBody({ eraPack, onDeath }: TurnScreenBodyProps) {
+function TurnScreenBody({ eraPack, onDeath, syncStudio, onOpenStudio }: TurnScreenBodyProps) {
   const { state, dispatch } = useEngineReducer();
   const [reflect, setReflect] = useState<ReflectEntry | null>(null);
+  usePlayResidueBridge(state, syncStudio);
 
   // Death navigation: fires once when `alive` flips to false (resource exhausted
   // via ADVANCE_TURN, or the dev DIE button). Re-running when alive toggles
@@ -379,7 +401,12 @@ function TurnScreenBody({ eraPack, onDeath }: TurnScreenBodyProps) {
       accessibilityLabel={resolveSid('life.turn.screen_label_sid')}
     >
       <TopBar state={state} />
-      <OrientPanel state={state} eraPack={eraPack} />
+      <OrientPanel
+        state={state}
+        eraPack={eraPack}
+        showManifestCharge={syncStudio}
+        {...(onOpenStudio === undefined ? {} : { onOpenStudio })}
+      />
       {noEra && phase !== 'resolve' ? <NoEraFallback onEndLifeEarly={handleEndLifeEarly} /> : null}
       {!noEra && phase === 'intend' ? (
         <IntendPanel state={state} onChoose={handleChooseLens} />
@@ -440,9 +467,11 @@ function TopBar({ state }: TopBarProps) {
 interface OrientPanelProps {
   readonly state: LifeState;
   readonly eraPack: EraPack | null;
+  readonly showManifestCharge: boolean;
+  readonly onOpenStudio?: () => void;
 }
 
-function OrientPanel({ state, eraPack }: OrientPanelProps) {
+function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: OrientPanelProps) {
   const eraName = eraPack !== null ? resolveSid(eraPack.name_sid) : String(state.era);
   const roleName = resolveRoleLabel(eraPack, state.role);
   const eraRole = formatSid('life.turn.orient_era_role_sid', {
@@ -482,6 +511,21 @@ function OrientPanel({ state, eraPack }: OrientPanelProps) {
       <Text testID="turn-orient-lens" style={styles.body}>
         {lensRow}
       </Text>
+      {showManifestCharge ? (
+        <Text testID="turn-orient-manifest" style={styles.body}>
+          {resolveSid('life.turn.manifest_charge_sid')}
+        </Text>
+      ) : null}
+      {showManifestCharge && onOpenStudio !== undefined ? (
+        <Pressable
+          role="button"
+          testID="turn-open-studio"
+          accessibilityLabel={resolveSid('life.turn.manifest_open_sid')}
+          onPress={onOpenStudio}
+        >
+          <Text style={styles.body}>{resolveSid('life.turn.manifest_open_sid')}</Text>
+        </Pressable>
+      ) : null}
       <Text style={styles.subheading}>{resolveSid('life.turn.orient_resources_label_sid')}</Text>
       <View style={styles.resourceGrid}>
         {RESOURCES.map((id) => {

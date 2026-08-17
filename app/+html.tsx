@@ -31,7 +31,7 @@ export default function RootHTML({ children }: PropsWithChildren) {
          * `document.title` IDL getter — so we omit it here.
          */}
       </head>
-      <body>
+      <body style={{ backgroundColor: '#0c0a12', color: '#f4eef8' }}>
         {/* Page-level reset so the RN root fills the viewport on web. */}
         <ScrollViewStyleReset />
         {children}

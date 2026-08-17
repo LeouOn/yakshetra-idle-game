@@ -8,8 +8,8 @@
   // scholastic and Chan traditions. Every player-facing string is a
   // `_sid` reference into the localization bundle; the schema
   // (BuddhistFigureSchema) enforces opaque ids and `_sid` references so
-  // no inline prose ships, and the lint's prohibited-names rule never
-  // needs to scan these tokens (figures are not event/choice identifiers).
+  // no inline prose ships. Display names live in en.json and may be the
+  // real names.
   //
   // Reverence notes are descriptive (iconography, traditional role,
   // Tang-era context) — never doctrinal claims and never fabricated
@@ -464,5 +464,8 @@
       iconography_sid: 'figure.bhadrakalpa.20.iconography_sid',
       reverence_note_sid: 'figure.bhadrakalpa.20.reverence_sid',
     },
+    // Kakusandha, Koṇāgamana, and Kassapa (the three teachers of this
+    // historical era before Śākyamuni) belong here with SIDs in en.json.
+    // Do not add them as unlocalized rows — resolveSid will throw.
   ],
 }

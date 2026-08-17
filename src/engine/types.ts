@@ -14,6 +14,7 @@
 import type { Choice, EffectOp, Ending, Event, Predicate } from '@/content/schema';
 
 import type { CalendarComponents } from './calendar';
+import type { ResidueEvent } from './residue';
 
 // ---------------------------------------------------------------------------
 // Deterministic RNG (implemented in todo 3 — ./rng-impl.ts + ./rng.ts)
@@ -147,6 +148,12 @@ export interface LifeState {
    * system clock inside the engine — the caller passes `nowUnix` in.
    */
   lastVisitedAtUnix?: number;
+  /**
+   * Fiction-agnostic work traces for the studio compiler. Optional so older
+   * in-memory fixtures keep compiling; {@link createLifeState} initialises it
+   * to `[]`. The engine only appends; it never rewrites history.
+   */
+  residue?: readonly ResidueEvent[];
 }
 
 /**

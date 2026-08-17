@@ -53,5 +53,35 @@
       maxProgress: 12,
       effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
     },
+
+    {
+      id: 'practice:tang/extra-bowl',
+      label_sid: 'tang.practice.extra_bowl.label_sid',
+      description_sid: 'tang.practice.extra_bowl.description_sid',
+      lens: 'generosity',
+      progressPerTick: 0.45,
+      maxProgress: 9,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    {
+      id: 'practice:tang/courtyard-beings',
+      label_sid: 'tang.practice.courtyard_beings.label_sid',
+      description_sid: 'tang.practice.courtyard_beings.description_sid',
+      lens: 'careful_conduct',
+      progressPerTick: 0.4,
+      maxProgress: 9,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    {
+      id: 'practice:tang/evening-visit',
+      label_sid: 'tang.practice.evening_visit.label_sid',
+      description_sid: 'tang.practice.evening_visit.description_sid',
+      lens: 'careful_conduct',
+      progressPerTick: 0.35,
+      maxProgress: 11,
+      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+    },
   ],
 }

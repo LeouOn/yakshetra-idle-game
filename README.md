@@ -1,23 +1,26 @@
 # Yakshetra
 
-> A modular, ethically-restrained incremental life-RPG exploring Buddhist and
-> bodhisattva-inspired themes across two contrasting lives (Tang China Mahāyāna
->
-> - an original fantasy realm). Web + iOS + Android from a single Expo SDK 57
-> - TypeScript codebase.
+You live a life. The work leaves residue. Residue cooks into Manifests.
+Manifests become a world.
+
+**Product law:** [`SPEC.md`](SPEC.md)
+**How to work in this repo:** [`AGENTS.md`](AGENTS.md)
+
+Those two documents supersede the older museum pitch below, the
+content-authoring bans in `CONTRIBUTING.md`, and the six-gate process in
+`advisory/`. Named figures and real mantras are in play. The engine stays
+pure. Harvest stays a schema.
+
+Expo SDK 57 / TypeScript / web + iOS + Android.
 
 ---
 
 ## What this is
 
-Yakshetra is a **Samsara-inspired roguelite** built from a single plan: two
-short lives in contrasting Mahāyāna-flavoured settings, a deterministic
-engine, cross-life karmic-echo pattern transfer, and a 9-category
-content-warning taxonomy that protects the player and the traditions
-without flattening them. It ships as a working Expo universal app
-(web/iOS/Android) with 210 automated tests, a 5-rule prohibited-mechanics
-lint, a 12-criterion code-quality contract, and a 6-gate advisory review
-process.
+Yakshetra is a game: an idle operations bench fed by a life. The older
+two-life campaign (Tang China → fantasy Mahāyāna) is still playable and
+is the residue source. Read `SPEC.md` for the current identity. The
+paragraphs after this one are historical and should not steer new work.
 
 The plan was **approved by Oracle** after a 5+ hour build that resolved
 all 15 Metis-flagged gaps (Mahāyāna anachronism, no-karma-to-identity

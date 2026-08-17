@@ -20,6 +20,7 @@ import type { Rng } from './rng';
 import { applyEffect } from './reducer';
 import { evaluatePredicate } from './predicates';
 import { advanceIdleTick } from './turn';
+import { appendResidue, residueLog, type ResidueEvent } from './residue';
 
 /** Initial idle state: no ticks simulated yet, mode idle. */
 export function createIdleState(): IdleState {
@@ -145,7 +146,73 @@ export function simulateIdleTicks(
     endingTriggered,
   };
 
-  return { state: current, idle: newIdle, result };
+  const stamped = stampIdleResidue(
+    current,
+    state.resources,
+    idle.lastSimulatedTick + ticksProcessed,
+    result,
+  );
+  return { state: stamped, idle: newIdle, result };
+}
+
+/**
+ * One aggregated residue event per practice that moved, plus level-ups and
+ * resources that *became* zero this batch. Compact enough for a compiler.
+ */
+function stampIdleResidue(
+  state: LifeState,
+  resourcesBefore: Record<string, number>,
+  tick: bigint,
+  result: IdleTickResult,
+): LifeState {
+  const tickNumber = Number(tick);
+  const extra: ResidueEvent[] = [];
+  for (const row of result.practicesAdvanced) {
+    if (row.progressGained > 0) {
+      extra.push({
+        tick: tickNumber,
+        type: 'practice_tick',
+        ids: [row.id],
+        numbers: { progress: row.progressGained },
+      });
+    }
+    if (row.leveledUp) {
+      extra.push({
+        tick: tickNumber,
+        type: 'practice_level',
+        ids: [row.id],
+        numbers: {},
+      });
+    }
+  }
+  for (const key of Object.keys(state.resources)) {
+    const before = resourcesBefore[key] ?? 0;
+    const after = state.resources[key] ?? 0;
+    if (before > 0 && after === 0) {
+      extra.push({
+        tick: tickNumber,
+        type: 'resource_edge',
+        ids: [key],
+        numbers: { value: 0 },
+      });
+    }
+  }
+  if (result.endingTriggered !== null) {
+    extra.push({
+      tick: tickNumber,
+      type: 'life_ended',
+      ids: [result.endingTriggered],
+      numbers: {},
+    });
+  }
+  if (extra.length === 0) {
+    return state;
+  }
+  let log = residueLog(state);
+  for (const event of extra) {
+    log = appendResidue(log, event);
+  }
+  return { ...state, residue: log };
 }
 
 /** Action payload for the IDLE_TICK reducer case. */

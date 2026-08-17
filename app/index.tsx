@@ -1,15 +1,12 @@
 // Chain picker — the home screen.
 //
-// Three actions:
-//   New chain  -> /life/start          (begin a fresh two-life chain)
-//   Continue   -> /life/start?resume=1 (resume from the save slot; todo 12 will
-//                                       branch into the active life if one exists)
-//   Settings   -> /settings
+// Four actions, all copy via `home.*` / `studio.*` SIDs:
+//   Go work a day -> /life/start          (begin a fresh two-life chain)
+//   Back to work  -> /life/start?resume=1 (resume from the save slot)
+//   Manifest      -> /studio              (the bench — the main loop's verb)
+//   Settings      -> /settings
 //
-// On first launch per save slot, the front-matter disclaimer (todo 28) overlays
-// the home screen. It is gated on `!settings.disclaimerAccepted` and dismissed
-// ONLY by the "I understand" button, which persists the flag via
-// `updateSettings`. The home screen renders normally behind the overlay.
+// First visit: a small toast. After Got it, it stays gone.
 //
 // `router.push` is type-checked against the declared routes because
 // `experiments.typedRoutes` is enabled in app.json (todo 1).
@@ -19,6 +16,7 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { resolveSid } from '@/i18n';
 import DisclaimerModal from '@/ui/components/DisclaimerModal';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 
@@ -28,8 +26,8 @@ export default function IndexScreen() {
   return (
     <View role="main" style={styles.container}>
       <View style={styles.heading}>
-        <Text style={styles.title}>Yakshetra</Text>
-        <Text style={styles.subtitle}>Two lives. One thread of karma.</Text>
+        <Text style={styles.title}>{resolveSid('home.title_sid')}</Text>
+        <Text style={styles.subtitle}>{resolveSid('home.subtitle_sid')}</Text>
       </View>
 
       <View style={styles.actions}>
@@ -37,27 +35,36 @@ export default function IndexScreen() {
           role="button"
           style={styles.button}
           onPress={() => router.push('/life/start')}
-          accessibilityLabel="Start a new chain"
+          accessibilityLabel={resolveSid('home.new_life_label_sid')}
         >
-          <Text style={styles.buttonText}>New chain</Text>
+          <Text style={styles.buttonText}>{resolveSid('home.new_life_button_sid')}</Text>
         </Pressable>
 
         <Pressable
           role="button"
           style={styles.button}
           onPress={() => router.push({ pathname: '/life/start', params: { resume: '1' } })}
-          accessibilityLabel="Continue from your last save"
+          accessibilityLabel={resolveSid('home.continue_label_sid')}
         >
-          <Text style={styles.buttonText}>Continue</Text>
+          <Text style={styles.buttonText}>{resolveSid('home.continue_button_sid')}</Text>
+        </Pressable>
+
+        <Pressable
+          role="button"
+          style={styles.button}
+          onPress={() => router.push('/studio')}
+          accessibilityLabel={resolveSid('studio.home_button_sid')}
+        >
+          <Text style={styles.buttonText}>{resolveSid('studio.home_button_sid')}</Text>
         </Pressable>
 
         <Pressable
           role="button"
           style={[styles.button, styles.buttonSecondary]}
           onPress={() => router.push('/settings')}
-          accessibilityLabel="Open settings"
+          accessibilityLabel={resolveSid('home.settings_label_sid')}
         >
-          <Text style={styles.buttonText}>Settings</Text>
+          <Text style={styles.buttonText}>{resolveSid('home.settings_button_sid')}</Text>
         </Pressable>
       </View>
 
@@ -78,18 +85,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 32,
+    backgroundColor: '#0c0a12',
   },
   heading: { alignItems: 'center', gap: 8 },
-  title: { fontSize: 32, fontWeight: '700' },
-  subtitle: { fontSize: 16, opacity: 0.7 },
+  title: { fontSize: 32, fontWeight: '700', color: '#f4eef8' },
+  subtitle: { fontSize: 16, color: '#b5a9c4' },
   actions: { width: '100%', maxWidth: 360, gap: 12 },
   button: {
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#111827',
+    backgroundColor: '#6d4aa8',
     alignItems: 'center',
   },
-  buttonSecondary: { backgroundColor: '#374151' },
-  buttonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  buttonSecondary: { backgroundColor: '#2a2238' },
+  buttonText: { color: '#f4eef8', fontSize: 16, fontWeight: '600' },
 });

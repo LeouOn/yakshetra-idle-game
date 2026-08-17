@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createElement } from 'react';
 import { Text, View } from 'react-native';
 
@@ -33,6 +33,16 @@ function renderModal(
 }
 
 describe('DisclaimerModal', () => {
+  beforeEach(() => {
+    try {
+      if (typeof globalThis.localStorage?.removeItem === 'function') {
+        globalThis.localStorage.removeItem('yakshetra.disclaimer.v1');
+      }
+    } catch {
+      // ignore
+    }
+  });
+
   it('renders the title, body, and both buttons on first launch', () => {
     const { getByTestID, getByText } = renderModal();
     expect(() => getByTestID('disclaimer-modal')).not.toThrow();

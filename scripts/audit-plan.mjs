@@ -10,8 +10,6 @@ const ROOT = process.cwd();
 const PLAN_PATH = join(ROOT, '.omo', 'plans', 'buddhist-inspired-incremental-rpg.md');
 const EVIDENCE_DIR = join(ROOT, '.omo', 'evidence');
 const REPORT_PATH = join(EVIDENCE_DIR, 'F1-compliance.md');
-const NAMES_FILE = join(ROOT, 'advisory', 'prohibited-names.txt');
-
 const plan = readFileSync(PLAN_PATH, 'utf8');
 
 // --- Parse todos: lines like "- [x] 16. **Title**" or "- [ ] F1. **Title**" ---
@@ -108,13 +106,10 @@ const uncovered = coverage.filter((c) => c.todos.length === 0);
 
 // --- Must-not-have grep over source tree ---
 // Hard tokens (analytics/monetization/karma-score patterns) are scanned everywhere
-// (comment-stripped). Sacred names are scanned only in DIEGETIC content: comments and
-// lineage-notes / glossary / disclaimer / bibliography string values are exempt because
-// T19/T21/T24 *require* listing excluded figures in scholarly framing, and the closed
-// lint (T5 R-NO-SACRED-NAMES) already enforces this at the pack _sid level.
+// (comment-stripped). Named sacred figures and mantras are allowed (SPEC.md);
+// they are no longer must-not-have tokens.
 const SCAN_DIRS = ['src', 'app', 'src/i18n', 'src/content'].map((d) => join(ROOT, d));
 const SKIP_PATH = /(__tests__|[/\\]fixtures|prohibited-names|[/\\]lint\.ts$|audit-plan\.mjs$)/i;
-const EXEMPT_KEY = /(lineage|glossary|disclaimer|notes|bibliography|source)/i;
 const HARD_TOKENS = [
   { name: 'karma.score', re: /karma\.score/gi },
   { name: 'merit.point', re: /merit\.point/gi },
@@ -125,17 +120,6 @@ const HARD_TOKENS = [
   { name: 'appcenter', re: /\bappcenter\b/gi },
   { name: 'admob', re: /\badmob\b/gi },
 ];
-const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const sacredNames = existsSync(NAMES_FILE)
-  ? readFileSync(NAMES_FILE, 'utf8')
-      .split('\n')
-      .map((s) => s.trim())
-      .filter((s) => s && !s.startsWith('#'))
-  : [];
-const SACRED_TOKENS = sacredNames.map((name) => ({
-  name: `sacred:${name}`,
-  re: new RegExp(`(?<![\\p{L}])${escapeRe(name)}(?![\\p{L}])`, 'gu'),
-}));
 const stripComments = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^[ \t]*(\/\/|#).*$/gm, '');
 function walk(dir, out = []) {
   if (!existsSync(dir)) return out;
@@ -145,19 +129,6 @@ function walk(dir, out = []) {
     else out.push(p);
   }
   return out;
-}
-// Collect diegetic string values from a parsed JSON object (skip exempt keys).
-function diegeticStrings(obj) {
-  const out = [];
-  const rec = (key, val) => {
-    if (typeof val === 'string') {
-      if (!EXEMPT_KEY.test(key)) out.push(val);
-    } else if (val && typeof val === 'object') {
-      for (const [k, v] of Object.entries(val)) rec(`${key}.${k}`, v);
-    }
-  };
-  rec('', obj);
-  return out.join('\n');
 }
 const files = [...new Set(SCAN_DIRS.flatMap((d) => walk(d)))];
 const violations = [];
@@ -172,22 +143,8 @@ for (const f of files) {
     continue;
   }
   const stripped = stripComments(body);
-  // Hard tokens: scan comment-stripped text of every file.
   for (const { name, re } of HARD_TOKENS) {
     const c = count(stripped, re);
-    if (c) violations.push({ file: rel, token: name, count: c });
-  }
-  // Sacred names: scan diegetic content only.
-  let diegetic = stripped;
-  if (rel === 'src/i18n/en.json') {
-    try {
-      diegetic = diegeticStrings(JSON.parse(body));
-    } catch {
-      /* malformed JSON: fall back to stripped */
-    }
-  }
-  for (const { name, re } of SACRED_TOKENS) {
-    const c = count(diegetic, re);
     if (c) violations.push({ file: rel, token: name, count: c });
   }
 }
@@ -250,7 +207,7 @@ Scanned: src/, app/, src/i18n/, src/content/.
 Excluded paths: __tests__/, fixtures/, prohibited-names.txt, lint.ts, this audit script.
 Comment lines (// and #) stripped before scanning.
 Hard tokens (karma.score, merit.point, firebase, crashlytics, sentry, amplitude, appcenter, admob) scanned in all remaining text.
-Sacred names (${sacredNames.length} closed-list figures) scanned in DIEGETIC content only — comments and lineage-notes / glossary / disclaimer / bibliography string values are exempt because T19/T21/T24 require listing excluded figures in scholarly framing (the closed lint T5 enforces this at the pack _sid level).
+Named sacred figures and mantras are allowed and are not scanned.
 
 | Token | Hits | File |
 | --- | --- | --- |

@@ -42,6 +42,7 @@ export const View = host('View');
 export const Pressable = host('Pressable');
 export const TouchableOpacity = host('TouchableOpacity');
 export const ScrollView = host('ScrollView');
+export const TextInput = host('TextInput');
 export const SafeAreaView = host('SafeAreaView');
 export const KeyboardAvoidingView = host('KeyboardAvoidingView');
 export const Modal = host('Modal');

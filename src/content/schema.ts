@@ -444,15 +444,16 @@ export type Ending = z.infer<typeof EndingSchema>;
  * These three types form the structural foundation for surfacing
  * tradition-inspired text and figure references inside an era. The schemas
  * only describe SHAPE — what fields exist and what enum values each accepts.
- * They do NOT legislate tradition-specific content; that is governed by the
- * 5-rule lint and the 6-gate advisory panel (see `advisory/panel.md`).
+ * They do NOT legislate tradition-specific content. Named figures and
+ * mantras are allowed; see SPEC.md. The remaining lint is game-design only
+ * (no karma meter, no pay-to-absolve).
  *
  * Invariants carried by shape:
  *   - Every player-facing string is a `_sid` reference; inline strings are
- *     rejected by {@link SidSchema}. No fabricated scripture reaches the user.
- *   - Cross references use opaque {@link TokenSchema} ids, never proper names
- *     (`source_sutra_id`, `associated_figure_id`, `mantra_id`). The lint's
- *     prohibited-names rule scans the resolved localization, not these tokens.
+ *     rejected by {@link SidSchema}.
+ *   - Cross references use opaque {@link TokenSchema} ids
+ *     (`source_sutra_id`, `associated_figure_id`, `mantra_id`). Display
+ *     names live in the localization bundle.
  *   - Enums close the world: school, lens, role, language. Adding a new value
  *     is a schema change, not an authoring choice.
  * -----------------------------------------------------------------------------------------------*/

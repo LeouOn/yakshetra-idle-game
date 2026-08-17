@@ -1,60 +1,31 @@
-// Front-matter disclaimer modal — shows once per save slot on first launch.
+// First-visit toast. Does not block the home screen.
 //
-// Pure presentational overlay. The parent route (`app/index.tsx`) gates this on
-// `!useSaveSlot().settings.disclaimerAccepted` and wires the two callbacks:
-//   - onUnderstand -> updateSettings({ disclaimerAccepted: true }) (the ONLY
-//     dismiss path; the modal cannot be closed any other way)
-//   - onReadMore   -> router.push('/about')
-//
-// All visible text flows through `disclaimer.*` string ids. Design constraints
-// (plan todo 28): NO claim of doctrinal authority. The body is explicit that
-// this is fiction inspired by, not a teaching of, any lineage.
-//
-// Accessibility: the overlay is marked `accessibilityViewIsModal` so screen
-// readers trap focus inside it, and the only interactive dismiss affordance is
-// the "I understand" button. There is no backdrop tap-to-dismiss and no Escape
-// handler, so keyboard / assistive-tech users cannot dismiss it without the
-// explicit acknowledgement button — matching "Escape closes only after
-// 'I understand'".
+// Parent (`app/index.tsx`) shows this while `!settings.disclaimerAccepted`.
+// "I understand" persists the flag; after that it never comes back.
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { resolveSid } from '@/i18n';
 
 export interface DisclaimerModalProps {
-  /** Acknowledge the disclaimer; the parent flips `disclaimerAccepted`. */
   readonly onUnderstand: () => void;
-  /** Open the full about/lineage/glossary screen. */
   readonly onReadMore: () => void;
 }
 
 export default function DisclaimerModal({ onUnderstand, onReadMore }: DisclaimerModalProps) {
   return (
-    <View
-      testID="disclaimer-modal"
-      accessibilityRole="alert"
-      accessibilityViewIsModal
-      style={styles.overlay}
-    >
-      <View
-        accessibilityRole="summary"
-        accessibilityLabel={resolveSid('disclaimer.title_sid')}
-        style={styles.sheet}
+    <View testID="disclaimer-modal" accessibilityRole="alert" style={styles.toast}>
+      <Text accessibilityRole="header" style={styles.title}>
+        {resolveSid('disclaimer.title_sid')}
+      </Text>
+      <Text
+        testID="disclaimer-body"
+        accessibilityLabel={resolveSid('disclaimer.body_sid')}
+        style={styles.body}
       >
-        <Text accessibilityRole="header" style={styles.title}>
-          {resolveSid('disclaimer.title_sid')}
-        </Text>
-
-        <Text
-          testID="disclaimer-body"
-          accessibilityLabel={resolveSid('disclaimer.body_sid')}
-          style={styles.body}
-        >
-          {resolveSid('disclaimer.body_sid')}
-        </Text>
-
-        <Text style={styles.advisory}>{resolveSid('disclaimer.advisory_credit_sid')}</Text>
-
+        {resolveSid('disclaimer.body_sid')}
+      </Text>
+      <View style={styles.row}>
         <Pressable
           testID="disclaimer-understand"
           accessibilityRole="button"
@@ -66,7 +37,6 @@ export default function DisclaimerModal({ onUnderstand, onReadMore }: Disclaimer
             {resolveSid('disclaimer.understand_button_sid')}
           </Text>
         </Pressable>
-
         <Pressable
           testID="disclaimer-read-more"
           accessibilityRole="link"
@@ -84,36 +54,29 @@ export default function DisclaimerModal({ onUnderstand, onReadMore }: Disclaimer
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  toast: {
     position: 'absolute',
-    inset: 0,
-    backgroundColor: 'rgba(17, 24, 39, 0.6)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  sheet: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#ffffff',
+    left: 16,
+    right: 16,
+    bottom: 20,
+    backgroundColor: '#221a30',
+    borderWidth: 1,
+    borderColor: '#3a314c',
     borderRadius: 16,
-    paddingVertical: 24,
-    paddingHorizontal: 22,
-    gap: 16,
-  },
-  title: { fontSize: 22, fontWeight: '700', color: '#111827' },
-  body: { fontSize: 15, lineHeight: 22, color: '#1f2937' },
-  advisory: { fontSize: 13, lineHeight: 18, opacity: 0.7, color: '#1f2937' },
-  primaryButton: {
     paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#111827',
-    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 8,
   },
-  primaryButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
-  secondaryButton: {
-    paddingVertical: 10,
-    alignItems: 'center',
+  title: { fontSize: 15, fontWeight: '700', color: '#e8c56b' },
+  body: { fontSize: 14, lineHeight: 20, color: '#f4eef8' },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 4 },
+  primaryButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: '#6d4aa8',
   },
-  secondaryButtonText: { color: '#374151', fontSize: 15, fontWeight: '600' },
+  primaryButtonText: { color: '#f4eef8', fontSize: 14, fontWeight: '600' },
+  secondaryButton: { paddingVertical: 8, paddingHorizontal: 4 },
+  secondaryButtonText: { color: '#b5a9c4', fontSize: 14, fontWeight: '600' },
 });
