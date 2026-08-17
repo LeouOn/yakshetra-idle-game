@@ -793,6 +793,142 @@ describe('StudioView', () => {
     expect(queryByText(resolveSid('studio.develop_button_sid'))).toBeNull();
   });
 
+  /* ---- endowment affordance: endow a card from the archive ---------------- */
+
+  function sessionWithEndowableCard(endowed: readonly string[] = []): {
+    readonly session: StudioSession;
+    readonly card: Manifest;
+  } {
+    const hydrated = emptyHydratedSession();
+    const card = personCard('m-endow', 401n);
+    const studio = recordStudioResidues({ ...hydrated.studio, archive: [card] }, THING_WINDOW);
+    const session = snapshotStudioSession(
+      studio,
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: {
+          person: { ...createTierState('person', true), endowed: [...endowed] },
+        },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+    return { session, card };
+  }
+
+  it('endows a card through the chip: pick, cycle, commit, and the cook speeds up', async () => {
+    const probe = vi.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const { session, card } = sessionWithEndowableCard();
+    const storage = createMemoryStudioKv();
+
+    const { getByTestID, getByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // First press selects the first person track in file order; a second
+    // press cycles to deep-window; a third wraps back to swift-cook.
+    press(getByTestID(`studio-endow-${card.id}`));
+    expect(() =>
+      getByText(formatSid('studio.endow_track_sid', { track: 'swift-cook' })),
+    ).not.toThrow();
+    press(getByTestID(`studio-endow-${card.id}`));
+    expect(() =>
+      getByText(formatSid('studio.endow_track_sid', { track: 'deep-window' })),
+    ).not.toThrow();
+    press(getByTestID(`studio-endow-${card.id}`));
+    expect(() =>
+      getByText(formatSid('studio.endow_track_sid', { track: 'swift-cook' })),
+    ).not.toThrow();
+
+    press(getByTestID(`studio-endow-commit-${card.id}`));
+    expect(() => getByText(resolveSid('studio.archive_empty_sid'))).not.toThrow();
+
+    // The persisted session carries the endowed tier and the emptied archive.
+    const saved = await loadStudioSession(storage);
+    expect(saved?.tiers['person']?.endowed).toEqual(['endow/person/swift-cook']);
+    expect(saved?.archive.some((entry) => entry.id === card.id)).toBe(false);
+
+    // The endowed swift-cook now discounts the manual develop cook (7 → 6).
+    press(getByTestID('studio-develop'));
+    expect(() =>
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+    ).not.toThrow();
+    probe.mockRestore();
+  });
+
+  it('locks the endow chip when both person tracks are already endowed', async () => {
+    const { session, card } = sessionWithEndowableCard([
+      'endow/person/swift-cook',
+      'endow/person/deep-window',
+    ]);
+
+    const { getByTestID, getByText, container } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+      }),
+    );
+
+    const chip = getByTestID(`studio-endow-${card.id}`);
+    expect(chip.props.disabled).toBe(true);
+    expect(() => getByText(resolveSid('studio.endow_locked_sid'))).not.toThrow();
+    expect(
+      container.queryAll(
+        (node) =>
+          typeof node.props.testID === 'string' &&
+          node.props.testID.startsWith('studio-endow-commit-'),
+      ),
+    ).toHaveLength(0);
+  });
+
+  it('endows into the harvest-priority household tier once it is unlocked', async () => {
+    const graduated = graduatedSession([409n, 419n, 421n]);
+    const cardId = 'm-1'; // the graduated pin, so the cascade must clear it
+    const storage = createMemoryStudioKv();
+
+    const { getByTestID, getByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: graduated,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    press(getByTestID(`studio-endow-${cardId}`));
+    // hearth-surplus is the first household candidate in file order.
+    expect(() =>
+      getByText(formatSid('studio.endow_track_sid', { track: 'hearth-surplus' })),
+    ).not.toThrow();
+
+    press(getByTestID(`studio-endow-commit-${cardId}`));
+    const saved = await loadStudioSession(storage);
+    expect(saved?.tiers['household']?.endowed).toContain('endow/household/hearth-surplus');
+    expect(saved?.archive.some((entry) => entry.id === cardId)).toBe(false);
+    // The cascade cleared the person-bench pin that pointed at the card.
+    expect(saved?.benches['person']?.pinned).toBeNull();
+  });
+
   /* ---- visitors: seated guest banner, harvest decay, overlay composition --- */
 
   function sessionWithSeatedGuest(opts: { readyBay: boolean }): StudioSession {

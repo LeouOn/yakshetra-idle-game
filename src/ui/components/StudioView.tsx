@@ -24,6 +24,7 @@ import {
 
 import { loadEraPack } from '@/content/loader';
 import type { Ending, Practice as ContentPractice } from '@/content/schema';
+import type { EndowmentTrack } from '@/content/progression/schema';
 import { loadProgression, type ProgressionRegistries } from '@/content/progression/loader';
 import {
   MIN_RESIDUE_TO_DEVELOP,
@@ -32,6 +33,7 @@ import {
   assembleWorldDraft,
   canHarvest,
   canUpgradeQuality,
+  canEndow,
   canonicalStringify,
   checkMilestones,
   computeGlobalRewards,
@@ -79,6 +81,8 @@ import {
   addBenchModifiers,
   computeBenchModifiers,
   effectiveAwayCap,
+  endowManifest,
+  endowableSlots,
   type BenchModifiers,
 } from '@/engine/endowment';
 import { activeVisitorFor, noteVisitorHarvest, visitorModifierOverlay } from '@/engine/visitors';
@@ -89,7 +93,7 @@ import { resolveScheduleState } from '@/engine/schedule';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import StudioActivities from './StudioActivities';
-import StudioArchive from './StudioArchive';
+import StudioArchive, { type EndowChipState } from './StudioArchive';
 import StudioJuice from './StudioJuice';
 import StudioLife from './StudioLife';
 import StudioRail, { type RailTier } from './StudioRail';
@@ -242,6 +246,39 @@ function modifiersForSession(session: StudioSession): (tierId: string) => BenchM
       computeBenchModifiers(tierId, session, tracks, global),
       visitorModifierOverlay(visitorRows, activeVisitorFor(session, tierId)?.id ?? null),
     );
+}
+
+/** Harvest-priority tier for endowing: the household once unlocked, else the person. */
+function endowTierOf(session: StudioSession): string {
+  return session.tiers[HOUSEHOLD_TIER]?.unlocked === true ? HOUSEHOLD_TIER : EMBODIED_TIER;
+}
+
+/**
+ * Tracks the endow chip may offer for the session: tier match, requires met,
+ * not already endowed, slot cost fitting the remaining slots (compendium
+ * bonus included). Empty → every chip renders locked.
+ */
+function endowPlan(session: StudioSession): readonly EndowmentTrack[] {
+  const tierId = endowTierOf(session);
+  const tier = session.tiers[tierId];
+  if (tier === undefined) {
+    return [];
+  }
+  const global = computeGlobalRewards(session.compendium_done, registries().compendium);
+  const slots = endowableSlots(tierId, session, registries().endowment, registries().tiers, global);
+  return registries().endowment.filter(
+    (track) =>
+      track.tier === tierId &&
+      !tier.endowed.includes(track.id) &&
+      (track.requires === null || session.milestones_done.includes(track.requires)) &&
+      track.slot_cost <= slots,
+  );
+}
+
+/** Display label for a track row; tracks carry no SID namespace, so the id tail names them. */
+function endowTrackLabel(track: EndowmentTrack): string {
+  const parts = track.id.split('/');
+  return parts[parts.length - 1] ?? track.id;
 }
 
 function statValue(stats: ArchiveStats, key: string): number {
@@ -473,6 +510,10 @@ export default function StudioView({
   );
   const [graduationCeremony, setGraduationCeremony] = useState<string | null>(null);
   const [brief, setBrief] = useState('');
+  const [endowSelection, setEndowSelection] = useState<{
+    readonly cardId: string;
+    readonly trackIndex: number;
+  } | null>(null);
   const [exported, setExported] = useState(false);
   const [worldExported, setWorldExported] = useState(false);
   const [juiceBurst, setJuiceBurst] = useState(0);
@@ -701,6 +742,7 @@ export default function StudioView({
   const pending = pendingResidue(studio);
   const charge = pending.length;
   const chargeRatio = Math.min(1, charge / MIN_RESIDUE_TO_DEVELOP);
+  const endowTracks = endowPlan(buildSession());
   const householdUnlocked = progression.tiers['household']?.unlocked === true;
   const householdBayReady =
     householdBench !== null && householdBench.bay !== null && householdBench.bay.status === 'ready';
@@ -881,6 +923,71 @@ export default function StudioView({
 
   function pin(card: Manifest): void {
     setStudio(pinFocus(studio, card));
+  }
+
+  /** Endow chip state for one archive card, from the render-scope plan. */
+  function endowStateFor(cardId: string): EndowChipState {
+    if (endowTracks.length === 0) {
+      return { mode: 'locked' };
+    }
+    if (endowSelection?.cardId === cardId) {
+      const track = endowTracks[endowSelection.trackIndex];
+      if (track === undefined) {
+        return { mode: 'pick' };
+      }
+      return { mode: 'chosen', trackLabel: endowTrackLabel(track) };
+    }
+    return { mode: 'pick' };
+  }
+
+  /** First press selects the first eligible track; further presses cycle. */
+  function endowPick(cardId: string): void {
+    if (endowTracks.length === 0) {
+      return;
+    }
+    setEndowSelection((current) =>
+      current?.cardId === cardId
+        ? { cardId, trackIndex: (current.trackIndex + 1) % endowTracks.length }
+        : { cardId, trackIndex: 0 },
+    );
+  }
+
+  /** Commit the chosen track through the engine gate, then adopt the cascade
+   *  (archive, cleared pins, roster focus, endowed tier) session-wide. */
+  function endowCommit(cardId: string): void {
+    if (endowSelection === null || endowSelection.cardId !== cardId) {
+      return;
+    }
+    const track = endowTracks[endowSelection.trackIndex];
+    if (track === undefined) {
+      return;
+    }
+    const session = sessionFromSlices(benchRef.current);
+    const tierId = endowTierOf(session);
+    const global = computeGlobalRewards(session.compendium_done, registries().compendium);
+    const check = canEndow(
+      session,
+      tierId,
+      track,
+      cardId,
+      registries().endowment,
+      registries().tiers,
+      global,
+    );
+    if (!check.ok) {
+      setEndowSelection(null);
+      return;
+    }
+    const endowed = endowManifest(session, tierId, track.id, cardId, registries().endowment);
+    const back = hydrateStudioSession(endowed, benchRef.current.life, benchRef.current.practices);
+    setLife(back.life);
+    setIdle(back.idle);
+    setStudio(back.studio);
+    setRuntimePractices(back.practices);
+    setMembers({ ...back.members });
+    setProgression(back.progression);
+    setHouseholdBench(endowed.benches[HOUSEHOLD_TIER] ?? null);
+    setEndowSelection(null);
   }
 
   /** Swap the embodied life for a roster member's slice (null restores the
@@ -1162,7 +1269,13 @@ export default function StudioView({
         <Text accessibilityRole="header" style={styles.archiveHeading}>
           {resolveSid('studio.archive_heading_sid')}
         </Text>
-        <StudioArchive archive={studio.archive} freshId={freshHarvestId} />
+        <StudioArchive
+          archive={studio.archive}
+          freshId={freshHarvestId}
+          endowState={endowStateFor}
+          onEndow={endowPick}
+          onEndowCommit={endowCommit}
+        />
 
         {latest === undefined ? null : (
           <Pressable
