@@ -389,9 +389,12 @@ describe('StudioView', () => {
     );
   }
 
-  it('shows the household ladder progress badge at 2 of 3 pinned', () => {
-    const cards = [personCard('m-1', 11n), personCard('m-2', 13n), personCard('m-3', 17n)];
-    const session = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2'] });
+  it('shows the household ladder progress badge at 2 of 3 archived', () => {
+    // The gate counts archived person cards (reachable before any roster
+    // exists). Two archived persons + the mount-recorded world draft leave
+    // archived.person as the least-satisfied operand: 2/3.
+    const cards = [personCard('m-1', 11n), personCard('m-2', 13n)];
+    const session = sessionAt({ cards, pinnedId: 'm-1', focusIds: [] });
 
     const { getByTestID, getByText } = render(
       createElement(StudioView, {
@@ -653,8 +656,9 @@ describe('StudioView', () => {
 
   it('keeps the household bench out of the saved session while the tier is locked', async () => {
     // Regression guard: the locked tick path stays person-only (stepSession's
-    // golden invariant), asserted here at the persistence layer.
-    const cards = [personCard('m-1', 131n), personCard('m-2', 137n), personCard('m-3', 139n)];
+    // golden invariant), asserted here at the persistence layer. Two archived
+    // persons stay under the archived.person >= 3 gate.
+    const cards = [personCard('m-1', 131n), personCard('m-2', 137n)];
     const locked = sessionAt({ cards, pinnedId: 'm-1', focusIds: ['m-2'] });
     const storage = createMemoryStudioKv();
 

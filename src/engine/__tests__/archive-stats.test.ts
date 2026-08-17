@@ -182,9 +182,30 @@ describe('computeArchiveStats', () => {
     expect(computeArchiveStats(session).harvests).toEqual({ common: 2, uncommon: 1, rare: 1 });
   });
 
+  it('counts archived cards by kind over a mixed archive', () => {
+    const session = makeSession({
+      archive: [
+        card('m-1', 'person'),
+        card('m-2', 'person'),
+        card('m-3', 'place'),
+        card('m-4', 'tradition'),
+      ],
+    });
+    expect(computeArchiveStats(session).archived).toEqual({ person: 2, place: 1, tradition: 1 });
+  });
+
+  it('keeps archived counting independent of pins and focus_ids', () => {
+    const session = makeSession({
+      archive: [card('m-1', 'person')],
+      benches: { person: makeBench(pinOf('m-1', 'person')) },
+    });
+    expect(computeArchiveStats(session).archived).toEqual({ person: 1 });
+  });
+
   it('returns zeroed stats for an empty session', () => {
     const stats = computeArchiveStats(makeSession({}));
     expect(stats.pinned).toEqual({});
+    expect(stats.archived).toEqual({});
     expect(stats.world_drafts).toEqual({ total: 0 });
     expect(stats.harvests).toEqual({ common: 0, uncommon: 0, rare: 0 });
   });
@@ -194,6 +215,7 @@ describe('computeArchiveStats', () => {
 
 const STATS: ArchiveStats = {
   pinned: { person: 3 },
+  archived: { person: 4, tradition: 1 },
   world_drafts: { total: 1, household: 2 },
   harvests: { common: 5, uncommon: 1, rare: 0 },
 };
@@ -216,6 +238,15 @@ describe('evaluateArchivePredicate', () => {
       true,
     );
     expect(evaluateArchivePredicate(STATS, { op: 'eq', key: 'harvests.rare', value: 0 })).toBe(
+      true,
+    );
+    expect(evaluateArchivePredicate(STATS, { op: 'gte', key: 'archived.person', value: 4 })).toBe(
+      true,
+    );
+    expect(evaluateArchivePredicate(STATS, { op: 'gte', key: 'archived.person', value: 5 })).toBe(
+      false,
+    );
+    expect(evaluateArchivePredicate(STATS, { op: 'eq', key: 'archived.tradition', value: 1 })).toBe(
       true,
     );
   });
@@ -300,6 +331,8 @@ describe('validateArchivePredicateKeys', () => {
       op: 'and',
       operands: [
         { op: 'gte', key: 'pinned.person', value: 3 },
+        { op: 'gte', key: 'archived.person', value: 3 },
+        { op: 'gte', key: 'archived.tradition', value: 1 },
         { op: 'gte', key: 'world_drafts.total', value: 1 },
         { op: 'gte', key: 'world_drafts.household', value: 1 },
         { op: 'gte', key: 'harvests.rare', value: 1 },
@@ -324,6 +357,9 @@ describe('validateArchivePredicateKeys', () => {
   it('flags malformed keys without a section or tail', () => {
     expect(validateArchivePredicateKeys({ op: 'gte', key: 'pinned', value: 1 })).toEqual([
       'pinned',
+    ]);
+    expect(validateArchivePredicateKeys({ op: 'gte', key: 'archived.', value: 1 })).toEqual([
+      'archived.',
     ]);
     expect(validateArchivePredicateKeys({ op: 'gte', key: 'harvests.', value: 1 })).toEqual([
       'harvests.',

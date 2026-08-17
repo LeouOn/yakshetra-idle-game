@@ -45,6 +45,20 @@ describe('loadProgression', () => {
     ]);
   });
 
+  it('gates the household on three archived persons plus one world draft', () => {
+    // The gate must be reachable BEFORE any roster exists (members are seeded
+    // by graduation itself, and the person bench holds one pin at most), so
+    // the operand counts archived person cards, not pins or focus_ids.
+    const gate = registries.milestones.find((m) => m.id === 'unlock-household');
+    expect(gate?.predicate).toEqual({
+      op: 'and',
+      operands: [
+        { op: 'gte', key: 'world_drafts.total', value: 1 },
+        { op: 'gte', key: 'archived.person', value: 3 },
+      ],
+    });
+  });
+
   it('ships empty extension files as valid empty registries', () => {
     // Endowment ships four base rows since Phase 2 Task 1 (the rest still
     // empty). The R-PROG-MODIFIER-KEYS lint guarantees every key here is

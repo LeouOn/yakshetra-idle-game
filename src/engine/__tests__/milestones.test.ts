@@ -9,10 +9,8 @@ import { MANIFEST_SCHEMA_VERSION, TABLE_FILL_REVISION } from '@/engine/manifest'
 import {
   emptyHydratedSession,
   snapshotStudioSession,
-  type BenchState,
   type StudioSession,
 } from '@/engine/studio-session';
-import { TIER_STATE_VERSION, type TierState } from '@/engine/tier-state';
 
 import { validateArchivePredicateKeys } from '@/engine/archive-stats';
 import { checkMilestones, type MilestoneLike } from '@/engine/milestones';
@@ -46,47 +44,8 @@ function personCard(id: string): SessionCard {
   };
 }
 
-function makeBench(pinned: BenchState['pinned']): BenchState {
-  return {
-    residue: [],
-    last_harvest_index: -1,
-    bay: null,
-    quality_tier: 0,
-    harvest_count: 0,
-    play_import: null,
-    pinned,
-    surplus: 0,
-    fold_position: 0,
-  };
-}
-
-function makeTier(tier: string, focusIds: readonly (string | undefined)[]): TierState {
-  return {
-    schema_version: TIER_STATE_VERSION,
-    tier,
-    unlocked: true,
-    roster: {
-      tier,
-      members: focusIds.map((focus_id, index) => ({
-        id: `${tier}-member-${index}`,
-        name: `Member ${index}`,
-        role: 'keeper',
-        policy: 'policy/v0',
-        embodied: false,
-        ...(focus_id === undefined ? {} : { focus_id }),
-        seed: index,
-      })),
-    },
-    endowed: [],
-    active_visitor: null,
-    visitor_ticks: 0,
-  };
-}
-
 function makeSession(parts: {
   archive?: readonly SessionCard[];
-  benches?: Readonly<Record<string, BenchState>>;
-  tiers?: Readonly<Record<string, TierState>>;
   milestonesDone?: readonly string[];
 }): StudioSession {
   const hydrated = emptyHydratedSession();
@@ -99,8 +58,6 @@ function makeSession(parts: {
   return {
     ...base,
     ...(parts.archive === undefined ? {} : { archive: [...parts.archive] }),
-    ...(parts.benches === undefined ? {} : { benches: { ...parts.benches } }),
-    ...(parts.tiers === undefined ? {} : { tiers: { ...parts.tiers } }),
     ...(parts.milestonesDone === undefined ? {} : { milestones_done: [...parts.milestonesDone] }),
   };
 }
@@ -110,25 +67,16 @@ const UNLOCK_HOUSEHOLD: MilestoneLike = {
   predicate: {
     op: 'and',
     operands: [
-      { op: 'gte', key: 'pinned.person', value: 3 },
+      { op: 'gte', key: 'archived.person', value: 3 },
       { op: 'gte', key: 'world_drafts.total', value: 1 },
     ],
   },
 };
 
-/** One bench pin plus two focus_ids = three distinct pinned persons. */
+/** Three archived persons — the pre-roster gate needs no pins or focus_ids. */
 function crossedSession(): StudioSession {
   return makeSession({
     archive: [personCard('m-1'), personCard('m-2'), personCard('m-3')],
-    benches: {
-      person: makeBench({
-        id: 'm-1',
-        name: 'Card m-1',
-        kind: 'person',
-        one_liner: 'A fixture one-liner.',
-      }),
-    },
-    tiers: { person: makeTier('person', ['m-2', 'm-3']) },
     milestonesDone: [],
   });
 }
@@ -136,7 +84,7 @@ function crossedSession(): StudioSession {
 /* ---- checkMilestones ------------------------------------------------------ */
 
 describe('checkMilestones', () => {
-  it('fires unlock-household when pinned.person >= 3 and world_drafts.total >= 1', () => {
+  it('fires unlock-household when archived.person >= 3 and world_drafts.total >= 1', () => {
     const fired = checkMilestones(crossedSession(), [{ scale: 'person' }], [UNLOCK_HOUSEHOLD]);
     expect(fired).toEqual(['unlock-household']);
   });
@@ -150,10 +98,9 @@ describe('checkMilestones', () => {
     expect(checkMilestones(after, [{ scale: 'person' }], [UNLOCK_HOUSEHOLD])).toEqual([]);
   });
 
-  it('does not fire below the pinned threshold', () => {
+  it('does not fire below the archived threshold', () => {
     const session = makeSession({
       archive: [personCard('m-1'), personCard('m-2')],
-      tiers: { person: makeTier('person', ['m-1', 'm-2']) },
     });
     expect(checkMilestones(session, [{ scale: 'person' }], [UNLOCK_HOUSEHOLD])).toEqual([]);
   });
@@ -198,7 +145,7 @@ describe('checkMilestones', () => {
         op: 'and',
         operands: [
           { op: 'gte', key: 'world_drafts.total', value: 1 },
-          { op: 'gte', key: 'pinned.person', value: 3 },
+          { op: 'gte', key: 'archived.person', value: 3 },
         ],
       },
       grants: { tier: 'household', ceremony_sid: 'graduation.household' },

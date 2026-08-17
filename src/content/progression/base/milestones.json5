@@ -1,5 +1,8 @@
 // Unlock milestones — one per non-person tier. Each predicate is an
-// archive-style conjunction over world_drafts and pinned counts.
+// archive-style conjunction over world_drafts and archived/pinned counts.
+// unlock-household counts ARCHIVED persons, not pins: the roster is seeded
+// by graduation itself and the person bench holds one pin at most, so the
+// gate must be reachable before any roster exists.
 {
   milestones: [
     {
@@ -9,7 +12,7 @@
         op: 'and',
         operands: [
           { op: 'gte', key: 'world_drafts.total', value: 1 },
-          { op: 'gte', key: 'pinned.person', value: 3 },
+          { op: 'gte', key: 'archived.person', value: 3 },
         ],
       },
       grants: { tier: 'household', ceremony_sid: 'graduation.household' },

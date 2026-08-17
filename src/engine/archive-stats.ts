@@ -4,6 +4,8 @@
 //   pinned.<kind>        distinct archive cards of that kind currently pinned
 //                        by ANY bench OR referenced as a roster member's
 //                        focus_id (kind resolved through the archive)
+//   archived.<kind>      archive card counts by kind — the pre-roster
+//                        gate operand, reachable before any roster exists
 //   world_drafts.total   assembled world drafts, supplied by the caller —
 //   world_drafts.<scale> v1 does not persist drafts; Phase 1 threads them in
 //   harvests.<rarity>    archive card counts by rarity
@@ -46,24 +48,25 @@ export interface WorldDraftStatSource {
 
 export interface ArchiveStats {
   readonly pinned: Readonly<Record<string, number>>;
+  readonly archived: Readonly<Record<string, number>>;
   readonly world_drafts: Readonly<Record<string, number>>;
   readonly harvests: Readonly<Record<string, number>>;
 }
 
 export interface ArchiveStatKeyVocabulary {
-  /** Stat-key sections. `pinned` has an open tail: any non-empty kind id. */
+  /** Stat-key sections. `pinned` and `archived` have an open tail: any non-empty kind id. */
   readonly sections: readonly string[];
   readonly world_drafts: readonly string[];
   readonly harvests: readonly string[];
 }
 
 export const ARCHIVE_STAT_KEYS: ArchiveStatKeyVocabulary = {
-  sections: ['pinned', 'world_drafts', 'harvests'],
+  sections: ['pinned', 'archived', 'world_drafts', 'harvests'],
   world_drafts: ['total', ...SCALE_VALUES],
   harvests: ['common', 'uncommon', 'rare'] satisfies readonly ManifestRarity[],
 };
 
-const OPEN_TAIL_SECTIONS: readonly string[] = ['pinned'];
+const OPEN_TAIL_SECTIONS: readonly string[] = ['pinned', 'archived'];
 
 export function isKnownArchiveStatKey(key: string): boolean {
   const dot = key.indexOf('.');
@@ -127,6 +130,11 @@ export function computeArchiveStats(
     pinned[kind] = ids.size;
   }
 
+  const archived: Record<string, number> = {};
+  for (const card of session.archive) {
+    archived[card.kind] = (archived[card.kind] ?? 0) + 1;
+  }
+
   const worldDraftCounts: Record<string, number> = { total: worldDrafts.length };
   for (const draft of worldDrafts) {
     worldDraftCounts[draft.scale] = (worldDraftCounts[draft.scale] ?? 0) + 1;
@@ -137,7 +145,7 @@ export function computeArchiveStats(
     harvests[card.rarity] = (harvests[card.rarity] ?? 0) + 1;
   }
 
-  return { pinned, world_drafts: worldDraftCounts, harvests };
+  return { pinned, archived, world_drafts: worldDraftCounts, harvests };
 }
 
 /* ---- evaluate + validate ---------------------------------------------------- */
@@ -151,6 +159,9 @@ function statNumber(stats: ArchiveStats, key: string): number {
   const tail = key.slice(dot + 1);
   if (section === 'pinned') {
     return stats.pinned[tail] ?? 0;
+  }
+  if (section === 'archived') {
+    return stats.archived[tail] ?? 0;
   }
   if (section === 'world_drafts') {
     return stats.world_drafts[tail] ?? 0;

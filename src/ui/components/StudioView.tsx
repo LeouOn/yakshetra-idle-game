@@ -105,7 +105,7 @@ const UNLOCK_HOUSEHOLD = 'unlock-household';
 
 /** The two gte operands of `unlock-household`, hardcoded for Phase 1. */
 const HOUSEHOLD_GATE: readonly { readonly key: string; readonly m: number }[] = [
-  { key: 'pinned.person', m: 3 },
+  { key: 'archived.person', m: 3 },
   { key: 'world_drafts.total', m: 1 },
 ];
 
@@ -250,6 +250,9 @@ function statValue(stats: ArchiveStats, key: string): number {
   if (section === 'pinned') {
     return stats.pinned[tail] ?? 0;
   }
+  if (section === 'archived') {
+    return stats.archived[tail] ?? 0;
+  }
   if (section === 'world_drafts') {
     return stats.world_drafts[tail] ?? 0;
   }
@@ -261,7 +264,7 @@ function statValue(stats: ArchiveStats, key: string): number {
 
 /** The least-satisfied gte operand of the household gate, as n/m. */
 function householdProgress(stats: ArchiveStats): { n: number; m: number } {
-  let worstKey = HOUSEHOLD_GATE[0]?.key ?? 'pinned.person';
+  let worstKey = HOUSEHOLD_GATE[0]?.key ?? 'archived.person';
   let worstM = HOUSEHOLD_GATE[0]?.m ?? 1;
   let worstRatio = Number.POSITIVE_INFINITY;
   for (const gate of HOUSEHOLD_GATE) {
