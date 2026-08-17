@@ -214,3 +214,23 @@ export { stepSession } from './session-step';
 export type { SessionStepContext, SessionStepResult, SessionStepSummary } from './session-step';
 export { buildCatalog } from './table-catalog';
 export type { CatalogEntry, CatalogMap } from './table-catalog';
+export {
+  BASE_AWAY_CAP,
+  EMPTY_BENCH_MODIFIERS,
+  MODIFIER_KEY_WHITELIST,
+  addBenchModifiers,
+  canEndow,
+  computeBenchModifiers,
+  effectiveAwayCap,
+  endowManifest,
+  endowableSlots,
+  modifiersFromEffects,
+} from './endowment';
+export type { BenchModifiers, EndowBlockReason, EndowCheck, EndowmentTrackLike } from './endowment';
+export {
+  activeVisitorFor,
+  noteVisitorHarvest,
+  stepVisitors,
+  visitorModifierOverlay,
+} from './visitors';
+export type { VisitorLike, VisitorStepContext } from './visitors';

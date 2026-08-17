@@ -675,3 +675,70 @@ These are noted by the final whole-branch review and ride to Phase 1:
   unparseable card now destroys the whole session with no diagnostic.
   Phase 1 should consider quarantine-before-delete when the persistence
   layer is next touched.
+
+### 14.6 Phase 1 deviations (household end-to-end)
+
+Recorded so later agents work against truth.
+
+- **Household bench auto-queues its cook inside `stepSession`.** Once folded
+  residue reaches the effective minimum, the cook fires there — this
+  replaces design §4's ceremony-queued guaranteed first harvest; the first
+  household card arrives when real folded residue cooks. Golden-tested
+  person equivalence.
+- **Member rng streams seed from the persisted roster `seed` row.**
+  Graduation derives it once, stable across reloads; `ctx.sessionSeed`
+  drives only the household-develop stream.
+- **`BenchState` gained `fold_position` (additive, defaulted)** so
+  every-4th-cumulative-event fold ordinals persist across sub-cadence
+  batches.
+- **The bench↔studio field mapping was extracted to
+  `src/engine/bench-mapping.ts`** (was 4 duplicated copies).
+- **`POLICY_PACK = 'tang-china'` hardcodes the only residue source**;
+  `stepCtx` captures first-render props (pack-constant assumption,
+  documented in-code).
+- **`unlock-household` originally gated on `pinned.person >= 3`** —
+  unreachable pre-roster (one bench pin slot; focus_ids only exist
+  post-graduation). Amended in Phase 2 to `archived.person >= 3`.
+- **Tang schedule block SIDs (`tang.block.*`) added** after content
+  referenced missing keys (22 keys); SID-existence lint remains deferred
+  (§14.2).
+- **Household kind rules made TOTAL (three appended fallback rows)** so no
+  legal window shape can crash the kind pick.
+- **Known open:** `operations.ts` at 286 lines (over the ~250 ceiling,
+  extraction deferred); charge bar renders against MIN 3 regardless of
+  window_min.
+
+### 14.7 Phase 2 deviations (idle depth)
+
+Recorded so later agents work against truth.
+
+- **Modifier vocabulary is exactly five whitelisted keys** (`cook_speed`,
+  `window_min`, `surplus_rate`, `offline_cap`, `endowment_slots`),
+  lint-enforced by `R-PROG-MODIFIER-KEYS` with integer/non-negative delta
+  checks; the engine tolerates off-vocabulary ops at runtime (lint rejects
+  at load).
+- **`queueDevelop` gained optional `{ cookTicksDiscount, minResidue }`**
+  (minResidue ratified beyond the plan's literal shape — without it
+  window_min would no-op against the internal ≥3 gate).
+- **`effectiveAwayCap = 240 + Σ unlocked tiers' offline_cap + global`**
+  (originally person-only; the household-keyed `long-absence` row forced
+  the sum). All four shipped endowment rows verified to bite.
+- **`visitor/gate-yaksa` grants `cook_speed` (not the planned
+  `surplus_rate`)** — the person bench's surplus path is golden-protected
+  inside `stepStudio`; `visitor/festival-day` is household-only for the
+  same reason. Visitor arrivals: per-tier `visitor_ticks` counter
+  (additive field), jitter = memberSeed-derived modulus, one active seat
+  per tier, decay ONLY on harvest (`noteVisitorHarvest`).
+- **`SessionStepContext` gained optional `visitors`; `adoptSteppedSession`
+  syncs `progression.tiers`** (visitor seats live there and would evaporate
+  after live ticks otherwise).
+- **Compendium:** auto-grant mirrors checkMilestones' exactly-once;
+  `computeGlobalRewards` folds MULTISEMANTICALLY (duplicate done ids
+  double-fold — sole writer dedupes; contract-locked by test); global
+  rewards feed `computeBenchModifiers`' 4th arg + `effectiveAwayCap`;
+  panel always rendered.
+- **Roster panel (StudioRoster):** focus cycle [none → cards → none] with
+  forward-looking labels; embody = engine `swapEmbodiment` adopt path;
+  focus writes only the roster row (key-omitted clear).
+- **`endow/person/deep-window`'s `window_min` gates the manual develop
+  button in the UI** (person engine path untouched, golden preserved).
