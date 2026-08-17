@@ -2,10 +2,12 @@
 //
 // The multi-bench counterpart of `stepStudio`: the embodied life advances on
 // the person bench with UNCHANGED stepStudio semantics (golden-tested),
-// autonomous members advance on per-member seeded rng and fold residue onto
-// the household bench, every cadence-th person event folds up too, and the
-// household bay cooks under the same alreadyCharged gate. Progression slices
-// are carried untouched — milestone checks are the caller's job.
+// autonomous members advance on rng seeded from their persisted roster rows
+// and fold residue onto the household bench, every cadence-th person event
+// folds up too, and the household bench AUTO-QUEUES its cook once folded
+// residue charges it (the household has no manual develop button), then
+// cooks under the alreadyCharged gate. Progression slices are carried
+// untouched — milestone checks are the caller's job.
 // Pure: no Date, no network, no global RNG; studio-session is TYPE-ONLY.
 // Bench shaping lives in bench-mapping; step-local chassis shaping lives in
 // session-step-internal.
@@ -14,6 +16,7 @@ import {
   MIN_RESIDUE_TO_DEVELOP,
   absorbSurplus,
   pendingResidue,
+  queueDevelop,
   recordStudioResidues,
   tickStudio,
 } from './operations';
@@ -40,7 +43,8 @@ export interface SessionStepContext {
   readonly memberPracticesFor: (policy: string) => readonly Practice[];
   /** Ending rules shared by the embodied life and the members. */
   readonly endings: readonly Ending[];
-  /** Stable per-session seed for the member rng streams. */
+  /** Stable per-session seed; seeds ONLY the household develop stream (member
+   * rng streams seed from their persisted roster `seed` rows). */
   readonly sessionSeed: string;
   /** Tier configs; the household row supplies the person fold cadence. */
   readonly tiers: readonly {
@@ -104,7 +108,9 @@ export function stepSession(
     // The cook gate snapshots the charge BEFORE any appends (stepStudio's gate).
     const alreadyCharged = pendingResidue(household).length >= MIN_RESIDUE_TO_DEVELOP;
 
-    // 2. Autonomous members — per-member seeded rng, residue folds at cadence 1.
+    // 2. Autonomous members — rng seeded from the persisted roster row
+    // (graduation derives it once and it survives reloads), residue folds at
+    // cadence 1.
     for (const tier of Object.values(session.tiers)) {
       for (const member of tier.roster.members) {
         const stored = members[member.id];
@@ -117,7 +123,7 @@ export function stepSession(
           ctx.memberScheduleFor(member.policy),
           ctx.endings,
           BigInt(ticks),
-          createRng(memberSeed(ctx.sessionSeed, member.id)),
+          createRng(BigInt(member.seed)),
         );
         if (members === session.members) {
           members = { ...session.members };
@@ -154,7 +160,19 @@ export function stepSession(
     household = recordStudioResidues(household, copies);
     folded = copies.length;
 
-    // 4. Household cook under the alreadyCharged gate.
+    // 4. Auto-queue the household cook. The household bench has no manual
+    // develop control — folded residue is its only charge path — so the step
+    // itself queues the cook once the window reaches the minimum. A dedicated
+    // derived stream leaves the embodied rng untouched.
+    if (household.bay === null && pendingResidue(household).length >= MIN_RESIDUE_TO_DEVELOP) {
+      household = queueDevelop(
+        household,
+        null,
+        createRng(memberSeed(ctx.sessionSeed, 'household-develop')),
+      );
+    }
+
+    // 5. Household cook under the alreadyCharged gate.
     household = tickStudio(household, ticks);
     if (alreadyCharged && ticks > 0) {
       household = absorbSurplus(household, ticks);
@@ -165,7 +183,7 @@ export function stepSession(
     };
   }
 
-  // 5. New session — progression slices untouched.
+  // 6. New session — progression slices untouched.
   const lifePrevLen = session.life.residue.length;
   const lifeLog = embodied.life.residue ?? [];
   const nextSession: StudioSession = {

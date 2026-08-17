@@ -588,6 +588,68 @@ describe('StudioView', () => {
     expect(household?.residue.some((e) => e.ids.includes('bench:person'))).toBe(true);
   });
 
+  it('harvests a household card through the live tick path after graduation', async () => {
+    // E2E for the auto-queue: no hand-spliced bay — a graduated session comes
+    // back from a week-long absence, the mount catch-up runs the SAME
+    // stepSession tick path as live tend presses, folded member residue
+    // (including practice level-ups, which make the window an heirloom)
+    // auto-queues and cooks the household bay, and the harvest button yields
+    // an exported household-scale card.
+    const probe = vi.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+    const awayTicks = 168; // 7 days at 60s/tick, under the 240 cap
+    const seeded = StudioSessionSchema.parse({
+      ...graduatedSession([211n, 223n, 227n]),
+      last_visited_at_unix: 1_000_000 - awayTicks * STUDIO_SECONDS_PER_TICK,
+    });
+    const storage = createMemoryStudioKv({ [STUDIO_SESSION_KEY]: JSON.stringify(seeded) });
+
+    const onExport = vi.fn();
+    const { getByTestID, getByText, press, container } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+        onExport,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // The away catch-up charged, auto-queued, and cooked the household bay.
+    expect(() => getByText(formatSid('studio.tier_ready_badge_sid', { n: 1 }))).not.toThrow();
+    const saved = await loadStudioSession(storage);
+    const household = saved?.benches['household'];
+    expect(household?.bay?.status).toBe('ready');
+    // The queued window is folded member/person residue with level-ups.
+    expect(household?.bay?.residue.some((e) => e.type === 'practice_level')).toBe(true);
+    expect(
+      household?.bay?.residue.every(
+        (e) => e.ids.some((id) => id.startsWith('member:')) || e.ids.includes('bench:person'),
+      ),
+    ).toBe(true);
+
+    // A live tend pulse after the catch-up keeps the ready bay stable.
+    press(getByTestID('studio-tend'));
+
+    press(getByTestID('studio-harvest'));
+
+    const kinds = kindBadges(container);
+    expect(
+      kinds.includes(resolveSid('studio.kind_tradition_sid')) ||
+        kinds.includes(resolveSid('studio.kind_heirloom_sid')),
+    ).toBe(true);
+
+    press(getByTestID('studio-export'));
+    expect(onExport).toHaveBeenCalledTimes(1);
+    const json = onExport.mock.calls[0]?.[0] as string;
+    expect(json).toContain('"scale":"household"');
+    expect(json).toMatch(/"kind":"(tradition|heirloom)"/);
+    probe.mockRestore();
+  });
+
   it('keeps the household bench out of the saved session while the tier is locked', async () => {
     // Regression guard: the locked tick path stays person-only (stepSession's
     // golden invariant), asserted here at the persistence layer.

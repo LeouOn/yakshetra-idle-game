@@ -88,13 +88,15 @@ export function freshSchemaEvents(
   }));
 }
 
-/** stepStudio only advances cook_ticks_done/status — keep the queued window. */
+/** stepStudio only advances cook_ticks_done/status — keep the queued window.
+ * A bay that appears mid-step (the household auto-queue in session-step) is
+ * persisted fresh, its window copied into mutable schema shape. */
 function bayAfterStep(studio: StudioState, prevBay: BenchState['bay']): BenchState['bay'] {
   if (studio.bay === null) {
     return null;
   }
   if (prevBay === null) {
-    throw new Error('stepSession: step produced a bay without a queued window');
+    return { ...studio.bay, residue: schemaEvents(studio.bay.residue) };
   }
   return { ...prevBay, cook_ticks_done: studio.bay.cook_ticks_done, status: studio.bay.status };
 }

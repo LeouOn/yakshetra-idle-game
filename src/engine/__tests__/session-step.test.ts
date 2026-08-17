@@ -14,6 +14,9 @@
 //   (e) determinism: same session + ctx + rng → same result
 //   (f) embodied roster members are never run autonomously; slice-less
 //       roster members are skipped
+//   (g) the household bench AUTO-QUEUES its cook once folded residue
+//       charges it: null → cooking → ready across calls, and a locked
+//       household never grows a bench
 //
 // Embodied fixtures are synthetic (six 4-hour practice blocks → exactly six
 // practice_tick events per 24-tick step). Member fixtures load the real
@@ -367,11 +370,17 @@ describe('stepSession (autonomous members)', () => {
     expect(out.session.idle.total_idle_ticks).toBe('24');
     expect(out.session.practices.every((p) => p.currentProgress === 4)).toBe(true);
 
+    // Folded member + person events charged the bench, the step auto-queued
+    // the household cook (window 4 → 8 cook ticks), and 24 ticks finished it.
+    expect(hh.bay).not.toBeNull();
+    expect(hh.bay?.status).toBe('ready');
+    expect(hh.last_harvest_index).toBe(hh.residue.length - 1);
+
     expect(out.summary).toEqual({
       embodiedTicks: 24,
       memberTicks: 48,
       folded: 1,
-      benchesReady: [],
+      benchesReady: ['household'],
     });
 
     // Progression slices untouched.
@@ -495,13 +504,23 @@ describe('stepSession (household cook)', () => {
     expect(out.summary.embodiedTicks).toBe(cookTotal);
   });
 
-  it('absorbs ticks into surplus when charged but bayless', () => {
+  it('auto-queues a charged bayless bench instead of banking surplus', () => {
+    // The old behavior banked ticks into surplus while the charged window sat
+    // unqueued; the auto-queue spends the window first, so surplus stays 0,
+    // the fresh bay cooks, and — because the bench was ALREADY charged when
+    // the call began — the tend ticks absorb into the cook and finish it.
     const session = withHouseholdBench(
       householdSession({ roster: [], practices: [] }),
       hhBench({ residue: benchResidue(MIN_RESIDUE_TO_DEVELOP + 1) }),
     );
     const out = stepSession(session, ctx, 5, createRng(4n));
-    expect(benchOf(out.session, 'household').surplus).toBe(5);
+    const hh = benchOf(out.session, 'household');
+    expect(hh.surplus).toBe(0);
+    expect(hh.bay?.status).toBe('ready');
+    // Window 4 → 8 cook ticks; 5 direct + 5 absorbed ticks clamp at 8.
+    expect(hh.bay?.cook_ticks_done).toBe(8);
+    expect(hh.last_harvest_index).toBe(hh.residue.length - 1);
+    expect(out.summary.benchesReady).toEqual(['household']);
   });
 
   it('skips the absorb gate when the household bench is not charged', () => {
@@ -574,5 +593,79 @@ describe('stepSession (embodiment fence)', () => {
     expect(out.session.life.turn).toBe(24);
     expect(benchOf(out.session, 'person').residue).toHaveLength(6);
     expect(out.summary.memberTicks).toBe(24);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (g) household auto-queue: folded residue reaches the cook without a button
+// ---------------------------------------------------------------------------
+
+describe('stepSession (household auto-queue)', () => {
+  it('queues the cook as folded residue accumulates, then cooks to ready across calls', () => {
+    const session = withHouseholdBench(householdSession({ roster: [] }), hhBench());
+
+    // 4-tick calls emit one embodied event each; the cadence-4 fold-up lands
+    // the third household event after ~12 calls, which auto-queues the cook
+    // (window 3 → 7 cook ticks). Four ticks leave the fresh bay cooking.
+    let last = stepSession(session, MEMBER_CTX, 4, createRng(1n));
+    let guard = 0;
+    while (benchOf(last.session, 'household').bay === null && guard < 30) {
+      last = stepSession(last.session, MEMBER_CTX, 4, createRng(1n));
+      guard += 1;
+    }
+    const queued = benchOf(last.session, 'household');
+    expect(queued.bay).not.toBeNull();
+    expect(queued.bay?.status).toBe('cooking');
+    // The window is spent the moment the cook queues.
+    expect(queued.last_harvest_index).toBe(queued.residue.length - 1);
+    expect(queued.bay?.residue).toHaveLength(MIN_RESIDUE_TO_DEVELOP);
+
+    // Later calls finish the cook and the summary reports the bench ready.
+    let cookGuard = 0;
+    while (benchOf(last.session, 'household').bay?.status === 'cooking' && cookGuard < 30) {
+      last = stepSession(last.session, MEMBER_CTX, 4, createRng(1n));
+      cookGuard += 1;
+    }
+    expect(benchOf(last.session, 'household').bay?.status).toBe('ready');
+    expect(last.summary.benchesReady).toContain('household');
+    expect(cookGuard).toBeGreaterThan(0);
+  });
+
+  it('auto-queues from member residue on the first charged call and cooks to ready', () => {
+    const session = withHouseholdBench(
+      householdSession({
+        roster: [rosterMember('chen', 'Chen', false)],
+        members: { chen: freshMember() },
+      }),
+      hhBench(),
+    );
+    const out = stepSession(session, MEMBER_CTX, 24, createRng(3n));
+
+    // One member day folds 3 events (cadence 1) + 1 person fold = 4 → queue
+    // (window 4 → 8 cook ticks), and the same 24 ticks finish the cook.
+    const hh = benchOf(out.session, 'household');
+    expect(hh.bay?.status).toBe('ready');
+    expect(hh.bay?.residue).toHaveLength(4);
+    expect(out.summary.benchesReady).toEqual(['household']);
+  });
+
+  it('never queues a household bay while the tier is locked', () => {
+    // The golden test pins locked ≡ stepStudio (member resolvers throw);
+    // this is the cheap explicit form: a charged person bench across several
+    // calls never grows a household bench.
+    const studio = recordStudioResidues(createStudioState(), benchResidue(MIN_RESIDUE_TO_DEVELOP));
+    let current = snapshotStudioSession(studio, createIdleState(), makeLife(), SIX, 1234, {
+      tiers: {
+        person: createTierState('person', true),
+        household: createTierState('household', false),
+      },
+      milestones_done: [],
+      compendium_done: [],
+      embodied_member: null,
+    });
+    for (let i = 0; i < 3; i++) {
+      current = stepSession(current, MEMBER_CTX, 24, createRng(2n)).session;
+      expect('household' in current.benches).toBe(false);
+    }
   });
 });
