@@ -188,6 +188,14 @@ describe('develop-from-residue', () => {
     expect(queued.bay?.residue).toHaveLength(2);
   });
 
+  it('floors a minResidue override at 1', () => {
+    const one = recordStudioResidues(createStudioState(), events(1));
+    expect(queueDevelop(one, null, createRng(7n), { minResidue: 0 }).bay).not.toBeNull();
+    expect(
+      queueDevelop(createStudioState(), null, createRng(7n), { minResidue: -3 }).bay,
+    ).toBeNull();
+  });
+
   it('keeps the legacy queue math when opts are empty', () => {
     const plain = queueDevelop(chargedStudio(), null, createRng(7n));
     const withEmptyOpts = queueDevelop(chargedStudio(), null, createRng(7n), {});

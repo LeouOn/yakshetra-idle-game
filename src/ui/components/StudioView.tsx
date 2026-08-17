@@ -31,7 +31,6 @@ import {
   STUDIO_TEND_TICKS,
   assembleWorldDraft,
   canHarvest,
-  canQueueDevelop,
   canUpgradeQuality,
   canonicalStringify,
   checkMilestones,
@@ -662,7 +661,13 @@ export default function StudioView({
   const householdBayReady =
     householdBench !== null && householdBench.bay !== null && householdBench.bay.status === 'ready';
   const harvestable = canHarvest(studio) || householdBayReady;
-  const developable = canQueueDevelop(studio);
+  // Endowed window_min widens the manual develop gate; floored at 2 so a
+  // develop always cooks a real window.
+  const personEffectiveMin = Math.max(
+    2,
+    MIN_RESIDUE_TO_DEVELOP - modifiersForSession(buildSession())(EMBODIED_SCALE).windowMin,
+  );
+  const developable = studio.bay === null && pending.length >= personEffectiveMin;
   const upgradable = canUpgradeQuality(studio);
   const remainingForUpgrade = Math.max(0, QUALITY_UPGRADE_HARVESTS - studio.harvest_count);
   const latest = studio.archive[studio.archive.length - 1];
@@ -727,11 +732,13 @@ export default function StudioView({
   function develop(): void {
     const trimmed = brief.trim();
     // The manual develop path queues the person bench, so its endowed
-    // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the engine).
-    const cookTicksDiscount = modifiersForSession(buildSession())(EMBODIED_SCALE).cookSpeed;
+    // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the
+    // engine) and its window_min widens the queue gate above.
+    const personMods = modifiersForSession(buildSession())(EMBODIED_SCALE);
     setStudio(
       queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current, {
-        cookTicksDiscount,
+        cookTicksDiscount: personMods.cookSpeed,
+        minResidue: personEffectiveMin,
       }),
     );
   }

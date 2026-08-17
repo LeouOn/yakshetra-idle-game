@@ -125,17 +125,25 @@ export function endowManifest(
 /* ---- effectiveAwayCap ----------------------------------------------------- */
 
 /**
- * Idle-away cap (minutes/ticks equivalent) = base + person-tier
- * offline_cap modifiers + global offline cap. Household-tier offline_cap
- * rows do NOT leak here — the bench is per-tier, and only the person tier
- * drives the away cap.
+ * Idle-away cap (minutes/ticks equivalent) = base + the sum of every
+ * UNLOCKED tier's offline_cap modifiers + the global offline cap. Each
+ * unlocked tier's bench accrues during away time, so each one's endowed
+ * offline_cap rows raise the shared catch-up ceiling; locked tiers
+ * contribute nothing. Per-tier modifiers are computed with an empty global
+ * view so the caller's global adds exactly once.
  */
 export function effectiveAwayCap(
   session: StudioSession,
   tracks: readonly EndowmentTrackLike[],
   global: BenchModifiers = EMPTY_BENCH_MODIFIERS,
 ): number {
-  return BASE_AWAY_CAP + computeBenchModifiers('person', session, tracks, global).offlineCap;
+  let tierCaps = 0;
+  for (const tier of Object.values(session.tiers)) {
+    if (tier.unlocked) {
+      tierCaps += computeBenchModifiers(tier.tier, session, tracks).offlineCap;
+    }
+  }
+  return BASE_AWAY_CAP + tierCaps + global.offlineCap;
 }
 
 /* ---- re-exports for the public surface ----------------------------------- */

@@ -162,7 +162,8 @@ export function absorbSurplus(studio: StudioState, extraTicks: number): StudioSt
  *
  * `opts.cookTicksDiscount` (endowment cook_speed) shortens the cook but never
  * below MIN_COOK_TICKS; `opts.minResidue` lowers the queue gate (default
- * MIN_RESIDUE_TO_DEVELOP) so a window_min modifier can start earlier cooks.
+ * MIN_RESIDUE_TO_DEVELOP) so a window_min modifier can start earlier cooks,
+ * floored at 1 so no modifier can ever queue an empty window.
  */
 export function queueDevelop(
   studio: StudioState,
@@ -171,7 +172,8 @@ export function queueDevelop(
   opts?: { readonly cookTicksDiscount?: number; readonly minResidue?: number },
 ): StudioState {
   const window = pendingResidue(studio);
-  if (studio.bay !== null || window.length < (opts?.minResidue ?? MIN_RESIDUE_TO_DEVELOP)) {
+  const gate = Math.max(1, opts?.minResidue ?? MIN_RESIDUE_TO_DEVELOP);
+  if (studio.bay !== null || window.length < gate) {
     return studio;
   }
   const seed = rng.nextInt(1, 0x7fffffff);

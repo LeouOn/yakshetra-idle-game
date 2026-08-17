@@ -715,4 +715,62 @@ describe('StudioView', () => {
       getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
     ).not.toThrow();
   });
+
+  /* ---- endowment modifiers: deep-window widens the manual develop gate ----- */
+
+  function sessionWithTwoPending(endowed: readonly string[]): StudioSession {
+    const hydrated = emptyHydratedSession();
+    const studio = recordStudioResidues(hydrated.studio, THING_WINDOW.slice(0, 2));
+    return snapshotStudioSession(
+      studio,
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: {
+          person: { ...createTierState('person', true), endowed: [...endowed] },
+        },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+  }
+
+  it('enables develop at 2 pending residue with an endowed deep-window track', () => {
+    const session = sessionWithTwoPending(['endow/person/deep-window']);
+
+    const { getByTestID, getByText, queryByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+      }),
+    );
+
+    expect(queryByText(resolveSid('studio.develop_locked_sid'))).toBeNull();
+    expect(() => getByText(resolveSid('studio.develop_button_sid'))).not.toThrow();
+
+    press(getByTestID('studio-develop'));
+    // Window 2 → cookTicksFor(2) = 6; no cook_speed endowment, no discount.
+    expect(() =>
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+    ).not.toThrow();
+  });
+
+  it('keeps develop locked at 2 pending residue without the deep-window track', () => {
+    const session = sessionWithTwoPending([]);
+
+    const { getByText, queryByText } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+      }),
+    );
+
+    expect(() => getByText(resolveSid('studio.develop_locked_sid'))).not.toThrow();
+    expect(queryByText(resolveSid('studio.develop_button_sid'))).toBeNull();
+  });
 });

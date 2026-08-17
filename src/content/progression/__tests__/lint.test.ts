@@ -124,6 +124,31 @@ describe('lintProgression', () => {
     expect(report.violations.some((v) => v.rule === 'R-PROG-MODIFIER-KEYS')).toBe(true);
   });
 
+  it('rejects a fractional add_resource delta in endowment rows', () => {
+    const registries = loadProgression();
+    const row = EndowmentTrackSchema.parse({
+      schema_version: 'endowment/v0',
+      id: 'endow/person/dribble-surplus',
+      tier: 'person',
+      requires: null,
+      slot_cost: 1,
+      effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 0.5 }],
+    });
+    const broken: ProgressionRegistries = {
+      ...registries,
+      endowment: [...registries.endowment, row],
+    };
+    const report = lintProgression(broken);
+    expect(report.passed).toBe(false);
+    expect(
+      report.violations.some(
+        (v) =>
+          v.rule === 'R-PROG-MODIFIER-KEYS' &&
+          (v.location?.includes('endow/person/dribble-surplus') ?? false),
+      ),
+    ).toBe(true);
+  });
+
   it('accepts the shipped endowment rows whose keys are all whitelisted', () => {
     const registries = loadProgression();
     expect(registries.endowment.length).toBeGreaterThanOrEqual(4);

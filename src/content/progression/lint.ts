@@ -30,8 +30,10 @@ function error(rule: string, message: string, location: string): LintViolation {
  *  - R-PROG-NO-METER: no metaphysical-meter token in any progression row.
  *  - R-PROG-MODIFIER-KEYS: every `add_resource` key in endowment, visitor
  *    and compendium rows belongs to the five-key bench modifier vocabulary
- *    exported by the engine. Off-vocabulary keys can never be summed, so
- *    they are rejected at content-load time.
+ *    exported by the engine, and every delta is a non-negative integer —
+ *    fractional surplus leaks fractional cook ticks and negative deltas are
+ *    nonsense. Off-vocabulary keys can never be summed, so they are
+ *    rejected at content-load time.
  */
 export function lintProgression(registries: ProgressionRegistries): LintReport {
   const violations: LintViolation[] = [];
@@ -117,11 +119,24 @@ export function lintProgression(registries: ProgressionRegistries): LintReport {
   ];
   for (const { effects, location } of modifierScopes) {
     for (const op of effects) {
-      if (op.op === 'add_resource' && !MODIFIER_KEY_WHITELIST.includes(op.key)) {
+      if (op.op !== 'add_resource') {
+        continue;
+      }
+      if (!MODIFIER_KEY_WHITELIST.includes(op.key)) {
         violations.push(
           error(
             R_PROG_MODIFIER_KEYS,
             `add_resource key "${op.key}" is not in the bench modifier vocabulary [${MODIFIER_KEY_WHITELIST.join(', ')}]`,
+            `${location}.effects`,
+          ),
+        );
+        continue;
+      }
+      if (!Number.isInteger(op.delta) || op.delta < 0) {
+        violations.push(
+          error(
+            R_PROG_MODIFIER_KEYS,
+            `add_resource delta ${op.delta} must be a non-negative integer`,
             `${location}.effects`,
           ),
         );

@@ -591,14 +591,42 @@ describe('effectiveAwayCap', () => {
     );
   });
 
-  it('ignores household-tier offline_cap endowments', () => {
+  it('counts an unlocked household tier offline_cap endowment (long-absence bites)', () => {
     const session = makeSession({
       tiers: {
         person: makeTier('person'),
         household: makeTier('household', { endowed: ['endow/household/long-absence'] }),
       },
     });
+    expect(effectiveAwayCap(session, CONTENT_TRACKS)).toBe(240 + 120);
+  });
+
+  it('skips a locked household tier offline_cap endowment', () => {
+    // Constructed session: endowing requires an unlocked tier, but the cap
+    // must still skip a locked tier's endowed list rather than read it.
+    const session = makeSession({
+      tiers: {
+        person: makeTier('person'),
+        household: makeTier('household', {
+          unlocked: false,
+          endowed: ['endow/household/long-absence'],
+        }),
+      },
+    });
     expect(effectiveAwayCap(session, CONTENT_TRACKS)).toBe(240);
+  });
+
+  it('adds the global offline cap exactly once with two unlocked tiers endowed', () => {
+    const session = makeSession({
+      tiers: {
+        person: makeTier('person', { endowed: ['endow/person/steady-hearth'] }),
+        household: makeTier('household', { endowed: ['endow/household/long-absence'] }),
+      },
+    });
+    const global: BenchModifiers = { ...EMPTY_BENCH_MODIFIERS, offlineCap: 30 };
+    expect(effectiveAwayCap(session, [...CONTENT_TRACKS, STEADY_HEARTH], global)).toBe(
+      240 + 105 + 120 + 30,
+    );
   });
 });
 
