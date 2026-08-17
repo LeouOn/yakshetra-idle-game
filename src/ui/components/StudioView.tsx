@@ -49,10 +49,12 @@ import {
   hydrateStudioSession,
   pendingResidue,
   pinFocus,
+  pinnableCards,
   queueDevelop,
   snapshotStudioSession,
   stepSession,
   studioTicksAway,
+  swapEmbodiment,
   tableFillManifest,
   upgradeQuality,
   type ArchiveStats,
@@ -65,6 +67,7 @@ import {
   type MemberSlice,
   type Practice,
   type Rng,
+  type RosterMember,
   type SessionProgression,
   type SessionStepContext,
   type StudioAwaySummary,
@@ -90,6 +93,7 @@ import StudioArchive from './StudioArchive';
 import StudioJuice from './StudioJuice';
 import StudioLife from './StudioLife';
 import StudioRail, { type RailTier } from './StudioRail';
+import StudioRoster from './StudioRoster';
 import StudioWorld from './StudioWorld';
 
 export const STUDIO_TEND_COUNT = STUDIO_TEND_TICKS;
@@ -879,6 +883,51 @@ export default function StudioView({
     setStudio(pinFocus(studio, card));
   }
 
+  /** Swap the embodied life for a roster member's slice (null restores the
+   *  default person life). Adoption mirrors adoptSteppedSession. */
+  function embody(id: string | null): void {
+    const swapped = swapEmbodiment(sessionFromSlices(benchRef.current), id);
+    const back = hydrateStudioSession(swapped, benchRef.current.life, benchRef.current.practices);
+    setLife(back.life);
+    setIdle(back.idle);
+    setStudio(back.studio);
+    setRuntimePractices(back.practices);
+    setMembers({ ...back.members });
+    setProgression((prev) => ({
+      ...prev,
+      tiers: swapped.tiers,
+      embodied_member: swapped.embodied_member,
+    }));
+  }
+
+  /** Focus is roster-row state only: the member's focus_id, never the bench pin. */
+  function assignFocus(id: string, cardId: string | null): void {
+    setProgression((prev) => {
+      const household = prev.tiers['household'];
+      if (household === undefined) {
+        return prev;
+      }
+      const members = household.roster.members.map((member): RosterMember => {
+        if (member.id !== id) {
+          return member;
+        }
+        if (cardId === null) {
+          const next: RosterMember = { ...member };
+          delete next.focus_id;
+          return next;
+        }
+        return { ...member, focus_id: cardId };
+      });
+      return {
+        ...prev,
+        tiers: {
+          ...prev.tiers,
+          household: { ...household, roster: { ...household.roster, members } },
+        },
+      };
+    });
+  }
+
   function exportWorld(json: string): void {
     onExport?.(json);
     setWorldExported(true);
@@ -1099,6 +1148,16 @@ export default function StudioView({
           onExportWorld={exportWorld}
           worldExported={worldExported}
         />
+
+        {householdUnlocked ? (
+          <StudioRoster
+            members={progression.tiers['household']?.roster.members ?? []}
+            embodiedMemberId={progression.embodied_member?.member ?? null}
+            pinnable={pinnableCards(studio.archive)}
+            onEmbody={embody}
+            onFocus={assignFocus}
+          />
+        ) : null}
 
         <Text accessibilityRole="header" style={styles.archiveHeading}>
           {resolveSid('studio.archive_heading_sid')}

@@ -131,6 +131,20 @@ function borderWidths(node: StyledNode): number[] {
     .filter((width): width is number => typeof width === 'number');
 }
 
+/** Single Text child of a Pressable (roster buttons), for labels that other
+ *  rows may duplicate (graduation draws roster names with replacement). */
+function buttonLabel(node: TestInstance): string {
+  const text = node.children[0];
+  if (typeof text !== 'object' || text === null) {
+    throw new Error('buttonLabel: node has no Text child');
+  }
+  const label = text.children[0];
+  if (typeof label !== 'string') {
+    throw new Error('buttonLabel: Text child has no string label');
+  }
+  return label;
+}
+
 function kindBadges(container: TestInstance): string[] {
   return container
     .queryAll(
@@ -950,5 +964,220 @@ describe('StudioView', () => {
     expect(() => getByText(resolveSid('compendium.five_harvests.name_sid'))).not.toThrow();
     expect(() => getByText(resolveSid('compendium.five_harvests.desc_sid'))).not.toThrow();
     expect(() => getByText(resolveSid('compendium.first_harvest.name_sid'))).not.toThrow();
+  });
+
+  /* ---- roster panel: mount gate, focus row, embodiment swap ---------------- */
+
+  it('hides the roster while the household is locked and seats it after graduation', () => {
+    const locked = sessionAt({ cards: [], pinnedId: null, focusIds: [] });
+    const hidden = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: locked,
+      }),
+    );
+    expect(hidden.container.queryAll((node) => node.props.testID === 'studio-roster')).toHaveLength(
+      0,
+    );
+
+    const graduated = graduatedSession([307n, 311n, 313n]);
+    const shown = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: graduated,
+      }),
+    );
+    expect(() => shown.getByTestID('studio-roster')).not.toThrow();
+    for (const id of ['m1', 'm2', 'm3']) {
+      expect(() => shown.getByTestID(`studio-roster-member-${id}`)).not.toThrow();
+    }
+  });
+
+  it('assigns focus to a roster member and persists the row', async () => {
+    const graduated = graduatedSession([317n, 331n, 337n]);
+    const focused = graduated.archive.find((card) => card.id === 'm-1');
+    expect(focused?.kind).toBe('person');
+    const storage = createMemoryStudioKv();
+
+    const { getByTestID, getByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: graduated,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    press(getByTestID('studio-roster-focus-m1'));
+    if (focused === undefined) {
+      throw new Error('roster focus test: fixture card m-1 missing');
+    }
+    expect(() =>
+      getByText(formatSid('studio.roster_focus_label_sid', { name: focused.name })),
+    ).not.toThrow();
+
+    const saved = await loadStudioSession(storage);
+    const row = saved?.tiers['household']?.roster.members.find((m) => m.id === 'm1');
+    expect(row?.focus_id).toBe('m-1');
+  });
+
+  it('swaps embodiment from the roster and restores it on release', async () => {
+    const graduated = graduatedSession([347n, 349n, 353n]);
+    const m1 = graduated.tiers['household']?.roster.members.find((m) => m.id === 'm1');
+    expect(m1).toBeDefined();
+    if (m1 === undefined) {
+      throw new Error('roster embody test: fixture member m1 missing');
+    }
+    const storage = createMemoryStudioKv();
+
+    const { getByTestID, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: graduated,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    press(getByTestID('studio-roster-embody-m1'));
+    expect(buttonLabel(getByTestID('studio-roster-embody-m1'))).toBe(
+      formatSid('studio.roster_embodied_sid', { name: m1.name }),
+    );
+    let saved = await loadStudioSession(storage);
+    expect(saved?.embodied_member).toEqual({ tier: 'household', member: 'm1' });
+    expect(saved?.tiers['household']?.roster.members.find((m) => m.id === 'm1')?.embodied).toBe(
+      true,
+    );
+
+    press(getByTestID('studio-roster-embody-m1'));
+    expect(buttonLabel(getByTestID('studio-roster-embody-m1'))).toBe(
+      formatSid('studio.roster_embody_sid', { name: m1.name }),
+    );
+    saved = await loadStudioSession(storage);
+    expect(saved?.embodied_member).toBeNull();
+  });
+
+  it('graduates through harvest presses alone and dismisses into the roster', async () => {
+    // The reachability pin, played honestly: a locked household with an EMPTY
+    // archive; each round seeds one social residue window (person kinds need a
+    // lens marker, which idle ticks never stamp) and the card itself lands via
+    // develop → tend → harvest PRESSES. Round three graduates inside the mount.
+    const probe = vi.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
+
+    function socialWindow(lensId: string, tick: number): ResidueEvent[] {
+      return [
+        { tick, type: 'lens_chosen', ids: [lensId], numbers: {} },
+        {
+          tick: tick + 1,
+          type: 'practice_tick',
+          ids: ['practice.test'],
+          numbers: { progress: 2 },
+        },
+        {
+          tick: tick + 2,
+          type: 'practice_tick',
+          ids: ['practice.test'],
+          numbers: { progress: 2 },
+        },
+      ];
+    }
+
+    function withWindow(session: StudioSession, window: readonly ResidueEvent[]): StudioSession {
+      const bench = session.benches['person'];
+      if (bench === undefined) {
+        throw new Error('graduation e2e: session has no person bench');
+      }
+      return StudioSessionSchema.parse({
+        ...session,
+        benches: {
+          ...session.benches,
+          person: { ...bench, residue: [...bench.residue, ...window], bay: null },
+        },
+      });
+    }
+
+    async function harvestRound(
+      session: StudioSession,
+      window: readonly ResidueEvent[],
+    ): Promise<StudioSession> {
+      const storage = createMemoryStudioKv();
+      const view = render(
+        createElement(StudioView, {
+          practices: [makePractice()],
+          schedule: ALL_DAY,
+          initialSession: withWindow(session, window),
+          persist: true,
+          storage,
+          clock: () => 1_000_000,
+        }),
+      );
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      view.press(view.getByTestID('studio-develop'));
+      view.press(view.getByTestID('studio-tend'));
+      view.press(view.getByTestID('studio-harvest'));
+      act(() => {
+        view.root.unmount();
+      });
+      const saved = await loadStudioSession(storage);
+      if (saved === null) {
+        throw new Error('graduation e2e: round did not persist');
+      }
+      return saved;
+    }
+
+    let session: StudioSession = sessionAt({ cards: [], pinnedId: null, focusIds: [] });
+    session = await harvestRound(session, socialWindow('lens.a', 10));
+    expect(session.archive.filter((card) => card.kind === 'person')).toHaveLength(1);
+    session = await harvestRound(session, socialWindow('lens.b', 20));
+    expect(session.archive.filter((card) => card.kind === 'person')).toHaveLength(2);
+    expect(session.world_drafts).toHaveLength(1);
+    expect(session.milestones_done).toEqual([]);
+
+    const storage = createMemoryStudioKv();
+    const { getByTestID, press, container } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: withWindow(session, socialWindow('lens.c', 30)),
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(container.queryAll((node) => node.props.testID === 'studio-roster')).toHaveLength(0);
+
+    press(getByTestID('studio-develop'));
+    press(getByTestID('studio-tend'));
+    press(getByTestID('studio-harvest'));
+
+    expect(() => getByTestID('graduation-overlay')).not.toThrow();
+    press(getByTestID('graduation-dismiss'));
+    expect(() => getByTestID('studio-roster')).not.toThrow();
+    for (const id of ['m1', 'm2', 'm3']) {
+      expect(() => getByTestID(`studio-roster-member-${id}`)).not.toThrow();
+    }
+
+    const saved = await loadStudioSession(storage);
+    expect(saved?.milestones_done).toContain('unlock-household');
+    expect(saved?.tiers['household']?.unlocked).toBe(true);
+    expect(saved?.world_drafts).toHaveLength(1);
+    probe.mockRestore();
   });
 });
