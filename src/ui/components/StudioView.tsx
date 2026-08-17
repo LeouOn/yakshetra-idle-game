@@ -1,16 +1,16 @@
 // Manifest bench — tend work, cook a residue window, harvest a card.
 //
-// Presentational + local session state. The engine stays pure; this view
-// steps the whole session through stepSession (embodied bench, autonomous
-// members, household cook) and fills harvests via the table fallback.
-// All copy is SIDs.
+// Render + handlers only: the session model (slices, load/catch-up/step/save)
+// lives in useStudioSession; the progression effects (compendium, milestones,
+// graduation) live in useStudioProgression. The engine stays pure; this view
+// steps the whole session through stepSession and fills harvests via the
+// table fallback. All copy is SIDs.
 //
-// Graduation: the session's progression slices (tiers, milestones, members,
-// world drafts, household bench) live here, are persisted with the bench, and
-// are checked against the content milestones after every change — crossing
-// `unlock-household` graduates through the engine and raises the ceremony.
+// Tier-generalized: tier enumeration — rail rows, visitor banners, rosters,
+// harvest priority, gate badges — iterates registries().tiers; no tier id is
+// hardcoded past the embodied person tier.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AccessibilityInfo,
   Platform,
@@ -22,76 +22,60 @@ import {
   View,
 } from 'react-native';
 
-import { loadEraPack } from '@/content/loader';
-import type { Ending, Practice as ContentPractice } from '@/content/schema';
-import type { EndowmentTrack } from '@/content/progression/schema';
-import { loadProgression, type ProgressionRegistries } from '@/content/progression/loader';
+import type { Ending } from '@/content/schema';
+import type { ArchivePredicate, EndowmentTrack } from '@/content/progression/schema';
 import {
   MIN_RESIDUE_TO_DEVELOP,
   QUALITY_UPGRADE_HARVESTS,
   STUDIO_TEND_TICKS,
-  assembleWorldDraft,
   canHarvest,
   canUpgradeQuality,
-  canEndow,
   canonicalStringify,
-  checkMilestones,
-  computeGlobalRewards,
   compileRequestFromBay,
   computeArchiveStats,
-  createIdleState,
-  createLifeState,
-  createRng,
-  createStudioState,
-  defaultProgression,
+  computeGlobalRewards,
+  endowableSlots,
   evaluateLifeContext,
-  graduateToHousehold,
-  grantCompendium,
   harvestTableFill,
   hydrateStudioSession,
   pendingResidue,
-  pinFocus,
   pinnableCards,
+  pinFocus,
   queueDevelop,
-  snapshotStudioSession,
   stepSession,
-  studioTicksAway,
   swapEmbodiment,
   tableFillManifest,
   upgradeQuality,
   type ArchiveStats,
-  type BenchState,
   type IdleState,
-  type KindRule,
   type LifeState,
   type Manifest,
   type ManifestScale,
-  type MemberSlice,
   type Practice,
   type Rng,
   type RosterMember,
-  type SessionProgression,
-  type SessionStepContext,
-  type StudioAwaySummary,
   type StudioSession,
   type StudioState,
-  type WorldDraftReference,
 } from '@/engine';
-import {
-  addBenchModifiers,
-  computeBenchModifiers,
-  effectiveAwayCap,
-  endowManifest,
-  endowableSlots,
-  type BenchModifiers,
-} from '@/engine/endowment';
-import { activeVisitorFor, noteVisitorHarvest, visitorModifierOverlay } from '@/engine/visitors';
-import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persistence';
+import { canEndow, endowManifest } from '@/engine/endowment';
+import { noteVisitorHarvest } from '@/engine/visitors';
+import type { StudioKv } from '@/persistence';
 import type { CalendarEpoch } from '@/engine/calendar';
 import type { DailySchedule } from '@/engine/schedule';
 import { resolveScheduleState } from '@/engine/schedule';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
+import {
+  EMBODIED_TIER,
+  kindRulesByScale,
+  modifiersForSession,
+  nonPersonBenches,
+  registries,
+  sessionFromSlices,
+  useStudioSession,
+  withRecordedDrafts,
+} from '@/ui/hooks/useStudioSession';
+import { useStudioProgression } from '@/ui/hooks/useStudioProgression';
 import StudioActivities from './StudioActivities';
 import StudioArchive, { type EndowChipState } from './StudioArchive';
 import StudioJuice from './StudioJuice';
@@ -104,220 +88,8 @@ export const STUDIO_TEND_COUNT = STUDIO_TEND_TICKS;
 
 const DEFAULT_EPOCH: CalendarEpoch = { year: 1, month: 1, day: 1, hour: 0 };
 
-/** Phase 1: the embodied bench life is the person tier; the household rides beside it. */
-const EMBODIED_SCALE: ManifestScale = 'person';
-const HOUSEHOLD_SCALE: ManifestScale = 'household';
-const EMBODIED_TIER = 'person';
-const HOUSEHOLD_TIER = 'household';
-const UNLOCK_HOUSEHOLD = 'unlock-household';
-
-/** The two gte operands of `unlock-household`, hardcoded for Phase 1. */
-const HOUSEHOLD_GATE: readonly { readonly key: string; readonly m: number }[] = [
-  { key: 'archived.person', m: 3 },
-  { key: 'world_drafts.total', m: 1 },
-];
-
-let registriesCache: ProgressionRegistries | null = null;
-
-function registries(): ProgressionRegistries {
-  if (registriesCache === null) {
-    registriesCache = loadProgression();
-  }
-  return registriesCache;
-}
-
-let rulesByScaleCache: Readonly<Record<string, readonly KindRule[]>> | null = null;
-
 /** Shared default so the `endings` prop keeps one identity across renders. */
 const NO_ENDINGS: readonly Ending[] = [];
-
-/** Phase 1 residue-source pack; roster policies resolve against it. */
-const POLICY_PACK = 'tang-china';
-
-/**
- * Stable session seed for the autonomous member rng streams: roster
- * `memberSeed` derives each member's stream from `<sessionSeed>:<memberId>`,
- * so member days replay identically across reloads and devices.
- */
-const SESSION_SEED = 'yakshetra-studio';
-
-interface PolicyRuntime {
-  readonly practices: readonly Practice[];
-  readonly schedule: DailySchedule;
-}
-
-let policyRuntimeCache: ReadonlyMap<string, PolicyRuntime> | null = null;
-
-function toRuntimePractice(practice: ContentPractice): Practice {
-  const { minigame_id, ...rest } = practice;
-  return {
-    ...rest,
-    currentProgress: 0,
-    level: 0,
-    ...(minigame_id === undefined ? {} : { minigame_id }),
-  };
-}
-
-/** Roster policy rows resolved to pack runtime practices + schedule. */
-function policyRuntime(): ReadonlyMap<string, PolicyRuntime> {
-  if (policyRuntimeCache === null) {
-    const pack = loadEraPack(POLICY_PACK);
-    const schedules = new Map(pack.schedules.map((row) => [row.id, row]));
-    const practices = new Map(pack.practices.map((row) => [row.id, toRuntimePractice(row)]));
-    const out = new Map<string, PolicyRuntime>();
-    for (const policy of registries().policies) {
-      const schedule = schedules.get(policy.schedule_ref);
-      if (schedule === undefined) {
-        throw new Error(`studio: policy "${policy.id}" has no schedule "${policy.schedule_ref}"`);
-      }
-      out.set(policy.id, {
-        practices: policy.practices.map((id) => {
-          const found = practices.get(id);
-          if (found === undefined) {
-            throw new Error(`studio: policy "${policy.id}" has no practice "${id}"`);
-          }
-          return found;
-        }),
-        schedule,
-      });
-    }
-    policyRuntimeCache = out;
-  }
-  return policyRuntimeCache;
-}
-
-/** The session-relevant state slices, in the shape snapshotStudioSession eats. */
-interface BenchSlices {
-  readonly studio: StudioState;
-  readonly idle: IdleState;
-  readonly life: LifeState;
-  readonly practices: readonly Practice[];
-  readonly progression: SessionProgression;
-  readonly members: Record<string, MemberSlice>;
-  readonly worldDrafts: readonly WorldDraftReference[];
-  readonly householdBench: BenchState | null;
-}
-
-function sessionFromSlices(slices: BenchSlices, lastVisitedAtUnix?: number): StudioSession {
-  const base = snapshotStudioSession(
-    slices.studio,
-    slices.idle,
-    slices.life,
-    slices.practices,
-    lastVisitedAtUnix,
-    slices.progression,
-    { members: slices.members, world_drafts: slices.worldDrafts },
-  );
-  return slices.householdBench === null
-    ? base
-    : { ...base, benches: { ...base.benches, household: slices.householdBench } };
-}
-
-/** Loader kind rules regrouped by row scale, file order preserved. */
-function kindRulesByScale(): Readonly<Record<string, readonly KindRule[]>> {
-  if (rulesByScaleCache === null) {
-    const { kindRows, kindRules } = registries();
-    const out: Record<string, KindRule[]> = {};
-    kindRows.forEach((row, index) => {
-      const rule = kindRules[index];
-      if (rule === undefined) {
-        throw new Error('studio: progression kind rows and rules are out of parallel order');
-      }
-      out[row.scale] = [...(out[row.scale] ?? []), rule];
-    });
-    rulesByScaleCache = out;
-  }
-  return rulesByScaleCache;
-}
-
-/**
- * Endowment modifiers for one session's tiers, composed with the seated
- * visitor's overlay and the compendium's per-session global bonus. Track
- * rows and visitor rows are mount-stable content; the endowed lists,
- * visitor seats, and compendium_done list live on the session, so the
- * resolver is rebuilt per session.
- */
-function modifiersForSession(session: StudioSession): (tierId: string) => BenchModifiers {
-  const tracks = registries().endowment;
-  const visitorRows = registries().visitors;
-  const global = computeGlobalRewards(session.compendium_done, registries().compendium);
-  return (tierId: string): BenchModifiers =>
-    addBenchModifiers(
-      computeBenchModifiers(tierId, session, tracks, global),
-      visitorModifierOverlay(visitorRows, activeVisitorFor(session, tierId)?.id ?? null),
-    );
-}
-
-/** Harvest-priority tier for endowing: the household once unlocked, else the person. */
-function endowTierOf(session: StudioSession): string {
-  return session.tiers[HOUSEHOLD_TIER]?.unlocked === true ? HOUSEHOLD_TIER : EMBODIED_TIER;
-}
-
-/**
- * Tracks the endow chip may offer for the session: tier match, requires met,
- * not already endowed, slot cost fitting the remaining slots (compendium
- * bonus included). Empty → every chip renders locked.
- */
-function endowPlan(session: StudioSession): readonly EndowmentTrack[] {
-  const tierId = endowTierOf(session);
-  const tier = session.tiers[tierId];
-  if (tier === undefined) {
-    return [];
-  }
-  const global = computeGlobalRewards(session.compendium_done, registries().compendium);
-  const slots = endowableSlots(tierId, session, registries().endowment, registries().tiers, global);
-  return registries().endowment.filter(
-    (track) =>
-      track.tier === tierId &&
-      !tier.endowed.includes(track.id) &&
-      (track.requires === null || session.milestones_done.includes(track.requires)) &&
-      track.slot_cost <= slots,
-  );
-}
-
-/** Display label for a track row; tracks carry no SID namespace, so the id tail names them. */
-function endowTrackLabel(track: EndowmentTrack): string {
-  const parts = track.id.split('/');
-  return parts[parts.length - 1] ?? track.id;
-}
-
-function statValue(stats: ArchiveStats, key: string): number {
-  const dot = key.indexOf('.');
-  if (dot <= 0) {
-    return 0;
-  }
-  const section = key.slice(0, dot);
-  const tail = key.slice(dot + 1);
-  if (section === 'pinned') {
-    return stats.pinned[tail] ?? 0;
-  }
-  if (section === 'archived') {
-    return stats.archived[tail] ?? 0;
-  }
-  if (section === 'world_drafts') {
-    return stats.world_drafts[tail] ?? 0;
-  }
-  if (section === 'harvests') {
-    return stats.harvests[tail] ?? 0;
-  }
-  return 0;
-}
-
-/** The least-satisfied gte operand of the household gate, as n/m. */
-function householdProgress(stats: ArchiveStats): { n: number; m: number } {
-  let worstKey = HOUSEHOLD_GATE[0]?.key ?? 'archived.person';
-  let worstM = HOUSEHOLD_GATE[0]?.m ?? 1;
-  let worstRatio = Number.POSITIVE_INFINITY;
-  for (const gate of HOUSEHOLD_GATE) {
-    const ratio = Math.min(1, statValue(stats, gate.key) / gate.m);
-    if (ratio < worstRatio) {
-      worstRatio = ratio;
-      worstKey = gate.key;
-      worstM = gate.m;
-    }
-  }
-  return { n: Math.min(statValue(stats, worstKey), worstM), m: worstM };
-}
 
 export interface StudioViewProps {
   readonly onBack?: () => void;
@@ -341,21 +113,6 @@ export interface StudioViewProps {
 
 function defaultClock(): number {
   return Math.floor(Date.now() / 1000);
-}
-
-function defaultLife(): LifeState {
-  return createLifeState({
-    id: 'studio-bench' as LifeState['id'],
-    era: 'studio-bench@0.1.0' as LifeState['era'],
-    role: 'operator' as LifeState['role'],
-    identity: {
-      gender: 'unspecified',
-      social_class: 'operator',
-      family_wealth_at_birth: 'unspecified',
-      caste_status: 'none',
-      disability_status: 'none',
-    },
-  });
 }
 
 export const HARVEST_FLOURISH_MS = 1600;
@@ -440,22 +197,116 @@ function awayDuration(ticks: number): string {
   return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
 
+/** Harvest-priority tier for endowing: the highest unlocked tier that HAS
+ * endowment tracks (content-driven; today person + household). */
+function endowTierOf(session: StudioSession): string {
+  const withTracks = new Set(registries().endowment.map((track) => track.tier));
+  const candidates = registries()
+    .tiers.filter((tier) => session.tiers[tier.id]?.unlocked === true && withTracks.has(tier.id))
+    .sort((a, b) => b.index - a.index);
+  return candidates[0]?.id ?? EMBODIED_TIER;
+}
+
 /**
- * World-draft ledger: once the archive assembles a draft at the embodied
- * scale, the assembly is recorded (once) in the session. Called wherever the
- * archive can grow — mount, persisted load, and each harvest.
+ * Tracks the endow chip may offer for the session: tier match, requires met,
+ * not already endowed, slot cost fitting the remaining slots (compendium
+ * bonus included). Empty → every chip renders locked.
  */
-function withRecordedDraft(
-  archive: readonly Manifest[],
-  drafts: readonly WorldDraftReference[],
-): readonly WorldDraftReference[] {
-  if (assembleWorldDraft(archive) === null) {
-    return drafts;
+function endowPlan(session: StudioSession): readonly EndowmentTrack[] {
+  const tierId = endowTierOf(session);
+  const tier = session.tiers[tierId];
+  if (tier === undefined) {
+    return [];
   }
-  if (drafts.some((entry) => entry.scale === EMBODIED_SCALE)) {
-    return drafts;
+  const global = computeGlobalRewards(session.compendium_done, registries().compendium);
+  const slots = endowableSlots(tierId, session, registries().endowment, registries().tiers, global);
+  return registries().endowment.filter(
+    (track) =>
+      track.tier === tierId &&
+      !tier.endowed.includes(track.id) &&
+      (track.requires === null || session.milestones_done.includes(track.requires)) &&
+      track.slot_cost <= slots,
+  );
+}
+
+/** Display label for a track row; tracks carry no SID namespace, so the id tail names them. */
+function endowTrackLabel(track: EndowmentTrack): string {
+  const parts = track.id.split('/');
+  return parts[parts.length - 1] ?? track.id;
+}
+
+function statValue(stats: ArchiveStats, key: string): number {
+  const dot = key.indexOf('.');
+  if (dot <= 0) {
+    return 0;
   }
-  return [...drafts, { scale: EMBODIED_SCALE }];
+  const section = key.slice(0, dot);
+  const tail = key.slice(dot + 1);
+  if (section === 'pinned') {
+    return stats.pinned[tail] ?? 0;
+  }
+  if (section === 'archived') {
+    return stats.archived[tail] ?? 0;
+  }
+  if (section === 'world_drafts') {
+    return stats.world_drafts[tail] ?? 0;
+  }
+  if (section === 'harvests') {
+    return stats.harvests[tail] ?? 0;
+  }
+  return 0;
+}
+
+interface GateOperand {
+  readonly key: string;
+  readonly m: number;
+}
+
+/** The gte leaves of a conjunction — the badge-able operands. Non-gte
+ * comparisons and or/not junctions yield none (no badge is rendered). */
+function gteOperandsOf(predicate: ArchivePredicate): readonly GateOperand[] {
+  if (predicate.op === 'gte') {
+    return [{ key: predicate.key, m: predicate.value }];
+  }
+  if (predicate.op === 'and') {
+    return predicate.operands.flatMap(gteOperandsOf);
+  }
+  return [];
+}
+
+/** The least-satisfied gte operand of the tier's unlock milestone, as n/m. */
+function tierProgress(stats: ArchiveStats, tierId: string): { n: number; m: number } | null {
+  const tier = registries().tiers.find((row) => row.id === tierId);
+  if (tier === undefined || tier.unlock_milestone === null) {
+    return null;
+  }
+  const milestone = registries().milestones.find((row) => row.id === tier.unlock_milestone);
+  if (milestone === undefined) {
+    return null;
+  }
+  const gates = gteOperandsOf(milestone.predicate);
+  if (gates.length === 0) {
+    return null;
+  }
+  let worst = gates[0]!;
+  let worstRatio = Number.POSITIVE_INFINITY;
+  for (const gate of gates) {
+    const ratio = Math.min(1, statValue(stats, gate.key) / gate.m);
+    if (ratio < worstRatio) {
+      worstRatio = ratio;
+      worst = gate;
+    }
+  }
+  return { n: Math.min(statValue(stats, worst.key), worst.m), m: worst.m };
+}
+
+/** The tier row's scale, as the manifest compiler names it. */
+function tierScaleOf(tierId: string): ManifestScale {
+  const tier = registries().tiers.find((row) => row.id === tierId);
+  if (tier === undefined) {
+    throw new Error(`studio: no registered tier "${tierId}"`);
+  }
+  return tier.scale;
 }
 
 export default function StudioView({
@@ -474,41 +325,61 @@ export default function StudioView({
   clock = defaultClock,
   epoch = DEFAULT_EPOCH,
 }: StudioViewProps) {
-  const rngRef = useRef<Rng>(rng ?? createRng(0x5eedn));
-  const packPracticesRef = useRef(practices);
-  const [bootstrap] = useState(() =>
-    initialSession === undefined
-      ? null
-      : hydrateStudioSession(initialSession, initialLife ?? defaultLife(), practices),
-  );
-  const [life, setLife] = useState<LifeState>(
-    () => bootstrap?.life ?? initialLife ?? defaultLife(),
-  );
-  const [idle, setIdle] = useState<IdleState>(
-    () => bootstrap?.idle ?? initialIdle ?? createIdleState(),
-  );
-  const [studio, setStudio] = useState<StudioState>(
-    () => bootstrap?.studio ?? initialStudio ?? createStudioState(),
-  );
-  const [runtimePractices, setRuntimePractices] = useState<Practice[]>(() =>
-    bootstrap === null ? [...practices] : [...bootstrap.practices],
-  );
-  const [progression, setProgression] = useState<SessionProgression>(
-    () => bootstrap?.progression ?? defaultProgression(),
-  );
-  const [members, setMembers] = useState<Record<string, MemberSlice>>(
-    () => bootstrap?.members ?? {},
-  );
-  const [worldDrafts, setWorldDrafts] = useState<readonly WorldDraftReference[]>(() =>
-    withRecordedDraft(
-      (bootstrap?.studio ?? initialStudio ?? createStudioState()).archive,
-      bootstrap?.world_drafts ?? [],
-    ),
-  );
-  const [householdBench, setHouseholdBench] = useState<BenchState | null>(
-    () => initialSession?.benches['household'] ?? null,
-  );
-  const [graduationCeremony, setGraduationCeremony] = useState<string | null>(null);
+  const {
+    life,
+    idle,
+    studio,
+    runtimePractices,
+    progression,
+    members,
+    worldDrafts,
+    benches,
+    ready,
+    away,
+    rngRef,
+    benchRef,
+    setLife,
+    setIdle,
+    setStudio,
+    setRuntimePractices,
+    setProgression,
+    setMembers,
+    setWorldDrafts,
+    setBenches,
+    setAway,
+    buildSession,
+    stepCtx,
+    adoptSteppedSession,
+  } = useStudioSession({
+    practices,
+    schedule,
+    endings,
+    ...(initialLife === undefined ? {} : { initialLife }),
+    ...(initialIdle === undefined ? {} : { initialIdle }),
+    ...(initialStudio === undefined ? {} : { initialStudio }),
+    ...(initialSession === undefined ? {} : { initialSession }),
+    ...(rng === undefined ? {} : { rng }),
+    persist,
+    ...(storage === undefined ? {} : { storage }),
+    clock,
+  });
+  const { graduationCeremony, setGraduationCeremony } = useStudioProgression({
+    ready,
+    studio,
+    idle,
+    life,
+    runtimePractices,
+    progression,
+    members,
+    worldDrafts,
+    benches,
+    buildSession,
+    rngRef,
+    setProgression,
+    setMembers,
+    setWorldDrafts,
+    setBenches,
+  });
   const [brief, setBrief] = useState('');
   const [endowSelection, setEndowSelection] = useState<{
     readonly cardId: string;
@@ -517,69 +388,9 @@ export default function StudioView({
   const [exported, setExported] = useState(false);
   const [worldExported, setWorldExported] = useState(false);
   const [juiceBurst, setJuiceBurst] = useState(0);
-  const [ready, setReady] = useState(!persist);
-  const [away, setAway] = useState<StudioAwaySummary | null>(null);
   const [freshHarvestId, setFreshHarvestId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
-  const benchRef = useRef<BenchSlices>({
-    studio,
-    idle,
-    life,
-    practices: runtimePractices,
-    progression,
-    members,
-    worldDrafts,
-    householdBench,
-  });
-
-  useEffect(() => {
-    benchRef.current = {
-      studio,
-      idle,
-      life,
-      practices: runtimePractices,
-      progression,
-      members,
-      worldDrafts,
-      householdBench,
-    };
-  }, [studio, idle, life, runtimePractices, progression, members, worldDrafts, householdBench]);
-
-  const stepCtxRef = useRef<SessionStepContext | null>(null);
-
-  /**
-   * Session-step context. The pack-constant members are captured once per
-   * mount; `modifiersFor` must see the CURRENT session's endowed tiers, so it
-   * is layered over the cached capture on every call.
-   */
-  function stepCtx(session: StudioSession): SessionStepContext {
-    if (stepCtxRef.current === null) {
-      const policies = policyRuntime();
-      const resolve = (id: string): PolicyRuntime => {
-        const found = policies.get(id);
-        if (found === undefined) {
-          throw new Error(`studio: no runtime registered for policy "${id}"`);
-        }
-        return found;
-      };
-      stepCtxRef.current = {
-        practices,
-        embodiedSchedule: schedule,
-        memberScheduleFor: (id) => resolve(id).schedule,
-        memberPracticesFor: (id) => resolve(id).practices,
-        endings,
-        sessionSeed: SESSION_SEED,
-        visitors: registries().visitors,
-        tiers: registries().tiers.map((tier) => ({
-          id: tier.id,
-          scale: tier.scale,
-          fold_cadence: tier.fold_cadence,
-        })),
-      };
-    }
-    return { ...stepCtxRef.current, modifiersFor: modifiersForSession(session) };
-  }
 
   useEffect(() => {
     if (freshHarvestId === null) {
@@ -589,223 +400,65 @@ export default function StudioView({
     return () => clearTimeout(timer);
   }, [freshHarvestId]);
 
-  useEffect(() => {
-    if (!persist) {
-      return;
-    }
-    let cancelled = false;
-    void loadStudioSession(storage).then((session) => {
-      if (cancelled) {
-        return;
-      }
-      if (session !== null) {
-        // Catch-up rides the same stepSession path as live ticks (ticks math
-        // via studioTicksAway) so autonomous members and the household bench
-        // advance during absence too; a household-locked session reduces to
-        // the old person-only catch-up by stepSession's golden invariant.
-        // The away cap carries the person tier's endowed offline_cap.
-        const awayTicks = studioTicksAway(
-          session.last_visited_at_unix ?? 0,
-          clock(),
-          effectiveAwayCap(
-            session,
-            registries().endowment,
-            computeGlobalRewards(session.compendium_done, registries().compendium),
-          ),
-        );
-        const stepped =
-          awayTicks.ticks > 0
-            ? stepSession(session, stepCtx(session), awayTicks.ticks, rngRef.current)
-            : null;
-        const next = stepped === null ? session : stepped.session;
-        const hydrated = hydrateStudioSession(
-          next,
-          initialLife ?? defaultLife(),
-          packPracticesRef.current,
-        );
-        setLife(hydrated.life);
-        setIdle(hydrated.idle);
-        setStudio(hydrated.studio);
-        setRuntimePractices(hydrated.practices);
-        setProgression(hydrated.progression);
-        setMembers({ ...hydrated.members });
-        setWorldDrafts(withRecordedDraft(hydrated.studio.archive, hydrated.world_drafts));
-        setHouseholdBench(next.benches['household'] ?? null);
-        if (stepped !== null && stepped.summary.embodiedTicks > 0) {
-          setAway({
-            ticksSimulated: stepped.summary.embodiedTicks,
-            residueGained: next.life.residue.length - session.life.residue.length,
-            bayReady: stepped.summary.benchesReady.length > 0,
-            capped: awayTicks.capped,
-          });
-        }
-      }
-      setReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
-    // stepCtx reads mount-stable refs/props; listing the render-scoped
-    // function would re-run the load on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persist, storage, initialLife, schedule, endings, clock]);
-
-  /** Session as it stands right now, household bench included. */
-  function buildSession(lastVisitedAtUnix?: number): StudioSession {
-    return sessionFromSlices(
-      {
-        studio,
-        idle,
-        life,
-        practices: runtimePractices,
-        progression,
-        members,
-        worldDrafts,
-        householdBench,
-      },
-      lastVisitedAtUnix,
-    );
-  }
-
-  useEffect(() => {
-    if (!persist || !ready) {
-      return;
-    }
-    void saveStudioSession(buildSession(clock()), storage);
-    // buildSession folds the current render's state into the snapshot; listing
-    // the underlying values keeps this effect honest without a memo.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    persist,
-    ready,
-    storage,
-    clock,
-    studio,
-    idle,
-    life,
-    runtimePractices,
-    progression,
-    members,
-    worldDrafts,
-    householdBench,
-  ]);
-
-  useEffect(() => {
-    if (!ready) {
-      return;
-    }
-    const current = buildSession();
-    const compendiumResult = grantCompendium(current, worldDrafts, registries().compendium);
-    const sessionAfterGrant = compendiumResult.session;
-    const compendiumChanged = compendiumResult.granted.length > 0;
-    const fired = checkMilestones(sessionAfterGrant, worldDrafts, registries().milestones);
-    const graduationNeeded = fired.includes(UNLOCK_HOUSEHOLD);
-    if (!compendiumChanged && !graduationNeeded) {
-      return;
-    }
-    if (graduationNeeded) {
-      const graduated = graduateToHousehold(
-        sessionAfterGrant,
-        registries().roles.household,
-        rngRef.current,
-      );
-      setProgression({
-        tiers: graduated.tiers,
-        milestones_done: graduated.milestones_done,
-        compendium_done: graduated.compendium_done,
-        embodied_member: graduated.embodied_member,
-      });
-      setMembers({ ...graduated.members });
-      setWorldDrafts([...graduated.world_drafts]);
-      setHouseholdBench((current2) => current2 ?? graduated.benches['household'] ?? null);
-      setGraduationCeremony(UNLOCK_HOUSEHOLD);
-      return;
-    }
-    setProgression((prev) => ({
-      ...prev,
-      compendium_done: sessionAfterGrant.compendium_done,
-    }));
-    // Same rationale as the save effect: buildSession reads the listed values.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    ready,
-    studio,
-    idle,
-    life,
-    runtimePractices,
-    progression,
-    members,
-    worldDrafts,
-    householdBench,
-  ]);
-
   const pending = pendingResidue(studio);
   const charge = pending.length;
   const chargeRatio = Math.min(1, charge / MIN_RESIDUE_TO_DEVELOP);
   const endowTracks = endowPlan(buildSession());
-  const householdUnlocked = progression.tiers['household']?.unlocked === true;
-  const householdBayReady =
-    householdBench !== null && householdBench.bay !== null && householdBench.bay.status === 'ready';
-  const harvestable = canHarvest(studio) || householdBayReady;
+  const benchReady = (tierId: string): boolean => benches[tierId]?.bay?.status === 'ready';
+  const anyBenchReady = Object.keys(benches).some((tierId) => benchReady(tierId));
+  const harvestable = canHarvest(studio) || anyBenchReady;
   // Endowed window_min widens the manual develop gate; floored at 2 so a
   // develop always cooks a real window.
   const personEffectiveMin = Math.max(
     2,
-    MIN_RESIDUE_TO_DEVELOP - modifiersForSession(buildSession())(EMBODIED_SCALE).windowMin,
+    MIN_RESIDUE_TO_DEVELOP - modifiersForSession(buildSession())(EMBODIED_TIER).windowMin,
   );
   const developable = studio.bay === null && pending.length >= personEffectiveMin;
   const upgradable = canUpgradeQuality(studio);
   const remainingForUpgrade = Math.max(0, QUALITY_UPGRADE_HARVESTS - studio.harvest_count);
   const latest = studio.archive[studio.archive.length - 1];
   const stats = computeArchiveStats(buildSession(), worldDrafts);
-  const seatedVisitors: readonly { readonly sidNs: string; readonly windows: number }[] = (
-    [EMBODIED_TIER, HOUSEHOLD_TIER] as const
-  )
-    .map((tierId) => {
-      const seat = progression.tiers[tierId]?.active_visitor;
-      if (seat === undefined || seat === null) {
-        return null;
-      }
-      const row = registries().visitors.find((candidate) => candidate.id === seat.id);
-      return row === undefined ? null : { sidNs: row.sid_ns, windows: seat.windows_left };
-    })
-    .filter(
-      (entry): entry is { readonly sidNs: string; readonly windows: number } => entry !== null,
-    );
-  const railTiers: readonly RailTier[] = [
-    {
-      id: 'person',
-      labelSid: 'studio.tier_person_sid',
-      unlocked: progression.tiers['person']?.unlocked !== false,
-      readyCount: canHarvest(studio) ? 1 : 0,
-      progress: null,
-    },
-    {
-      id: 'household',
-      labelSid: 'studio.tier_household_sid',
-      unlocked: householdUnlocked,
-      readyCount: householdBayReady ? 1 : 0,
-      progress: householdUnlocked ? null : householdProgress(stats),
-    },
-  ];
-
-  /** Drive the person-bench slices, members, household bench, and visitor
-   * seats (they live on the tiers slice) from a stepped session. */
-  function adoptSteppedSession(next: StudioSession): void {
-    const back = hydrateStudioSession(next, benchRef.current.life, benchRef.current.practices);
-    setLife(back.life);
-    setIdle(back.idle);
-    setStudio(back.studio);
-    setRuntimePractices(back.practices);
-    setMembers({ ...back.members });
-    setProgression((current) => ({ ...current, tiers: next.tiers }));
-    setHouseholdBench(next.benches['household'] ?? null);
+  // Rung-by-rung disclosure: unlocked tiers plus the next locked one (its
+  // badge is the climb ahead); deeper rungs stay masked until it unlocks.
+  const railTiers: RailTier[] = [];
+  for (const tier of registries().tiers) {
+    const tierState = progression.tiers[tier.id];
+    const unlocked = tierState?.unlocked ?? tier.unlock_milestone === null;
+    railTiers.push({
+      id: tier.id,
+      labelSid: `studio.tier_${tier.id}_sid`,
+      unlocked,
+      readyCount:
+        tier.id === EMBODIED_TIER ? (canHarvest(studio) ? 1 : 0) : benchReady(tier.id) ? 1 : 0,
+      progress: unlocked ? null : tierProgress(stats, tier.id),
+    });
+    if (!unlocked) {
+      break;
+    }
   }
+  const seatedVisitors: readonly {
+    readonly key: string;
+    readonly sidNs: string;
+    readonly windows: number;
+  }[] = registries().tiers.flatMap((tier) => {
+    const seat = progression.tiers[tier.id]?.active_visitor;
+    if (seat === undefined || seat === null) {
+      return [];
+    }
+    const row = registries().visitors.find((candidate) => candidate.id === seat.id);
+    return row === undefined
+      ? []
+      : [{ key: tier.id, sidNs: row.sid_ns, windows: seat.windows_left }];
+  });
+  const ceremonyMilestone =
+    graduationCeremony === null
+      ? null
+      : (registries().milestones.find((row) => row.id === graduationCeremony) ?? null);
 
   function applyTicks(ticks: number): void {
     // stepSession keeps the embodied bench on exact stepStudio semantics (its
-    // golden-tested invariant) and adds autonomous members plus the household
-    // cook once the tier unlocks; a locked session is indistinguishable here.
+    // golden-tested invariant) and adds autonomous members plus every
+    // unlocked tier bench; a locked session is indistinguishable here.
     const session = sessionFromSlices(benchRef.current);
     const stepped = stepSession(session, stepCtx(session), ticks, rngRef.current);
     adoptSteppedSession(stepped.session);
@@ -836,7 +489,7 @@ export default function StudioView({
     // The manual develop path queues the person bench, so its endowed
     // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the
     // engine) and its window_min widens the queue gate above.
-    const personMods = modifiersForSession(buildSession())(EMBODIED_SCALE);
+    const personMods = modifiersForSession(buildSession())(EMBODIED_TIER);
     setStudio(
       queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current, {
         cookTicksDiscount: personMods.cookSpeed,
@@ -859,42 +512,36 @@ export default function StudioView({
     setProgression((current) => ({ ...current, tiers: noted.tiers }));
   }
 
-  function harvest(): void {
-    if (
-      householdBench !== null &&
-      householdBench.bay !== null &&
-      householdBench.bay.status === 'ready'
-    ) {
-      harvestHousehold(householdBench);
-      return;
-    }
-    const result = harvestTableFill(studio, rngRef.current, lifeContext);
-    if (result === null) {
-      return;
-    }
-    decayVisitorSeat(EMBODIED_TIER);
-    setStudio(result.studio);
-    setWorldDrafts(withRecordedDraft(result.studio.archive, worldDrafts));
-    setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
-    setExported(false);
+  /** Harvest priority: the highest-index tier with a ready bench, else the
+   * person bench (the bay the player queued by hand). */
+  function highestReadyTier(): string | null {
+    const ready = registries()
+      .tiers.filter((tier) => benches[tier.id] !== undefined && benchReady(tier.id))
+      .sort((a, b) => b.index - a.index);
+    return ready[0]?.id ?? null;
   }
 
-  /** Folded-residue bays fill at household scale with the household rule set. */
-  function harvestHousehold(bench: BenchState): void {
-    const bay = bench.bay;
-    if (bay === null) {
+  /** Folded-residue bays fill at the tier's scale with its rule set. */
+  function harvestBenchTier(tierId: string): void {
+    const bench = benches[tierId];
+    if (bench === undefined) {
       return;
     }
-    const rules = kindRulesByScale()[HOUSEHOLD_SCALE];
+    const bay = bench.bay;
+    if (bay === null || bay.status !== 'ready') {
+      return;
+    }
+    const scale = tierScaleOf(tierId);
+    const rules = kindRulesByScale()[scale];
     if (rules === undefined) {
-      throw new Error('studio: no kind rules registered for the household scale');
+      throw new Error(`studio: no kind rules registered for the ${scale} scale`);
     }
     const request = compileRequestFromBay(
       { ...bay, focus: bay.focus ?? null },
       bench.quality_tier,
       bench.harvest_count,
       null,
-      HOUSEHOLD_SCALE,
+      scale,
     );
     const manifest = tableFillManifest(
       request.residue,
@@ -910,10 +557,30 @@ export default function StudioView({
       registries().catalogs,
     );
     setStudio((current) => ({ ...current, archive: [...current.archive, manifest] }));
-    setWorldDrafts(withRecordedDraft([...studio.archive, manifest], worldDrafts));
-    decayVisitorSeat(HOUSEHOLD_TIER);
-    setHouseholdBench({ ...bench, bay: null, harvest_count: bench.harvest_count + 1 });
+    setWorldDrafts(withRecordedDrafts([...studio.archive, manifest], worldDrafts));
+    decayVisitorSeat(tierId);
+    setBenches((current) => ({
+      ...current,
+      [tierId]: { ...bench, bay: null, harvest_count: bench.harvest_count + 1 },
+    }));
     setFreshHarvestId(prefersReducedMotion ? null : manifest.id);
+    setExported(false);
+  }
+
+  function harvest(): void {
+    const priority = highestReadyTier();
+    if (priority !== null) {
+      harvestBenchTier(priority);
+      return;
+    }
+    const result = harvestTableFill(studio, rngRef.current, lifeContext);
+    if (result === null) {
+      return;
+    }
+    decayVisitorSeat(EMBODIED_TIER);
+    setStudio(result.studio);
+    setWorldDrafts(withRecordedDrafts(result.studio.archive, worldDrafts));
+    setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
     setExported(false);
   }
 
@@ -953,7 +620,7 @@ export default function StudioView({
   }
 
   /** Commit the chosen track through the engine gate, then adopt the cascade
-   *  (archive, cleared pins, roster focus, endowed tier) session-wide. */
+   * (archive, cleared pins, roster focus, endowed tier) session-wide. */
   function endowCommit(cardId: string): void {
     if (endowSelection === null || endowSelection.cardId !== cardId) {
       return;
@@ -986,12 +653,12 @@ export default function StudioView({
     setRuntimePractices(back.practices);
     setMembers({ ...back.members });
     setProgression(back.progression);
-    setHouseholdBench(endowed.benches[HOUSEHOLD_TIER] ?? null);
+    setBenches(nonPersonBenches(endowed));
     setEndowSelection(null);
   }
 
   /** Swap the embodied life for a roster member's slice (null restores the
-   *  default person life). Adoption mirrors adoptSteppedSession. */
+   * default person life). Adoption mirrors adoptSteppedSession. */
   function embody(id: string | null): void {
     const swapped = swapEmbodiment(sessionFromSlices(benchRef.current), id);
     const back = hydrateStudioSession(swapped, benchRef.current.life, benchRef.current.practices);
@@ -1008,13 +675,13 @@ export default function StudioView({
   }
 
   /** Focus is roster-row state only: the member's focus_id, never the bench pin. */
-  function assignFocus(id: string, cardId: string | null): void {
+  function assignFocus(tierId: string, id: string, cardId: string | null): void {
     setProgression((prev) => {
-      const household = prev.tiers['household'];
-      if (household === undefined) {
+      const tier = prev.tiers[tierId];
+      if (tier === undefined) {
         return prev;
       }
-      const members = household.roster.members.map((member): RosterMember => {
+      const members = tier.roster.members.map((member): RosterMember => {
         if (member.id !== id) {
           return member;
         }
@@ -1029,7 +696,7 @@ export default function StudioView({
         ...prev,
         tiers: {
           ...prev.tiers,
-          household: { ...household, roster: { ...household.roster, members } },
+          [tierId]: { ...tier, roster: { ...tier.roster, members } },
         },
       };
     });
@@ -1107,8 +774,8 @@ export default function StudioView({
           </View>
         )}
 
-        {seatedVisitors.map(({ sidNs, windows }) => (
-          <View key={sidNs} testID="studio-visitor" style={styles.away}>
+        {seatedVisitors.map(({ key, sidNs, windows }) => (
+          <View key={key} testID="studio-visitor" style={styles.away}>
             <Text style={styles.awayText}>
               {formatSid('studio.visitor_banner_sid', { name: resolveSid(`${sidNs}.name_sid`) })}
             </Text>
@@ -1200,7 +867,7 @@ export default function StudioView({
 
         <View style={styles.panel}>
           {studio.bay === null ? (
-            householdBayReady ? (
+            anyBenchReady ? (
               <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
             ) : (
               <Text style={styles.hint}>{resolveSid('studio.bay_empty_sid')}</Text>
@@ -1256,15 +923,22 @@ export default function StudioView({
           worldExported={worldExported}
         />
 
-        {householdUnlocked ? (
-          <StudioRoster
-            members={progression.tiers['household']?.roster.members ?? []}
-            embodiedMemberId={progression.embodied_member?.member ?? null}
-            pinnable={pinnableCards(studio.archive)}
-            onEmbody={embody}
-            onFocus={assignFocus}
-          />
-        ) : null}
+        {registries()
+          .tiers.filter(
+            (tier) =>
+              tier.id !== EMBODIED_TIER &&
+              (progression.tiers[tier.id]?.roster.members.length ?? 0) > 0,
+          )
+          .map((tier) => (
+            <StudioRoster
+              key={tier.id}
+              members={progression.tiers[tier.id]?.roster.members ?? []}
+              embodiedMemberId={progression.embodied_member?.member ?? null}
+              pinnable={pinnableCards(studio.archive)}
+              onEmbody={embody}
+              onFocus={(id, cardId) => assignFocus(tier.id, id, cardId)}
+            />
+          ))}
 
         <Text accessibilityRole="header" style={styles.archiveHeading}>
           {resolveSid('studio.archive_heading_sid')}
@@ -1322,10 +996,14 @@ export default function StudioView({
         </View>
       </ScrollView>
 
-      {graduationCeremony === null ? null : (
+      {ceremonyMilestone === null ? null : (
         <View testID="graduation-overlay" style={styles.overlay}>
-          <Text style={styles.overlayTitle}>{resolveSid('graduation.household_title_sid')}</Text>
-          <Text style={styles.overlayLine}>{resolveSid('graduation.household_line_sid')}</Text>
+          <Text style={styles.overlayTitle}>
+            {resolveSid(`${ceremonyMilestone.grants.ceremony_sid}_title_sid`)}
+          </Text>
+          <Text style={styles.overlayLine}>
+            {resolveSid(`${ceremonyMilestone.grants.ceremony_sid}_line_sid`)}
+          </Text>
           <Pressable
             role="button"
             testID="graduation-dismiss"
