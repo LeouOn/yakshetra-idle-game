@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_KIND_RULES } from '@/engine/kind-registry';
+import { DEFAULT_KIND_RULES, pickKindFromRegistry } from '@/engine/kind-registry';
+import type { ResidueEvent, ResidueEventType } from '@/engine/residue';
+import { summarizeResidue } from '@/engine/residue';
 
 import { loadProgression } from '@/content/progression/loader';
 import { loadEraPack } from '@/content/loader';
@@ -97,5 +99,40 @@ describe('loadProgression household scale', () => {
   it('loads the roles file with three roles and three names at household scale', () => {
     expect(registries.roles.household.roles).toEqual(['elder', 'cook', 'runner']);
     expect(registries.roles.household.names).toEqual(['Second Aunt', 'Old Wen', 'Little Shu']);
+  });
+
+  it('household rule list is total across every residue window shape', () => {
+    const householdRules = registries.kindRows.flatMap((row, index) => {
+      const rule = registries.kindRules[index];
+      if (rule === undefined || row.scale !== 'household') {
+        return [];
+      }
+      return [rule];
+    });
+
+    const eventTypes: readonly ResidueEventType[] = [
+      'practice_tick',
+      'practice_level',
+      'lens_chosen',
+      'event_resolved',
+      'resource_edge',
+      'life_ended',
+    ];
+
+    for (const type of eventTypes) {
+      const event: ResidueEvent = {
+        tick: 0,
+        type,
+        ids: ['practice:tang/alms-round'],
+        numbers: {},
+      };
+      const summary = summarizeResidue([event]);
+      const picked = pickKindFromRegistry(summary, householdRules);
+      expect(['tradition', 'heirloom']).toContain(picked);
+    }
+
+    const emptySummary = summarizeResidue([]);
+    const emptyPicked = pickKindFromRegistry(emptySummary, householdRules);
+    expect(['tradition', 'heirloom']).toContain(emptyPicked);
   });
 });
