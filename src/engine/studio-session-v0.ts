@@ -6,6 +6,7 @@
 
 import { z } from 'zod';
 
+import { studioToBench } from './bench-mapping';
 import { ManifestSchema } from './manifest';
 import { parseManifest } from './manifest-migration';
 import { createTierState } from './tier-state';
@@ -139,23 +140,28 @@ export type StudioSessionV0 = z.infer<typeof StudioSessionV0Schema>;
  * manifest/v1; a card that fails to parse fails the whole migration loudly.
  */
 export function migrateStudioSessionV0(v0: StudioSessionV0): StudioSession {
+  // The re-parse is load-bearing: it widens readonly `Manifest.tags` to the
+  // schema's inferred (mutable) type so this literal satisfies StudioSession.
+  const archive = v0.studio.archive.map((card) => ManifestSchema.parse(parseManifest(card)));
   return {
     schema_version: 'studio_session/v1',
     benches: {
-      person: {
+      // The v0 bay's optional focus is normalized on the way through the
+      // shared mapping (absent ≡ null; hydrate normalized it before anyway).
+      person: studioToBench({
         residue: v0.studio.residue,
         last_harvest_index: v0.studio.last_harvest_index,
-        bay: v0.studio.bay,
+        bay:
+          v0.studio.bay === null ? null : { ...v0.studio.bay, focus: v0.studio.bay.focus ?? null },
+        archive,
         quality_tier: v0.studio.quality_tier,
         harvest_count: v0.studio.harvest_count,
         play_import: v0.studio.play_import ?? null,
         pinned: v0.studio.pinned ?? null,
         surplus: v0.studio.surplus ?? 0,
-      },
+      }),
     },
-    // The re-parse is load-bearing: it widens readonly `Manifest.tags` to the
-    // schema's inferred (mutable) type so this literal satisfies StudioSession.
-    archive: v0.studio.archive.map((card) => ManifestSchema.parse(parseManifest(card))),
+    archive,
     tiers: { person: createTierState('person', true) },
     milestones_done: [],
     compendium_done: [],

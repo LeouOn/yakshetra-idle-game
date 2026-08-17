@@ -7,6 +7,8 @@
 // household bay cooks under the same alreadyCharged gate. Progression slices
 // are carried untouched — milestone checks are the caller's job.
 // Pure: no Date, no network, no global RNG; studio-session is TYPE-ONLY.
+// Bench shaping lives in bench-mapping; step-local chassis shaping lives in
+// session-step-internal.
 
 import {
   MIN_RESIDUE_TO_DEVELOP,
@@ -14,17 +16,15 @@ import {
   pendingResidue,
   recordStudioResidues,
   tickStudio,
-  type StudioState,
 } from './operations';
+import { benchAfterStep, benchToStudio, emptyBench, freshSchemaEvents } from './bench-mapping';
 import { stepStudio } from './studio-offline';
 import { FOLD_IDS, memberSeed, runAutonomousMember } from './roster';
-import { foldUpEvents } from './roster-fold';
-import { createLifeState } from './reducer';
 import { createRng, type Rng } from './rng';
-import type { ResidueEvent } from './residue';
-import type { DailySchedule } from './schedule';
+import { benchIdle, benchLife, foldCopies, overlayPractices } from './session-step-internal';
 import type { BenchState, MemberSlice, StudioSession } from './studio-session';
-import type { Ending, IdleState, LifeState, Practice } from './types';
+import type { DailySchedule } from './schedule';
+import type { Ending, Practice } from './types';
 
 const PERSON_BENCH = 'person';
 const HOUSEHOLD_BENCH = 'household';
@@ -60,133 +60,6 @@ export interface SessionStepSummary {
 export interface SessionStepResult {
   readonly session: StudioSession;
   readonly summary: SessionStepSummary;
-}
-
-function emptyBench(): BenchState {
-  return {
-    residue: [],
-    last_harvest_index: -1,
-    bay: null,
-    quality_tier: 0,
-    harvest_count: 0,
-    play_import: null,
-    pinned: null,
-    surplus: 0,
-  };
-}
-
-/** Bench slice → runtime StudioState; the shared archive rides on top. */
-function benchToStudio(bench: BenchState, archive: StudioSession['archive']): StudioState {
-  return {
-    residue: bench.residue,
-    last_harvest_index: bench.last_harvest_index,
-    bay: bench.bay === null ? null : { ...bench.bay, focus: bench.bay.focus ?? null },
-    archive,
-    quality_tier: bench.quality_tier,
-    harvest_count: bench.harvest_count,
-    play_import: bench.play_import,
-    pinned: bench.pinned,
-    surplus: bench.surplus,
-  };
-}
-
-/** Only the events a step appended beyond the persisted prefix, re-shaped as
- * mutable schema events (session slices store mutable ids/numbers). */
-function freshSchemaEvents(log: readonly ResidueEvent[], prevLen: number): BenchState['residue'] {
-  return log.slice(prevLen).map((event) => ({
-    ...event,
-    ids: [...event.ids],
-    numbers: { ...event.numbers },
-  }));
-}
-
-/** stepStudio only advances cook_ticks_done/status — keep the queued window. */
-function bayAfterStep(studio: StudioState, prevBay: BenchState['bay']): BenchState['bay'] {
-  if (studio.bay === null) {
-    return null;
-  }
-  if (prevBay === null) {
-    throw new Error('stepSession: step produced a bay without a queued window');
-  }
-  return { ...prevBay, cook_ticks_done: studio.bay.cook_ticks_done, status: studio.bay.status };
-}
-
-/** Bench slice after a step. Logs are append-only, so the persisted prefix
- * array is reused and only the fresh tail is copied. */
-function benchAfterStep(studio: StudioState, prev: BenchState): BenchState {
-  const prevLen = prev.residue.length;
-  return {
-    residue:
-      studio.residue.length === prevLen
-        ? prev.residue
-        : [...prev.residue, ...freshSchemaEvents(studio.residue, prevLen)],
-    last_harvest_index: studio.last_harvest_index,
-    bay: bayAfterStep(studio, prev.bay),
-    quality_tier: studio.quality_tier,
-    harvest_count: studio.harvest_count,
-    play_import: studio.play_import,
-    pinned: studio.pinned,
-    surplus: studio.surplus,
-  };
-}
-
-/** Studio-bench chassis under the session's life slice (identity stays out). */
-function benchLife(session: StudioSession): LifeState {
-  const chassis = createLifeState({
-    id: 'studio-bench' as LifeState['id'],
-    era: 'studio-bench@0.1.0' as LifeState['era'],
-    role: 'operator' as LifeState['role'],
-    identity: {
-      gender: 'unspecified',
-      social_class: 'operator',
-      family_wealth_at_birth: 'unspecified',
-      caste_status: 'none',
-      disability_status: 'none',
-    },
-  });
-  return {
-    ...chassis,
-    turn: session.life.turn,
-    resources: { ...chassis.resources, ...session.life.resources },
-    skills: { ...session.life.skills },
-    residue: session.life.residue,
-  };
-}
-
-function benchIdle(session: StudioSession): IdleState {
-  return {
-    mode: session.idle.mode,
-    lastSimulatedTick: BigInt(session.idle.last_simulated_tick),
-    totalIdleTicks: BigInt(session.idle.total_idle_ticks),
-  };
-}
-
-/** Overlay saved session progress onto the ctx runtime practices. */
-function overlayPractices(
-  runtime: readonly Practice[],
-  saved: StudioSession['practices'],
-): Practice[] {
-  const progress = new Map(saved.map((p) => [p.id, p]));
-  return runtime.map((practice) => {
-    const slice = progress.get(practice.id);
-    if (slice === undefined) {
-      return practice;
-    }
-    return { ...practice, currentProgress: slice.currentProgress, level: slice.level };
-  });
-}
-
-/** Tag every cadence-th event with `sourceId` and keep only the marked
- * copies — the parent bench receives marked events only. Members pass
- * cadence 1 (every event); the person bench passes the tier cadence. */
-function foldCopies(
-  events: readonly ResidueEvent[],
-  sourceId: string,
-  cadence: number,
-  counter: number,
-): readonly ResidueEvent[] {
-  const { events: marked } = foldUpEvents(events, sourceId, cadence, counter);
-  return marked.filter((event) => event.ids.includes(sourceId));
 }
 
 /** Advance the whole session by `ticks`: embodied bench, autonomous members,

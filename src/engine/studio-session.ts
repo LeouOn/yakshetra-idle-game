@@ -4,14 +4,18 @@
 // v0 payloads are migrated by ./studio-session-v0. Pure: no Date, no
 // platform APIs. Bigints are decimal strings. Invalid payloads throw so the
 // persistence layer can treat them as absent.
+//
+// Hydration (and the default/empty session baseline) lives in
+// ./studio-session-hydrate and is re-exported below so the public surface
+// (the @/engine barrel and direct importers) does not change. The runtime
+// edge is one-way: this module → studio-session-hydrate.
 
 import { z } from 'zod';
 
-import { createIdleState } from './idle';
+import { studioToBench } from './bench-mapping';
 import { ManifestSchema } from './manifest';
 import { parseManifest } from './manifest-migration';
-import { createStudioState, type StudioState } from './operations';
-import { createLifeState } from './reducer';
+import type { StudioState } from './operations';
 import {
   DevelopOperationSchema,
   IdleSliceSchema,
@@ -24,7 +28,8 @@ import {
   WorldDraftReferenceSchema,
   migrateStudioSessionV0,
 } from './studio-session-v0';
-import { TierStateSchema, createTierState, type TierState } from './tier-state';
+import { defaultProgression, type SessionProgression } from './studio-session-hydrate';
+import { TierStateSchema } from './tier-state';
 import type { IdleState, LifeState, Practice } from './types';
 
 export const STUDIO_SESSION_VERSION = 'studio_session/v1' as const;
@@ -87,22 +92,6 @@ export const StudioSessionSchema = z
 
 export type StudioSession = z.infer<typeof StudioSessionSchema>;
 
-export interface SessionProgression {
-  readonly tiers: Readonly<Record<string, TierState>>;
-  readonly milestones_done: readonly string[];
-  readonly compendium_done: readonly string[];
-  readonly embodied_member: { readonly tier: string; readonly member: string } | null;
-}
-
-export function defaultProgression(): SessionProgression {
-  return {
-    tiers: { person: createTierState('person', true) },
-    milestones_done: [],
-    compendium_done: [],
-    embodied_member: null,
-  };
-}
-
 export function snapshotStudioSession(
   studio: StudioState,
   idle: IdleState,
@@ -120,16 +109,7 @@ export function snapshotStudioSession(
   return StudioSessionSchema.parse({
     schema_version: STUDIO_SESSION_VERSION,
     benches: {
-      person: {
-        residue: studio.residue,
-        last_harvest_index: studio.last_harvest_index,
-        bay: studio.bay,
-        quality_tier: studio.quality_tier,
-        harvest_count: studio.harvest_count,
-        play_import: studio.play_import,
-        pinned: studio.pinned,
-        surplus: studio.surplus,
-      },
+      person: studioToBench(studio),
     },
     archive: studio.archive,
     tiers: progression.tiers,
@@ -170,104 +150,12 @@ export function parseStudioSession(raw: unknown): StudioSession {
   return StudioSessionSchema.parse(raw);
 }
 
-export interface HydratedStudioSession {
-  readonly studio: StudioState;
-  readonly idle: IdleState;
-  readonly life: LifeState;
-  readonly practices: Practice[];
-  readonly progression: SessionProgression;
-  readonly members: Record<string, MemberSlice>;
-  readonly world_drafts: readonly WorldDraftReference[];
-}
+export {
+  defaultProgression,
+  emptyHydratedSession,
+  hydrateStudioSession,
+} from './studio-session-hydrate';
+export type { HydratedStudioSession, SessionProgression } from './studio-session-hydrate';
 
 export type MemberSlice = z.infer<typeof MemberSliceSchema>;
 export type WorldDraftReference = z.infer<typeof WorldDraftReferenceSchema>;
-
-/** Overlay a snapshot onto a fresh bench (identity/era stay on `baseLife`). */
-export function hydrateStudioSession(
-  session: StudioSession,
-  baseLife: LifeState,
-  packPractices: readonly Practice[],
-): HydratedStudioSession {
-  const progress = new Map(session.practices.map((p) => [p.id, p]));
-  const practices = packPractices.map((practice) => {
-    const saved = progress.get(practice.id);
-    if (saved === undefined) {
-      return practice;
-    }
-    return {
-      ...practice,
-      currentProgress: saved.currentProgress,
-      level: saved.level,
-    };
-  });
-  const idle: IdleState = {
-    mode: session.idle.mode,
-    lastSimulatedTick: BigInt(session.idle.last_simulated_tick),
-    totalIdleTicks: BigInt(session.idle.total_idle_ticks),
-  };
-  const life: LifeState = {
-    ...baseLife,
-    turn: session.life.turn,
-    resources: { ...baseLife.resources, ...session.life.resources },
-    skills: { ...session.life.skills },
-    residue: session.life.residue,
-  };
-  const bench = session.benches['person'];
-  const base = createStudioState();
-  const studio: StudioState =
-    bench === undefined
-      ? { ...base, archive: session.archive }
-      : {
-          residue: bench.residue,
-          last_harvest_index: bench.last_harvest_index,
-          bay: bench.bay === null ? null : { ...bench.bay, focus: bench.bay.focus ?? null },
-          archive: session.archive,
-          quality_tier: bench.quality_tier,
-          harvest_count: bench.harvest_count,
-          play_import: bench.play_import,
-          pinned: bench.pinned,
-          surplus: bench.surplus,
-        };
-  return {
-    studio,
-    idle,
-    life,
-    practices,
-    progression: {
-      tiers: session.tiers,
-      milestones_done: session.milestones_done,
-      compendium_done: session.compendium_done,
-      embodied_member: session.embodied_member,
-    },
-    members: session.members,
-    world_drafts: session.world_drafts,
-  };
-}
-
-/** Empty session helpers for tests that need a known baseline. */
-export function emptyHydratedSession(baseLife?: LifeState): HydratedStudioSession {
-  const life =
-    baseLife ??
-    createLifeState({
-      id: 'studio-bench' as LifeState['id'],
-      era: 'studio-bench@0.1.0' as LifeState['era'],
-      role: 'operator' as LifeState['role'],
-      identity: {
-        gender: 'unspecified',
-        social_class: 'operator',
-        family_wealth_at_birth: 'unspecified',
-        caste_status: 'none',
-        disability_status: 'none',
-      },
-    });
-  return {
-    studio: createStudioState(),
-    idle: createIdleState(),
-    life,
-    practices: [],
-    progression: defaultProgression(),
-    members: {},
-    world_drafts: [],
-  };
-}
