@@ -3,6 +3,10 @@
 // unlock-household counts ARCHIVED persons, not pins: the roster is seeded
 // by graduation itself and the person bench holds one pin at most, so the
 // gate must be reachable before any roster exists.
+// Operand policy (Phase 3): every kind past person ships `pinnable: false`
+// and pins/focus stay person/place, so org→region gates count ARCHIVED
+// cards — provably reachable at every scale (household harvests produce
+// tradition cards, org harvests produce charter, and so on).
 {
   milestones: [
     {
@@ -23,7 +27,7 @@
       predicate: {
         op: 'and',
         operands: [
-          { op: 'gte', key: 'pinned.tradition', value: 2 },
+          { op: 'gte', key: 'archived.tradition', value: 2 },
           { op: 'gte', key: 'world_drafts.household', value: 1 },
         ],
       },
@@ -35,7 +39,7 @@
       predicate: {
         op: 'and',
         operands: [
-          { op: 'gte', key: 'pinned.charter', value: 1 },
+          { op: 'gte', key: 'archived.charter', value: 1 },
           { op: 'gte', key: 'world_drafts.org', value: 2 },
         ],
       },
@@ -47,8 +51,8 @@
       predicate: {
         op: 'and',
         operands: [
-          { op: 'gte', key: 'pinned.festival', value: 1 },
-          { op: 'gte', key: 'pinned.landmark', value: 1 },
+          { op: 'gte', key: 'archived.festival', value: 1 },
+          { op: 'gte', key: 'archived.landmark', value: 1 },
           { op: 'gte', key: 'world_drafts.town', value: 2 },
         ],
       },
@@ -60,8 +64,8 @@
       predicate: {
         op: 'and',
         operands: [
-          { op: 'gte', key: 'pinned.institution', value: 1 },
-          { op: 'gte', key: 'pinned.monument', value: 1 },
+          { op: 'gte', key: 'archived.institution', value: 1 },
+          { op: 'gte', key: 'archived.monument', value: 1 },
           { op: 'gte', key: 'world_drafts.city', value: 2 },
         ],
       },

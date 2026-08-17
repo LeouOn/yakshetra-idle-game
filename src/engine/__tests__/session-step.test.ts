@@ -17,6 +17,18 @@
 //   (g) the household bench AUTO-QUEUES its cook once folded residue
 //       charges it: null → cooking → ready across calls, and a locked
 //       household never grows a bench
+//   (i) GOLDEN ladder lower edge: org+town locked → stepSession ≡ the
+//       recorded head output, field-by-field across two chained calls
+//   (j) org unlocked: the household bench's per-call delta folds to the org
+//       bench at the org fold_cadence, and the org bench auto-queues/cooks
+//       under its OWN modifiers (windowMin lowers only the org gate)
+//   (k) org-only members: with the household locked, org roster members run
+//       and fold onto the ORG bench; person delta never skips a locked rung
+//   (l) org+household members: the org bench receives BOTH its own member
+//       folds and the household fold-up in one call
+//   (m) town unlocked: the org delta folds to the town bench and unit-roster
+//       rows (no member slices) never enter the member loop
+//   (n) determinism across the full ladder
 //
 // Embodied fixtures are synthetic (six 4-hour practice blocks → exactly six
 // practice_tick events per 24-tick step). Member fixtures load the real
@@ -857,5 +869,370 @@ describe('stepSession (visitors)', () => {
     const out = stepSession(session, MEMBER_CTX, 24, createRng(3n));
     expect(out.session.tiers['household']?.active_visitor).toBeNull();
     expect(out.session.tiers['household']?.visitor_ticks).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ladder fixtures — three rungs, per-tier rosters and benches
+// ---------------------------------------------------------------------------
+
+function ladderSession(opts: {
+  household: boolean;
+  org: boolean;
+  town: boolean;
+  householdRoster?: readonly RosterMember[];
+  orgRoster?: readonly RosterMember[];
+  townRoster?: readonly RosterMember[];
+  members?: Record<string, MemberSlice>;
+}): StudioSession {
+  return snapshotStudioSession(
+    createStudioState(),
+    createIdleState(),
+    makeLife(),
+    SIX,
+    1234,
+    {
+      tiers: {
+        person: createTierState('person', true),
+        household: {
+          ...createTierState('household', opts.household),
+          roster: { tier: 'household', members: [...(opts.householdRoster ?? [])] },
+        },
+        org: {
+          ...createTierState('org', opts.org),
+          roster: { tier: 'org', members: [...(opts.orgRoster ?? [])] },
+        },
+        town: {
+          ...createTierState('town', opts.town),
+          roster: { tier: 'town', members: [...(opts.townRoster ?? [])] },
+        },
+      },
+      milestones_done: [],
+      compendium_done: [],
+      embodied_member: null,
+    },
+    { members: opts.members ?? {} },
+  );
+}
+
+function withBench(session: StudioSession, id: string, bench: unknown): StudioSession {
+  return parseStudioSession({ ...session, benches: { ...session.benches, [id]: bench } });
+}
+
+function freshTierBench(
+  fields: { residue?: ResidueEvent[]; fold_position?: number } = {},
+): unknown {
+  return {
+    residue: fields.residue ?? [],
+    last_harvest_index: -1,
+    bay: null,
+    quality_tier: 0,
+    harvest_count: 0,
+    play_import: null,
+    pinned: null,
+    surplus: 0,
+    fold_position: fields.fold_position ?? 0,
+  };
+}
+
+const LADDER_CTX: SessionStepContext = {
+  practices: SIX,
+  embodiedSchedule: SIX_SCHEDULE,
+  memberScheduleFor: () => householdSchedule,
+  memberPracticesFor: () => policyPractices,
+  endings: [],
+  sessionSeed: 'ladder-test',
+  tiers: [
+    { id: 'household', scale: 'household', fold_cadence: 4 },
+    { id: 'org', scale: 'org', fold_cadence: 4 },
+    { id: 'town', scale: 'town', fold_cadence: 4 },
+  ],
+};
+
+/** Org members are lives (Task 2 seeds them like household members). */
+const orgMember = (id: string): RosterMember => ({
+  id,
+  name: id,
+  role: 'clerk',
+  policy: 'policy:household-base',
+  embodied: false,
+  seed: 21,
+});
+
+/** Town roster rows are bench aggregates: units with NO stored member slice. */
+const townUnit = (id: string): RosterMember => ({
+  id,
+  name: id,
+  role: 'member-household',
+  policy: 'policy:household-base',
+  embodied: false,
+  seed: 31,
+});
+
+// ---------------------------------------------------------------------------
+// (i) GOLDEN ladder lower edge — org+town locked ≡ recorded head output
+// ---------------------------------------------------------------------------
+
+// Recorded from the pre-ladder implementation (household branch) on this
+// exact fixture: person bench seeded with 2 events, household bench with
+// 2 events and fold_position 2, chen seeded, org+town locked, two chained
+// 24-tick calls (rng 42n then 43n). The rewrite must reproduce it byte for
+// byte — this is the field-by-field pin that org/town never change the
+// household-only path.
+const GOLDEN_HEAD_OUTPUT = `
+{"first":{"session":{"schema_version":"studio_session/v1","benches":{"person":{"residue":[{"tick":1,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":2,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":24,"type":"practice_tick","ids":["practice:p1"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p2"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p3"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p4"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p5"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6"],"numbers":{"progress":4}}],"last_harvest_index":-1,"bay":null,"quality_tier":0,"harvest_count":0,"play_import":null,"pinned":null,"surplus":0,"fold_position":0},"household":{"residue":[{"tick":1,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":2,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":24,"type":"practice_tick","ids":["practice:tang/alms-round","member:chen"],"numbers":{"progress":1.5}},{"tick":24,"type":"practice_tick","ids":["practice:tang/courtyard-beings","member:chen"],"numbers":{"progress":1.2000000000000002}},{"tick":24,"type":"practice_tick","ids":["practice:tang/extra-bowl","member:chen"],"numbers":{"progress":1.35}},{"tick":24,"type":"practice_tick","ids":["practice:p2","bench:person"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6","bench:person"],"numbers":{"progress":4}}],"last_harvest_index":6,"bay":{"id":"op-0-1","type":"develop_from_residue","residue_window_id":"w-1-24-7","residue":[{"tick":1,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":2,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":24,"type":"practice_tick","ids":["practice:tang/alms-round","member:chen"],"numbers":{"progress":1.5}},{"tick":24,"type":"practice_tick","ids":["practice:tang/courtyard-beings","member:chen"],"numbers":{"progress":1.2000000000000002}},{"tick":24,"type":"practice_tick","ids":["practice:tang/extra-bowl","member:chen"],"numbers":{"progress":1.35}},{"tick":24,"type":"practice_tick","ids":["practice:p2","bench:person"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6","bench:person"],"numbers":{"progress":4}}],"brief":null,"cook_ticks_total":11,"cook_ticks_done":11,"status":"ready","rng_seed":"1","focus":null},"quality_tier":0,"harvest_count":0,"play_import":null,"pinned":null,"surplus":0,"fold_position":8}},"archive":[],"tiers":{"person":{"schema_version":"tier_state/v0","tier":"person","unlocked":true,"roster":{"tier":"person","members":[]},"endowed":[],"active_visitor":null,"visitor_ticks":0},"household":{"schema_version":"tier_state/v0","tier":"household","unlocked":true,"roster":{"tier":"household","members":[{"id":"chen","name":"Chen","role":"aunt","policy":"policy:household-base","embodied":false,"seed":11}]},"endowed":[],"active_visitor":null,"visitor_ticks":0},"org":{"schema_version":"tier_state/v0","tier":"org","unlocked":false,"roster":{"tier":"org","members":[]},"endowed":[],"active_visitor":null,"visitor_ticks":0},"town":{"schema_version":"tier_state/v0","tier":"town","unlocked":false,"roster":{"tier":"town","members":[]},"endowed":[],"active_visitor":null,"visitor_ticks":0}},"milestones_done":[],"compendium_done":[],"embodied_member":null,"idle":{"mode":"idle","last_simulated_tick":"24","total_idle_ticks":"24"},"life":{"turn":24,"resources":{"time":76,"energy":100,"provisions":50,"trust":10,"skill":24,"obligation":0},"skills":{},"residue":[{"tick":24,"type":"practice_tick","ids":["practice:p1"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p2"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p3"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p4"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p5"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6"],"numbers":{"progress":4}}]},"practices":[{"id":"practice:p1","currentProgress":4,"level":0},{"id":"practice:p2","currentProgress":4,"level":0},{"id":"practice:p3","currentProgress":4,"level":0},{"id":"practice:p4","currentProgress":4,"level":0},{"id":"practice:p5","currentProgress":4,"level":0},{"id":"practice:p6","currentProgress":4,"level":0}],"members":{"chen":{"life":{"turn":24,"resources":{"time":76,"energy":100,"provisions":50,"trust":19,"skill":0,"obligation":0},"skills":{},"residue":[{"tick":24,"type":"practice_tick","ids":["practice:tang/alms-round"],"numbers":{"progress":1.5}},{"tick":24,"type":"practice_tick","ids":["practice:tang/courtyard-beings"],"numbers":{"progress":1.2000000000000002}},{"tick":24,"type":"practice_tick","ids":["practice:tang/extra-bowl"],"numbers":{"progress":1.35}}]},"practices":[{"id":"practice:tang/alms-round","currentProgress":1.5,"level":0},{"id":"practice:tang/courtyard-beings","currentProgress":1.2000000000000002,"level":0},{"id":"practice:tang/extra-bowl","currentProgress":1.35,"level":0}]}},"world_drafts":[],"last_visited_at_unix":1234},"summary":{"embodiedTicks":24,"memberTicks":24,"folded":2,"benchesReady":["household"]}},"second":{"session":{"schema_version":"studio_session/v1","benches":{"person":{"residue":[{"tick":1,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":2,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":24,"type":"practice_tick","ids":["practice:p1"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p2"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p3"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p4"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p5"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p1"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p2"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p3"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p4"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p5"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p6"],"numbers":{"progress":4}}],"last_harvest_index":-1,"bay":null,"quality_tier":0,"harvest_count":0,"play_import":null,"pinned":null,"surplus":24,"fold_position":0},"household":{"residue":[{"tick":1,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":2,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":24,"type":"practice_tick","ids":["practice:tang/alms-round","member:chen"],"numbers":{"progress":1.5}},{"tick":24,"type":"practice_tick","ids":["practice:tang/courtyard-beings","member:chen"],"numbers":{"progress":1.2000000000000002}},{"tick":24,"type":"practice_tick","ids":["practice:tang/extra-bowl","member:chen"],"numbers":{"progress":1.35}},{"tick":24,"type":"practice_tick","ids":["practice:p2","bench:person"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6","bench:person"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:tang/alms-round","member:chen"],"numbers":{"progress":1.5}},{"tick":48,"type":"practice_tick","ids":["practice:tang/courtyard-beings","member:chen"],"numbers":{"progress":1.2000000000000002}},{"tick":48,"type":"practice_tick","ids":["practice:tang/extra-bowl","member:chen"],"numbers":{"progress":1.35}},{"tick":48,"type":"practice_tick","ids":["practice:p4","bench:person"],"numbers":{"progress":4}}],"last_harvest_index":6,"bay":{"id":"op-0-1","type":"develop_from_residue","residue_window_id":"w-1-24-7","residue":[{"tick":1,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":2,"type":"practice_tick","ids":["practice.test"],"numbers":{"progress":1}},{"tick":24,"type":"practice_tick","ids":["practice:tang/alms-round","member:chen"],"numbers":{"progress":1.5}},{"tick":24,"type":"practice_tick","ids":["practice:tang/courtyard-beings","member:chen"],"numbers":{"progress":1.2000000000000002}},{"tick":24,"type":"practice_tick","ids":["practice:tang/extra-bowl","member:chen"],"numbers":{"progress":1.35}},{"tick":24,"type":"practice_tick","ids":["practice:p2","bench:person"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6","bench:person"],"numbers":{"progress":4}}],"brief":null,"cook_ticks_total":11,"cook_ticks_done":11,"status":"ready","rng_seed":"1","focus":null},"quality_tier":0,"harvest_count":0,"play_import":null,"pinned":null,"surplus":0,"fold_position":14}},"archive":[],"tiers":{"person":{"schema_version":"tier_state/v0","tier":"person","unlocked":true,"roster":{"tier":"person","members":[]},"endowed":[],"active_visitor":null,"visitor_ticks":0},"household":{"schema_version":"tier_state/v0","tier":"household","unlocked":true,"roster":{"tier":"household","members":[{"id":"chen","name":"Chen","role":"aunt","policy":"policy:household-base","embodied":false,"seed":11}]},"endowed":[],"active_visitor":null,"visitor_ticks":0},"org":{"schema_version":"tier_state/v0","tier":"org","unlocked":false,"roster":{"tier":"org","members":[]},"endowed":[],"active_visitor":null,"visitor_ticks":0},"town":{"schema_version":"tier_state/v0","tier":"town","unlocked":false,"roster":{"tier":"town","members":[]},"endowed":[],"active_visitor":null,"visitor_ticks":0}},"milestones_done":[],"compendium_done":[],"embodied_member":null,"idle":{"mode":"idle","last_simulated_tick":"48","total_idle_ticks":"48"},"life":{"turn":48,"resources":{"time":52,"energy":100,"provisions":50,"trust":10,"skill":48,"obligation":0},"skills":{},"residue":[{"tick":24,"type":"practice_tick","ids":["practice:p1"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p2"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p3"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p4"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p5"],"numbers":{"progress":4}},{"tick":24,"type":"practice_tick","ids":["practice:p6"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p1"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p2"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p3"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p4"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p5"],"numbers":{"progress":4}},{"tick":48,"type":"practice_tick","ids":["practice:p6"],"numbers":{"progress":4}}]},"practices":[{"id":"practice:p1","currentProgress":8,"level":0},{"id":"practice:p2","currentProgress":8,"level":0},{"id":"practice:p3","currentProgress":8,"level":0},{"id":"practice:p4","currentProgress":8,"level":0},{"id":"practice:p5","currentProgress":8,"level":0},{"id":"practice:p6","currentProgress":8,"level":0}],"members":{"chen":{"life":{"turn":48,"resources":{"time":52,"energy":100,"provisions":50,"trust":28,"skill":0,"obligation":0},"skills":{},"residue":[{"tick":24,"type":"practice_tick","ids":["practice:tang/alms-round"],"numbers":{"progress":1.5}},{"tick":24,"type":"practice_tick","ids":["practice:tang/courtyard-beings"],"numbers":{"progress":1.2000000000000002}},{"tick":24,"type":"practice_tick","ids":["practice:tang/extra-bowl"],"numbers":{"progress":1.35}},{"tick":48,"type":"practice_tick","ids":["practice:tang/alms-round"],"numbers":{"progress":1.5}},{"tick":48,"type":"practice_tick","ids":["practice:tang/courtyard-beings"],"numbers":{"progress":1.2000000000000002}},{"tick":48,"type":"practice_tick","ids":["practice:tang/extra-bowl"],"numbers":{"progress":1.35}}]},"practices":[{"id":"practice:tang/alms-round","currentProgress":3,"level":0},{"id":"practice:tang/courtyard-beings","currentProgress":2.4000000000000004,"level":0},{"id":"practice:tang/extra-bowl","currentProgress":2.7,"level":0}]}},"world_drafts":[],"last_visited_at_unix":1234},"summary":{"embodiedTicks":24,"memberTicks":24,"folded":1,"benchesReady":["household"]}}}
+`;
+
+function goldenLadderSession(): StudioSession {
+  const base = ladderSession({
+    household: true,
+    org: false,
+    town: false,
+    householdRoster: [rosterMember('chen', 'Chen', false)],
+    members: { chen: freshMember() },
+  });
+  const personSeeded = parseStudioSession({
+    ...base,
+    benches: {
+      ...base.benches,
+      person: {
+        ...base.benches['person'],
+        residue: benchResidue(2),
+      } as BenchState,
+    },
+  });
+  return withBench(
+    personSeeded,
+    'household',
+    freshTierBench({ residue: benchResidue(2), fold_position: 2 }),
+  );
+}
+
+describe('stepSession (golden ladder lower edge)', () => {
+  it('reproduces the recorded head output field-by-field across two chained calls', () => {
+    const recorded = JSON.parse(GOLDEN_HEAD_OUTPUT) as {
+      readonly first: { readonly session: unknown; readonly summary: unknown };
+      readonly second: { readonly session: unknown; readonly summary: unknown };
+    };
+    const ctx: SessionStepContext = { ...LADDER_CTX, sessionSeed: 'ladder-golden' };
+
+    const first = stepSession(goldenLadderSession(), ctx, 24, createRng(42n));
+    expect(first.session).toEqual(recorded.first.session);
+    expect(first.summary).toEqual(recorded.first.summary);
+
+    const second = stepSession(first.session, ctx, 24, createRng(43n));
+    expect(second.session).toEqual(recorded.second.session);
+    expect(second.summary).toEqual(recorded.second.summary);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (j) org unlocked: household delta folds to the org bench under org modifiers
+// ---------------------------------------------------------------------------
+
+describe('stepSession (ladder fold to org)', () => {
+  const ORG_MODS: BenchModifiers = { ...EMPTY_BENCH_MODIFIERS, windowMin: 1 };
+  const ctx: SessionStepContext = {
+    ...LADDER_CTX,
+    sessionSeed: 'org-fold',
+    modifiersFor: (tierId) => (tierId === 'org' ? ORG_MODS : EMPTY_BENCH_MODIFIERS),
+  };
+
+  function session(): StudioSession {
+    const base = ladderSession({
+      household: true,
+      org: true,
+      town: false,
+      householdRoster: [rosterMember('chen', 'Chen', false)],
+      members: { chen: freshMember() },
+    });
+    return withBench(withBench(base, 'household', freshTierBench()), 'org', freshTierBench());
+  }
+
+  it('folds the household per-call delta to the org bench at the org cadence', () => {
+    const first = stepSession(session(), ctx, 24, createRng(100n));
+
+    const org = benchOf(first.session, 'org');
+    // Household growth this call: 3 member events + 1 person fold (ordinal 4)
+    // = 4 events → cadence 4 folds exactly the 4th (the person-fold event).
+    expect(org.residue).toHaveLength(1);
+    expect(org.residue[0]?.ids).toEqual(['practice:p4', 'bench:person', 'bench:household']);
+    expect(org.fold_position).toBe(4);
+    expect(org.bay).toBeNull();
+
+    const household = benchOf(first.session, 'household');
+    expect(household.residue).toHaveLength(4);
+    expect(household.bay?.status).toBe('ready');
+    expect(household.bay?.cook_ticks_total).toBe(8);
+    expect(household.fold_position).toBe(6);
+
+    expect(first.summary).toEqual({
+      embodiedTicks: 24,
+      memberTicks: 24,
+      folded: 2,
+      benchesReady: ['household'],
+    });
+  });
+
+  it('auto-queues and cooks the org bench under the org windowMin modifier only', () => {
+    const first = stepSession(session(), ctx, 24, createRng(100n));
+    const second = stepSession(first.session, ctx, 24, createRng(101n));
+
+    const org = benchOf(second.session, 'org');
+    // Call-2 household growth: 3 member + 2 person folds = 5 → ordinal 8
+    // folds (counter 4 → 9). Org window 2 meets the windowMin-lowered gate 2.
+    expect(org.residue).toHaveLength(2);
+    expect(org.residue.filter((e) => e.ids.includes('bench:household'))).toHaveLength(2);
+    expect(org.fold_position).toBe(9);
+    expect(org.bay?.status).toBe('ready');
+    expect(org.bay?.cook_ticks_total).toBe(6); // cookTicksFor(2), org gate only
+    expect(org.last_harvest_index).toBe(1);
+    expect(second.summary.folded).toBe(3);
+    expect(second.summary.benchesReady).toEqual(['household', 'org']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (k) org-only: members fold to the org bench; a locked rung drops the flow
+// ---------------------------------------------------------------------------
+
+describe('stepSession (ladder org-only members)', () => {
+  const ctx: SessionStepContext = { ...LADDER_CTX, sessionSeed: 'org-only' };
+
+  it('runs org roster members onto the org bench and never past a locked household', () => {
+    const base = ladderSession({
+      household: false,
+      org: true,
+      town: false,
+      orgRoster: [orgMember('guild')],
+      members: { guild: freshMember() },
+    });
+    const session = withBench(base, 'org', freshTierBench());
+
+    const out = stepSession(session, ctx, 24, createRng(110n));
+
+    expect('household' in out.session.benches).toBe(false);
+    const org = benchOf(out.session, 'org');
+    expect(org.residue).toHaveLength(3);
+    expect(org.residue.every((e) => e.ids.includes('member:guild'))).toBe(true);
+    expect(org.residue.some((e) => e.ids.some((id) => id.startsWith('bench:')))).toBe(false);
+    expect(org.fold_position).toBe(0);
+    expect(org.bay?.status).toBe('ready');
+    expect(org.bay?.cook_ticks_total).toBe(7);
+    expect(out.session.members['guild']?.life.turn).toBe(24);
+    expect(out.summary).toEqual({
+      embodiedTicks: 24,
+      memberTicks: 24,
+      folded: 0,
+      benchesReady: ['org'],
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (l) org+household: the org bench receives member folds AND the fold-up
+// ---------------------------------------------------------------------------
+
+describe('stepSession (ladder org members with household)', () => {
+  const ctx: SessionStepContext = { ...LADDER_CTX, sessionSeed: 'org-hh' };
+
+  it('lands org member residue and the household fold-up on the same org bench', () => {
+    const base = ladderSession({
+      household: true,
+      org: true,
+      town: false,
+      householdRoster: [rosterMember('chen', 'Chen', false)],
+      orgRoster: [orgMember('guild')],
+      members: { chen: freshMember(), guild: freshMember() },
+    });
+    const session = withBench(
+      withBench(base, 'household', freshTierBench()),
+      'org',
+      freshTierBench(),
+    );
+
+    const out = stepSession(session, ctx, 24, createRng(120n));
+
+    const org = benchOf(out.session, 'org');
+    expect(org.residue).toHaveLength(4);
+    expect(org.residue.filter((e) => e.ids.includes('member:guild'))).toHaveLength(3);
+    expect(org.residue.filter((e) => e.ids.includes('bench:household'))).toHaveLength(1);
+    expect(org.bay?.status).toBe('ready');
+    expect(org.fold_position).toBe(4);
+
+    const household = benchOf(out.session, 'household');
+    expect(household.residue).toHaveLength(4);
+    expect(household.bay?.status).toBe('ready');
+
+    expect(out.summary).toEqual({
+      embodiedTicks: 24,
+      memberTicks: 48,
+      folded: 2,
+      benchesReady: ['household', 'org'],
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (m) town unlocked: org delta folds to town; unit rows never run
+// ---------------------------------------------------------------------------
+
+describe('stepSession (ladder fold to town)', () => {
+  const ctx: SessionStepContext = { ...LADDER_CTX, sessionSeed: 'town-fold' };
+
+  function session(): StudioSession {
+    const base = ladderSession({
+      household: true,
+      org: true,
+      town: true,
+      householdRoster: [rosterMember('chen', 'Chen', false)],
+      orgRoster: [orgMember('guild')],
+      townRoster: [townUnit('unit-hh-chen'), townUnit('unit-hh-ruo')],
+      members: { chen: freshMember(), guild: freshMember() },
+    });
+    return withBench(
+      withBench(withBench(base, 'household', freshTierBench()), 'org', freshTierBench()),
+      'town',
+      freshTierBench(),
+    );
+  }
+
+  it("folds the org delta to the town bench and skips unit-roster rows' member loop", () => {
+    const out = stepSession(session(), ctx, 24, createRng(130n));
+
+    const town = benchOf(out.session, 'town');
+    // Org growth: 3 member events + 1 household fold = 4 → cadence 4 folds
+    // the 4th, which is itself the person→household fold event: one event
+    // carrying the whole chain of rung markers.
+    expect(town.residue).toHaveLength(1);
+    expect(town.residue[0]?.ids).toEqual([
+      'practice:p4',
+      'bench:person',
+      'bench:household',
+      'bench:org',
+    ]);
+    expect(town.fold_position).toBe(4);
+    expect(town.bay).toBeNull();
+    expect(town.residue.some((e) => e.ids.some((id) => id.startsWith('member:')))).toBe(false);
+    expect('unit-hh-chen' in out.session.members).toBe(false);
+    expect('unit-hh-ruo' in out.session.members).toBe(false);
+
+    expect(out.summary).toEqual({
+      embodiedTicks: 24,
+      memberTicks: 48,
+      folded: 3,
+      benchesReady: ['household', 'org'],
+    });
+  });
+
+  it('is deterministic across the full ladder', () => {
+    const run = () => stepSession(session(), ctx, 24, createRng(130n));
+    const a = run();
+    const b = run();
+    expect(a.session).toEqual(b.session);
+    expect(a.summary).toEqual(b.summary);
+
+    const step2 = (s: StudioSession) => stepSession(s, ctx, 24, createRng(131n));
+    expect(step2(a.session)).toEqual(step2(b.session));
   });
 });

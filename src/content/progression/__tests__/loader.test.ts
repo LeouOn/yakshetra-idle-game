@@ -67,6 +67,72 @@ describe('loadProgression', () => {
     expect(househeld?.predicate).toEqual({ op: 'gte', key: 'archived.tradition', value: 1 });
   });
 
+  it('gates org through region on archived cards, never pins', () => {
+    // Operand policy (Phase 3 Binding Decision 1): every kind past person
+    // ships pinnable: false, so pinned.<kind> gates would be unreachable.
+    // archived.<kind> counts archive cards and is provably reachable at
+    // every scale.
+    const expected: Record<string, unknown> = {
+      'unlock-org': {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'archived.tradition', value: 2 },
+          { op: 'gte', key: 'world_drafts.household', value: 1 },
+        ],
+      },
+      'unlock-town': {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'archived.charter', value: 1 },
+          { op: 'gte', key: 'world_drafts.org', value: 2 },
+        ],
+      },
+      'unlock-city': {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'archived.festival', value: 1 },
+          { op: 'gte', key: 'archived.landmark', value: 1 },
+          { op: 'gte', key: 'world_drafts.town', value: 2 },
+        ],
+      },
+      'unlock-region': {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'archived.institution', value: 1 },
+          { op: 'gte', key: 'archived.monument', value: 1 },
+          { op: 'gte', key: 'world_drafts.city', value: 2 },
+        ],
+      },
+    };
+    for (const [id, predicate] of Object.entries(expected)) {
+      expect(registries.milestones.find((m) => m.id === id)?.predicate).toEqual(predicate);
+    }
+  });
+
+  it('keeps every milestone operand on the archived/world_drafts vocabulary', () => {
+    const keys: string[] = [];
+    const walk = (node: unknown): void => {
+      if (Array.isArray(node)) {
+        node.forEach(walk);
+        return;
+      }
+      if (typeof node === 'object' && node !== null) {
+        const op = node as { op?: unknown; key?: unknown; operands?: unknown; operand?: unknown };
+        if (typeof op.key === 'string') {
+          keys.push(op.key);
+        }
+        walk(op.operands ?? op.operand ?? []);
+      }
+    };
+    for (const milestone of registries.milestones) {
+      walk(milestone.predicate);
+    }
+    expect(keys.length).toBeGreaterThan(0);
+    expect(
+      keys.every((key) => key.startsWith('archived.') || key.startsWith('world_drafts.')),
+    ).toBe(true);
+  });
+
   it('ships empty extension files as valid empty registries', () => {
     // Endowment ships four base rows since Phase 2 Task 1 (the rest still
     // empty). The R-PROG-MODIFIER-KEYS lint guarantees every key here is
