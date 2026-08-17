@@ -679,4 +679,40 @@ describe('StudioView', () => {
     // The person bench still accrues through the same tick path.
     expect(saved?.benches['person']?.residue.length).toBeGreaterThan(0);
   });
+
+  /* ---- endowment modifiers: an endowed swift-cook track speeds the cook --- */
+
+  it('shortens the visible bay cook total with an endowed swift-cook track', () => {
+    const hydrated = emptyHydratedSession();
+    const studio = recordStudioResidues(hydrated.studio, THING_WINDOW);
+    const session = snapshotStudioSession(
+      studio,
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: {
+          person: { ...createTierState('person', true), endowed: ['endow/person/swift-cook'] },
+        },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+
+    const { getByTestID, getByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: session,
+      }),
+    );
+
+    press(getByTestID('studio-develop'));
+    // Window 3 → cookTicksFor(3) = 7; swift-cook's cook_speed 1 discounts to 6.
+    expect(() =>
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+    ).not.toThrow();
+  });
 });

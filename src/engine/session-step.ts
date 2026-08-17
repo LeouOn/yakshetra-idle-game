@@ -21,6 +21,7 @@ import {
   tickStudio,
 } from './operations';
 import { benchAfterStep, benchToStudio, emptyBench, freshSchemaEvents } from './bench-mapping';
+import { EMPTY_BENCH_MODIFIERS, type BenchModifiers } from './endowment-validators';
 import { stepStudio } from './studio-offline';
 import { FOLD_IDS, memberSeed, runAutonomousMember } from './roster';
 import { createRng, type Rng } from './rng';
@@ -52,6 +53,10 @@ export interface SessionStepContext {
     readonly scale: string;
     readonly fold_cadence: number;
   }[];
+  /** Per-tier endowment modifiers (UI-supplied). Absent → zero modifiers:
+   * every gate and tick keeps its unmodified value. Never consulted while
+   * the household tier is locked. */
+  readonly modifiersFor?: (tierId: string) => BenchModifiers;
 }
 
 export interface SessionStepSummary {
@@ -105,6 +110,9 @@ export function stepSession(
   if (session.tiers[HOUSEHOLD_BENCH]?.unlocked === true) {
     const householdPrev = session.benches[HOUSEHOLD_BENCH] ?? emptyBench();
     let household = benchToStudio(householdPrev, session.archive);
+    const mods = ctx.modifiersFor?.(HOUSEHOLD_BENCH) ?? EMPTY_BENCH_MODIFIERS;
+    // window_min lowers the auto-queue minimum, floored at 2 events.
+    const effectiveMin = Math.max(2, MIN_RESIDUE_TO_DEVELOP - mods.windowMin);
     // The cook gate snapshots the charge BEFORE any appends (stepStudio's gate).
     const alreadyCharged = pendingResidue(household).length >= MIN_RESIDUE_TO_DEVELOP;
 
@@ -162,20 +170,23 @@ export function stepSession(
 
     // 4. Auto-queue the household cook. The household bench has no manual
     // develop control — folded residue is its only charge path — so the step
-    // itself queues the cook once the window reaches the minimum. A dedicated
-    // derived stream leaves the embodied rng untouched.
-    if (household.bay === null && pendingResidue(household).length >= MIN_RESIDUE_TO_DEVELOP) {
+    // itself queues the cook once the window reaches the effective minimum
+    // (window_min may lower it; the engine floors the cook at 2 ticks). A
+    // dedicated derived stream leaves the embodied rng untouched.
+    if (household.bay === null && pendingResidue(household).length >= effectiveMin) {
       household = queueDevelop(
         household,
         null,
         createRng(memberSeed(ctx.sessionSeed, 'household-develop')),
+        { cookTicksDiscount: mods.cookSpeed, minResidue: effectiveMin },
       );
     }
 
     // 5. Household cook under the alreadyCharged gate.
     household = tickStudio(household, ticks);
     if (alreadyCharged && ticks > 0) {
-      household = absorbSurplus(household, ticks);
+      // surplus_rate amplifies the absorbed tend ticks (integer math).
+      household = absorbSurplus(household, ticks * (1 + mods.surplusRate));
     }
     benches[HOUSEHOLD_BENCH] = {
       ...benchAfterStep(household, householdPrev),

@@ -71,6 +71,7 @@ import {
   type StudioState,
   type WorldDraftReference,
 } from '@/engine';
+import { computeBenchModifiers, effectiveAwayCap, type BenchModifiers } from '@/engine/endowment';
 import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persistence';
 import type { CalendarEpoch } from '@/engine/calendar';
 import type { DailySchedule } from '@/engine/schedule';
@@ -210,6 +211,17 @@ function kindRulesByScale(): Readonly<Record<string, readonly KindRule[]>> {
     rulesByScaleCache = out;
   }
   return rulesByScaleCache;
+}
+
+/**
+ * Endowment modifiers for one session's tiers. The track rows are
+ * mount-stable content; the endowed lists live on the session, so the
+ * resolver is rebuilt per session (global modifiers stay EMPTY until the
+ * compendium task wires them).
+ */
+function modifiersForSession(session: StudioSession): (tierId: string) => BenchModifiers {
+  const tracks = registries().endowment;
+  return (tierId: string): BenchModifiers => computeBenchModifiers(tierId, session, tracks);
 }
 
 function statValue(stats: ArchiveStats, key: string): number {
@@ -473,10 +485,11 @@ export default function StudioView({
   const stepCtxRef = useRef<SessionStepContext | null>(null);
 
   /**
-   * Session-step context built once per mount from already-loaded content;
-   * props are pack constants, so the capture never goes stale.
+   * Session-step context. The pack-constant members are captured once per
+   * mount; `modifiersFor` must see the CURRENT session's endowed tiers, so it
+   * is layered over the cached capture on every call.
    */
-  function stepCtx(): SessionStepContext {
+  function stepCtx(session: StudioSession): SessionStepContext {
     if (stepCtxRef.current === null) {
       const policies = policyRuntime();
       const resolve = (id: string): PolicyRuntime => {
@@ -500,7 +513,7 @@ export default function StudioView({
         })),
       };
     }
-    return stepCtxRef.current;
+    return { ...stepCtxRef.current, modifiersFor: modifiersForSession(session) };
   }
 
   useEffect(() => {
@@ -525,10 +538,15 @@ export default function StudioView({
         // via studioTicksAway) so autonomous members and the household bench
         // advance during absence too; a household-locked session reduces to
         // the old person-only catch-up by stepSession's golden invariant.
-        const awayTicks = studioTicksAway(session.last_visited_at_unix ?? 0, clock());
+        // The away cap carries the person tier's endowed offline_cap.
+        const awayTicks = studioTicksAway(
+          session.last_visited_at_unix ?? 0,
+          clock(),
+          effectiveAwayCap(session, registries().endowment),
+        );
         const stepped =
           awayTicks.ticks > 0
-            ? stepSession(session, stepCtx(), awayTicks.ticks, rngRef.current)
+            ? stepSession(session, stepCtx(session), awayTicks.ticks, rngRef.current)
             : null;
         const next = stepped === null ? session : stepped.session;
         const hydrated = hydrateStudioSession(
@@ -681,12 +699,8 @@ export default function StudioView({
     // stepSession keeps the embodied bench on exact stepStudio semantics (its
     // golden-tested invariant) and adds autonomous members plus the household
     // cook once the tier unlocks; a locked session is indistinguishable here.
-    const stepped = stepSession(
-      sessionFromSlices(benchRef.current),
-      stepCtx(),
-      ticks,
-      rngRef.current,
-    );
+    const session = sessionFromSlices(benchRef.current);
+    const stepped = stepSession(session, stepCtx(session), ticks, rngRef.current);
     adoptSteppedSession(stepped.session);
     setExported(false);
     if (ticks > 0) {
@@ -712,7 +726,14 @@ export default function StudioView({
 
   function develop(): void {
     const trimmed = brief.trim();
-    setStudio(queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current));
+    // The manual develop path queues the person bench, so its endowed
+    // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the engine).
+    const cookTicksDiscount = modifiersForSession(buildSession())(EMBODIED_SCALE).cookSpeed;
+    setStudio(
+      queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current, {
+        cookTicksDiscount,
+      }),
+    );
   }
 
   const lifeContext = evaluateLifeContext({

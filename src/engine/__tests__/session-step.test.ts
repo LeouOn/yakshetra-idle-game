@@ -38,6 +38,7 @@ import {
 import type { LifeState, Practice } from '../';
 import { stepSession, type SessionStepContext } from '../session-step';
 import { stepStudio } from '../studio-offline';
+import { EMPTY_BENCH_MODIFIERS, type BenchModifiers } from '../endowment';
 import {
   parseStudioSession,
   snapshotStudioSession,
@@ -667,5 +668,133 @@ describe('stepSession (household auto-queue)', () => {
       current = stepSession(current, MEMBER_CTX, 24, createRng(2n)).session;
       expect('household' in current.benches).toBe(false);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// (h) endowment modifiers: windowMin gate, cookSpeed discount, surplusRate
+// ---------------------------------------------------------------------------
+
+describe('stepSession (endowment modifiers)', () => {
+  const REST_CTX: SessionStepContext = {
+    practices: [],
+    embodiedSchedule: REST_SCHEDULE,
+    memberScheduleFor: () => throwCtx('no members'),
+    memberPracticesFor: () => throwCtx('no members'),
+    endings: [],
+    sessionSeed: 'mods-test',
+    tiers: [{ id: 'household', scale: 'household', fold_cadence: 4 }],
+  };
+
+  function modsFor(mods: BenchModifiers): (tierId: string) => BenchModifiers {
+    return () => mods;
+  }
+
+  it('windowMin lowers the auto-queue gate to a 2-event window', () => {
+    const session = withHouseholdBench(
+      householdSession({ roster: [], practices: [] }),
+      hhBench({ residue: benchResidue(2) }),
+    );
+
+    // Without modifiers the 2-window stays below MIN_RESIDUE_TO_DEVELOP.
+    const plain = stepSession(session, REST_CTX, 1, createRng(4n));
+    expect(benchOf(plain.session, 'household').bay).toBeNull();
+
+    // windowMin 1 → effective minimum max(2, 3 − 1) = 2 → the cook queues.
+    const ctx: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, windowMin: 1 }),
+    };
+    const out = stepSession(session, ctx, 1, createRng(4n));
+    const hh = benchOf(out.session, 'household');
+    expect(hh.bay).not.toBeNull();
+    expect(hh.bay?.cook_ticks_total).toBe(6); // cookTicksFor(2) = 6
+    expect(hh.bay?.residue).toHaveLength(2);
+    expect(hh.last_harvest_index).toBe(1);
+  });
+
+  it('never auto-queues below a 2-event window even with heavy windowMin', () => {
+    // max(2, 3 − 9) clamps at 2, so a 1-window bench still waits.
+    const session = withHouseholdBench(
+      householdSession({ roster: [], practices: [] }),
+      hhBench({ residue: benchResidue(1) }),
+    );
+    const ctx: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, windowMin: 9 }),
+    };
+    const out = stepSession(session, ctx, 1, createRng(4n));
+    expect(benchOf(out.session, 'household').bay).toBeNull();
+  });
+
+  it('cookSpeed discounts the auto-queued cook total, floored at 2', () => {
+    const session = withHouseholdBench(
+      householdSession({ roster: [], practices: [] }),
+      hhBench({ residue: benchResidue(MIN_RESIDUE_TO_DEVELOP) }),
+    );
+    const ctx: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, cookSpeed: 2 }),
+    };
+    const out = stepSession(session, ctx, 1, createRng(4n));
+    const hh = benchOf(out.session, 'household');
+    expect(hh.bay?.cook_ticks_total).toBe(5); // cookTicksFor(3) = 7 − 2
+
+    const floored: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, cookSpeed: 99 }),
+    };
+    const clamped = stepSession(session, floored, 1, createRng(4n));
+    expect(benchOf(clamped.session, 'household').bay?.cook_ticks_total).toBe(2);
+  });
+
+  it('surplusRate amplifies the absorbed household ticks only', () => {
+    // A cooking bay (window 4 → 8 ticks) plus 3 fresh pending events: the
+    // bench is charged, so step ticks absorb as surplus.
+    let bench = recordStudioResidues(createStudioState(), benchResidue(4));
+    bench = queueDevelop(bench, null, createRng(9n));
+    bench = recordStudioResidues(bench, benchResidue(3));
+    const session = withHouseholdBench(householdSession({ roster: [], practices: [] }), {
+      residue: [...bench.residue],
+      last_harvest_index: bench.last_harvest_index,
+      bay: bench.bay,
+      quality_tier: bench.quality_tier,
+      harvest_count: bench.harvest_count,
+      play_import: bench.play_import,
+      pinned: bench.pinned,
+      surplus: bench.surplus,
+    });
+
+    // Plain: 3 direct + 3 absorbed ticks cook 6 of 8 — still cooking.
+    const plain = stepSession(session, REST_CTX, 3, createRng(4n));
+    expect(benchOf(plain.session, 'household').bay?.status).toBe('cooking');
+    expect(benchOf(plain.session, 'household').bay?.cook_ticks_done).toBe(6);
+
+    // surplusRate 1 doubles the absorbed ticks: 3 + 6 = 9 ≥ 8 → ready.
+    const ctx: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, surplusRate: 1 }),
+    };
+    const out = stepSession(session, ctx, 3, createRng(4n));
+    expect(benchOf(out.session, 'household').bay?.status).toBe('ready');
+  });
+
+  it('never consults modifiersFor while the household tier is locked', () => {
+    const studio = recordStudioResidues(createStudioState(), benchResidue(MIN_RESIDUE_TO_DEVELOP));
+    const session = snapshotStudioSession(studio, createIdleState(), makeLife(), SIX, 1234, {
+      tiers: {
+        person: createTierState('person', true),
+        household: createTierState('household', false),
+      },
+      milestones_done: [],
+      compendium_done: [],
+      embodied_member: null,
+    });
+    const ctx: SessionStepContext = {
+      ...MEMBER_CTX,
+      modifiersFor: () => throwCtx('modifiersFor must not be consulted'),
+    };
+    const out = stepSession(session, ctx, 24, createRng(2n));
+    expect('household' in out.session.benches).toBe(false);
   });
 });
