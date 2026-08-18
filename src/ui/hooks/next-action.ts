@@ -21,14 +21,10 @@
 // final substitution, so the hook controls which SIDs the renderer reads.
 
 import {
-  MIN_RESIDUE_TO_DEVELOP,
-  addBenchModifiers,
   canEndow,
   computeArchiveStats,
-  computeBenchModifiers,
   computeGlobalRewards,
   endowableSlots,
-  visitorModifierOverlay,
   windowSince,
   type ArchivePredicateLike,
   type ArchiveStats,
@@ -39,41 +35,16 @@ import {
 } from '@/engine';
 import { resolveSid } from '@/i18n';
 import type { ProgressionRegistries } from '@/content/progression/loader';
+import { EMBODIED_TIER } from '@/engine/ladder-const';
+import { personEffectiveMin, statValue } from './session-selectors';
 
 export interface NextAction {
   readonly sid: string;
   readonly values?: Readonly<Record<string, string | number>>;
 }
 
-/** The embodied life lives on the person bench; the ladder's first rung. */
-const EMBODIED_TIER = 'person';
-
 /** A locked rung is "approaching" once its worst gate operand is 80% full. */
 const GATE_APPROACH_RATIO = 0.8;
-
-/* ---- stat-value lookup (re-declared here so the module has no DOM/React) -- */
-
-function statValue(stats: ArchiveStats, key: string): number {
-  const dot = key.indexOf('.');
-  if (dot <= 0) {
-    return 0;
-  }
-  const section = key.slice(0, dot);
-  const tail = key.slice(dot + 1);
-  if (section === 'pinned') {
-    return stats.pinned[tail] ?? 0;
-  }
-  if (section === 'archived') {
-    return stats.archived[tail] ?? 0;
-  }
-  if (section === 'world_drafts') {
-    return stats.world_drafts[tail] ?? 0;
-  }
-  if (section === 'harvests') {
-    return stats.harvests[tail] ?? 0;
-  }
-  return 0;
-}
 
 /** The least-satisfied gte leaf of a predicate, with its current ratio. */
 function leastSatisfiedGate(
@@ -173,24 +144,6 @@ function personPendingLength(session: StudioSession): number {
     return 0;
   }
   return windowSince(bench.residue, bench.last_harvest_index).length;
-}
-
-function visitorOverlayForTier(
-  session: StudioSession,
-  registries: ProgressionRegistries,
-  tierId: string,
-): BenchModifiers {
-  const active = session.tiers[tierId]?.active_visitor?.id ?? null;
-  return visitorModifierOverlay(registries.visitors, active);
-}
-
-/** The same floored-at-2 minimum the develop button uses (see StudioView). */
-function personEffectiveMin(session: StudioSession, registries: ProgressionRegistries): number {
-  const global = computeGlobalRewards(session.compendium_done, registries.compendium);
-  const endowed = computeBenchModifiers(EMBODIED_TIER, session, registries.endowment, global);
-  const visitorOverlay = visitorOverlayForTier(session, registries, EMBODIED_TIER);
-  const combined = addBenchModifiers(endowed, visitorOverlay);
-  return Math.max(2, MIN_RESIDUE_TO_DEVELOP - combined.windowMin);
 }
 
 function developReady(session: StudioSession, registries: ProgressionRegistries): boolean {

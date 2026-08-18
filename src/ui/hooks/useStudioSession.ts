@@ -56,9 +56,7 @@ import {
 import { activeVisitorFor, visitorModifierOverlay } from '@/engine/visitors';
 import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persistence';
 import type { DailySchedule } from '@/engine/schedule';
-
-/** The embodied life's tier — the ladder's first rung and the person bench. */
-export const EMBODIED_TIER = 'person';
+import { EMBODIED_TIER } from '@/engine/ladder-const';
 
 /** Phase 1 residue-source pack; roster policies resolve against it. */
 const POLICY_PACK = 'tang-china';

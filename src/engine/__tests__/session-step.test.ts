@@ -49,6 +49,7 @@ import {
 } from '../';
 import type { LifeState, Practice } from '../';
 import { stepSession, type SessionStepContext } from '../session-step';
+import { benchFoldId } from '../session-ladder';
 import { stepStudio } from '../studio-offline';
 import { EMPTY_BENCH_MODIFIERS, type BenchModifiers } from '../endowment';
 import {
@@ -1256,5 +1257,20 @@ describe('stepSession (missing ctx.tiers row)', () => {
     const session = ladderSession({ household: true, org: true, town: true });
     const out = stepSession(session, LADDER_CTX, 4, createRng(9n));
     expect(out.summary.embodiedTicks).toBe(4);
+  });
+});
+
+/* ---- benchFoldId parity (Phase 4 Task 1, Binding Decision 6) -------------- */
+
+describe('benchFoldId', () => {
+  it('yields `bench:<tierId>` for every rung — no person-specific special case', () => {
+    // The historical person rung keeps `bench:person` because that's what
+    // persisted sessions carry; the template yields the same string when
+    // given `'person'`. Every non-person tier uses the same template, so a
+    // single function covers the whole ladder.
+    expect(benchFoldId('person')).toBe('bench:person');
+    expect(benchFoldId('household')).toBe('bench:household');
+    expect(benchFoldId('org')).toBe('bench:org');
+    expect(benchFoldId('town')).toBe('bench:town');
   });
 });

@@ -66,7 +66,6 @@ import { resolveScheduleState } from '@/engine/schedule';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import {
-  EMBODIED_TIER,
   kindRulesByScale,
   modifiersForSession,
   nonPersonBenches,
@@ -77,6 +76,8 @@ import {
 } from '@/ui/hooks/useStudioSession';
 import { useStudioProgression } from '@/ui/hooks/useStudioProgression';
 import { nextAction } from '@/ui/hooks/next-action';
+import { EMBODIED_TIER } from '@/engine/ladder-const';
+import { personEffectiveMin, statValue } from '@/ui/hooks/session-selectors';
 import StudioActivities from './StudioActivities';
 import StudioArchive, { type EndowChipState } from './StudioArchive';
 import StudioJuice from './StudioJuice';
@@ -237,28 +238,6 @@ function endowTrackLabel(track: EndowmentTrack): string {
   return parts[parts.length - 1] ?? track.id;
 }
 
-function statValue(stats: ArchiveStats, key: string): number {
-  const dot = key.indexOf('.');
-  if (dot <= 0) {
-    return 0;
-  }
-  const section = key.slice(0, dot);
-  const tail = key.slice(dot + 1);
-  if (section === 'pinned') {
-    return stats.pinned[tail] ?? 0;
-  }
-  if (section === 'archived') {
-    return stats.archived[tail] ?? 0;
-  }
-  if (section === 'world_drafts') {
-    return stats.world_drafts[tail] ?? 0;
-  }
-  if (section === 'harvests') {
-    return stats.harvests[tail] ?? 0;
-  }
-  return 0;
-}
-
 interface GateOperand {
   readonly key: string;
   readonly m: number;
@@ -302,7 +281,10 @@ function tierProgress(stats: ArchiveStats, tierId: string): { n: number; m: numb
   return { n: Math.min(statValue(stats, worst.key), worst.m), m: worst.m };
 }
 
-/** The tier row's scale, as the manifest compiler names it. */
+/** The tier row's scale, as the manifest compiler names it.
+ * Throws on an unknown tier id by design: the rail and the harvest path
+ * only ever pass `tierId`s they read from `session.tiers` or
+ * `registries().tiers`, so a miss means a bug, not a user input. */
 function tierScaleOf(tierId: string): ManifestScale {
   const tier = registries().tiers.find((row) => row.id === tierId);
   if (tier === undefined) {
@@ -404,24 +386,27 @@ export default function StudioView({
 
   const pending = pendingResidue(studio);
   const charge = pending.length;
-  const chargeRatio = Math.min(1, charge / MIN_RESIDUE_TO_DEVELOP);
+  // Endowed/visitor window_min widens the manual develop gate; floored at 2.
+  // The bar fills to 100% when develop is actually ready, not against the
+  // fixed canonical MIN_RESIDUE_TO_DEVELOP.
+  const personMin = personEffectiveMin(buildSession(), registries());
+  const chargeRatio = Math.min(1, charge / personMin);
   const endowTracks = endowPlan(buildSession());
   const benchReady = (tierId: string): boolean => benches[tierId]?.bay?.status === 'ready';
   const anyBenchReady = Object.keys(benches).some((tierId) => benchReady(tierId));
   const harvestable = canHarvest(studio) || anyBenchReady;
-  // Endowed window_min widens the manual develop gate; floored at 2 so a
-  // develop always cooks a real window.
-  const personEffectiveMin = Math.max(
-    2,
-    MIN_RESIDUE_TO_DEVELOP - modifiersForSession(buildSession())(EMBODIED_TIER).windowMin,
-  );
-  const developable = studio.bay === null && pending.length >= personEffectiveMin;
+  const developable = studio.bay === null && pending.length >= personMin;
   const upgradable = canUpgradeQuality(studio);
   const remainingForUpgrade = Math.max(0, QUALITY_UPGRADE_HARVESTS - studio.harvest_count);
   const latest = studio.archive[studio.archive.length - 1];
   const stats = computeArchiveStats(buildSession(), worldDrafts);
   // Rung-by-rung disclosure: unlocked tiers plus the next locked one (its
   // badge is the climb ahead); deeper rungs stay masked until it unlocks.
+  // ASSUMPTION: tiers unlock in registry order. The ladder's milestones
+  // gate each tier on the previous one, so this loop walks the badge list
+  // in ladder order and stops at the first locked rung — that is the next
+  // climb. If a milestone is skipped (e.g. for testing), the iterator
+  // would still order by registry position, not by unlock date.
   const railTiers: RailTier[] = [];
   for (const tier of registries().tiers) {
     const tierState = progression.tiers[tier.id];
@@ -490,12 +475,12 @@ export default function StudioView({
     const trimmed = brief.trim();
     // The manual develop path queues the person bench, so its endowed
     // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the
-    // engine) and its window_min widens the queue gate above.
+    // engine) and its endowed/visitor window_min widens the queue gate.
     const personMods = modifiersForSession(buildSession())(EMBODIED_TIER);
     setStudio(
       queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current, {
         cookTicksDiscount: personMods.cookSpeed,
-        minResidue: personEffectiveMin,
+        minResidue: personMin,
       }),
     );
   }

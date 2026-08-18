@@ -11,11 +11,12 @@ import {
   type MemberSlice,
   type StudioSession,
 } from '@/engine/studio-session';
-import { TIER_STATE_VERSION } from '@/engine/tier-state';
+import { TIER_STATE_VERSION, createTierState } from '@/engine/tier-state';
 
 import {
   graduateToHousehold,
   graduateToTier,
+  unitRoster,
   type GraduationRolesRow,
   type GraduationTierRow,
   type HouseholdRolesTable,
@@ -297,5 +298,59 @@ describe('graduateToHousehold wrapper parity', () => {
     for (const member of out.tiers['household']?.roster.members ?? []) {
       expect(member.policy).toBe('policy:household-base');
     }
+  });
+});
+
+/* ---- unitRoster index filter (Phase 4 Task 1, Binding Decision 5) --------- */
+
+// Authoritative index resolution for these tests — let the test pin an exact
+// out-of-order scenario by overriding the resolver. The default production
+// resolver is insertion-order (see graduation.ts).
+const TIER_INDICES: Record<string, number> = {
+  person: 0,
+  household: 1,
+  org: 2,
+  town: 3,
+  city: 4,
+  region: 5,
+};
+
+describe('unitRoster (Phase 4 Task 1 index filter)', () => {
+  function sessionWithUnlocked(ids: readonly string[]): StudioSession {
+    const base = baseSession();
+    const tiers: Record<string, ReturnType<typeof createTierState>> = { ...base.tiers };
+    for (const id of ids) {
+      tiers[id] = createTierState(id, true);
+    }
+    return { ...base, tiers };
+  }
+
+  it('excludes a higher-index unlocked tier so it is never seated as a lower unit', () => {
+    // Out-of-order unlock: person AND city unlocked, then we graduate TOWN.
+    // The unlocked city entry must not appear in town's unit roster (its
+    // index 4 >= town's 3), because seating a higher tier as a lower unit
+    // would invert the ladder.
+    const session = sessionWithUnlocked(['person', 'city']);
+    const rows = unitRoster(session, 'town', TOWN_ROW.index, (id) => TIER_INDICES[id] ?? -1);
+    expect(rows.map((m) => m.id)).toEqual(['person']);
+  });
+
+  it('keeps only tiers whose index is strictly less than the current rung', () => {
+    // A session where person, household, org, region are all unlocked for a
+    // town graduation: city is by id lexically between org and region but
+    // its real index (4) sits at-or-above town's (3), so the filter
+    // excludes city even though the keys list would otherwise include it.
+    const session = sessionWithUnlocked(['person', 'household', 'org', 'city', 'region']);
+    const rows = unitRoster(session, 'town', TOWN_ROW.index, (id) => TIER_INDICES[id] ?? -1);
+    expect(rows.map((m) => m.id)).toEqual(['person', 'household', 'org']);
+  });
+
+  it('excludes the current tier itself even when the id-must-differ guard fires alone', () => {
+    // The current rung (town) is the only entry to add; the id-must-differ
+    // guard keeps it out. Person stays in because it IS a lower rung and
+    // exists on every freshly-empty session.
+    const session = sessionWithUnlocked(['town']);
+    const rows = unitRoster(session, 'town', TOWN_ROW.index, (id) => TIER_INDICES[id] ?? -1);
+    expect(rows.map((m) => m.id)).toEqual(['person']);
   });
 });

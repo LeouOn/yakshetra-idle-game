@@ -32,8 +32,7 @@ import { foldCopies } from './session-step-internal';
 import type { BenchState, MemberSlice, StudioSession } from './studio-session';
 import type { ResidueEvent } from './residue';
 import type { SessionStepContext } from './session-step';
-
-const PERSON_BENCH = 'person';
+import { EMBODIED_TIER } from './ladder-const';
 
 export interface LadderResult {
   readonly benches: Record<string, BenchState>;
@@ -42,10 +41,13 @@ export interface LadderResult {
   readonly folded: number;
 }
 
-/** Fold marker for a rung's bench delta; the person rung keeps its
- * historical `bench:person` spelling (persisted sessions carry it). */
-function benchFoldId(tierId: string): string {
-  return tierId === PERSON_BENCH ? FOLD_IDS.bench : `bench:${tierId}`;
+/**
+ * Fold marker for a rung's bench delta. The person rung keeps its historical
+ * `bench:person` spelling because persisted sessions carry it; the template
+ * yields that same string for tierId='person' so no special case is needed.
+ */
+export function benchFoldId(tierId: string): string {
+  return `bench:${tierId}`;
 }
 
 /**
@@ -60,7 +62,7 @@ function rungDelta(
   stepped: Readonly<Record<string, BenchState>>,
   personDelta: readonly ResidueEvent[],
 ): readonly ResidueEvent[] {
-  if (source === PERSON_BENCH) {
+  if (source === EMBODIED_TIER) {
     return personDelta;
   }
   if (session.tiers[source]?.unlocked !== true) {
@@ -86,7 +88,7 @@ export function stepTierLadder(
   // A tier unlocked in the session but missing from ctx.tiers would be
   // silently skipped below (bench, members, folds all vanish) — fail loudly.
   for (const [id, tier] of Object.entries(session.tiers)) {
-    if (id === PERSON_BENCH || tier.unlocked !== true) {
+    if (id === EMBODIED_TIER || tier.unlocked !== true) {
       continue;
     }
     if (!ctx.tiers.some((row) => row.id === id)) {
@@ -100,7 +102,7 @@ export function stepTierLadder(
   const stepped: Record<string, BenchState> = {};
 
   ctx.tiers.forEach((tier, position) => {
-    if (tier.id === PERSON_BENCH) {
+    if (tier.id === EMBODIED_TIER) {
       return; // the embodied life steps on the person bench in stepStudio
     }
     const tierState = session.tiers[tier.id];
@@ -146,7 +148,7 @@ export function stepTierLadder(
     // ordinal base persists on this bench's fold_position, so sub-cadence
     // batches combine across calls.
     const sourceRow = position === 0 ? undefined : ctx.tiers[position - 1];
-    const source = sourceRow === undefined ? PERSON_BENCH : sourceRow.id;
+    const source = sourceRow === undefined ? EMBODIED_TIER : sourceRow.id;
     const delta = rungDelta(source, session, stepped, personDelta);
     let foldPosition = prev.fold_position;
     if (delta.length > 0) {

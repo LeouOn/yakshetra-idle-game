@@ -126,15 +126,46 @@ function memberRoster(
 }
 
 /**
- * Unit-tier roster: one row per already-unlocked LOWER tier, in session.tiers
- * insertion order (graduations append in ladder order, so insertion order IS
- * ladder order). Each row is named by its tier id, carries the source tier's
- * seated policy (`policy:unit:<id>` when the source has no roster), and gets
- * NO member slice — the ladder skips slice-less rows by design.
+ * Resolve the ladder index of a tier id. Insertion order of `session.tiers`
+ * matches ladder order under the documented invariant (graduations append in
+ * ladder order, with each rung gated on the previous milestones). Tests pass
+ * an explicit resolver to exercise out-of-order scenarios; production callers
+ * use the insertion-order proxy because the milestone gates enforce the order.
  */
-function unitRoster(session: StudioSession, tierId: string): RosterMember[] {
+function insertionOrderIndexOf(session: StudioSession): (id: string) => number {
+  const keys = Object.keys(session.tiers);
+  return (id: string): number => keys.indexOf(id);
+}
+
+/**
+ * Unit-tier roster: one row per already-unlocked LOWER tier, ordered by the
+ * resolver's ladder index (insertion order in production). Each row is named
+ * by its tier id, carries the source tier's seated policy
+ * (`policy:unit:<id>` when the source has no roster), and gets NO member slice
+ * — the ladder skips slice-less rows by design.
+ *
+ * `indexOf(id) < currentIndex` is the "lower" check: an out-of-order unlock
+ * that seated a higher rung than `currentIndex` would invert the ladder, so
+ * the resolver's authoritative index — not the keys list — is the source of
+ * truth.
+ */
+export function unitRoster(
+  session: StudioSession,
+  tierId: string,
+  currentIndex: number,
+  indexOf: (id: string) => number,
+): RosterMember[] {
   return Object.keys(session.tiers)
-    .filter((id) => id !== tierId && session.tiers[id]?.unlocked === true)
+    .filter((id) => {
+      const state = session.tiers[id];
+      if (state === undefined || state.unlocked !== true) {
+        return false;
+      }
+      if (id === tierId) {
+        return false;
+      }
+      return indexOf(id) < currentIndex;
+    })
     .map((id) => ({
       id,
       name: id,
@@ -166,7 +197,10 @@ export function graduateToTier(
 
   const seeded =
     rolesRow === null
-      ? { roster: unitRoster(session, tierId), slices: {} as Record<string, MemberSlice> }
+      ? {
+          roster: unitRoster(session, tierId, tierRow.index, insertionOrderIndexOf(session)),
+          slices: {} as Record<string, MemberSlice>,
+        }
       : memberRoster(tierId, tierRow, rolesRow, rng);
   const milestonesDone = session.milestones_done.includes(milestone)
     ? session.milestones_done

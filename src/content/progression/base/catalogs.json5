@@ -379,33 +379,33 @@
       kind: 'ware',
       entries: [
         {
-          name: 'The celadon glaze',
-          one_liner: 'A green the kiln finds once in twenty firings.',
-          subject: 'a measured celadon glaze',
+          name: 'The celadon glazes',
+          one_liner: 'Greens the kiln finds once in twenty firings.',
+          subject: 'measured celadon glazes',
           detail:
             'Ash, iron, and a long patient fire. The recipe is not written down; it lives in the kilnmaster\'s hands and in the cracked cup he compares every batch against.',
           tags: ['glaze', 'kiln'],
         },
         {
-          name: 'The bitter tonic',
-          one_liner: 'The clinic\'s worst-tasting jar and its most argued-over.',
-          subject: 'a clinic\'s bitter tonic',
+          name: 'The bitter tonics',
+          one_liner: 'The clinic\'s worst-tasting jars and its most argued-over.',
+          subject: 'clinic\'s bitter tonics',
           detail:
-            'Willow bark, tangerine peel, and three roots nobody names aloud. Children cry at the smell and grown travelers ask for a second flask. It works either way.',
+            'Willow bark, tangerine peel, and three roots nobody names aloud. Children cry at the smell and grown travelers ask for a second flask. They work either way.',
           tags: ['tonic', 'clinic'],
         },
         {
-          name: 'The stamped roof tile',
+          name: 'The stamped roof tiles',
           one_liner: 'Every tile on the hall carries the same thumb-wide seal.',
-          subject: 'a workshop-stamped tile',
+          subject: 'workshop-stamped tiles',
           detail:
             'The stamp is the kiln\'s own: a roof that sheds the rains and a claim the workshop can point to from the road. When one cracks, the mason reads the seal and knows who owes him a replacement.',
           tags: ['tile', 'stamp'],
         },
         {
-          name: 'The fair-copy ledger',
-          one_liner: 'The office\'s clean book, written by the steadiest hand in the house.',
-          subject: 'a fair-copy ledger',
+          name: 'The fair-copy ledgers',
+          one_liner: 'The office\'s clean books, written by the steadiest hand in the house.',
+          subject: 'fair-copy ledgers',
           detail:
             'Scraps go in the rough book; the fair copy goes to the clerk with the best brush. Its columns are straight enough to rest a ruler on, and the guildmaster signs the last page of every month.',
           tags: ['ledger', 'office'],
