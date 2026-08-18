@@ -252,5 +252,122 @@
       min_quality: 0,
       match: { no_dominant: true },
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // City-scale rows (Phase 4 Task 3). Institution carries the
+    // people-facing windows (a city's standing bodies meet and decide);
+    // monument carries the practice-shaped and empty windows (the city's
+    // fixed marks outlast the people). Same TOTAL distribution as org and
+    // town: event-triple → institution, tick+lens → monument, no_dominant
+    // → monument.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'institution',
+      scale: 'city',
+      pinnable: false,
+      catalog_ref: 'core/institution',
+      sid_ns: 'studio.kind_institution_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'monument',
+      scale: 'city',
+      pinnable: false,
+      catalog_ref: 'core/monument',
+      sid_ns: 'studio.kind_monument_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'institution',
+      scale: 'city',
+      pinnable: false,
+      catalog_ref: 'core/institution',
+      sid_ns: 'studio.kind_institution_sid',
+      min_quality: 0,
+      match: { dominant_in: ['event_resolved', 'resource_edge', 'life_ended'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'monument',
+      scale: 'city',
+      pinnable: false,
+      catalog_ref: 'core/monument',
+      sid_ns: 'studio.kind_monument_sid',
+      min_quality: 0,
+      match: { dominant_in: ['practice_tick', 'lens_chosen'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'monument',
+      scale: 'city',
+      pinnable: false,
+      catalog_ref: 'core/monument',
+      sid_ns: 'studio.kind_monument_sid',
+      min_quality: 0,
+      match: { no_dominant: true },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Region-scale rows (Phase 4 Task 3). Legend carries the people-facing
+    // windows (a region's told things weave through villages and cities);
+    // road carries the practice-shaped and empty windows (a region's
+    // connections outlast the stories). Same TOTAL distribution as
+    // org / town / city.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'legend',
+      scale: 'region',
+      pinnable: false,
+      catalog_ref: 'core/legend',
+      sid_ns: 'studio.kind_legend_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'road',
+      scale: 'region',
+      pinnable: false,
+      catalog_ref: 'core/road',
+      sid_ns: 'studio.kind_road_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'legend',
+      scale: 'region',
+      pinnable: false,
+      catalog_ref: 'core/legend',
+      sid_ns: 'studio.kind_legend_sid',
+      min_quality: 0,
+      match: { dominant_in: ['event_resolved', 'resource_edge', 'life_ended'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'road',
+      scale: 'region',
+      pinnable: false,
+      catalog_ref: 'core/road',
+      sid_ns: 'studio.kind_road_sid',
+      min_quality: 0,
+      match: { dominant_in: ['practice_tick', 'lens_chosen'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'road',
+      scale: 'region',
+      pinnable: false,
+      catalog_ref: 'core/road',
+      sid_ns: 'studio.kind_road_sid',
+      min_quality: 0,
+      match: { no_dominant: true },
+    },
   ],
 }

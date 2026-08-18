@@ -177,7 +177,7 @@ describe('RolesFileSchema', () => {
 
   it('rejects unknown tier blocks', () => {
     expect(() =>
-      RolesFileSchema.parse({ household, city: { roles: ['ward'], names: ['ward'] } }),
+      RolesFileSchema.parse({ household, planet: { roles: ['ward'], names: ['ward'] } }),
     ).toThrow();
   });
 });

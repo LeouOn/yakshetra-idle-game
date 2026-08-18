@@ -13,8 +13,23 @@
     names: ['Master Yun', 'Old Shi', 'Young Bao'],
     policy: 'policy:org-base',
   },
-  town: {
+town: {
     roles: ['headman', 'market-warden', 'ferry-keeper'],
     names: ['House of Yun', 'the Kilnhouse', 'the River Office'],
+  },
+  // City is member-bearing (Phase 4 Task 3): a city's roster rows run
+  // autonomously under `policy:city-base`, so the policy field stays
+  // required just like for org.
+  city: {
+    roles: ['warden', 'surveyor', 'keeper-of-rolls'],
+    names: ['the East Ward', 'the Bridge Registry', 'the Grain Ledger'],
+    policy: 'policy:city-base',
+  },
+  // Region is a unit tier (town is the member_unit): its roster rows
+  // never run autonomously, so the seated policy field stays absent by
+  // design — mirroring the town pattern.
+  region: {
+    roles: ['circuit-magistrate', 'salt-inspector', 'road-warden'],
+    names: ['the Circuit Office', 'the Salt House', 'the High Road'],
   },
 }

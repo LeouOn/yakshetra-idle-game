@@ -192,5 +192,144 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // City-day — the city cadence (Phase 4 Task 3). A long sit-and-rule
+    // block in the middle (city work is mostly clerical), generous alms
+    // rounds at the gate, and yard-check on the courtyard beings who
+    // share the city without paying rent. Resolved by `policy:city-base`;
+    // id drops the `tang/` prefix for the same reason workshop-day does.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:city-day',
+      name_sid: 'tang.schedule.city_day.name_sid',
+      blocks: [
+        {
+          id: 'block:city-day/night-rest',
+          label_sid: 'tang.block.city_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 5,
+          practice_id: null,
+          icon_sid: 'tang.block.city_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:city-day/dawn-alms',
+          label_sid: 'tang.block.city_day.dawn_alms.label_sid',
+          startHour: 5,
+          endHour: 8,
+          practice_id: 'practice:tang/alms-round',
+          icon_sid: 'tang.block.city_day.dawn_alms.icon_sid',
+        },
+        {
+          id: 'block:city-day/morning-bureau',
+          label_sid: 'tang.block.city_day.morning_bureau.label_sid',
+          startHour: 8,
+          endHour: 12,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.city_day.morning_bureau.icon_sid',
+        },
+        {
+          id: 'block:city-day/midday-yard',
+          label_sid: 'tang.block.city_day.midday_yard.label_sid',
+          startHour: 12,
+          endHour: 15,
+          practice_id: 'practice:tang/courtyard-beings',
+          icon_sid: 'tang.block.city_day.midday_yard.icon_sid',
+        },
+        {
+          id: 'block:city-day/afternoon-petitions',
+          label_sid: 'tang.block.city_day.afternoon_petitions.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.city_day.afternoon_petitions.icon_sid',
+        },
+        {
+          id: 'block:city-day/evening-watch',
+          label_sid: 'tang.block.city_day.evening_watch.label_sid',
+          startHour: 19,
+          endHour: 22,
+          practice_id: null,
+          icon_sid: 'tang.block.city_day.evening_watch.icon_sid',
+        },
+        {
+          id: 'block:city-day/lamps-down',
+          label_sid: 'tang.block.city_day.lamps_down.label_sid',
+          startHour: 22,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.city_day.lamps_down.icon_sid',
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Region-day — the region cadence (Phase 4 Task 3). Long copying
+    // blocks bookend the day, an evening-visit pause at the roadhouse, an
+    // extra-bowl at the inns. Resolved by `policy:region-base`; id drops
+    // the `tang/` prefix for the same reason the others do.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:region-day',
+      name_sid: 'tang.schedule.region_day.name_sid',
+      blocks: [
+        {
+          id: 'block:region-day/night-rest',
+          label_sid: 'tang.block.region_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 4,
+          practice_id: null,
+          icon_sid: 'tang.block.region_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:region-day/dawn-copying',
+          label_sid: 'tang.block.region_day.dawn_copying.label_sid',
+          startHour: 4,
+          endHour: 9,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.region_day.dawn_copying.icon_sid',
+        },
+        {
+          id: 'block:region-day/midday-extra-bowl',
+          label_sid: 'tang.block.region_day.midday_extra_bowl.label_sid',
+          startHour: 9,
+          endHour: 13,
+          practice_id: 'practice:tang/extra-bowl',
+          icon_sid: 'tang.block.region_day.midday_extra_bowl.icon_sid',
+        },
+        {
+          id: 'block:region-day/afternoon-road',
+          label_sid: 'tang.block.region_day.afternoon_road.label_sid',
+          startHour: 13,
+          endHour: 16,
+          practice_id: null,
+          icon_sid: 'tang.block.region_day.afternoon_road.icon_sid',
+        },
+        {
+          id: 'block:region-day/evening-visit',
+          label_sid: 'tang.block.region_day.evening_visit.label_sid',
+          startHour: 16,
+          endHour: 20,
+          practice_id: 'practice:tang/evening-visit',
+          icon_sid: 'tang.block.region_day.evening_visit.icon_sid',
+        },
+        {
+          id: 'block:region-day/evening-copying',
+          label_sid: 'tang.block.region_day.evening_copying.label_sid',
+          startHour: 20,
+          endHour: 23,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.region_day.evening_copying.icon_sid',
+        },
+        {
+          id: 'block:region-day/lamps-down',
+          label_sid: 'tang.block.region_day.lamps_down.label_sid',
+          startHour: 23,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.region_day.lamps_down.icon_sid',
+        },
+      ],
+    },
   ],
 }

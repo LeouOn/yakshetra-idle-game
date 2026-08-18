@@ -26,5 +26,27 @@
       schedule_ref: 'schedule:workshop-day',
       choice_weights: {},
     },
+    {
+      schema_version: 'policy/v0',
+      id: 'policy:city-base',
+      practices: [
+        'practice:tang/alms-round',
+        'practice:tang/courtyard-beings',
+        'practice:tang/breath-sitting',
+      ],
+      schedule_ref: 'schedule:city-day',
+      choice_weights: {},
+    },
+    {
+      schema_version: 'policy/v0',
+      id: 'policy:region-base',
+      practices: [
+        'practice:tang/extra-bowl',
+        'practice:tang/sutra-copying',
+        'practice:tang/evening-visit',
+      ],
+      schedule_ref: 'schedule:region-day',
+      choice_weights: {},
+    },
   ],
 }

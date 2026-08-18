@@ -269,6 +269,8 @@ export const RolesFileSchema = z
     household: RolesBlockSchema,
     org: RolesBlockSchema.optional(),
     town: RolesBlockSchema.optional(),
+    city: RolesBlockSchema.optional(),
+    region: RolesBlockSchema.optional(),
   })
   .strict();
 export type RolesFile = z.infer<typeof RolesFileSchema>;

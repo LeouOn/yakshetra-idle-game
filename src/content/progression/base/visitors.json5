@@ -36,5 +36,25 @@
       table_ref: 'visitor-table/sample-arrival',
       sid_ns: 'visitor.sample_arrival',
     },
+    // City visitor (Phase 4 Task 3): a court auditor walks the city's
+    // benches. Long cadence (~1000 ticks) so the city sees audits rarely;
+    // modest jitter so the audit does not always fall on the same block.
+    // Effects only — the table_ref swap is a Task 2 fixture, kept as a
+    // future-hook with `visitor/sample-arrival`.
+    {
+      schema_version: 'visitor/v0', id: 'visitor/court-auditor', tiers: ['city'],
+      cadence_ticks: 1080, jitter_ticks: 240, duration_windows: 3,
+      effects: [{ op: 'add_resource', key: 'cook_speed', delta: 1 }],
+      sid_ns: 'visitor.court_auditor',
+    },
+    // Region visitor (Phase 4 Task 3): a road surveyor walks the road-side
+    // benches. Mid cadence so the region sees them seasonally. Effects only
+    // — the surplus_rate delta lands at the region's absorb site.
+    {
+      schema_version: 'visitor/v0', id: 'visitor/road-surveyor', tiers: ['region'],
+      cadence_ticks: 720, jitter_ticks: 180, duration_windows: 3,
+      effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 1 }],
+      sid_ns: 'visitor.road_surveyor',
+    },
   ],
 }

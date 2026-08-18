@@ -36,7 +36,7 @@ describe('loadProgression', () => {
     expect(registries.kindRules.slice(0, DEFAULT_KIND_RULES.length)).toEqual(DEFAULT_KIND_RULES);
   });
 
-  it('pins the full kind row order: 8 person, 5 household, 5 org, 5 town', () => {
+  it('pins the full kind row order: 8 person, 5 household, 5 org, 5 town, 5 city, 5 region', () => {
     // Order is load-bearing (first match wins at compile). The pin includes
     // the TOTAL fallback rows so no scale can ship a partial rule list.
     expect(registries.kindRows.map((r) => r.id)).toEqual([
@@ -67,8 +67,22 @@ describe('loadProgression', () => {
       'festival',
       'landmark',
       'landmark',
+      // city (5) — Phase 4 Task 3, mirrors the org/town TOTAL
+      // distribution: institution for social windows, monument for
+      // practice-shaped and empty windows.
+      'institution',
+      'monument',
+      'institution',
+      'monument',
+      'monument',
+      // region (5) — Phase 4 Task 3, mirrors the same TOTAL pattern.
+      'legend',
+      'road',
+      'legend',
+      'road',
+      'road',
     ]);
-    expect(registries.kindRows).toHaveLength(23);
+    expect(registries.kindRows).toHaveLength(33);
   });
 
   it('ships one unlock milestone per non-person tier', () => {
@@ -200,6 +214,8 @@ describe('loadProgression', () => {
       'visitor/traveling-teacher',
       'visitor/festival-day',
       'visitor/sample-arrival',
+      'visitor/court-auditor',
+      'visitor/road-surveyor',
     ]);
     expect(registries.compendium.map((entry) => entry.id)).toEqual([
       'compendium/first-harvest',
@@ -235,7 +251,18 @@ describe('loadProgression household scale', () => {
   });
 
   it('ships four or more catalog entries for every kind past person', () => {
-    for (const kind of ['tradition', 'heirloom', 'charter', 'ware', 'festival', 'landmark']) {
+    for (const kind of [
+      'tradition',
+      'heirloom',
+      'charter',
+      'ware',
+      'festival',
+      'landmark',
+      'institution',
+      'monument',
+      'legend',
+      'road',
+    ]) {
       expect((registries.catalogs[kind] ?? []).length, `kind "${kind}"`).toBeGreaterThanOrEqual(4);
     }
   });
@@ -260,18 +287,39 @@ describe('loadProgression household scale', () => {
     expect(org?.schedule_ref).toBe('schedule:workshop-day');
   });
 
-  it('ships exactly the two seated policies in file order', () => {
+  it('parses policy:city-base with three real tang practice ids', () => {
+    const city = registries.policies.find((p) => p.id === 'policy:city-base');
+    expect(city).toBeDefined();
+    expect(city?.practices.length).toBe(3);
+    expect(city?.schedule_ref).toBe('schedule:city-day');
+  });
+
+  it('parses policy:region-base with three real tang practice ids distinct from the city set', () => {
+    const region = registries.policies.find((p) => p.id === 'policy:region-base');
+    expect(region).toBeDefined();
+    expect(region?.practices.length).toBe(3);
+    expect(region?.schedule_ref).toBe('schedule:region-day');
+    const city = registries.policies.find((p) => p.id === 'policy:city-base');
+    const overlap = (region?.practices ?? []).filter((id) => city?.practices.includes(id));
+    expect(overlap).toEqual([]);
+  });
+
+  it('ships the four seated policies in file order (household, org, city, region)', () => {
     expect(registries.policies.map((p) => p.id)).toEqual([
       'policy:household-base',
       'policy:org-base',
+      'policy:city-base',
+      'policy:region-base',
     ]);
   });
 
-  it('resolves both policy schedule_refs in the tang pack', () => {
+  it('resolves all four policy schedule_refs in the tang pack', () => {
     const pack = loadEraPack('tang-china');
     const scheduleIds = pack.schedules.map((s) => s.id);
     expect(scheduleIds).toContain('schedule:household-morning');
     expect(scheduleIds).toContain('schedule:workshop-day');
+    expect(scheduleIds).toContain('schedule:city-day');
+    expect(scheduleIds).toContain('schedule:region-day');
   });
 
   it('covers [0, 24) with no gaps on the org workshop-day schedule', () => {
@@ -279,6 +327,26 @@ describe('loadProgression household scale', () => {
     const schedule = pack.schedules.find((s) => s.id === 'schedule:workshop-day');
     if (schedule === undefined) {
       throw new Error('tang pack is missing schedule:workshop-day');
+    }
+    const validation = validateSchedule(schedule);
+    expect(validation.valid, validation.errors.join('; ')).toBe(true);
+  });
+
+  it('covers [0, 24) with no gaps on the city-day schedule', () => {
+    const pack = loadEraPack('tang-china');
+    const schedule = pack.schedules.find((s) => s.id === 'schedule:city-day');
+    if (schedule === undefined) {
+      throw new Error('tang pack is missing schedule:city-day');
+    }
+    const validation = validateSchedule(schedule);
+    expect(validation.valid, validation.errors.join('; ')).toBe(true);
+  });
+
+  it('covers [0, 24) with no gaps on the region-day schedule', () => {
+    const pack = loadEraPack('tang-china');
+    const schedule = pack.schedules.find((s) => s.id === 'schedule:region-day');
+    if (schedule === undefined) {
+      throw new Error('tang pack is missing schedule:region-day');
     }
     const validation = validateSchedule(schedule);
     expect(validation.valid, validation.errors.join('; ')).toBe(true);
@@ -310,6 +378,37 @@ describe('loadProgression household scale', () => {
       'House of Yun',
       'the Kilnhouse',
       'the River Office',
+    ]);
+  });
+
+  it('loads the city roles block with its own seated policy and real content', () => {
+    // City is member-bearing (Phase 4 Task 3), so policy:city-base is
+    // stamped on every seeded member row — same pattern as org.
+    expect(registries.roles.city).toBeDefined();
+    expect(registries.roles.city?.policy).toBe('policy:city-base');
+    expect(registries.roles.city?.roles).toEqual(['warden', 'surveyor', 'keeper-of-rolls']);
+    expect(registries.roles.city?.names).toEqual([
+      'the East Ward',
+      'the Bridge Registry',
+      'the Grain Ledger',
+    ]);
+  });
+
+  it('loads the region roles block as a unit tier without a seated policy', () => {
+    // Region is a unit tier (town is the member_unit): its roster rows
+    // never run autonomously, so the seated policy field stays absent —
+    // mirroring the town pattern.
+    expect(registries.roles.region).toBeDefined();
+    expect(registries.roles.region?.policy).toBeUndefined();
+    expect(registries.roles.region?.roles).toEqual([
+      'circuit-magistrate',
+      'salt-inspector',
+      'road-warden',
+    ]);
+    expect(registries.roles.region?.names).toEqual([
+      'the Circuit Office',
+      'the Salt House',
+      'the High Road',
     ]);
   });
 
@@ -352,7 +451,7 @@ describe('loadProgression household scale', () => {
 describe('loadProgression org and town scales', () => {
   const registries = loadProgression();
 
-  const rulesAtScale = (scale: 'org' | 'town') =>
+  const rulesAtScale = (scale: 'org' | 'town' | 'city' | 'region') =>
     registries.kindRows.flatMap((row, index) => {
       const rule = registries.kindRules[index];
       if (rule === undefined || row.scale !== scale) {
@@ -443,5 +542,115 @@ describe('loadProgression org and town scales', () => {
 
     const emptyPicked = pickKindFromRegistry(summarizeResidue([]), townRules);
     expect(['festival', 'landmark']).toContain(emptyPicked);
+  });
+
+  it('ships institution and monument rows at city scale with pinnable false', () => {
+    const institution = registries.kindRows.find((r) => r.id === 'institution');
+    const monument = registries.kindRows.find((r) => r.id === 'monument');
+    expect(institution?.scale).toBe('city');
+    expect(institution?.pinnable).toBe(false);
+    expect(monument?.scale).toBe('city');
+    expect(monument?.pinnable).toBe(false);
+  });
+
+  it('ships legend and road rows at region scale with pinnable false', () => {
+    const legend = registries.kindRows.find((r) => r.id === 'legend');
+    const road = registries.kindRows.find((r) => r.id === 'road');
+    expect(legend?.scale).toBe('region');
+    expect(legend?.pinnable).toBe(false);
+    expect(road?.scale).toBe('region');
+    expect(road?.pinnable).toBe(false);
+  });
+
+  it('appends city rows after town and region rows after city', () => {
+    const scales = registries.kindRows.map((r) => r.scale);
+    const firstCity = scales.indexOf('city');
+    const firstRegion = scales.indexOf('region');
+    const lastTown = scales.lastIndexOf('town');
+    const lastCity = scales.lastIndexOf('city');
+    expect(firstCity).toBeGreaterThan(lastTown);
+    expect(firstRegion).toBeGreaterThan(lastCity);
+    expect(scales.filter((s) => s === 'city')).toHaveLength(5);
+    expect(scales.filter((s) => s === 'region')).toHaveLength(5);
+  });
+
+  it('city rule list is total across every residue window shape', () => {
+    const cityRules = rulesAtScale('city');
+    const eventTypes: readonly ResidueEventType[] = [
+      'practice_tick',
+      'practice_level',
+      'lens_chosen',
+      'event_resolved',
+      'resource_edge',
+      'life_ended',
+    ];
+
+    for (const type of eventTypes) {
+      const event: ResidueEvent = {
+        tick: 0,
+        type,
+        ids: ['practice:tang/breath-sitting'],
+        numbers: {},
+      };
+      const summary = summarizeResidue([event]);
+      const picked = pickKindFromRegistry(summary, cityRules);
+      expect(['institution', 'monument']).toContain(picked);
+    }
+
+    const emptyPicked = pickKindFromRegistry(summarizeResidue([]), cityRules);
+    expect(['institution', 'monument']).toContain(emptyPicked);
+  });
+
+  it('region rule list is total across every residue window shape', () => {
+    const regionRules = rulesAtScale('region');
+    const eventTypes: readonly ResidueEventType[] = [
+      'practice_tick',
+      'practice_level',
+      'lens_chosen',
+      'event_resolved',
+      'resource_edge',
+      'life_ended',
+    ];
+
+    for (const type of eventTypes) {
+      const event: ResidueEvent = {
+        tick: 0,
+        type,
+        ids: ['practice:tang/sutra-copying'],
+        numbers: {},
+      };
+      const summary = summarizeResidue([event]);
+      const picked = pickKindFromRegistry(summary, regionRules);
+      expect(['legend', 'road']).toContain(picked);
+    }
+
+    const emptyPicked = pickKindFromRegistry(summarizeResidue([]), regionRules);
+    expect(['legend', 'road']).toContain(emptyPicked);
+  });
+
+  it('mirrors the org/town event-triple distribution at city and region scale', () => {
+    // Binding Decision 1 (Phase 4 Task 3): the fallback rows for city and
+    // region match the org/town TOTAL distribution exactly.
+    //   event_resolved + resource_edge + life_ended  →  social kind
+    //   practice_tick + lens_chosen                  →  practice kind
+    //   no_dominant                                  →  practice kind
+    const cityRules = rulesAtScale('city');
+    const regionRules = rulesAtScale('region');
+    const eventTriple: ResidueEvent = {
+      tick: 0,
+      type: 'event_resolved',
+      ids: ['practice:tang/alms-round'],
+      numbers: {},
+    };
+    const tick: ResidueEvent = {
+      tick: 0,
+      type: 'practice_tick',
+      ids: ['practice:tang/alms-round'],
+      numbers: {},
+    };
+    expect(pickKindFromRegistry(summarizeResidue([eventTriple]), cityRules)).toBe('institution');
+    expect(pickKindFromRegistry(summarizeResidue([tick]), cityRules)).toBe('monument');
+    expect(pickKindFromRegistry(summarizeResidue([eventTriple]), regionRules)).toBe('legend');
+    expect(pickKindFromRegistry(summarizeResidue([tick]), regionRules)).toBe('road');
   });
 });

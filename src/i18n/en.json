@@ -105,6 +105,10 @@
     "kind_ware_sid": "The guild's wares",
     "kind_festival_sid": "Festival",
     "kind_landmark_sid": "Landmark",
+    "kind_institution_sid": "Institution",
+    "kind_monument_sid": "Monument",
+    "kind_legend_sid": "Legend",
+    "kind_road_sid": "Road",
     "tier_person_sid": "One life",
     "tier_household_sid": "Household",
     "tier_org_sid": "Workshop",
@@ -188,10 +192,10 @@
     "org_line_sid": "The work outgrows one roof; a charter holds it.",
     "town_title_sid": "A town keeps the bridge",
     "town_line_sid": "Households, a guild, and a market share one ledger now.",
-    "city_title_sid": "The city takes shape",
-    "city_line_sid": "The town's work now feeds a city.",
-    "region_title_sid": "The region takes shape",
-    "region_line_sid": "The city's work now feeds a region.",
+    "city_title_sid": "The city keeps its own watch",
+    "city_line_sid": "Institutions and a town now share one wall.",
+    "region_title_sid": "A region learns its own roads",
+    "region_line_sid": "Towns and cities answer to one ledger now.",
     "dismiss_button_sid": "To the bench"
   },
   "compendium": {
@@ -232,6 +236,14 @@
     "sample_arrival": {
       "name_sid": "A sample arrival",
       "line_sid": "The bench listens. The table is not its own for a few windows."
+    },
+    "court_auditor": {
+      "name_sid": "The court auditor",
+      "line_sid": "She reads the city's books without raising her voice."
+    },
+    "road_surveyor": {
+      "name_sid": "The road surveyor",
+      "line_sid": "He measures the road in paces and writes nothing down."
     }
   },
   "tang": {
@@ -297,6 +309,12 @@
       },
       "workshop_day": {
         "name_sid": "A workshop day"
+      },
+      "city_day": {
+        "name_sid": "A city's day"
+      },
+      "region_day": {
+        "name_sid": "A region's day"
       }
     },
     "block": {
@@ -376,6 +394,66 @@
         "lamps_down": {
           "label_sid": "Lamps down",
           "icon_sid": "moon"
+        }
+      },
+      "city_day": {
+        "night_rest": {
+          "label_sid": "Closed gates",
+          "icon_sid": "moon"
+        },
+        "dawn_alms": {
+          "label_sid": "Dawn alms at the gate",
+          "icon_sid": "bowl"
+        },
+        "morning_bureau": {
+          "label_sid": "Morning petitions",
+          "icon_sid": "scroll"
+        },
+        "midday_yard": {
+          "label_sid": "Midday yard",
+          "icon_sid": "yard"
+        },
+        "afternoon_petitions": {
+          "label_sid": "Afternoon petitions",
+          "icon_sid": "brush"
+        },
+        "evening_watch": {
+          "label_sid": "Evening watch",
+          "icon_sid": "lamp"
+        },
+        "lamps_down": {
+          "label_sid": "City lamps down",
+          "icon_sid": "star"
+        }
+      },
+      "region_day": {
+        "night_rest": {
+          "label_sid": "Inn shutters",
+          "icon_sid": "moon"
+        },
+        "dawn_copying": {
+          "label_sid": "Dawn copying",
+          "icon_sid": "brush"
+        },
+        "midday_extra_bowl": {
+          "label_sid": "Midday extra bowl",
+          "icon_sid": "rice"
+        },
+        "afternoon_road": {
+          "label_sid": "Afternoon road",
+          "icon_sid": "road"
+        },
+        "evening_visit": {
+          "label_sid": "Evening roadhouse",
+          "icon_sid": "lamp"
+        },
+        "evening_copying": {
+          "label_sid": "Evening copying",
+          "icon_sid": "brush"
+        },
+        "lamps_down": {
+          "label_sid": "Roadhouse lamps down",
+          "icon_sid": "star"
         }
       }
     }

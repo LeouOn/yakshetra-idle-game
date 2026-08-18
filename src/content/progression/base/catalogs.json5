@@ -491,6 +491,167 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // City-scale kinds (Phase 4 Task 3). Institution: a city's standing
+    // bodies, kept where the work is humdrum and the decisions have weight.
+    // Monument: a city's fixed marks, which outlast the standers-by.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'institution',
+      entries: [
+        {
+          name: 'The relief bureau',
+          one_liner: 'Where a hungry household learns whether the city remembers it.',
+          subject: 'a relief bureau',
+          detail:
+            'A long porch, a clerk who has read every application twice, and a copper bowl at the door for the rice the bureau does not hand out itself. The form is one page. The wait is longer than the form suggests.',
+          tags: ['bureau', 'relief'],
+        },
+        {
+          name: 'The grain inspection house',
+          one_liner: 'The wall where every sack is opened and weighed in public.',
+          subject: 'a grain inspection hall',
+          detail:
+            'A wooden floor where the grain is spread and judged by eye, by tooth, and by weight. The inspectors know every granary by its thinness. They never raise their voices; the verdict is enough.',
+          tags: ['grain', 'inspection'],
+        },
+        {
+          name: 'The watch\'s muster hall',
+          one_liner: 'The room where the city\'s lanterns line up before dusk.',
+          subject: 'a watch\'s muster hall',
+          detail:
+            'A long bench, a brass whistle, and a tall narrow door that everyone walks through twice. The first time is to be recognized. The second is to be assigned. The lantern you carry out is the one you bring back.',
+          tags: ['watch', 'muster'],
+        },
+        {
+          name: 'The paupers\' dormitory',
+          one_liner: 'A long floor where strangers learn to sleep without noise.',
+          subject: 'a city paupers\' dormitory',
+          detail:
+            'Straw mats in rows, a single iron stove, and a register the attendant reads by lamplight. Nobody is turned away at night. In the morning, those who can work are pointed toward the bureau that knows them by name.',
+          tags: ['dormitory', 'paupers'],
+        },
+      ],
+    },
+    {
+      kind: 'monument',
+      entries: [
+        {
+          name: 'The bell tower',
+          one_liner: 'A tall wooden tower whose voice the whole city hears.',
+          subject: 'a city bell tower',
+          detail:
+            'The bell is not rung for the hours. It is rung for the occasions: a magistrate takes office, a fire is out, a flood recedes, a funeral passes. The tower\'s wood is dark with soot that no one has scrubbed for a hundred years.',
+          tags: ['tower', 'bell'],
+        },
+        {
+          name: 'The south gate',
+          one_liner: 'The wide gate every traveler walks through first.',
+          subject: 'a city south gate',
+          detail:
+            'The road worn into a polished trough by a thousand incoming feet. Two wooden doors, one always open in daylight, with guards who check identities more by face than by paper. The road is wide because the gate is generous.',
+          tags: ['gate', 'south'],
+        },
+        {
+          name: 'The dry river\'s stone arches',
+          one_liner: 'A bridge that crosses a river that has not come in years.',
+          subject: 'a dry-river stone bridge',
+          detail:
+            'Five low arches under a road of packed earth. The riverbed is dry for most summers, a thin rivulet in autumn, a torrent for a week each spring. The old arches remember a year the river came twice, and so does the wall beside them.',
+          tags: ['arches', 'dry'],
+        },
+        {
+          name: 'The founder\'s stela',
+          one_liner: 'A tall stone with a name the city can\'t quite read.',
+          subject: 'a founder\'s stela',
+          detail:
+            'Granite taller than a man, the characters weathered on the third line, the rest protected by a small roof that does not quite cover it in a hard rain. Each New Year a clerk repaints the surviving strokes. Nobody knows which name is now on it.',
+          tags: ['stela', 'founder'],
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Region-scale kinds (Phase 4 Task 3). Legend: a region's told things,
+    // carried across cities and towns but belonging to none of them.
+    // Road: a region's connections, walked by travelers and watched by the
+    // people who live at the shoulders.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'legend',
+      entries: [
+        {
+          name: 'The tale of the gate yakṣa',
+          one_liner: 'A story told about a watcher no one has met twice.',
+          subject: 'a tale of the gate yakṣa',
+          detail:
+            'Every village along the southern road tells it slightly differently. The watcher is sometimes a woman, sometimes a child. Always asks the same question. Always walks away with something you only notice the next morning.',
+          tags: ['yakṣa', 'gate'],
+        },
+        {
+          name: 'The drowned bell\'s return',
+          one_liner: 'A story about a bell the river returned, in pieces.',
+          subject: 'a legend of the drowned bell',
+          detail:
+            'A bell sank in the flood year. Years later, after the long drought, its rim turned up in a sandbar half a day downstream, with a single clapper still tied in. The bell was never re-hung. The story was re-told, every dry summer since.',
+          tags: ['bell', 'drowned'],
+        },
+        {
+          name: 'The bargain at the crossroads',
+          one_liner: 'A story that every crossroads in the region knows.',
+          subject: 'the crossroads bargain',
+          detail:
+            'A traveler arrived under the four-armed marker and traded something small for something large. Most tellers agree on the small thing. They disagree, often violently, on what was received. The crossroads has not changed. Neither has the story.',
+          tags: ['crossroads', 'bargain'],
+        },
+        {
+          name: 'The year the river walked',
+          one_liner: 'A story about a river that moved, the winter the cities agreed.',
+          subject: 'the year the river walked',
+          detail:
+            'A flood so wide that the river crossed two provinces and forgot which valley it lived in. When it went home, the new channel stayed. Every town along the old bed tells the story from the side it ended up on, and rarely the same way.',
+          tags: ['river', 'flood'],
+        },
+      ],
+    },
+    {
+      kind: 'road',
+      entries: [
+        {
+          name: 'The pilgrimage circuit',
+          one_liner: 'A looped path joining every shrine that the region counts.',
+          subject: 'a pilgrimage circuit',
+          detail:
+            'A road that returns to where it began, marked by stumps that grew back between pilgrimages. Most travelers walk it once in a lifetime. The innkeepers who meet them at every bend remember more faces than the temple priests do.',
+          tags: ['pilgrimage', 'circuit'],
+        },
+        {
+          name: 'The salt road',
+          one_liner: 'A road the salt caravans walked before anyone else did.',
+          subject: 'the region\'s salt road',
+          detail:
+            'A wide track rutted by the same loads for three generations. The axle-width is fixed; the carts that do not match it cannot pass the toll-houses. The road\'s surface is white where the dust never washes out.',
+          tags: ['salt', 'road'],
+        },
+        {
+          name: 'The ferry chain',
+          one_liner: 'A line of crossings the river respects as one road.',
+          subject: 'a chain of river ferries',
+          detail:
+            'Six small ferries spaced a day\'s walk apart, run by families who have held them since the bridges washed out. The chain holds the region together; if a single ferry stalls, the next village hears the waggoners within a day.',
+          tags: ['ferry', 'chain'],
+        },
+        {
+          name: 'The old mountain pass',
+          one_liner: 'A high path whose name even the mule-drivers shorten.',
+          subject: 'an old mountain pass',
+          detail:
+            'A switchback through two valleys, marked by shrines at each turning. Most travelers cross it at dawn, when the wind is light and the prayer-flags are still. The few who cross at night agree, quietly, never to do so again.',
+          tags: ['pass', 'mountain'],
+        },
+      ],
+    },
   ],
 
   // ──────────────────────────────────────────────────────────────────────
