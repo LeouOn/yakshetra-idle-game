@@ -749,3 +749,48 @@ Recorded so later agents work against truth.
   (`pinned.charter/festival/landmark/institution/monument`) is a Phase 3
   entry condition: either ship those kinds `pinnable: true` or switch the
   operands to `archived.*`, decided before org content lands.
+
+### 14.8 Phase 3 deviations (org + town + UI overhaul)
+
+Recorded so later agents work against truth.
+
+- **Ladder generalization.** `src/engine/session-ladder.ts` (188 LOC)
+  replaced the hardcoded household branch in `session-step.ts`. Per-tier
+  delta (embodied growth + member appends + incoming folds) folds at the
+  receiving rung's `fold_cadence`; ordinal persists on `fold_position`;
+  locked rungs drop the flow. Person bench still routes through
+  `stepStudio` unchanged (Phase 1 golden preserved).
+- **Operand policy finalized to `archived.*` across the whole ladder**
+  (org→region gates + compendium rewards). New kinds ship
+  `pinnable: false`; `pinned.*` stays valid for person/place but is unused
+  by any current milestone. Loader pin enforces.
+- **World drafts at scale.** `assembleWorldDraftAtScale` (person =
+  existing rules verbatim; household/org/town = ≥2 cards of that scale,
+  name from first, line from second) + `recordWorldDraftAtScale`
+  (dedup append). `world-draft.ts` untouched.
+- **`graduateToTier(session, tierId, tierRow, rolesRow, rng)`** replaces
+  `graduateToHousehold` internals; org seeds `roster_size.min` autonomous
+  lives with tier-unique ids + policy; town seeds one unit roster row per
+  unlocked lower tier (no lives). `graduateToHousehold` thin wrapper
+  retained for existing tests.
+- **Operations split.** `play-cursor.ts` (52) + `practice-progress.ts` (31)
+  moved out; `operations.ts` 294 → 234. Pure move, identity-tested.
+- **StudioView hook extraction.** `useStudioSession.ts` (546) +
+  `useStudioProgression.ts` (153); StudioView 1240 → 1100. The ≤~900
+  target miss is the DECLARED DEVIATION: extraction is complete, remaining
+  mass is honest render/handler code.
+- **Next-action rail.** `src/ui/hooks/next-action.ts` pure derivation,
+  priority (a) ready harvest → (b) locked-tier gate ≥80% → (c) uncooked
+  window ≥ effective min → (d) active visitor → (e) empty endowment slot
+  → (f) null; first-match-wins; renders via `StudioNextAction.tsx`
+  (testID `studio-next-action`); 13 unit tests.
+- **Generalized graduation overlay.** Reads `ceremony_sid` from any
+  milestone grant; org/town SIDs added under `graduation` namespace;
+  `dismiss_button_sid` shared; `milestones_done` blocks re-fire so
+  dismissal persists.
+- **Theme token pass.** `studioTheme.disabled` added; one inline literal
+  swept (StudioView `buttonDisabled` → `t.disabled`); "touched only" scope
+  preserved; StudioArchive's literal out of scope.
+- **Phase 4 carryovers.** Visitor `table_ref` swap schema-legal but
+  unwired; visitor partition coarseness unchanged; city + region scales
+  and the SPEC amendment are Phase 4.

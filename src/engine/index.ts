@@ -142,6 +142,7 @@ export {
   stringifyWorldDraft,
 } from './world-draft';
 export type { WorldDraft, WorldDraftBond, WorldDraftMember } from './world-draft';
+export { assembleWorldDraftAtScale, recordWorldDraftAtScale } from './world-scale';
 export { focusFromManifest, isPinnableKind, nextPinned, pinnableCards } from './focus';
 export { activityFamilyForLens, emptyActivityTotals, summarizeActivities } from './activities';
 export {
@@ -206,7 +207,7 @@ export type {
   ArchiveStats,
   WorldDraftStatSource,
 } from './archive-stats';
-export { graduateToHousehold } from './graduation';
+export { graduateToHousehold, graduateToTier } from './graduation';
 export type { HouseholdRolesTable } from './graduation';
 export { createMemberLife, memberSeed, runAutonomousMember } from './roster';
 export { foldUpEvents, swapEmbodiment } from './roster-fold';
