@@ -1008,6 +1008,70 @@ describe('StudioView', () => {
     ).not.toThrow();
   });
 
+  /* ---- table_ref harvest swap (Phase 4 Task 2) -- end-to-end through StudioView -- */
+
+  function sessionWithTableRefGuest(opts: { readyBay: boolean }): StudioSession {
+    const hydrated = emptyHydratedSession();
+    const base = recordStudioResidues(hydrated.studio, THING_WINDOW);
+    const studio = opts.readyBay
+      ? (() => {
+          const queued = queueDevelop(base, null, createRng(31n));
+          return tickStudio(queued, queued.bay?.cook_ticks_total ?? 0);
+        })()
+      : base;
+    const seated: TierState = {
+      ...createTierState('person', true),
+      active_visitor: { id: 'visitor/sample-arrival', windows_left: 1 },
+    };
+    return snapshotStudioSession(
+      studio,
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+      undefined,
+      {
+        tiers: { person: seated },
+        milestones_done: [],
+        compendium_done: [],
+        embodied_member: null,
+      },
+    );
+  }
+
+  it('harvest fills the manifest from the visitor table when a table_ref guest is seated', () => {
+    const { getByTestID, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionWithTableRefGuest({ readyBay: true }),
+      }),
+    );
+
+    press(getByTestID('studio-harvest'));
+    // The archive card must carry a visitor-table name; the person-tier
+    // catalog never produces either of these strings.
+    const archive = getByTestID('studio-harvest').parent;
+    expect(archive).toBeTruthy();
+    const cards = getByTestID('studio-harvest').parent?.parent?.parent ?? archive;
+    const allText = JSON.stringify(cards);
+    expect(allText).toMatch(/A guest-epoch card|A swap-flavored stamp/);
+  });
+
+  it('still decays the visitor seat after a table-swapped harvest', () => {
+    const { getByTestID, queryByText, press } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialSession: sessionWithTableRefGuest({ readyBay: true }),
+      }),
+    );
+
+    press(getByTestID('studio-harvest'));
+    // windows_left was 1 → seat clears, banner disappears.
+    expect(queryByText(formatSid('studio.visitor_windows_sid', { n: 0 }))).toBeNull();
+    expect(() => getByTestID('studio-harvest')).not.toThrow();
+  });
+
   /* ---- compendium: panel smoke, grant + persistence round-trip, cross-state --- */
 
   function commonCard(id: string, seq: number): Manifest {

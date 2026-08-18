@@ -423,6 +423,7 @@ export function useStudioSession({
             session,
             registries().endowment,
             computeGlobalRewards(session.compendium_done, registries().compendium),
+            registries().visitors,
           ),
         );
         const stepped =

@@ -5,6 +5,11 @@
 // it bites on the person bench, whose surplus path is golden-protected
 // inside stepStudio; festival-day is household-only so its surplus_rate
 // bites at the household absorb site.
+//
+// Phase 4 Task 2: sample-arrival is the swap fixture — a row whose
+// `table_ref` resolves to a `visitor_tables` namespace in catalogs.json5.
+// The harvested manifest name comes from the visitor table, not the
+// tier catalog, while the guest is seated. No other behavior ships.
 {
   visitors: [
     {
@@ -24,6 +29,12 @@
       cadence_ticks: 720, jitter_ticks: 240, duration_windows: 3,
       effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 2 }],
       sid_ns: 'visitor.festival_day',
+    },
+    {
+      schema_version: 'visitor/v0', id: 'visitor/sample-arrival', tiers: ['person'],
+      cadence_ticks: 240, jitter_ticks: 60, duration_windows: 2,
+      table_ref: 'visitor-table/sample-arrival',
+      sid_ns: 'visitor.sample_arrival',
     },
   ],
 }

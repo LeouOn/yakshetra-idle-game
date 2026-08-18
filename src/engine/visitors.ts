@@ -15,6 +15,7 @@ import {
 } from './endowment-validators';
 import { memberSeed } from './roster';
 import type { StudioSession } from './studio-session';
+import type { CatalogMap } from './table-catalog';
 import type { ActiveVisitor, TierState } from './tier-state';
 
 /** Structural content view (EndowmentTrackLike precedent — engine never imports src/content). */
@@ -25,6 +26,7 @@ export interface VisitorLike {
   readonly jitter_ticks: number;
   readonly duration_windows: number;
   readonly effects?: readonly unknown[] | undefined;
+  readonly table_ref?: string | undefined;
 }
 
 /** Everything stepVisitors needs; a structural subset of SessionStepContext. */
@@ -127,4 +129,48 @@ export function visitorModifierOverlay(
     return EMPTY_BENCH_MODIFIERS;
   }
   return modifiersFromEffects(row.effects ?? []);
+}
+
+/** The `visitor_tables` payload shape (record of namespace -> catalog entries). */
+export type VisitorTablesView = Readonly<Record<string, readonly CatalogEntryLike[]>>;
+
+/** Engine-side structural view of a single catalog entry (mirrors the runtime CatalogEntry). */
+export interface CatalogEntryLike {
+  readonly name: string;
+  readonly one_liner: string;
+  readonly subject: string;
+  readonly detail: string;
+  readonly tags: readonly string[];
+}
+
+/**
+ * Swap the tier's catalog for the seated visitor's `table_ref` while the
+ * guest is on the bench; fall back to the base catalog when no visitor sits,
+ * when the seated row lacks `table_ref`, or when the content table is
+ * missing. The visitor table is the whole pool: every kind in the base
+ * catalog returns the visitor's entries (count, rng pick, archive shape all
+ * unchanged). Pure; reference-preserving when no swap fires.
+ */
+export function visitorTableOverride(
+  rows: readonly VisitorLike[],
+  activeId: string | null,
+  visitorTables: VisitorTablesView | undefined,
+  baseCatalog: CatalogMap,
+): CatalogMap {
+  if (visitorTables === undefined || activeId === null) {
+    return baseCatalog;
+  }
+  const row = rows.find((candidate) => candidate.id === activeId);
+  if (row === undefined || row.table_ref === undefined) {
+    return baseCatalog;
+  }
+  const entries = visitorTables[row.table_ref];
+  if (entries === undefined) {
+    return baseCatalog;
+  }
+  const out: Record<string, readonly CatalogEntryLike[]> = {};
+  for (const kind of Object.keys(baseCatalog)) {
+    out[kind] = entries;
+  }
+  return out;
 }

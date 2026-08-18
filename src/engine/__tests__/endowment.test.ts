@@ -25,6 +25,7 @@ import {
   TIER_STATE_VERSION,
   TierStateSchema,
   createTierState,
+  type ActiveVisitor,
   type TierState,
 } from '@/engine/tier-state';
 import {
@@ -627,6 +628,121 @@ describe('effectiveAwayCap', () => {
     expect(effectiveAwayCap(session, [...CONTENT_TRACKS, STEADY_HEARTH], global)).toBe(
       240 + 105 + 120 + 30,
     );
+  });
+
+  it('adds a seated visitor offline_cap delta per unlocked tier (Phase 4 Task 2)', () => {
+    const session = makeSession({
+      tiers: {
+        person: makeTier('person'),
+        household: makeTier('household'),
+      },
+    });
+    const visitorRows: Parameters<typeof effectiveAwayCap>[3] = [
+      {
+        id: 'visitor/quiet-monk',
+        tiers: ['person'],
+        cadence_ticks: 1,
+        jitter_ticks: 0,
+        duration_windows: 1,
+        effects: [{ op: 'add_resource', key: 'offline_cap', delta: 80 }],
+      },
+      {
+        id: 'visitor/long-watch',
+        tiers: ['household'],
+        cadence_ticks: 1,
+        jitter_ticks: 0,
+        duration_windows: 1,
+        effects: [{ op: 'add_resource', key: 'offline_cap', delta: 50 }],
+      },
+    ];
+    const seatPerson: ActiveVisitor = { id: 'visitor/quiet-monk', windows_left: 1 };
+    const seatHousehold: ActiveVisitor = { id: 'visitor/long-watch', windows_left: 2 };
+    const seated = {
+      ...session,
+      tiers: {
+        ...session.tiers,
+        person: { ...session.tiers['person']!, active_visitor: seatPerson },
+        household: { ...session.tiers['household']!, active_visitor: seatHousehold },
+      },
+    };
+    expect(effectiveAwayCap(seated, [], EMPTY_BENCH_MODIFIERS, visitorRows)).toBe(240 + 80 + 50);
+  });
+
+  it('keeps the absent visitor case identical to the no-rows baseline', () => {
+    const session = makeSession({
+      tiers: {
+        person: makeTier('person'),
+        household: makeTier('household'),
+      },
+    });
+    expect(effectiveAwayCap(session, CONTENT_TRACKS)).toBe(
+      effectiveAwayCap(session, CONTENT_TRACKS, EMPTY_BENCH_MODIFIERS, []),
+    );
+  });
+
+  it('skips a seated visitor offline_cap on a LOCKED tier (no shatter)', () => {
+    const session = makeSession({
+      tiers: {
+        person: makeTier('person'),
+        household: makeTier('household', { unlocked: false }),
+      },
+    });
+    const visitorRows: Parameters<typeof effectiveAwayCap>[3] = [
+      {
+        id: 'visitor/long-watch',
+        tiers: ['household'],
+        cadence_ticks: 1,
+        jitter_ticks: 0,
+        duration_windows: 1,
+        effects: [{ op: 'add_resource', key: 'offline_cap', delta: 200 }],
+      },
+    ];
+    const seat: ActiveVisitor = { id: 'visitor/long-watch', windows_left: 1 };
+    const seated = {
+      ...session,
+      tiers: {
+        ...session.tiers,
+        household: { ...session.tiers['household']!, active_visitor: seat },
+      },
+    };
+    expect(effectiveAwayCap(seated, [], EMPTY_BENCH_MODIFIERS, visitorRows)).toBe(240);
+  });
+});
+
+describe('phase 4 visitor offline_cap fixture', () => {
+  it('keeps a person-tier seated visitor offline_cap delta additive across tiers', () => {
+    const session = makeSession({
+      tiers: {
+        person: makeTier('person', { endowed: ['endow/person/steady-hearth'] }),
+        household: makeTier('household'),
+      },
+    });
+    const visitorRows: Parameters<typeof effectiveAwayCap>[3] = [
+      {
+        id: 'visitor/quiet-monk',
+        tiers: ['person'],
+        cadence_ticks: 1,
+        jitter_ticks: 0,
+        duration_windows: 1,
+        effects: [{ op: 'add_resource', key: 'offline_cap', delta: 80 }],
+      },
+    ];
+    const seat: ActiveVisitor = { id: 'visitor/quiet-monk', windows_left: 1 };
+    const seated = {
+      ...session,
+      tiers: {
+        ...session.tiers,
+        person: { ...session.tiers['person']!, active_visitor: seat },
+      },
+    };
+    expect(
+      effectiveAwayCap(
+        seated,
+        [...CONTENT_TRACKS, STEADY_HEARTH],
+        EMPTY_BENCH_MODIFIERS,
+        visitorRows,
+      ),
+    ).toBe(240 + 105 + 80);
   });
 });
 

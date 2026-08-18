@@ -20,13 +20,16 @@ import {
   snapshotStudioSession,
   type StudioSession,
 } from '@/engine/studio-session';
+import type { CatalogEntry, CatalogMap } from '@/engine/table-catalog';
 import { createTierState, type ActiveVisitor, type TierState } from '@/engine/tier-state';
 import {
   activeVisitorFor,
   noteVisitorHarvest,
   stepVisitors,
   visitorModifierOverlay,
+  visitorTableOverride,
   type VisitorLike,
+  type VisitorTablesView,
 } from '@/engine/visitors';
 
 /* ---- fixtures ------------------------------------------------------------ */
@@ -289,5 +292,112 @@ describe('visitorModifierOverlay', () => {
       memberSeed(seed, 'visitor:person:visitor/gate-yaksa') % BigInt(GATE_YAKSA.jitter_ticks + 1),
     );
     expect(arrival).toBe(GATE_YAKSA.cadence_ticks + expectedJitter);
+  });
+});
+
+/* ---- table_ref catalog swap (Phase 4 Task 2) ----------------------------- */
+
+const TABLE_REF_ROW: VisitorLike = {
+  id: 'visitor/sample-arrival',
+  tiers: ['person'],
+  cadence_ticks: 10,
+  jitter_ticks: 0,
+  duration_windows: 2,
+  table_ref: 'visitor-table/sample-arrival',
+};
+
+const SWAP_ENTRIES: readonly CatalogEntry[] = [
+  {
+    name: 'A guest-epoch card',
+    one_liner: 'A card that did not come from the bench.',
+    subject: 'a visitor-table card',
+    detail: 'The card came from a visitor table, not the bench catalog.',
+    tags: ['visitor', 'table'],
+  },
+  {
+    name: 'A swap-flavored stamp',
+    one_liner: 'A stamp that proves the table was swapped.',
+    subject: 'a swap-stamp',
+    detail: 'Whoever stamped it was clearly seated when the harvest happened.',
+    tags: ['visitor', 'swap'],
+  },
+];
+
+const BASE_CATALOG: CatalogMap = {
+  thing: [
+    {
+      name: 'Base thing',
+      one_liner: 'base',
+      subject: 'base',
+      detail: 'base',
+      tags: ['base'],
+    },
+  ],
+  outcome: [
+    {
+      name: 'Base outcome',
+      one_liner: 'base',
+      subject: 'base',
+      detail: 'base',
+      tags: ['base'],
+    },
+  ],
+};
+
+const VISITOR_TABLES: VisitorTablesView = {
+  'visitor-table/sample-arrival': SWAP_ENTRIES,
+};
+
+describe('visitorTableOverride', () => {
+  it('swaps every kind in the tier catalog for the visitor table when seated', () => {
+    const result = visitorTableOverride(
+      [TABLE_REF_ROW],
+      'visitor/sample-arrival',
+      VISITOR_TABLES,
+      BASE_CATALOG,
+    );
+    expect(result['thing']).toBe(SWAP_ENTRIES);
+    expect(result['outcome']).toBe(SWAP_ENTRIES);
+    // Same reference seeded twice — the "whole pool" lives once.
+    expect(result['thing']).toBe(result['outcome']);
+  });
+
+  it('returns the base catalog unchanged when no visitor is seated', () => {
+    const result = visitorTableOverride([TABLE_REF_ROW], null, VISITOR_TABLES, BASE_CATALOG);
+    expect(result).toBe(BASE_CATALOG);
+  });
+
+  it('returns the base catalog when the seated row has no table_ref', () => {
+    const result = visitorTableOverride(
+      [GATE_YAKSA],
+      'visitor/gate-yaksa',
+      VISITOR_TABLES,
+      BASE_CATALOG,
+    );
+    expect(result).toBe(BASE_CATALOG);
+  });
+
+  it('falls back to the base catalog when the table_ref is missing from content', () => {
+    const dangling: VisitorLike = {
+      ...TABLE_REF_ROW,
+      table_ref: 'visitor-table/not-shipped',
+    };
+    const result = visitorTableOverride(
+      [dangling],
+      'visitor/sample-arrival',
+      VISITOR_TABLES,
+      BASE_CATALOG,
+    );
+    expect(result).toBe(BASE_CATALOG);
+  });
+
+  it('falls back to the base catalog when visitorTables is undefined', () => {
+    const result = visitorTableOverride(
+      [TABLE_REF_ROW],
+      'visitor/sample-arrival',
+      undefined,
+      BASE_CATALOG,
+    );
+    expect(result).toBe(BASE_CATALOG);
   });
 });

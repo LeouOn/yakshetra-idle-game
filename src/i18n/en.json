@@ -228,6 +228,10 @@
     "festival_day": {
       "name_sid": "Festival day",
       "line_sid": "The household cooks as if for a hundred."
+    },
+    "sample_arrival": {
+      "name_sid": "A sample arrival",
+      "line_sid": "The bench listens. The table is not its own for a few windows."
     }
   },
   "tang": {

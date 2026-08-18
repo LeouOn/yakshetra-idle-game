@@ -58,7 +58,8 @@ import {
   type StudioState,
 } from '@/engine';
 import { canEndow, endowManifest } from '@/engine/endowment';
-import { noteVisitorHarvest } from '@/engine/visitors';
+import { activeVisitorFor, noteVisitorHarvest, visitorTableOverride } from '@/engine/visitors';
+import type { CatalogMap } from '@/engine/table-catalog';
 import type { StudioKv } from '@/persistence';
 import type { CalendarEpoch } from '@/engine/calendar';
 import type { DailySchedule } from '@/engine/schedule';
@@ -508,6 +509,19 @@ export default function StudioView({
     return ready[0]?.id ?? null;
   }
 
+  /** The seated visitor's catalog for a tier, or null if no swap is active.
+   * The override is the visitor table for every kind in the base catalog;
+   * missing table_ref content falls back to the base catalog (no throw). */
+  function visitorTierCatalog(tierId: string): CatalogMap | null {
+    const reg = registries();
+    const seat = activeVisitorFor(buildSession(), tierId);
+    if (seat === null) {
+      return null;
+    }
+    const catalog = visitorTableOverride(reg.visitors, seat.id, reg.visitorTables, reg.catalogs);
+    return catalog === reg.catalogs ? null : catalog;
+  }
+
   /** Folded-residue bays fill at the tier's scale with its rule set. */
   function harvestBenchTier(tierId: string): void {
     const bench = benches[tierId];
@@ -530,6 +544,7 @@ export default function StudioView({
       null,
       scale,
     );
+    const catalog = visitorTierCatalog(tierId) ?? registries().catalogs;
     const manifest = tableFillManifest(
       request.residue,
       request.brief,
@@ -541,7 +556,7 @@ export default function StudioView({
       request.life_context,
       request.scale,
       rules,
-      registries().catalogs,
+      catalog,
     );
     setStudio((current) => ({ ...current, archive: [...current.archive, manifest] }));
     setWorldDrafts(withRecordedDrafts([...studio.archive, manifest], worldDrafts));
@@ -560,7 +575,16 @@ export default function StudioView({
       harvestBenchTier(priority);
       return;
     }
-    const result = harvestTableFill(studio, rngRef.current, lifeContext);
+    const reg = registries();
+    const seat = activeVisitorFor(buildSession(), EMBODIED_TIER);
+    const swap = visitorTableOverride(
+      reg.visitors,
+      seat?.id ?? null,
+      reg.visitorTables,
+      reg.catalogs,
+    );
+    const visitorEntries = swap === reg.catalogs ? null : (swap[EMBODIED_TIER] ?? null);
+    const result = harvestTableFill(studio, rngRef.current, lifeContext, visitorEntries);
     if (result === null) {
       return;
     }

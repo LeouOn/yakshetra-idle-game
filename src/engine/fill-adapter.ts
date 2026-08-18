@@ -13,6 +13,7 @@ import {
   type ResidueSummary,
 } from './residue';
 import type { Rng } from './rng';
+import type { CatalogEntry, CatalogMap } from './table-catalog';
 
 /** The bay fields the compiler needs. Avoids an operations.ts import cycle. */
 export interface CompileBayInput {
@@ -81,6 +82,36 @@ export function tableFiller(): ManifestFiller {
         request.focus,
         request.life_context,
         request.scale,
+      );
+    },
+  };
+}
+
+/** Same as tableFiller, but every kind in the catalog returns the supplied
+ * entries. Used by the visitor table_ref swap (Phase 4 Task 2). The filler
+ * id differs so the harvested manifest's provenance records the swap. */
+export function tableFillerWithCatalog(entries: readonly CatalogEntry[]): ManifestFiller {
+  const override: CatalogMap = new Proxy(
+    {},
+    {
+      get: (_target, _kind) => entries,
+    },
+  ) as CatalogMap;
+  return {
+    id: 'table/visitor-table',
+    fill(request, rng) {
+      return tableFillManifest(
+        request.residue,
+        request.brief,
+        request.quality_tier,
+        rng,
+        request.rng_seed,
+        request.id,
+        request.focus,
+        request.life_context,
+        request.scale,
+        undefined,
+        override,
       );
     },
   };

@@ -22,6 +22,7 @@ import {
 import { STUDIO_AWAY_TICK_CAP } from './studio-offline';
 import type { BenchState, StudioSession } from './studio-session';
 import type { RosterMember, TierState } from './tier-state';
+import { activeVisitorFor, visitorModifierOverlay, type VisitorLike } from './visitors';
 
 /* ---- modifier vocabulary -------------------------------------------------- */
 
@@ -125,17 +126,25 @@ export function endowManifest(
  * offline_cap rows raise the shared catch-up ceiling; locked tiers
  * contribute nothing. Per-tier modifiers are computed with an empty global
  * view so the caller's global adds exactly once.
+ *
+ * Phase 4 Task 2: a seated visitor's `offline_cap` (no shipped visitor
+ * grants it today) is added per unlocked tier via the same overlay used
+ * at the bench. Defaults to [] so legacy callers stay green.
  */
 export function effectiveAwayCap(
   session: StudioSession,
   tracks: readonly EndowmentTrackLike[],
   global: BenchModifiers = EMPTY_BENCH_MODIFIERS,
+  rows: readonly VisitorLike[] = [],
 ): number {
   let tierCaps = 0;
   for (const tier of Object.values(session.tiers)) {
-    if (tier.unlocked) {
-      tierCaps += computeBenchModifiers(tier.tier, session, tracks).offlineCap;
+    if (!tier.unlocked) {
+      continue;
     }
+    const seat = activeVisitorFor(session, tier.tier);
+    const visitorCap = visitorModifierOverlay(rows, seat?.id ?? null).offlineCap;
+    tierCaps += computeBenchModifiers(tier.tier, session, tracks).offlineCap + visitorCap;
   }
   return BASE_AWAY_CAP + tierCaps + global.offlineCap;
 }

@@ -5,6 +5,7 @@ import {
   compileRequestFromBay,
   fillManifestSafe,
   tableFiller,
+  tableFillerWithCatalog,
   type ManifestFiller,
 } from './fill-adapter';
 import type { LifeContext } from './life-context';
@@ -13,6 +14,7 @@ import type { Manifest } from './manifest';
 import type { PlayImportCursor } from './play-cursor';
 import type { Rng } from './rng';
 import { residueWindowId, windowSince, type ResidueEvent } from './residue';
+import type { CatalogEntry } from './table-catalog';
 
 // Back-compat re-exports of the BD6 splits (play-cursor, practice-progress);
 // both modules import this one TYPE-ONLY, so no runtime cycle exists.
@@ -217,13 +219,19 @@ export function harvestWithFiller(
   return { studio: next, manifest };
 }
 
-/** Fill the ready bay with the table compiler and archive the Manifest. */
+/** Fill the ready bay with the table compiler and archive the Manifest. Pass
+ * `visitorTableEntries` to swap the default catalog for every kind (Phase 4
+ * Task 2: the visitor `table_ref` swap on the person path). */
 export function harvestTableFill(
   studio: StudioState,
   rng: Rng,
   lifeContext: LifeContext | null = null,
+  visitorTableEntries: readonly CatalogEntry[] | null = null,
 ): HarvestResult | null {
-  return harvestWithFiller(studio, rng, tableFiller(), lifeContext);
+  if (visitorTableEntries === null) {
+    return harvestWithFiller(studio, rng, tableFiller(), lifeContext);
+  }
+  return harvestWithFiller(studio, rng, tableFillerWithCatalog(visitorTableEntries), lifeContext);
 }
 
 export function upgradeQuality(studio: StudioState): StudioState {

@@ -132,6 +132,7 @@ export {
   compileRequestFromBay,
   fillManifestSafe,
   tableFiller,
+  tableFillerWithCatalog,
 } from './fill-adapter';
 export type { CompileBayInput, ManifestCompileRequest, ManifestFiller } from './fill-adapter';
 export {
@@ -233,5 +234,6 @@ export {
   noteVisitorHarvest,
   stepVisitors,
   visitorModifierOverlay,
+  visitorTableOverride,
 } from './visitors';
-export type { VisitorLike, VisitorStepContext } from './visitors';
+export type { VisitorLike, VisitorStepContext, VisitorTablesView } from './visitors';

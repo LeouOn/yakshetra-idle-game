@@ -492,4 +492,32 @@
       ],
     },
   ],
+
+  // ──────────────────────────────────────────────────────────────────────
+  // Visitor tables (Phase 4 Task 2). A visitor row with `table_ref` swaps
+  // the tier's kind catalog for the whole pool of entries living under
+  // that namespace. Ship one namespace; no visitor carries `table_ref`
+  // today, so the runtime swap is a future-hook, but the data shape must
+  // exist for the loader test and the swap unit test to drive. The
+  // entries use names that NEVER appear in the per-kind tables, so the
+  // a swap is observable in the harvested manifest name.
+  // ──────────────────────────────────────────────────────────────────────
+  visitor_tables: {
+    'visitor-table/sample-arrival': [
+      {
+        name: 'A guest-epoch card',
+        one_liner: 'A card that did not come from the bench.',
+        subject: 'a visitor-table card',
+        detail: 'The card came from a visitor\'s table, not the bench\'s catalog. The bench\'s shelf was empty when the harvest happened.',
+        tags: ['visitor', 'table'],
+      },
+      {
+        name: 'A swap-flavored stamp',
+        one_liner: 'A stamp that proves the table was swapped.',
+        subject: 'a swap-stamp',
+        detail: 'Whoever stamped it was clearly seated when the harvest happened. The kind is not the one the bench would have picked.',
+        tags: ['visitor', 'swap'],
+      },
+    ],
+  },
 }

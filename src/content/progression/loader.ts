@@ -19,6 +19,7 @@ import {
   RolesFileSchema,
   TierSchema,
   VisitorSchema,
+  VisitorTableMapSchema,
   type CompendiumEntry,
   type EndowmentTrack,
   type KindRow,
@@ -42,6 +43,9 @@ export interface ProgressionRegistries {
   readonly visitors: readonly Visitor[];
   readonly compendium: readonly CompendiumEntry[];
   readonly roles: RolesFile;
+  /** `visitor_tables` namespace → catalog entries. Phase 4 Task 2: a seated
+   * visitor with `table_ref` swaps the tier catalog for this table. */
+  readonly visitorTables: Readonly<Record<string, readonly CatalogEntry[]>>;
 }
 
 function extractArray(raw: unknown, key: string, filename: string): unknown[] {
@@ -139,6 +143,12 @@ export function loadProgression(): ProgressionRegistries {
   );
   const roles = parseSingleton(RolesFileSchema, bundle.roles, 'roles.json5');
   const kindRules: KindRule[] = kindRows.map((row) => ({ kind: row.id, match: row.match }));
+  const catalogsRaw = bundle.catalogs as { visitor_tables?: unknown };
+  const visitorTables = parseSingleton(
+    VisitorTableMapSchema,
+    catalogsRaw.visitor_tables ?? {},
+    'catalogs.json5 (visitor_tables)',
+  );
   const registries: ProgressionRegistries = {
     tiers,
     kindRows,
@@ -150,6 +160,7 @@ export function loadProgression(): ProgressionRegistries {
     visitors,
     compendium,
     roles,
+    visitorTables,
   };
   const lintReport = lintProgression(registries);
   if (!lintReport.passed) {

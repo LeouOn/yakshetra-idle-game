@@ -169,6 +169,22 @@ describe('loadProgression', () => {
     ).toBe(true);
   });
 
+  it('exposes visitorTables for the seeded sample namespace (Phase 4 Task 2)', () => {
+    // The namespace + entries live in catalogs.json5 under `visitor_tables`.
+    // No shipped visitor carries `table_ref` yet, but the data shape must
+    // survive the loader so the swap unit test can drive it.
+    const tables = registries.visitorTables;
+    expect(tables['visitor-table/sample-arrival']).toBeDefined();
+    expect(tables['visitor-table/sample-arrival']?.length).toBeGreaterThan(0);
+    for (const entry of tables['visitor-table/sample-arrival'] ?? []) {
+      expect(entry.name.length).toBeGreaterThan(0);
+      expect(entry.one_liner.length).toBeGreaterThan(0);
+      expect(entry.subject.length).toBeGreaterThan(0);
+      expect(entry.detail.length).toBeGreaterThan(0);
+      expect(entry.tags.length).toBeGreaterThan(0);
+    }
+  });
+
   it('ships empty extension files as valid empty registries', () => {
     // Endowment ships four base rows since Phase 2 Task 1 (the rest still
     // empty). The R-PROG-MODIFIER-KEYS lint guarantees every key here is
@@ -183,6 +199,7 @@ describe('loadProgression', () => {
       'visitor/gate-yaksa',
       'visitor/traveling-teacher',
       'visitor/festival-day',
+      'visitor/sample-arrival',
     ]);
     expect(registries.compendium.map((entry) => entry.id)).toEqual([
       'compendium/first-harvest',

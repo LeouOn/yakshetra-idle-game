@@ -77,6 +77,15 @@ export const CatalogTableSchema = z
   .strict();
 export type CatalogTable = z.infer<typeof CatalogTableSchema>;
 
+/** Visitor namespace name (table_ref) → an array of catalog entries.
+ * The visitor table is the WHOLE pool: every kind picks from the same set
+ * while the visit is seated (Phase 4 Task 2 binding decision 2). */
+export const VisitorTableMapSchema = z.record(
+  z.string().min(1),
+  z.array(CatalogEntrySchema).min(1),
+);
+export type VisitorTableMap = z.infer<typeof VisitorTableMapSchema>;
+
 /* ---- tier/v0 ------------------------------------------------------------ */
 
 export const TIER_VERSION = 'tier/v0' as const;
