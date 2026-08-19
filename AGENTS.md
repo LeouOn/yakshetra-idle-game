@@ -94,22 +94,31 @@ Not Expo Go. `curl` in PowerShell is an alias; use the real tool or `Invoke-WebR
 
 ## Where to look
 
-| Want                      | Path                                                           |
-| ------------------------- | -------------------------------------------------------------- |
-| Product law               | `SPEC.md`                                                      |
-| Life state, echoes        | `src/engine/types.ts`, `reducer.ts`, `echo.ts`                 |
-| Residue                   | `src/engine/residue.ts`                                        |
-| Manifest + tables         | `src/engine/manifest.ts`, `manifest-catalog.ts`                |
-| Cook / harvest / pin      | `src/engine/operations.ts`, `focus.ts`                         |
-| Filler slot               | `src/engine/fill-adapter.ts`                                   |
-| World                     | `src/engine/world-draft.ts`                                    |
-| Life snapshot for harvest | `src/engine/life-context.ts`                                   |
-| Activity families         | `src/engine/activities.ts`                                     |
-| Studio persist            | `src/engine/studio-session.ts`, `src/persistence/studio-kv.ts` |
-| Play → bench              | `src/persistence/play-bridge.ts`                               |
-| Bench UI                  | `src/ui/components/StudioView.tsx`                             |
-| Studio route              | `app/studio.tsx`                                               |
-| Packs                     | `src/content/packs/`                                           |
+| Want                       | Path                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| Product law                | `SPEC.md`                                                                            |
+| Life state, echoes         | `src/engine/types.ts`, `reducer.ts`, `echo.ts`                                       |
+| Residue                    | `src/engine/residue.ts`                                                              |
+| Manifest + tables          | `src/engine/manifest.ts`, `manifest-catalog.ts`                                      |
+| Cook / harvest / pin       | `src/engine/operations.ts`, `play-cursor.ts`, `practice-progress.ts`, `focus.ts`     |
+| Filler slot                | `src/engine/fill-adapter.ts`                                                         |
+| World                      | `src/engine/world-draft.ts`, `world-scale.ts`                                        |
+| Six-tier ladder            | `src/engine/session-ladder.ts`, `graduation.ts`, `bench-mapping.ts`, `tier-state.ts` |
+| Shared ladder constants    | `src/engine/ladder-const.ts`                                                         |
+| Life snapshot for harvest  | `src/engine/life-context.ts`                                                         |
+| Activity families          | `src/engine/activities.ts`                                                           |
+| Endowment (upgrade tracks) | `src/engine/endowment.ts`, `endowment-validators.ts`                                 |
+| Visitors                   | `src/engine/visitors.ts`                                                             |
+| Compendium                 | `src/engine/compendium.ts`                                                           |
+| Studio persist             | `src/engine/studio-session.ts`, `src/persistence/studio-kv.ts`                       |
+| Play → bench               | `src/persistence/play-bridge.ts`                                                     |
+| Bench UI                   | `src/ui/components/StudioView.tsx`                                                   |
+| Studio session hook        | `src/ui/hooks/useStudioSession.ts`                                                   |
+| Studio progression hook    | `src/ui/hooks/useStudioProgression.ts`                                               |
+| Session selectors          | `src/ui/hooks/session-selectors.ts`                                                  |
+| Studio route               | `app/studio.tsx`                                                                     |
+| Packs                      | `src/content/packs/`                                                                 |
+| Progression content        | `src/content/progression/`                                                           |
 
 ## Do
 

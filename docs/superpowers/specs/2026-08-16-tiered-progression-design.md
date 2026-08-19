@@ -446,58 +446,9 @@ fails lint exactly as a pack effect would today. Content lint also requires:
 
 ## 9. Agent Recipes — "Adding X"
 
-Each recipe lists: schema file, content file, SIDs, lint, tests, done-when.
-These move into `CONTRIBUTING.md` when Phase 0 lands.
-
-### 9.1 Add a Manifest kind
-
-1. Row in `base/kinds.json5` (compile rule, catalog ref, `sid_ns`,
-   `min_quality`).
-2. Table catalog entries in the kind's catalog namespace.
-3. SIDs: `kind.<id>.name`, `kind.<id>.line`, plus catalog entry SIDs.
-4. Lint: table entries present; SIDs resolve.
-5. Tests: a residue window matching the compile rule harvests the new kind at
-   its scale; table fill returns a valid `manifest/v1`.
-6. Done when: cook a qualifying window at that tier, harvest the kind, pin it.
-
-### 9.2 Add a tier (beyond region, or a variant ladder)
-
-1. Row in `base/tiers.json5` + its kind-set rows + unlock milestone row.
-2. Role table and name tables for the roster; policies.
-3. SIDs for rail label, ceremony, roles, kinds.
-4. Tests: milestone crossing unlocks the tier; fold-up feeds its bench;
-   world draft assembles at its scale.
-5. Done when: full loop — unlock, auto-produce, harvest, pin, endow, embody.
-
-### 9.3 Add an endowment track
-
-1. Row in `base/endowment.json5` with EffectOps.
-2. Lint: ops pass prohibited-mechanics rules.
-3. Tests: endowing consumes the Manifest and applies the modifier; modifier
-   math is deterministic.
-4. Done when: endow a duplicate card, observe the bench stat change.
-
-### 9.4 Add a visitor
-
-1. Row in `base/visitors.json5` (cadence, duration, effects or table ref).
-2. SIDs: arrival banner, active line, departure.
-3. Tests: arrival tick is deterministic from seed + tick count; effect
-   applies for exactly N windows.
-4. Done when: advance ticks to the arrival, banner shows, effect expires.
-
-### 9.5 Add a milestone or compendium entry
-
-1. Row in the matching JSON5 with a predicate.
-2. SIDs: label, progress line, reward line.
-3. Tests: predicate false → true crossing fires exactly once; reward applies.
-4. Done when: construct an archive that crosses it; ceremony/reward fires.
-
-### 9.6 Add an era pack at a tier
-
-Era packs already declare practices, schedules, events, figures. Tiers
-consume packs: a pack may declare `tier: "org"` and ship org-flavored
-practices, events, visitors, and name tables. Recipe matches today's
-pack-authoring rules plus the tier field and the §9.4 visitor recipe.
+These recipes moved to `CONTRIBUTING.md` §"Extending the game" (§9.1–9.6
+verbatim, kept as the canonical authoring recipes). This section remains
+so in-doc references don't break.
 
 ---
 
@@ -553,9 +504,13 @@ closes. Scope discipline: nothing outside the phase enters the change set.
   raises.
 - **Phase 3 — Org + town, full UI overhaul.** StudioShell complete,
   next-action rail, identity/token pass, ceremonies.
-- **Phase 4 — City + region, polish.** Then the SPEC amendment: ratify the
-  ladder and this doc's decisions; supersede §14's ordering; move §9 recipes
-  into `CONTRIBUTING.md`.
+- **Phase 4 — City + region, polish. Done (commits 10364da…c15d909 on
+  `feat/phase-4-city-region`).** Visitor `table_ref` swap and `effectiveAwayCap`
+  overlay wired; city (`institution`, `monument`) and region (`legend`, `road`)
+  kinds + fallbacks + catalogs + policies + roles + schedules + visitors
+  ship; six-tier E2E proven; ladder helpers consolidated (Phase 3 minors
+  closed). Then the SPEC amendment: ratify the ladder and this doc's decisions;
+  supersede §14's ordering; move §9 recipes into `CONTRIBUTING.md`. See §14.9.
 
 ---
 
@@ -752,9 +707,9 @@ Recorded so later agents work against truth.
 
 ### 14.8 Phase 3 deviations (org + town + UI overhaul)
 
-Recorded so later agents work against truth.
+Recorded so later agents work against truth. Line counts corrected post-Phase 4.
 
-- **Ladder generalization.** `src/engine/session-ladder.ts` (188 LOC)
+- **Ladder generalization.** `src/engine/session-ladder.ts` (175 LOC)
   replaced the hardcoded household branch in `session-step.ts`. Per-tier
   delta (embodied growth + member appends + incoming folds) folds at the
   receiving rung's `fold_cadence`; ordinal persists on `fold_position`;
@@ -773,10 +728,10 @@ Recorded so later agents work against truth.
   lives with tier-unique ids + policy; town seeds one unit roster row per
   unlocked lower tier (no lives). `graduateToHousehold` thin wrapper
   retained for existing tests.
-- **Operations split.** `play-cursor.ts` (52) + `practice-progress.ts` (31)
-  moved out; `operations.ts` 294 → 234. Pure move, identity-tested.
-- **StudioView hook extraction.** `useStudioSession.ts` (546) +
-  `useStudioProgression.ts` (153); StudioView 1240 → 1100. The ≤~900
+- **Operations split.** `play-cursor.ts` (49) + `practice-progress.ts` (30)
+  moved out; `operations.ts` 294 → 210. Pure move, identity-tested.
+- **StudioView hook extraction.** `useStudioSession.ts` (515) +
+  `useStudioProgression.ts` (146); StudioView 1240 → 1041. The ≤~900
   target miss is the DECLARED DEVIATION: extraction is complete, remaining
   mass is honest render/handler code.
 - **Next-action rail.** `src/ui/hooks/next-action.ts` pure derivation,
@@ -791,6 +746,56 @@ Recorded so later agents work against truth.
 - **Theme token pass.** `studioTheme.disabled` added; one inline literal
   swept (StudioView `buttonDisabled` → `t.disabled`); "touched only" scope
   preserved; StudioArchive's literal out of scope.
-- **Phase 4 carryovers.** Visitor `table_ref` swap schema-legal but
-  unwired; visitor partition coarseness unchanged; city + region scales
-  and the SPEC amendment are Phase 4.
+- **Phase 4 carryovers (closed).** Visitor `table_ref` swap is wired
+  (§14.9), visitor partition coarseness unchanged, city + region scales
+  ship, and the SPEC amendment is landed.
+
+### 14.9 Phase 4 deviations (city + region + polish)
+
+Recorded so later agents work against truth. Bindings from the Phase 4 plan
+(`docs/superpowers/plans/2026-08-16-phase-4-city-region.md`) plus the
+Task 2/3/4 corrections and Task 5 itself.
+
+- **City/region kinds + fallbacks mirror org/town.** City ships
+  `institution {social}` + `monument {dominant practice_level}` + three
+  TOTAL fallbacks; region ships `legend {social}` + `road {dominant
+practice_level}` + three fallbacks. All rows `pinnable: false`,
+  `catalog_ref 'core/<id>'`, `sid_ns 'studio.kind_<id>_sid'`. The
+  fallback row keeps `tableFiller`'s hard guarantee that every legal
+  window shape yields a valid card at its scale.
+- **Visitor `table_ref` swap is replace-not-merge.** A seated visitor
+  row whose payload is `table_ref` (instead of `effects`) replaces the
+  affected bench's harvest catalog for the visitor's remaining windows.
+  Catalog resolution lives in `catalogs.json5` under a new top-level
+  `visitor_tables` key (`VisitorTableMapSchema`). Harvest consults the
+  active visitor's table before the tier's kind catalog;
+  `noteVisitorHarvest` still decays windows. Deterministic; no rng.
+  Missing or unresolved `table_ref` falls back silently to the tier
+  catalog — the swap is opportunistic, never a blocker.
+- **`effectiveAwayCap` counts seated visitor `offline_cap`.** The away
+  cap now adds the seated visitor's `offline_cap` (if any) per tier,
+  same pattern as `modifiersForSession`. No shipped visitor grants
+  `offline_cap` today — this closes the future-hole, not a live gap.
+- **Shared-helper hoist.** `EMBODIED_TIER`, the `statValue` walker, and
+  `personEffectiveMin` (floor-at-2) move to single definitions:
+  `src/engine/ladder-const.ts` for the constant, the walker + floor in
+  `src/ui/hooks/session-selectors.ts`. The three duplicated copies across
+  `next-action.ts`, `StudioView`, and `session-ladder` resolve to those
+  imports.
+- **SPEC amendment ratified (§1.1 + §14 rewrite).** SPEC.md §1 gains the
+  ladder table (six tiers, composition rule, fold-up cadence,
+  archive-milestone unlock, auto-production below the waterline). §14
+  becomes a closing paragraph instead of a build-order list. §10 fences
+  are untouched; §6/§7/§8/§9 stay as-is.
+- **`visitors.json5` ships six rows.** Three carried over from Phase 2
+  (`gate-yaksa`, `traveling-teacher`, `festival-day`), one added by
+  Task 2 as the `table_ref` swap fixture (`sample-arrival`), and two new
+  from Task 3 (`court-auditor` at city scale, `road-surveyor` at region
+  scale). The Phase 4 plan's "two visitors" was Task 3's delta, not the
+  shipped total.
+- **`fold_position` is benign at 0.** The schema accepts `fold_position`
+  ≥ 0 (`z.number().int().min(0)`); person benches sit at 0 by design
+  (the embodied rung never folds into itself), fresh unlocked benches
+  start at 0, and only non-person rungs advance per call. The full-ladder
+  E2E (Task 4) locks this invariant: `benches['person'].fold_position`
+  is always 0; every other unlocked rung is > 0 after enough residue.

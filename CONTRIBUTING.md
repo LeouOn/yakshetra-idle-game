@@ -1,46 +1,41 @@
 # Contributing
 
-**Current law:** [`SPEC.md`](SPEC.md) and [`AGENTS.md`](AGENTS.md).
+**Authority:** [`SPEC.md`](SPEC.md) is the product constitution; [`AGENTS.md`](AGENTS.md) is how to touch this repo. They supersede this file wherever they conflict. Rewrite this file when you touch it.
 
-The code-quality contract below still stands (engine purity, no `as any`,
-no empty catch, file size). The content-authoring contract is the remaining
-game-design rules only: no karma meter, no pay-to-absolve, no visible
-spiritual score. Named figures and real mantras are allowed.
-
-> Historical note: this file was written for an ethically-restrained
-> two-life RPG. Use it as a how-to for packs and tests, not as product law.
+This file describes how to add content, run the gate, and ship. Named figures and real mantras are in play (SPEC §11). The remaining fences are game-design rules, not piety.
 
 ---
 
 ## Table of contents
 
-1. [Code-quality contract (12 criteria from F2)](#code-quality-contract)
-2. [Content-authoring contract (5 prohibited mechanics)](#content-authoring-contract)
-3. [Adding a new event to an existing era pack](#adding-a-new-event)
-4. [Adding a new era pack](#adding-a-new-era-pack)
-5. [Adding a new lens (don't — they're fixed at six)](#adding-a-new-lens)
-6. [Adding a new content-warning category (don't — they're fixed at nine)](#adding-a-new-warning-category)
-7. [Running tests](#running-tests)
-8. [Adding a new test](#adding-a-new-test)
-9. [Commit conventions](#commit-conventions)
-10. [Submitting a PR](#submitting-a-pr)
+1. [Code-quality contract](#code-quality-contract)
+2. [Content-authoring contract](#content-authoring-contract)
+3. [Extending the game](#extending-the-game)
+   - 3.1 [Add a Manifest kind](#31-add-a-manifest-kind)
+   - 3.2 [Add a tier](#32-add-a-tier-beyond-region-or-a-variant-ladder)
+   - 3.3 [Add an endowment track](#33-add-an-endowment-track)
+   - 3.4 [Add a visitor](#34-add-a-visitor)
+   - 3.5 [Add a milestone or compendium entry](#35-add-a-milestone-or-compendium-entry)
+   - 3.6 [Add an era pack at a tier](#36-add-an-era-pack-at-a-tier)
+4. [Running tests](#running-tests)
+5. [Adding a new test](#adding-a-new-test)
+6. [Commit conventions](#commit-conventions)
 
 ---
 
 ## Code-quality contract
 
-These are the 12 criteria enforced by the F2 code-quality review. Every PR
-must pass all 12. Any PR that breaks one is auto-rejected.
+These are the 12 criteria the F2 code-quality review enforces. Every PR passes all 12. Any PR that breaks one is auto-rejected.
 
 1. No `as any` anywhere in `src/`
 2. No `@ts-ignore` or `@ts-expect-error` anywhere in `src/`
 3. No empty catch blocks anywhere in `src/`
-4. No files >250 LOC in `src/engine/` (large files indicate missing decomposition)
+4. No files >250 LOC in `src/engine/` (extract a module)
 5. No circular dependencies in `src/`
 6. No leaked platform APIs in `src/engine/` (no `react`, `react-native`, `expo`, `Date.now`, `Math.random`, `fetch`, `process.env`, `console`)
-7. No `Math.random()` anywhere in `src/engine/` (use the seeded RNG from `src/engine/rng.ts`)
-8. No `Date.now()` or `new Date()` anywhere in `src/engine/`
-9. No `as any` in `src/content/` (the schema and lint are the Buddhist-ethics guarantee)
+7. No `Math.random()` in `src/engine/` (use the seeded RNG from `src/engine/rng.ts`)
+8. No `Date.now()` or `new Date()` in `src/engine/`
+9. No `as any` in `src/content/` (the schema and lint are the engine's contract)
 10. All `src/content/packs/**/*.json5` files pass `loadEraPack()` with zero lint violations
 11. Engine purity fence — `grep -rn "from \"react\"\|from \"react-native\"\|from \"expo\"\|Math\.random\|Date\.now\|new Date" src/engine/ --include="*.ts"` returns zero matches
 12. Prohibited mechanics fence — `grep -rn "karma_delta\|merit_delta\|enlightenment_delta\|spiritual_rank_delta" src/` returns zero matches (enforcement tests exempt)
@@ -51,16 +46,13 @@ Run all gates locally:
 pnpm tsc --noEmit       # typecheck
 pnpm lint              # eslint
 pnpm test              # vitest
-node scripts/audit-plan.mjs   # F1 plan compliance
 ```
 
 ---
 
 ## Content-authoring contract
 
-These are the remaining game-design rules. The schema (`src/content/schema.ts`)
-and lint (`src/content/lint.ts`) still enforce them. Named figures and real
-mantras are allowed.
+These are the four game-design rules. The schema (`src/content/schema.ts`) and the progression lint (`src/content/progression/lint.ts`) enforce them. Named figures and real mantras are allowed.
 
 | Rule                          | Mechanic                                                                                         | Why                                                              |
 | ----------------------------- | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
@@ -69,199 +61,69 @@ mantras are allowed.
 | **R-NO-VISIBLE-KARMA-METER**  | An identifier that exposes karma/merit/spiritual as a `_meter` / `_score` / `_visible` to the UI | Same as R-NO-KARMA-METER at the UI layer.                        |
 | **R-NO-PRACTICE-AS-CURRENCY** | A practice that mints `merit`/`karma`/`gold` or tells the player to "earn" a balance             | Practices produce residue. They do not mint a second currency.   |
 
----
-
-## Adding a new event to an existing era pack
-
-**Example: adding `event:tang/monsoon-flood` to the Tang China pack.**
-
-1. **Add the event schema** to `src/content/packs/tang-china/events.json5`:
-
-   ```json5
-   {
-     id: 'event:tang/monsoon-flood',
-     weight: 1.0,
-     cooldown_turns: 5,
-     once_per_run: false,
-     trigger: {
-       op: 'gte',
-       key: 'age',
-       value: 18,
-     },
-     choices: [
-       {
-         id: 'choice:tang/flood-help-neighbors',
-         label_sid: 's:event.tang.monsoon-flood.choice.help-neighbors.label',
-         requires: [],
-         effects: [
-           { op: 'set_intent_root', intent_root: 'care' },
-           { op: 'add_resource', key: 'provisions', delta: -10 },
-           { op: 'add_relationship', target: 'neighbor-clan', delta: 5 },
-         ],
-         forbidden: false,
-       },
-       {
-         id: 'choice:tang/flood-seek-high-ground',
-         label_sid: 's:event.tang.monsoon-flood.choice.seek-high-ground.label',
-         requires: [],
-         effects: [
-           { op: 'set_intent_root', intent_root: 'delusion' },
-           { op: 'add_resource', key: 'provisions', delta: -3 },
-         ],
-         forbidden: false,
-       },
-     ],
-     content_warnings: ['death-of-family', 'poverty-starvation'],
-   }
-   ```
-
-2. **Add string entries** to `src/i18n/en.json`:
-
-   ```json
-   "event.tang.monsoon-flood.choice.help-neighbors.label": "Help neighbors evacuate"
-   "event.tang.monsoon-flood.choice.seek-high-ground.label": "Seek high ground for your own household"
-   ```
-
-3. **Add a content-warning audit test** at `src/content/packs/tang-china/__tests__/events.test.ts`:
-
-   ```ts
-   it('event:tang/monsoon-flood has correct content warnings', () => {
-     const ev = events.find((e) => e.id === 'event:tang/monsoon-flood');
-     expect(ev?.content_warnings).toContain('death-of-family');
-     expect(ev?.content_warnings).toContain('poverty-starvation');
-   });
-   ```
-
-4. **Run all gates** to confirm:
-   ```bash
-   pnpm test
-   node scripts/audit-plan.mjs
-   ```
+`advisory/prohibited-names.txt` and `src/content/prohibited-names.ts` are archive. The lint that once read them is gone.
 
 ---
 
-## Adding a new era pack
+## Extending the game
 
-**Example: adding a Heian Japan pack (`era:heian-japan@0.1.0`).**
+Content ships as Zod + JSON5 packs. Two pack roots exist:
 
-1. **Create the directory** `src/content/packs/heian-japan/`.
+- **Era packs** — `src/content/packs/<era>/`. A pack declares its era, role set, events, endings, practices, schedules, and a `tier` field for tier-aware flavor.
+- **Progression packs** — `src/content/progression/base/`. The six tiers, kinds, milestones, policies, endowment tracks, visitors, compendium entries, and catalogs.
 
-2. **Author `pack.json5`** following the `EraPackSchema` shape:
+Player-facing strings are SIDs in `src/i18n/en.json`. Named figures (a Buddha, a bodhisattva, a historical teacher, a yakṣa at the gate) and real mantras may appear in catalogs and events (SPEC §11) — they need no special-casing in the schema.
 
-   ```json5
-   {
-     id: 'heian-japan@0.1.0',
-     schema_version: '0.1',
-     engine_compat: '>=0.1 <1.0',
-     lens_set: 'six-paramita-mahayana',
-     locale_default: 'en',
-     locale_available: ['en'],
-     social: {
-       name: 'Heian Japan (794–1185 CE)',
-       strata: ['court-noble', 'warrior', 'monastic', 'merchant', 'peasant'],
-       default_role_at_birth: 'peasant',
-       mobility_rules_sid: 's:social.mobility.heian',
-     },
-     starting_roles: [
-       {
-         id: 'court-noble',
-         label_sid: 's:role.heian.court-noble.label',
-         description_sid: 's:role.heian.court-noble.description',
-         starting_resources: { trust: 50, time: 60, provisions: 30 },
-       },
-       // ... 2 more roles
-     ],
-     content_warnings: ['death-of-self', 'war-political-violence', 'social-oppression'],
-     lineage_notes_sid: 's:lineage.heian.notes',
-     glossary: {/* ... */},
-     permitted_imagery: [
-       'tatami-room',
-       'ink-painting-scroll',
-       'bamboo-forest',
-       'moonlit-pavilion',
-       'tea-ceremony-bowl',
-     ],
-     rule_variation: {
-       id: 'court-obligation',
-       description_sid: 's:rule.heian.court-obligation',
-       enforces: 'social-obligation',
-     },
-     source_bibliography: [
-       {
-         citation: 'Morris, Ivan. The World of the Shining Prince.',
-         url: 'https://example.com/morris-shining-prince',
-       },
-       // ... 4 more entries
-     ],
-   }
-   ```
+The recipes below are how a future agent adds a feature without reading the whole engine.
 
-3. **Author `events.json5`** with 6-8 events (see "Adding a new event" above).
+### 3.1 Add a Manifest kind
 
-4. **Author `endings.json5`** with 4 endings (old-age, illness, violence, starvation — or era-appropriate analogues).
+1. Row in `base/kinds.json5` (compile rule, catalog ref, `sid_ns`, `min_quality`).
+2. Table catalog entries in the kind's catalog namespace.
+3. SIDs: `kind.<id>.name`, `kind.<id>.line`, plus catalog entry SIDs.
+4. Lint: table entries present; SIDs resolve.
+5. Tests: a residue window matching the compile rule harvests the new kind at its scale; table fill returns a valid `manifest/v1`.
+6. Done when: cook a qualifying window at that tier, harvest the kind, pin it.
 
-5. **Author `meta.json5`** (lineage notes, glossary, source bibliography).
+### 3.2 Add a tier (beyond region, or a variant ladder)
 
-6. **Add all string entries** to `src/i18n/en.json` under `heian.*` namespace.
+1. Row in `base/tiers.json5` + its kind-set rows + unlock milestone row.
+2. Role table and name tables for the roster; policies.
+3. SIDs for rail label, ceremony, roles, kinds.
+4. Tests: milestone crossing unlocks the tier; fold-up feeds its bench; world draft assembles at its scale.
+5. Done when: full loop — unlock, auto-produce, harvest, pin, endow, embody.
 
-7. **Add a pack load test** at `src/content/packs/heian-japan/__tests__/pack.test.ts`:
+### 3.3 Add an endowment track
 
-   ```ts
-   import { describe, it, expect } from 'vitest';
-   import { loadEraPack } from '@/content/loader';
+1. Row in `base/endowment.json5` with EffectOps.
+2. Lint: ops pass prohibited-mechanics rules.
+3. Tests: endowing consumes the Manifest and applies the modifier; modifier math is deterministic.
+4. Done when: endow a duplicate card, observe the bench stat change.
 
-   describe('heian-japan pack', () => {
-     it('loads cleanly and lints clean', async () => {
-       const pack = await loadEraPack('heian-japan');
-       expect(pack.id).toBe('heian-japan@0.1.0');
-       expect(pack.events.length).toBeGreaterThanOrEqual(6);
-     });
-   });
-   ```
+### 3.4 Add a visitor
 
-8. **Run all gates** to confirm.
+1. Row in `base/visitors.json5` (cadence, duration, effects or table ref).
+2. SIDs: arrival banner, active line, departure.
+3. Tests: arrival tick is deterministic from seed + tick count; effect applies for exactly N windows.
+4. Done when: advance ticks to the arrival, banner shows, effect expires.
 
----
+### 3.5 Add a milestone or compendium entry
 
-## Adding a new lens (don't — they're fixed at six)
+1. Row in the matching JSON5 with a predicate.
+2. SIDs: label, progress line, reward line.
+3. Tests: predicate false → true crossing fires exactly once; reward applies.
+4. Done when: construct an archive that crosses it; ceremony/reward fires.
 
-The six pāramitā-derived lenses are deliberately fixed. Adding a seventh
-would require:
+### 3.6 Add an era pack at a tier
 
-- A new entry in the `Lens` enum (`src/engine/types.ts`)
-- New string IDs in `src/i18n/en.json` under `lens.*`
-- New UI cards in `app/life/[lifeId].tsx`
-- A tradition-study justification (no seventh practice has cross-school consensus)
-
-If you believe a seventh lens is genuinely needed, open a discussion in the
-advisory process first (`advisory/panel.md`). It is **not** a code change.
-
----
-
-## Adding a new content-warning category (don't — they're fixed at nine)
-
-Same as lenses — the 9 categories are deliberately fixed to canonical
-experiences of suffering that have cross-school consensus:
-
-1. death-of-self
-2. death-of-family
-3. illness-chronic-suffering
-4. war-political-violence
-5. betrayal
-6. poverty-starvation
-7. social-oppression
-8. forced-moral-compromise
-9. separation-from-loved-ones
-
-Adding a tenth requires advisory review and tradition-study justification.
-It is **not** a code change.
+Era packs already declare practices, schedules, events, figures. Tiers consume packs: a pack may declare `tier: "org"` and ship org-flavored practices, events, visitors, and name tables. Recipe matches today's pack-authoring rules plus the tier field and the §3.4 visitor recipe.
 
 ---
 
 ## Running tests
 
 ```bash
-pnpm test                   # run all 210 tests once
+pnpm test                   # run all tests once
 pnpm test:watch             # re-run on file change
 pnpm test:ui                # interactive Vitest UI
 pnpm test -- src/engine     # run just engine tests
@@ -274,9 +136,9 @@ Test files live next to the code they test:
 - `src/engine/__tests__/*.test.ts` (engine property + unit tests)
 - `src/content/__tests__/*.test.ts` (schema + lint tests)
 - `src/content/packs/<era>/__tests__/*.test.ts` (per-era pack tests)
+- `src/content/progression/__tests__/*.test.ts` (progression schema + lint + loader tests)
 - `src/ui/__tests__/*.test.ts` (component tests via test-renderer shim)
 - `src/persistence/__tests__/*.test.ts` (save/load round-trip)
-- `src/a11y/audit.test.ts` (axe-core scan)
 
 ---
 
@@ -351,42 +213,20 @@ Use **conventional commits** with the `feat`/`test`/`docs`/`ci`/`fix`/`chore` sc
 ```
 feat(engine): add pattern-break echo detector
 test(engine): property test for no-karma-to-identity invariant
-docs(advisory): gate review-record templates
+docs(spec): ratify the six-tier ladder
 ci: github actions workflows for test, eas build, and maestro e2e
 fix(ui): resolve document-title and region accessibility violations
 chore: commit durable advisory document + invariant test artifact
 ```
 
-- One atomic commit per todo (implementation + test in one commit)
+- One atomic commit per change (implementation + test in one commit)
 - Husky pre-commit hook runs `lint-staged` (prettier + eslint + tsc) on staged files
 - Pre-commit hook fails on any tsc error, including in unrelated working-tree files
-- If pre-commit hook fails, the `git stash` / `git apply --index` round-trip
-  can collide with concurrent commits — pull main before retrying
-
----
-
-## Submitting a PR
-
-The advisory process (T32) is currently blocked on user-recruited advisors.
-Once the panel is seated and the 6-gate review runs, PRs to `main` will
-require:
-
-1. **One advisory sign-off receipt per affected gate** (template at
-   `advisory/review-records/gate-N-{name}.md`)
-2. **CI pass** (`.github/workflows/test.yml` must be green)
-3. **Code review** by an existing maintainer (branch protection will require this
-   once the GitHub repo is published)
-
-Until the advisory process is live, changes land via direct commit to `main`
-by the project lead. The CI workflows will auto-run once GitHub secrets are
-configured.
 
 ---
 
 ## See also
 
-- `README.md` — quick start, blocked-task handoff
-- `ARCHITECTURE.md` — system architecture, data flow, invariants
-- `advisory/panel.md` — representation framework
-- `docs/roadmap.md` — three future prototypes
-- `.omo/plans/buddhist-inspired-incremental-rpg.md` — the full implementation plan
+- `SPEC.md` — the product constitution
+- `AGENTS.md` — how to work in the repo
+- `docs/superpowers/specs/2026-08-16-tiered-progression-design.md` — the design doc behind the ladder
