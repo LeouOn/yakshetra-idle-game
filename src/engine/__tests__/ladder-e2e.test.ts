@@ -359,8 +359,3 @@ describe('ladder-e2e (Phase 4 Task 4)', () => {
     expect(() => stepSession(session, stripped, 4, createRng(503n))).toThrowError(/city/);
   });
 });
-
-// Typo-free access: the loop-bound constant keeps its single canonical
-// spelling across this file; any rename must thread through here too.
-const _FULL_LADDER = FULL_LADDER_IDS;
-void _FULL_LADDER;

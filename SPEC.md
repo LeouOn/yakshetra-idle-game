@@ -21,16 +21,16 @@ This is the project. It is not a tool we are building so a later game can exist.
 
 ### 1.1 The ladder
 
-Six tiers compose. Each tier's roster is whole lower-tier units — a town literally holds households and organizations — not parallel save slots. Every bench keeps its own residue window and cooks its own tier's Manifests; in addition, a fixed share of each bench's residue (every `fold_cadence`-th event) flows into its parent bench's window as a copy carrying one extra id, `folded_from:<childBenchId>`. Unlocked benches tick, cook, and hold harvests on their own; only the tier with the embodied member takes active play. The archive — pinned Manifests and world drafts — is the only proof of progress. Nothing is spent.
+Six tiers compose. A tier's roster reflects its rung: member-bearing tiers (household, org, city) seat autonomous lives for that tier; unit tiers (town, region) seat one inert row per unlocked lower rung. Every bench keeps its own residue window and cooks its own tier's Manifests; in addition, a fixed share of each bench's residue (every `fold_cadence`-th event) flows into its parent bench's window as a copy carrying one extra id, `folded_from:<childBenchId>`. Unlocked benches tick, cook, and hold harvests on their own; only the tier with the embodied member takes active play. The archive — pinned Manifests and world drafts — is the only proof of progress. Nothing is spent.
 
-| #   | Tier      | Roster contains            | Unlock                                                                 |
-| --- | --------- | -------------------------- | ---------------------------------------------------------------------- |
-| 0   | person    | one life                   | —                                                                      |
-| 1   | household | 3–8 lives under one roof   | 1 world draft + 3 archived `person`                                    |
-| 2   | org       | households + loose members | 2 archived `tradition` + 1 household-scale world draft                 |
-| 3   | town      | households + organizations | 1 archived `charter` + 2 org-scale world drafts                        |
-| 4   | city      | households + many orgs     | 1 archived `festival` + 1 archived `landmark` + 2 town-scale drafts    |
-| 5   | region    | towns + cities             | 1 archived `institution` + 1 archived `monument` + 2 city-scale drafts |
+| #   | Tier      | Roster contains                                         | Unlock                                                                 |
+| --- | --------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 0   | person    | one life                                                | —                                                                      |
+| 1   | household | 3–8 lives under one roof                                | 1 world draft + 3 archived `person`                                    |
+| 2   | org       | households + loose members                              | 2 archived `tradition` + 1 household-scale world draft                 |
+| 3   | town      | households + organizations                              | 1 archived `charter` + 2 org-scale world drafts                        |
+| 4   | city      | city institutions (member-bearing, autonomous)          | 1 archived `festival` + 1 archived `landmark` + 2 town-scale drafts    |
+| 5   | region    | person + households + orgs + towns + cities (unit rows) | 1 archived `institution` + 1 archived `monument` + 2 city-scale drafts |
 
 Crossing a milestone fires a graduation (ceremony + guaranteed first harvest auto-queued at the new tier). Kind registry, endowment tracks, visitors, compendium, offline cap, and the studio shell all generalize through region — the chain ships.
 

@@ -174,7 +174,7 @@ function kindBadgesFor(container: ReturnType<typeof render>['container']): strin
 }
 
 describe('StudioView six-tier ladder (Phase 4 Task 4)', () => {
-  it('renders six rail rows: 4 unlocked + city locked + region masked by the disclosure loop', () => {
+  it('renders five rail rows with the next locked rung showing its badge', () => {
     const { getByTestID, getByText, queryByText } = renderStudio(graduateToCity());
 
     // Unlocked rungs render with their tier label SID.

@@ -13,7 +13,7 @@
     names: ['Master Yun', 'Old Shi', 'Young Bao'],
     policy: 'policy:org-base',
   },
-town: {
+  town: {
     roles: ['headman', 'market-warden', 'ferry-keeper'],
     names: ['House of Yun', 'the Kilnhouse', 'the River Office'],
   },

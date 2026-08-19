@@ -15,7 +15,7 @@ import {
 } from './endowment-validators';
 import { memberSeed } from './roster';
 import type { StudioSession } from './studio-session';
-import type { CatalogMap } from './table-catalog';
+import type { CatalogEntry, CatalogMap } from './table-catalog';
 import type { ActiveVisitor, TierState } from './tier-state';
 
 /** Structural content view (EndowmentTrackLike precedent — engine never imports src/content). */
@@ -132,16 +132,7 @@ export function visitorModifierOverlay(
 }
 
 /** The `visitor_tables` payload shape (record of namespace -> catalog entries). */
-export type VisitorTablesView = Readonly<Record<string, readonly CatalogEntryLike[]>>;
-
-/** Engine-side structural view of a single catalog entry (mirrors the runtime CatalogEntry). */
-export interface CatalogEntryLike {
-  readonly name: string;
-  readonly one_liner: string;
-  readonly subject: string;
-  readonly detail: string;
-  readonly tags: readonly string[];
-}
+export type VisitorTablesView = Readonly<Record<string, readonly CatalogEntry[]>>;
 
 /**
  * Swap the tier's catalog for the seated visitor's `table_ref` while the
@@ -168,7 +159,7 @@ export function visitorTableOverride(
   if (entries === undefined) {
     return baseCatalog;
   }
-  const out: Record<string, readonly CatalogEntryLike[]> = {};
+  const out: Record<string, readonly CatalogEntry[]> = {};
   for (const kind of Object.keys(baseCatalog)) {
     out[kind] = entries;
   }
