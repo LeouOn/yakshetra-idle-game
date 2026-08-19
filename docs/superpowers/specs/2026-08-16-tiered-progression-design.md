@@ -709,7 +709,7 @@ Recorded so later agents work against truth.
 
 Recorded so later agents work against truth. Line counts corrected post-Phase 4.
 
-- **Ladder generalization.** `src/engine/session-ladder.ts` (175 LOC)
+- **Ladder generalization.** `src/engine/session-ladder.ts` (177 LOC)
   replaced the hardcoded household branch in `session-step.ts`. Per-tier
   delta (embodied growth + member appends + incoming folds) folds at the
   receiving rung's `fold_cadence`; ordinal persists on `fold_position`;
@@ -728,10 +728,10 @@ Recorded so later agents work against truth. Line counts corrected post-Phase 4.
   lives with tier-unique ids + policy; town seeds one unit roster row per
   unlocked lower tier (no lives). `graduateToHousehold` thin wrapper
   retained for existing tests.
-- **Operations split.** `play-cursor.ts` (49) + `practice-progress.ts` (30)
-  moved out; `operations.ts` 294 → 210. Pure move, identity-tested.
-- **StudioView hook extraction.** `useStudioSession.ts` (515) +
-  `useStudioProgression.ts` (146); StudioView 1240 → 1041. The ≤~900
+- **Operations split.** `play-cursor.ts` (48) + `practice-progress.ts` (29)
+  moved out; `operations.ts` 294 → 217. Pure move, identity-tested.
+- **StudioView hook extraction.** `useStudioSession.ts` (514) +
+  `useStudioProgression.ts` (145); StudioView 1240 → 1049. The ≤~900
   target miss is the DECLARED DEVIATION: extraction is complete, remaining
   mass is honest render/handler code.
 - **Next-action rail.** `src/ui/hooks/next-action.ts` pure derivation,
@@ -772,6 +772,13 @@ practice_level}` + three fallbacks. All rows `pinnable: false`,
   `noteVisitorHarvest` still decays windows. Deterministic; no rng.
   Missing or unresolved `table_ref` falls back silently to the tier
   catalog — the swap is opportunistic, never a blocker.
+- **`tableFillerWithCatalog` carries the swap provenance.** The helper
+  at `src/engine/fill-adapter.ts:90-93` exists alongside `tableFiller`;
+  its doc comment records that the filler id differs so the harvested
+  manifest's `provenance` reflects that the card came back from the
+  visitor's catalog, not the tier's. The id change is the only delta
+  from `tableFiller`; the catalog itself is a Proxy that returns the
+  supplied entries for every kind.
 - **`effectiveAwayCap` counts seated visitor `offline_cap`.** The away
   cap now adds the seated visitor's `offline_cap` (if any) per tier,
   same pattern as `modifiersForSession`. No shipped visitor grants
@@ -799,3 +806,9 @@ practice_level}` + three fallbacks. All rows `pinnable: false`,
   start at 0, and only non-person rungs advance per call. The full-ladder
   E2E (Task 4) locks this invariant: `benches['person'].fold_position`
   is always 0; every other unlocked rung is > 0 after enough residue.
+  The lock is **test-side**: `ladder-e2e.test.ts` asserts `person.fold_position
+=== 0` and every non-person rung's `fold_position > 0`, with an inline
+  comment noting the embodied rung steps in `stepStudio` (the ladder loop
+  never touches it). Different claim from the schema `min(0)`: the schema
+  permits 0 for fresh benches; the test forbids advancement on the
+  embodied rung.
