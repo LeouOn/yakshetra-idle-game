@@ -237,3 +237,4 @@ export {
   visitorTableOverride,
 } from './visitors';
 export type { VisitorLike, VisitorStepContext, VisitorTablesView } from './visitors';
+export { EMBODIED_TIER } from './ladder-const';
