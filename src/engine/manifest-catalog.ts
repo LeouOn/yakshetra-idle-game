@@ -2,6 +2,8 @@
 // no imports beyond the kind union, no logic. Adding a kind = add a table
 // here and register it in CATALOG.
 
+import { FIGURE_PEOPLE, FIGURE_PLACES } from './manifest-catalog-figures';
+
 export interface CatalogEntry {
   readonly name: string;
   readonly one_liner: string;
@@ -252,6 +254,6 @@ export const CATALOG: Readonly<Record<string, readonly CatalogEntry[]>> = {
   thing: THINGS,
   outcome: OUTCOMES,
   change: CHANGES,
-  person: PEOPLE,
-  place: PLACES,
+  person: [...PEOPLE, ...FIGURE_PEOPLE],
+  place: [...PLACES, ...FIGURE_PLACES],
 };
