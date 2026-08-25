@@ -257,3 +257,24 @@ OpenAI-shaped request core with provider baseURL and auth.
   — and the default bundle cannot see a key.
 - Phase 7: rubric written, every tier's rows pass it.
 - Phase 8: user-approved §1.1 amendment, then the new rungs ship as data.
+
+## 10. Polish audit record (Phase 7, 2026-08-24)
+
+Rubric: written into `src/content/progression/__tests__/catalogs.test.ts` and
+enforced on every kind table (name/one_liner/subject/detail bands, sentence
+counts, tag counts, uniqueness, no meter tokens).
+
+- Core tables: rows brought inside the rubric bands; names unchanged.
+- Tier tables: deepened 4 → 5 rows each (10 new entries, one per kind).
+- Figure reachability: Amitābha (nianfo), Bhaiṣajyaguru (medicine rite),
+  Guanyin (six-syllable recitation) all reachable from real schedules.
+- Visitor flavor: sample-arrival copy replaced; court-auditor and
+  road-surveyor seated at real tables via the existing table_ref swap.
+- One deviation from copy-only, accepted at review: `VisitorSchema`'s
+  effects/table_ref refine relaxed from exclusive-or to at-least-one (the
+  wired visitors carry both; the engine reads the two paths independently;
+  the neither-present rejection stays test-pinned).
+
+Verdict: every tier's rows pass the rubric. §10.15's quality work for cards
+and city/region content is done; the deferred width item (second bay, new
+family, new pack) remains deferred.
