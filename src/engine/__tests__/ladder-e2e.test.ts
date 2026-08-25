@@ -1,15 +1,19 @@
-// Full-ladder E2E — Phase 4 Task 4.
+// Full-ladder E2E — Phase 4 Task 4, widened to eight tiers in Phase 8.
 //
-// Pins the six-tier chain end to end through the real content rows:
-//   (a) graduating person → household → org → town → city → region in ONE
-//       session appends each unlock milestone, opens a fresh bench for the
-//       tier, and never re-fires a done milestone
-//   (b) the fold chain carries residue from the embodied bench across every
+// Pins the eight-tier chain end to end through the real content rows:
+//   (a) graduating person → household → org → town → city → region →
+//       nation → world in ONE session appends each unlock milestone, opens
+//       a fresh bench for the tier, and never re-fires a done milestone
+//   (b) the nation and world gates open through REAL harvests: feeding the
+//       region bench a legend + a road and recording two region drafts
+//       fires unlock-nation; feeding the nation bench a ministry + an
+//       edict with two nation drafts fires unlock-world
+//   (c) the fold chain carries residue from the embodied bench across every
 //       rung of the ladder: a multi-tick step on a fully-unlocked session
-//       deposits fold markers on each of the six benches
-//   (c) determinism: two runs of the same step inputs on the same fully-
+//       deposits fold markers on each of the eight benches
+//   (d) determinism: two runs of the same step inputs on the same fully-
 //       graduated session produce identical sessions and summaries
-//   (d) the engine throws on a locked-tier-but-absent-ctx-rows scenario,
+//   (e) the engine throws on a locked-tier-but-absent-ctx-rows scenario,
 //       so a tier the milestone gate skipped cannot silently slip through
 //
 // The fixtures load real content via loadProgression() — no synthetic
@@ -20,20 +24,32 @@ import { describe, expect, it } from 'vitest';
 import { loadEraPack } from '@/content/loader';
 import { loadProgression } from '@/content/progression/loader';
 import {
+  checkMilestones,
+  compileRequestFromBay,
   createIdleState,
   createLifeState,
   createRng,
+  createStudioState,
   emptyHydratedSession,
   graduateToHousehold,
   graduateToTier,
+  queueDevelop,
+  recordStudioResidues,
   snapshotStudioSession,
   stepSession,
+  StudioSessionSchema,
+  tableFillManifest,
+  tickStudio,
   type BenchState,
+  type KindRule,
+  type Manifest,
+  type ManifestScale,
   type StudioSession,
 } from '@/engine';
 import type { SessionStepContext } from '@/engine/session-step';
 import type { DailySchedule } from '@/engine/schedule';
 import type { LifeState, Practice } from '@/engine/types';
+import type { ResidueEvent } from '@/engine/residue';
 
 function makeLife(): LifeState {
   return createLifeState({
@@ -68,8 +84,8 @@ const EMPTY_BENCH: BenchState = {
   fold_position: 0,
 };
 
-/** Graduate through the real content rows to unlock every rung in order. */
-function graduateFullChain(): StudioSession {
+/** Graduate through the real content rows to the region rung. */
+function graduateThroughRegion(): StudioSession {
   const reg = loadProgression();
   let session = emptyBase();
 
@@ -111,6 +127,153 @@ function graduateFullChain(): StudioSession {
     throw new Error('ladder-e2e: region tier row missing from registry');
   }
   session = graduateToTier(session, 'region', regionRow, null, createRng(113n));
+
+  return session;
+}
+
+/** Social window: a lens marker plus practice ticks makes the compile
+ *  social, so the window claims the scale's people-facing kind (legend at
+ *  region, ministry at nation). Mirrors the StudioView ladder fixtures. */
+function socialWindow(at: number): ResidueEvent[] {
+  return [
+    { tick: at, type: 'lens_chosen', ids: ['lens.e2e'], numbers: {} },
+    { tick: at + 1, type: 'practice_tick', ids: ['practice.e2e'], numbers: { progress: 2 } },
+    { tick: at + 2, type: 'practice_tick', ids: ['practice.e2e'], numbers: { progress: 2 } },
+  ];
+}
+
+/** Practice window: one practice id, no social marker — the scale's fixed
+ *  kind (road at region, edict at nation). */
+function practiceWindow(at: number): ResidueEvent[] {
+  return [0, 1, 2].map((offset) => ({
+    tick: at + offset,
+    type: 'practice_tick' as const,
+    ids: ['practice.e2e.solo'],
+    numbers: { progress: 2 },
+  }));
+}
+
+/** Kind rules of one scale, regrouped from the loader rows in file order —
+ *  the engine-side mirror of the studio hook's kindRulesByScale. */
+function kindRulesForScale(scale: ManifestScale): readonly KindRule[] {
+  const reg = loadProgression();
+  const rules = reg.kindRows.flatMap((row, index) => {
+    const rule = reg.kindRules[index];
+    if (rule === undefined) {
+      throw new Error('ladder-e2e: kind rows and rules are out of parallel order');
+    }
+    return row.scale === scale ? [rule] : [];
+  });
+  if (rules.length === 0) {
+    throw new Error(`ladder-e2e: no kind rules registered for the ${scale} scale`);
+  }
+  return rules;
+}
+
+/** Cook a window into a ready bay, then compile it at `scale` through the
+ *  loader's kind rules and catalogs — the engine mirror of StudioView's
+ *  harvestBenchTier table path (no visitor swap in force). */
+function harvestAtScale(
+  scale: ManifestScale,
+  window: readonly ResidueEvent[],
+  seed: bigint,
+  cardId: string,
+): Manifest {
+  const reg = loadProgression();
+  const rules = kindRulesForScale(scale);
+  let bench = recordStudioResidues(createStudioState(), window);
+  bench = queueDevelop(bench, null, createRng(seed));
+  bench = tickStudio(bench, bench.bay?.cook_ticks_total ?? 0);
+  const bay = bench.bay;
+  if (bay === null || bay.status !== 'ready') {
+    throw new Error('ladder-e2e: gate-feeding bay did not cook ready');
+  }
+  const request = compileRequestFromBay(
+    { ...bay, focus: bay.focus ?? null },
+    bench.quality_tier,
+    bench.harvest_count,
+    null,
+    scale,
+    rules,
+  );
+  return tableFillManifest(
+    request.residue,
+    request.brief,
+    request.quality_tier,
+    createRng(seed + 1n),
+    request.rng_seed,
+    cardId,
+    request.focus,
+    request.life_context,
+    request.scale,
+    rules,
+    reg.catalogs,
+  );
+}
+
+/** The session with `cards` archived (schema-parsed so the fixture stays a
+ *  valid persisted session, mirroring the UI tier fixtures). */
+function withArchivedCards(session: StudioSession, cards: readonly Manifest[]): StudioSession {
+  return StudioSessionSchema.parse({ ...session, archive: [...session.archive, ...cards] });
+}
+
+/**
+ * Graduate through all eight rungs. The nation and world gates are fed the
+ * way play feeds them: real harvests off the gate tier's bench (the social
+ * window claims the people-facing kind, the practice window the fixed one)
+ * plus two recorded world drafts of the gate scale — checkMilestones must
+ * fire exactly the next unlock before the graduation runs.
+ */
+function graduateFullChain(): StudioSession {
+  const reg = loadProgression();
+  let session = graduateThroughRegion();
+  let fed: StudioSession;
+
+  // nation gate: archived.legend >= 1, archived.road >= 1, and two
+  // region-scale world drafts.
+  const legend = harvestAtScale('region', socialWindow(1), 1201n, 'e2e-region-legend');
+  const road = harvestAtScale('region', practiceWindow(11), 1213n, 'e2e-region-road');
+  fed = withArchivedCards(session, [legend, road]);
+  const firedNation = checkMilestones(
+    fed,
+    [{ scale: 'region' }, { scale: 'region' }],
+    reg.milestones,
+  );
+  if (firedNation.length !== 1 || firedNation[0] !== 'unlock-nation') {
+    throw new Error(
+      `ladder-e2e: region harvest should open only unlock-nation, got [${firedNation.join(', ')}]`,
+    );
+  }
+  const nationRow = reg.tiers.find((row) => row.id === 'nation');
+  if (nationRow === undefined) {
+    throw new Error('ladder-e2e: nation tier row missing from registry');
+  }
+  const nationRoles = reg.roles['nation'];
+  if (nationRoles === undefined) {
+    throw new Error('ladder-e2e: nation roles row missing from registry');
+  }
+  session = graduateToTier(fed, 'nation', nationRow, nationRoles, createRng(127n));
+
+  // world gate: archived.edict >= 1, archived.ministry >= 1, and two
+  // nation-scale world drafts.
+  const ministry = harvestAtScale('nation', socialWindow(21), 1223n, 'e2e-nation-ministry');
+  const edict = harvestAtScale('nation', practiceWindow(31), 1231n, 'e2e-nation-edict');
+  fed = withArchivedCards(session, [ministry, edict]);
+  const firedWorld = checkMilestones(
+    fed,
+    [{ scale: 'nation' }, { scale: 'nation' }],
+    reg.milestones,
+  );
+  if (firedWorld.length !== 1 || firedWorld[0] !== 'unlock-world') {
+    throw new Error(
+      `ladder-e2e: nation harvest should open only unlock-world, got [${firedWorld.join(', ')}]`,
+    );
+  }
+  const worldRow = reg.tiers.find((row) => row.id === 'world');
+  if (worldRow === undefined) {
+    throw new Error('ladder-e2e: world tier row missing from registry');
+  }
+  session = graduateToTier(fed, 'world', worldRow, null, createRng(131n));
 
   return session;
 }
@@ -186,13 +349,24 @@ function emptyCtx(): SessionStepContext {
   };
 }
 
-const FULL_LADDER_IDS = ['person', 'household', 'org', 'town', 'city', 'region'] as const;
+const FULL_LADDER_IDS = [
+  'person',
+  'household',
+  'org',
+  'town',
+  'city',
+  'region',
+  'nation',
+  'world',
+] as const;
 const FULL_LADDER_UNLOCK_IDS = [
   'unlock-household',
   'unlock-org',
   'unlock-town',
   'unlock-city',
   'unlock-region',
+  'unlock-nation',
+  'unlock-world',
 ] as const;
 
 // Six practice blocks per 24-tick step: a step grows the person bench by
@@ -231,8 +405,8 @@ function chainCtx(): SessionStepContext {
   };
 }
 
-describe('ladder-e2e (Phase 4 Task 4)', () => {
-  it('graduates through all six tiers in order via the real content rows', () => {
+describe('ladder-e2e (Phase 4 Task 4, eight tiers since Phase 8)', () => {
+  it('graduates through all eight tiers in order via the real content rows', () => {
     const session = graduateFullChain();
 
     // Every rung is unlocked; the embodied rung is unlocked by default.
@@ -258,8 +432,60 @@ describe('ladder-e2e (Phase 4 Task 4)', () => {
     // before any graduation touched it (graduation never mutates person).
     expect(session.benches['person']).toEqual(base.benches['person']);
 
-    // All six keys present and exactly six — no leftovers, no extras.
+    // All eight keys present and exactly eight — no leftovers, no extras.
     expect(Object.keys(session.benches).sort()).toEqual([...FULL_LADDER_IDS].sort());
+  });
+
+  it('feeds the nation and world gates with real region/nation harvests', () => {
+    const reg = loadProgression();
+    let session = graduateThroughRegion();
+
+    // Region-scale harvests: the social window claims legend, the practice
+    // window claims road (the Phase 8 kind rows for the region scale).
+    const legend = harvestAtScale('region', socialWindow(1), 1301n, 'gate-region-legend');
+    const road = harvestAtScale('region', practiceWindow(11), 1319n, 'gate-region-road');
+    expect(legend.scale).toBe('region');
+    expect(legend.kind).toBe('legend');
+    expect(road.scale).toBe('region');
+    expect(road.kind).toBe('road');
+
+    // The fed gate needs BOTH kinds and two region drafts; each missing
+    // half keeps unlock-nation closed.
+    const regionDrafts = [{ scale: 'region' }, { scale: 'region' }];
+    expect(
+      checkMilestones(withArchivedCards(session, [legend]), regionDrafts, reg.milestones),
+    ).not.toContain('unlock-nation');
+    expect(
+      checkMilestones(withArchivedCards(session, [road]), regionDrafts, reg.milestones),
+    ).not.toContain('unlock-nation');
+    const fedNation = withArchivedCards(session, [legend, road]);
+    expect(checkMilestones(fedNation, regionDrafts, reg.milestones)).toEqual(['unlock-nation']);
+
+    // Nation-scale harvests carry the nation scale and nation kinds — the
+    // city-scale harvest assertion's sibling two rungs up.
+    const ministry = harvestAtScale('nation', socialWindow(21), 1327n, 'gate-nation-ministry');
+    const edict = harvestAtScale('nation', practiceWindow(31), 1331n, 'gate-nation-edict');
+    expect(ministry.scale).toBe('nation');
+    expect(ministry.kind).toBe('ministry');
+    expect(edict.scale).toBe('nation');
+    expect(edict.kind).toBe('edict');
+
+    const nationRow = reg.tiers.find((row) => row.id === 'nation');
+    if (nationRow === undefined) {
+      throw new Error('ladder-e2e: nation tier row missing from registry');
+    }
+    const nationRoles = reg.roles['nation'];
+    if (nationRoles === undefined) {
+      throw new Error('ladder-e2e: nation roles row missing from registry');
+    }
+    session = graduateToTier(fedNation, 'nation', nationRow, nationRoles, createRng(1361n));
+
+    const nationDrafts = [{ scale: 'nation' }, { scale: 'nation' }];
+    expect(
+      checkMilestones(withArchivedCards(session, [ministry]), nationDrafts, reg.milestones),
+    ).not.toContain('unlock-world');
+    const fedWorld = withArchivedCards(session, [ministry, edict]);
+    expect(checkMilestones(fedWorld, nationDrafts, reg.milestones)).toEqual(['unlock-world']);
   });
 
   it('re-running the chain on an already-unlocked session is idempotent', () => {
@@ -298,6 +524,8 @@ describe('ladder-e2e (Phase 4 Task 4)', () => {
       town: 'org',
       city: 'town',
       region: 'city',
+      nation: 'region',
+      world: 'nation',
     };
     for (const [id, prev] of Object.entries(previousByTier)) {
       const bench = out.session.benches[id];
@@ -310,7 +538,7 @@ describe('ladder-e2e (Phase 4 Task 4)', () => {
     // steps in stepStudio; the ladder loop never touches it). Every
     // non-person rung's fold_position advances per call.
     expect(out.session.benches['person']?.fold_position).toBe(0);
-    for (const id of ['household', 'org', 'town', 'city', 'region'] as const) {
+    for (const id of ['household', 'org', 'town', 'city', 'region', 'nation', 'world'] as const) {
       expect(out.session.benches[id]?.fold_position).toBeGreaterThan(0);
     }
 

@@ -1,16 +1,18 @@
-// Six-tier ladder E2E — Phase 4 Task 4.
+// Ladder rail E2E — Phase 4 Task 4, widened to the nation/world rungs in
+// Phase 8.
 //
-// Pins the UI surface for the full six-tier chain (person / household /
-// org / town / city / region) end to end:
+// Pins the UI surface for the ladder chain end to end:
 //
-//   (a) The rail renders six rows: the four unlocked tiers (person /
-//       household / org / town) plus the next locked rung (city, with a
-//       progress badge), and the deeper rung (region) stays masked by
-//       the disclosure loop.
-//   (b) Harvesting a ready city bench fills the archive with a card whose
+//   (a) The rail discloses rung by rung: unlocked tiers render, the next
+//       locked rung shows its progress badge (city at the town-graduated
+//       session, nation at the region-graduated one), and deeper rungs
+//       (region, then world) stay masked by the disclosure loop.
+//   (b) Full disclosure renders all EIGHT rows once every tier is
+//       unlocked (person .. world).
+//   (c) Harvesting a ready city bench fills the archive with a card whose
 //       scale is `city` (kind institution or monument) and the export
 //       JSON carries `"scale":"city"`.
-//   (c) The next-action rail still fires for the top tier: a city bench
+//   (d) The next-action rail still fires for the top tier: a city bench
 //       ready for harvest lights `studio.next_harvest_sid` with the city
 //       tier label.
 //
@@ -121,6 +123,14 @@ function graduateToCity(): StudioSession {
   return graduateToTier(town, 'city', cityRow, cityRoles, createRng(19n));
 }
 
+function graduateToRegion(): StudioSession {
+  const reg = loadProgression();
+  const city = graduateToCity();
+  const regionRow = reg.tiers.find((tier) => tier.id === 'region');
+  if (regionRow === undefined) throw new Error('ladder-e2e fixture: no region tier row');
+  return graduateToTier(city, 'region', regionRow, null, createRng(23n));
+}
+
 function withReadyBay(
   session: StudioSession,
   tierId: string,
@@ -200,16 +210,74 @@ describe('StudioView six-tier ladder (Phase 4 Task 4)', () => {
     expect(queryByText(resolveSid('studio.tier_region_sid'))).toBeNull();
   });
 
-  it('renders six rail rows when all six tiers are unlocked (full disclosure)', () => {
+  it('renders six rail rows when the first six tiers are unlocked (nation masked)', () => {
     const city = graduateToCity();
     const reg = loadProgression();
     const regionRow = reg.tiers.find((tier) => tier.id === 'region');
     if (regionRow === undefined) throw new Error('ladder-e2e fixture: no region tier row');
     const fullyUnlocked = graduateToTier(city, 'region', regionRow, null, createRng(23n));
 
-    const { getByTestID, getByText } = renderStudio(fullyUnlocked);
+    const { getByTestID, getByText, queryByText } = renderStudio(fullyUnlocked);
 
     for (const id of ['person', 'household', 'org', 'town', 'city', 'region'] as const) {
+      expect(() => getByTestID(`studio-rail-tier-${id}`), `unlocked ${id}`).not.toThrow();
+      expect(
+        () => getByText(resolveSid(`studio.tier_${id}_sid`)),
+        `unlocked ${id} label`,
+      ).not.toThrow();
+    }
+
+    // Nation stays masked by the disclosure loop (the rail breaks at the
+    // first locked rung — nation).
+    expect(queryByText(resolveSid('studio.tier_nation_sid'))).toBeNull();
+  });
+
+  it('shows the nation locked badge once region is unlocked and keeps world masked', () => {
+    const { getByTestID, getByText, queryByText } = renderStudio(graduateToRegion());
+
+    // The next locked rung — nation — is shown with the locked mask and its
+    // progress badge (0 of 1 archived legends of its gate, since the
+    // region-graduated session holds zero archived cards and drafts yet).
+    expect(() => getByTestID('studio-rail-tier-nation')).not.toThrow();
+    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
+    expect(() =>
+      getByText(formatSid('studio.tier_progress_badge_sid', { n: 0, m: 1 })),
+    ).not.toThrow();
+
+    // The deeper rung — world — stays masked by the disclosure loop.
+    expect(queryByText(resolveSid('studio.tier_world_sid'))).toBeNull();
+  });
+
+  it('renders eight rail rows when every tier is unlocked (full disclosure)', () => {
+    const reg = loadProgression();
+    const nationRow = reg.tiers.find((tier) => tier.id === 'nation');
+    if (nationRow === undefined) throw new Error('ladder-e2e fixture: no nation tier row');
+    const nationRoles = reg.roles['nation'];
+    if (nationRoles === undefined) throw new Error('ladder-e2e fixture: no nation roles row');
+    const nation = graduateToTier(
+      graduateToRegion(),
+      'nation',
+      nationRow,
+      nationRoles,
+      createRng(29n),
+    );
+
+    const worldRow = reg.tiers.find((tier) => tier.id === 'world');
+    if (worldRow === undefined) throw new Error('ladder-e2e fixture: no world tier row');
+    const fullyUnlocked = graduateToTier(nation, 'world', worldRow, null, createRng(31n));
+
+    const { getByTestID, getByText } = renderStudio(fullyUnlocked);
+
+    for (const id of [
+      'person',
+      'household',
+      'org',
+      'town',
+      'city',
+      'region',
+      'nation',
+      'world',
+    ] as const) {
       expect(() => getByTestID(`studio-rail-tier-${id}`), `unlocked ${id}`).not.toThrow();
       expect(
         () => getByText(resolveSid(`studio.tier_${id}_sid`)),

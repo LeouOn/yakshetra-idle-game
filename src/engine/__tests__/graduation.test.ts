@@ -279,6 +279,141 @@ describe('graduateToTier (town, unit tier)', () => {
   });
 });
 
+/* ---- graduateToTier: nation + world (Phase 8) ------------------------------ */
+
+// Content-shaped tier rows (tiers.json5 values, engine-pure literals here).
+const CITY_ROW: GraduationTierRow = {
+  id: 'city',
+  index: 4,
+  roster_size: { min: 4, max: 40 },
+  member_unit: 'household',
+  unlock_milestone: 'unlock-city',
+};
+
+const CITY_ROLES: GraduationRolesRow = {
+  roles: ['warden'],
+  names: ['the East Ward'],
+  policy: 'policy:city-base',
+};
+
+const REGION_ROW: GraduationTierRow = {
+  id: 'region',
+  index: 5,
+  roster_size: { min: 2, max: 12 },
+  member_unit: 'town',
+  unlock_milestone: 'unlock-region',
+};
+
+const NATION_ROW: GraduationTierRow = {
+  id: 'nation',
+  index: 6,
+  roster_size: { min: 4, max: 60 },
+  member_unit: 'household',
+  unlock_milestone: 'unlock-nation',
+};
+
+const NATION_ROLES: GraduationRolesRow = {
+  roles: ['canal-commissioner'],
+  names: ['the Canal Board'],
+  policy: 'policy:nation-base',
+};
+
+const WORLD_ROW: GraduationTierRow = {
+  id: 'world',
+  index: 7,
+  roster_size: { min: 2, max: 16 },
+  member_unit: 'nation',
+  unlock_milestone: 'unlock-world',
+};
+
+describe('graduateToTier (nation, member-bearing)', () => {
+  it('graduating to nation seeds autonomous member rows under policy:nation-base', () => {
+    const out = graduateToTier(
+      householdSession(),
+      'nation',
+      NATION_ROW,
+      NATION_ROLES,
+      createRng(907n),
+    );
+
+    const nation = out.tiers['nation'];
+    expect(nation?.unlocked).toBe(true);
+    const members = nation?.roster.members ?? [];
+    expect(members.map((m) => m.id)).toEqual(['nation-m1', 'nation-m2', 'nation-m3', 'nation-m4']);
+    for (const member of members) {
+      expect(NATION_ROLES.roles).toContain(member.role);
+      expect(NATION_ROLES.names).toContain(member.name);
+      expect(member.policy).toBe('policy:nation-base');
+      expect(member.embodied).toBe(false);
+      expect(Number.isInteger(member.seed)).toBe(true);
+    }
+    // Member slices exist so the ladder runs these lives autonomously.
+    for (const id of ['nation-m1', 'nation-m2', 'nation-m3', 'nation-m4']) {
+      expect(out.members[id]).toBeDefined();
+      expect(out.members[id]?.life.turn).toBe(0);
+      expect(out.members[id]?.life.residue).toEqual([]);
+      expect(out.members[id]?.practices).toEqual([]);
+    }
+    expect(out.benches['nation']).toEqual(EMPTY_BENCH);
+    expect(out.milestones_done).toEqual(['unlock-household', 'unlock-nation']);
+  });
+});
+
+describe('graduateToTier (world, unit tier)', () => {
+  function nationSession(): StudioSession {
+    const org = graduateToTier(householdSession(), 'org', ORG_ROW, ORG_ROLES, createRng(911n));
+    const town = graduateToTier(org, 'town', TOWN_ROW, null, createRng(919n));
+    const city = graduateToTier(town, 'city', CITY_ROW, CITY_ROLES, createRng(929n));
+    const region = graduateToTier(city, 'region', REGION_ROW, null, createRng(937n));
+    return graduateToTier(region, 'nation', NATION_ROW, NATION_ROLES, createRng(941n));
+  }
+
+  it('graduating to world seats one inert unit row per unlocked lower rung', () => {
+    const before = nationSession();
+    const out = graduateToTier(before, 'world', WORLD_ROW, null, createRng(953n));
+
+    const world = out.tiers['world'];
+    expect(world?.unlocked).toBe(true);
+    const rows = world?.roster.members ?? [];
+    expect(rows.map((m) => m.id)).toEqual([
+      'person',
+      'household',
+      'org',
+      'town',
+      'city',
+      'region',
+      'nation',
+    ]);
+    for (const row of rows) {
+      expect(row.role).toBe('unit');
+      expect(row.name).toBe(row.id);
+      expect(row.embodied).toBe(false);
+      expect(row.seed).toBe(0);
+    }
+    // Unit rows carry the source tier's seated policy: person (no roster)
+    // and the unit tiers town/region fall back through their own first unit
+    // row, while the member-bearing tiers seat their base policy.
+    expect(rows[0]?.policy).toBe('policy:unit:person');
+    expect(rows[1]?.policy).toBe('policy:household-base');
+    expect(rows[2]?.policy).toBe('policy:household-base');
+    expect(rows[3]?.policy).toBe('policy:unit:person');
+    expect(rows[4]?.policy).toBe('policy:city-base');
+    expect(rows[5]?.policy).toBe('policy:unit:person');
+    expect(rows[6]?.policy).toBe('policy:nation-base');
+    // NO member slices were created — world never runs autonomously.
+    expect(out.members).toEqual(before.members);
+    expect(out.benches['world']).toEqual(EMPTY_BENCH);
+    expect(out.milestones_done.slice(-1)).toEqual(['unlock-world']);
+  });
+
+  it('appends unlock-world once and is idempotent', () => {
+    const out = graduateToTier(nationSession(), 'world', WORLD_ROW, null, createRng(967n));
+    expect(out.milestones_done.filter((id) => id === 'unlock-world')).toHaveLength(1);
+    const again = graduateToTier(out, 'world', WORLD_ROW, null, createRng(971n));
+    expect(again).toBe(out);
+  });
+});
+
 describe('graduateToHousehold wrapper parity', () => {
   it('produces output identical to graduateToTier on the household content row', () => {
     const viaWrapper = graduateToHousehold(baseSession(), ROLES, createRng(809n));
@@ -313,6 +448,8 @@ const TIER_INDICES: Record<string, number> = {
   town: 3,
   city: 4,
   region: 5,
+  nation: 6,
+  world: 7,
 };
 
 describe('unitRoster (Phase 4 Task 1 index filter)', () => {
@@ -352,5 +489,37 @@ describe('unitRoster (Phase 4 Task 1 index filter)', () => {
     const session = sessionWithUnlocked(['town']);
     const rows = unitRoster(session, 'town', TOWN_ROW.index, (id) => TIER_INDICES[id] ?? -1);
     expect(rows.map((m) => m.id)).toEqual(['person']);
+  });
+
+  it('seats nation but never world itself when the world rung graduates', () => {
+    // Out-of-order unlock: person AND nation unlocked, then we graduate
+    // WORLD. Nation (index 6) is a lower rung of world (7), so it seats;
+    // the graduating rung itself never does.
+    const session = sessionWithUnlocked(['person', 'nation']);
+    const rows = unitRoster(session, 'world', WORLD_ROW.index, (id) => TIER_INDICES[id] ?? -1);
+    expect(rows.map((m) => m.id)).toEqual(['person', 'nation']);
+  });
+
+  it('keeps every unlocked rung below world and drops world itself', () => {
+    const session = sessionWithUnlocked([
+      'person',
+      'household',
+      'org',
+      'town',
+      'city',
+      'region',
+      'nation',
+      'world',
+    ]);
+    const rows = unitRoster(session, 'world', WORLD_ROW.index, (id) => TIER_INDICES[id] ?? -1);
+    expect(rows.map((m) => m.id)).toEqual([
+      'person',
+      'household',
+      'org',
+      'town',
+      'city',
+      'region',
+      'nation',
+    ]);
   });
 });
