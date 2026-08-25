@@ -6,6 +6,7 @@ import type { ManifestFocus } from './focus';
 import type { LifeContext } from './life-context';
 import { tableFillManifest, type Manifest, type ManifestScale } from './manifest';
 import { parseManifest } from './manifest-migration';
+import { pickKindFromRegistry, type KindRule } from './kind-registry';
 import {
   residueWindowId,
   summarizeResidue,
@@ -39,6 +40,9 @@ export interface ManifestCompileRequest {
   readonly scale: ManifestScale;
   readonly focus: ManifestFocus | null;
   readonly life_context: LifeContext | null;
+  /** The kind the engine's registry rules pick for this window. Present only
+   * when the caller supplied rules; the model prompt pins it. */
+  readonly compiled_kind?: string;
 }
 
 export interface ManifestFiller {
@@ -52,7 +56,9 @@ export function compileRequestFromBay(
   harvestCount: number,
   lifeContext: LifeContext | null = null,
   scale: ManifestScale = 'person',
+  kindRules?: readonly KindRule[],
 ): ManifestCompileRequest {
+  const summary = summarizeResidue(bay.residue);
   return {
     schema_version: MANIFEST_COMPILE_VERSION,
     id: `m-${harvestCount}-${bay.rng_seed}`,
@@ -60,11 +66,12 @@ export function compileRequestFromBay(
     brief: bay.brief,
     residue_window_id: bay.residue_window_id || residueWindowId(bay.residue),
     residue: bay.residue,
-    summary: summarizeResidue(bay.residue),
+    summary,
     quality_tier: qualityTier,
     scale,
     focus: bay.focus ?? null,
     life_context: lifeContext,
+    ...(kindRules === undefined ? {} : { compiled_kind: pickKindFromRegistry(summary, kindRules) }),
   };
 }
 

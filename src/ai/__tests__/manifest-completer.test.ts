@@ -136,6 +136,25 @@ describe('buildCompleterPrompt', () => {
     expect(prompt).toContain('- fill_status: "model"');
     expect(prompt).toContain(JSON.stringify(REQUEST));
   });
+
+  it('echoes and pins the compiled kind when the request carries one', () => {
+    const tierRules = [
+      { kind: 'tradition', match: { social: true } },
+      { kind: 'heirloom', match: { dominant_in: ['practice_tick', 'lens_chosen'] } },
+    ] as const;
+    const request = compileRequestFromBay(BAY, 0, 0, null, 'household', tierRules);
+    expect(request.compiled_kind).toBe('heirloom');
+    const prompt = buildCompleterPrompt(request, 'zai/glm-4.6');
+    expect(prompt).toContain('- kind: "heirloom"');
+    expect(prompt).toContain('keep this compiled kind');
+    expect(prompt).not.toContain('one of "thing", "outcome"');
+  });
+
+  it('keeps the five-kind instruction when no compiled kind is present', () => {
+    expect('compiled_kind' in REQUEST).toBe(false);
+    const prompt = buildCompleterPrompt(REQUEST, 'zai/glm-4.6');
+    expect(prompt).toContain('one of "thing", "outcome", "change", "person", "place"');
+  });
 });
 
 describe('stripThinkBlocks', () => {

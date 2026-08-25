@@ -158,4 +158,61 @@ describe('StudioView model-first harvest (SPEC 16.2)', () => {
     const { studio } = await renderReadyBenchHarvested({});
     expect(studio.archive.at(-1)?.fill_status).toBe('table');
   });
+
+  it('keeps a mid-flight tend when the completer lands (no stale rollback)', async () => {
+    let release: ((value: unknown) => void) | undefined;
+    const completer = vi.fn(
+      () =>
+        new Promise<unknown>((resolve) => {
+          release = resolve;
+        }),
+    );
+    const storage = createMemoryStudioKv();
+    const view = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialStudio: readyPersonStudio(),
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+        completeManifest: completer,
+      }),
+    );
+    const flush = async (): Promise<void> => {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    };
+    await flush();
+    view.press(view.getByTestID('studio-harvest'));
+    expect(completer).toHaveBeenCalledTimes(1);
+    // The fill is pending; a tend press commits newer bench state mid-flight.
+    view.press(view.getByTestID('studio-tend'));
+    await flush();
+    const finish = release;
+    if (finish === undefined) {
+      throw new Error('completer promise was never started');
+    }
+    await act(async () => {
+      finish(modelPayload('m-model-1'));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    act(() => {
+      view.root.unmount();
+    });
+    const session = await loadStudioSession(storage);
+    if (session === null) {
+      throw new Error('interleaved harvest: the round did not persist');
+    }
+    // Given a tend that landed mid-flight, the resolved completer must keep
+    // BOTH effects: the model card archived...
+    expect(session.archive.at(-1)?.fill_status).toBe('model');
+    expect(session.archive.at(-1)?.name).toBe('The model clerk');
+    // ...and the tend's residue still charged: idle stepping aggregates one
+    // event per practice that moved, so survival means strictly more than
+    // the pre-press window (a stale full-replace rolls it back to exactly
+    // SOCIAL_WINDOW.length).
+    expect(session.benches['person']?.residue.length).toBeGreaterThan(SOCIAL_WINDOW.length);
+  });
 });

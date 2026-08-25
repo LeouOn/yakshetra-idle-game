@@ -28,6 +28,7 @@ import {
   MIN_RESIDUE_TO_DEVELOP,
   QUALITY_UPGRADE_HARVESTS,
   STUDIO_TEND_TICKS,
+  DEFAULT_KIND_RULES,
   canHarvest,
   canUpgradeQuality,
   canonicalStringify,
@@ -51,6 +52,7 @@ import {
   type ArchiveStats,
   type HarvestResult,
   type IdleState,
+  type LifeContext,
   type LifeState,
   type Manifest,
   type ManifestScale,
@@ -63,7 +65,7 @@ import {
 import { oneShotFiller, type ManifestCompileRequest } from '@/engine/fill-adapter';
 import { canEndow, endowManifest } from '@/engine/endowment';
 import { activeVisitorFor, noteVisitorHarvest, visitorTableOverride } from '@/engine/visitors';
-import type { CatalogMap } from '@/engine/table-catalog';
+import type { CatalogEntry, CatalogMap } from '@/engine/table-catalog';
 import type { StudioKv } from '@/persistence';
 import type { CalendarEpoch } from '@/engine/calendar';
 import type { DailySchedule } from '@/engine/schedule';
@@ -78,6 +80,7 @@ import {
   sessionFromSlices,
   useStudioSession,
   withRecordedDrafts,
+  type BenchSlices,
 } from '@/ui/hooks/useStudioSession';
 import { useStudioProgression } from '@/ui/hooks/useStudioProgression';
 import { nextAction } from '@/ui/hooks/next-action';
@@ -301,6 +304,13 @@ function tierScaleOf(tierId: string): ManifestScale {
   return tier.scale;
 }
 
+/** Model-acceptance gate: a model card is only archived when the record is
+ * internally consistent — a model echoing a mixed provenance/fill_status
+ * falls to the table path instead of archiving a contradiction. */
+function isModelCard(manifest: Manifest): boolean {
+  return manifest.provenance.source === 'model' && manifest.fill_status === 'model';
+}
+
 export default function StudioView({
   onBack,
   practices,
@@ -502,10 +512,36 @@ export default function StudioView({
     archive: studio.archive,
   });
 
+  /** Live-slice reads for the post-await paths in harvest(): the completer
+   * can be in flight for seconds, so render-time closures may be stale. */
+  function lifeContextOf(slices: BenchSlices): LifeContext {
+    return evaluateLifeContext({
+      life: slices.life,
+      idle: slices.idle,
+      epoch,
+      practices: slices.practices,
+      archive: slices.studio.archive,
+    });
+  }
+
   /** A harvest from a tier's bench sees its guest off — the seat's windows decay. */
   function decayVisitorSeat(tierId: string): void {
-    const noted = noteVisitorHarvest(buildSession(), tierId);
+    const noted = noteVisitorHarvest(sessionFromSlices(benchRef.current), tierId);
     setProgression((current) => ({ ...current, tiers: noted.tiers }));
+  }
+
+  /** The person bench's visitor table swap (tier-keyed entries), or null
+   * when the default catalog is in force. */
+  function personVisitorEntriesOf(session: StudioSession): readonly CatalogEntry[] | null {
+    const reg = registries();
+    const seat = activeVisitorFor(session, EMBODIED_TIER);
+    const swap = visitorTableOverride(
+      reg.visitors,
+      seat?.id ?? null,
+      reg.visitorTables,
+      reg.catalogs,
+    );
+    return swap === reg.catalogs ? null : (swap[EMBODIED_TIER] ?? null);
   }
 
   /** Harvest priority: the highest-index tier with a ready bench, else the
@@ -551,6 +587,7 @@ export default function StudioView({
       bench.harvest_count,
       null,
       scale,
+      rules,
     );
     const catalog = visitorTierCatalog(tierId) ?? registries().catalogs;
     const tableFill = (): Manifest =>
@@ -575,7 +612,7 @@ export default function StudioView({
         const raw = await completeManifest(request);
         const filled = fillManifestSafe(request, rngRef.current, oneShotFiller(raw));
         manifest =
-          filled.provenance.source === 'model'
+          filled.provenance.source === 'model' && filled.fill_status === 'model'
             ? filled
             : // Model garbage fell back inside the safe ingest — redo with the
               // tier's own rules and (possibly swapped) catalog.
@@ -613,15 +650,7 @@ export default function StudioView({
         await harvestBenchTier(priority);
         return;
       }
-      const reg = registries();
-      const seat = activeVisitorFor(buildSession(), EMBODIED_TIER);
-      const swap = visitorTableOverride(
-        reg.visitors,
-        seat?.id ?? null,
-        reg.visitorTables,
-        reg.catalogs,
-      );
-      const visitorEntries = swap === reg.catalogs ? null : (swap[EMBODIED_TIER] ?? null);
+      const visitorEntries = personVisitorEntriesOf(buildSession());
       const tableResult = (): HarvestResult | null =>
         harvestTableFill(studio, rngRef.current, lifeContext, visitorEntries);
 
@@ -633,21 +662,56 @@ export default function StudioView({
           studio.quality_tier,
           studio.harvest_count,
           lifeContext,
+          'person',
+          DEFAULT_KIND_RULES,
         );
         try {
           const raw = await completeManifest(request);
-          const attempt = harvestWithFiller(
-            studio,
-            rngRef.current,
-            oneShotFiller(raw),
-            lifeContext,
-          );
-          result =
-            attempt !== null && attempt.manifest.provenance.source === 'model'
-              ? attempt
-              : tableResult();
+          // Real completer latency is seconds: a pulse tick or a tend press
+          // may have landed while the fill was in flight. Read the live bench
+          // slices (the applyTicks pattern) and compute both the model
+          // attempt and the fallback against them, so the commit lands on
+          // top of the newer state instead of rolling it back.
+          const live = benchRef.current;
+          const liveContext = lifeContextOf(live);
+          const tableLive = (): HarvestResult | null =>
+            harvestTableFill(
+              live.studio,
+              rngRef.current,
+              liveContext,
+              personVisitorEntriesOf(sessionFromSlices(live)),
+            );
+          const bayStillHarvestable =
+            live.studio.bay !== null &&
+            live.studio.bay.status === 'ready' &&
+            live.studio.bay.residue_window_id === request.residue_window_id;
+          if (bayStillHarvestable) {
+            const attempt = harvestWithFiller(
+              live.studio,
+              rngRef.current,
+              oneShotFiller(raw),
+              liveContext,
+            );
+            result = attempt !== null && isModelCard(attempt.manifest) ? attempt : tableLive();
+          } else {
+            // Mid-await the bay was replaced (a develop queued a different
+            // window): archive a good model card, never touch the new bay.
+            const card = fillManifestSafe(request, rngRef.current, oneShotFiller(raw));
+            result = isModelCard(card)
+              ? {
+                  studio: { ...live.studio, archive: [...live.studio.archive, card] },
+                  manifest: card,
+                }
+              : null;
+          }
         } catch {
-          result = tableResult();
+          const live = benchRef.current;
+          result = harvestTableFill(
+            live.studio,
+            rngRef.current,
+            lifeContextOf(live),
+            personVisitorEntriesOf(sessionFromSlices(live)),
+          );
         }
       } else {
         result = tableResult();

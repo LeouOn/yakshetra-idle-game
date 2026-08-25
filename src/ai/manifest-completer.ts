@@ -31,6 +31,16 @@ export function stripThinkBlocks(content: string): string {
   return content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
 }
 
+/** Instruction for the card's `kind`: the engine-compiled kind pinned when
+ * the request carries one (tier benches pass their scale's rules), the
+ * five-kind person-scale pick rules otherwise. */
+function kindInstruction(request: ManifestCompileRequest): string {
+  if (request.compiled_kind !== undefined) {
+    return `- kind: "${request.compiled_kind}" — keep this compiled kind unless the residue clearly demands another by the pick rules`;
+  }
+  return '- kind: one of "thing", "outcome", "change", "person", "place" — pick by these rules, in order: residue dominated by level-ups → "change"; by resolved events → "outcome"; two or more distinct ids with an event or lens marker → "person"; two or more practice ids without a marker → "place"; empty → "thing". Keep the picked kind unless the residue clearly demands another by these same rules.';
+}
+
 /**
  * Instructions per SPEC §16.2: one JSON object, envelope echoed from the
  * request, prose slots filled, no chat reply, no attainment claims, no
@@ -46,7 +56,7 @@ export function buildCompleterPrompt(request: ManifestCompileRequest, revision: 
     `- rng_seed: "${request.rng_seed}"`,
     `- brief: ${JSON.stringify(request.brief)}`,
     `- residue_window_id: "${request.residue_window_id}"`,
-    '- kind: one of "thing", "outcome", "change", "person", "place" — pick by these rules, in order: residue dominated by level-ups → "change"; by resolved events → "outcome"; two or more distinct ids with an event or lens marker → "person"; two or more practice ids without a marker → "place"; empty → "thing". Keep the picked kind unless the residue clearly demands another by these same rules.',
+    kindInstruction(request),
     `- scale: "${request.scale}"`,
     '- name, one_liner, subject, detail: fill these four yourself. Named figures in the residue ids or life context are in play — if the window is about a figure, the card is about that figure and about_id/about_name are the figure id and display name. Prose is concrete, adult, a sentence or two. No attainment claims, no merit, no karma.',
     '- tags: three to five short tags',

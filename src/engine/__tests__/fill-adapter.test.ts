@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  DEFAULT_KIND_RULES,
   MANIFEST_COMPILE_VERSION,
   MIN_RESIDUE_TO_DEVELOP,
   compileRequestFromBay,
@@ -11,6 +12,7 @@ import {
   queueDevelop,
   recordStudioResidues,
   tableFiller,
+  tableFillManifest,
   tickStudio,
   type Manifest,
   type ManifestFiller,
@@ -35,6 +37,13 @@ function readyStudio() {
   studio = queueDevelop(studio, 'a kept promise', createRng(8n));
   return tickStudio(studio, studio.bay?.cook_ticks_total ?? 0);
 }
+
+const BAY_LIKE = {
+  residue_window_id: 'w-plain',
+  residue: events(3),
+  brief: null,
+  rng_seed: 'seed-3',
+};
 
 const BROKEN: ManifestFiller = {
   id: 'broken',
@@ -97,6 +106,58 @@ describe('fill adapter', () => {
     }
     const req = compileRequestFromBay(bay, 0, 0);
     expect(req.scale).toBe('person');
+  });
+
+  it('compiles the registry kind onto the request when rules are provided', () => {
+    // Social window (lens marker + two distinct ids) + person rules → person,
+    // the same kind the table path picks for this summary.
+    const socialBay = {
+      residue_window_id: 'w-social',
+      residue: [
+        { tick: 1, type: 'lens_chosen' as const, ids: ['lens.test'], numbers: {} },
+        {
+          tick: 2,
+          type: 'practice_tick' as const,
+          ids: ['practice.test'],
+          numbers: { progress: 2 },
+        },
+      ],
+      brief: null,
+      rng_seed: 'seed-9',
+    };
+    const req = compileRequestFromBay(socialBay, 0, 0, null, 'person', DEFAULT_KIND_RULES);
+    expect(req.compiled_kind).toBe('person');
+    const tableKind = tableFillManifest(
+      req.residue,
+      req.brief,
+      0,
+      createRng(1n),
+      req.rng_seed,
+      req.id,
+      req.focus,
+      req.life_context,
+      req.scale,
+    ).kind;
+    expect(req.compiled_kind).toBe(tableKind);
+  });
+
+  it('compiles a tier-scale kind when tier rules are provided', () => {
+    const tierRules = [
+      { kind: 'tradition', match: { social: true } },
+      { kind: 'heirloom', match: { dominant_in: ['practice_tick', 'lens_chosen'] } },
+    ] as const;
+    const req = compileRequestFromBay(BAY_LIKE, 0, 0, null, 'household', tierRules);
+    expect(req.compiled_kind).toBe('heirloom');
+  });
+
+  it('omits compiled_kind entirely when no rules are provided', () => {
+    const studio = readyStudio();
+    const bay = studio.bay;
+    if (bay === null) {
+      throw new Error('expected bay');
+    }
+    const req = compileRequestFromBay(bay, 0, 0);
+    expect('compiled_kind' in req).toBe(false);
   });
 
   it('migrates a v0-shaped filler payload to v1', () => {
