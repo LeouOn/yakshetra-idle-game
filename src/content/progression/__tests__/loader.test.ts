@@ -48,7 +48,7 @@ describe('loadProgression', () => {
     expect(registries.kindRules.slice(0, DEFAULT_KIND_RULES.length)).toEqual(DEFAULT_KIND_RULES);
   });
 
-  it('pins the full kind row order: 8 person, 5 household, 5 org, 5 town, 5 city, 5 region', () => {
+  it('pins the full kind row order: 8 person, 5 each scale through world', () => {
     // Order is load-bearing (first match wins at compile). The pin includes
     // the TOTAL fallback rows so no scale can ship a partial rule list.
     expect(registries.kindRows.map((r) => r.id)).toEqual([
@@ -93,8 +93,22 @@ describe('loadProgression', () => {
       'legend',
       'road',
       'road',
+      // nation (5) — Phase 8 Task 2, mirrors the same TOTAL pattern:
+      // ministry for social windows, edict for practice-shaped and empty.
+      'ministry',
+      'edict',
+      'ministry',
+      'edict',
+      'edict',
+      // world (5) — Phase 8 Task 2, mirrors the same TOTAL pattern:
+      // chronicle for social windows, horizon for practice-shaped and empty.
+      'chronicle',
+      'horizon',
+      'chronicle',
+      'horizon',
+      'horizon',
     ]);
-    expect(registries.kindRows).toHaveLength(33);
+    expect(registries.kindRows).toHaveLength(43); // +5 nation, +5 world (phase 8)
   });
 
   it('ships one unlock milestone per non-person tier', () => {
@@ -322,12 +336,14 @@ describe('loadProgression household scale', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('ships the four seated policies in file order (household, org, city, region)', () => {
+  it('ships the six seated policies in file order (household, org, city, region, nation, world)', () => {
     expect(registries.policies.map((p) => p.id)).toEqual([
       'policy:household-base',
       'policy:org-base',
       'policy:city-base',
       'policy:region-base',
+      'policy:nation-base',
+      'policy:world-base',
     ]);
   });
 
@@ -670,5 +686,47 @@ describe('loadProgression org and town scales', () => {
     expect(pickKindFromRegistry(summarizeResidue([tick]), cityRules)).toBe('monument');
     expect(pickKindFromRegistry(summarizeResidue([eventTriple]), regionRules)).toBe('legend');
     expect(pickKindFromRegistry(summarizeResidue([tick]), regionRules)).toBe('road');
+  });
+});
+
+describe('loadProgression nation and world scales', () => {
+  const registries = loadProgression();
+
+  it('loads nation and world kind rows with TOTAL fallbacks', () => {
+    const nationRows = registries.kindRows.filter((k) => k.scale === 'nation');
+    const worldRows = registries.kindRows.filter((k) => k.scale === 'world');
+    expect(nationRows.map((k) => k.id).sort()).toEqual([
+      'edict',
+      'edict',
+      'edict',
+      'ministry',
+      'ministry',
+    ]);
+    expect(worldRows.map((k) => k.id).sort()).toEqual([
+      'chronicle',
+      'chronicle',
+      'horizon',
+      'horizon',
+      'horizon',
+    ]);
+    for (const row of [...nationRows, ...worldRows]) {
+      expect(row.pinnable).toBe(false);
+      expect(row.catalog_ref.startsWith('core/')).toBe(true);
+    }
+  });
+
+  it('nation and world catalogs carry five rubric-clean rows per kind', () => {
+    for (const kind of ['edict', 'ministry', 'chronicle', 'horizon'] as const) {
+      expect((registries.catalogs[kind] ?? []).length).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it('parses nation and world policies with real practice ids, disjoint from each other', () => {
+    const nation = registries.policies.find((p) => p.id === 'policy:nation-base');
+    const world = registries.policies.find((p) => p.id === 'policy:world-base');
+    expect(nation?.schedule_ref).toBe('schedule:nation-day');
+    expect(world?.schedule_ref).toBe('schedule:world-day');
+    const n = new Set(nation?.practices ?? []);
+    for (const p of world?.practices ?? []) expect(n.has(p)).toBe(false);
   });
 });

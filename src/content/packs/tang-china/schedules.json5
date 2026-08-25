@@ -331,5 +331,137 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Nation-day — the nation cadence (Phase 8 Task 2). Sitting at dawn,
+    // a long copying block through the morning, medicine rites at midday,
+    // alms at the gates in the afternoon, an evening watch. Resolved by
+    // `policy:nation-base`; id drops the `tang/` prefix for the same
+    // reason the others do.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:nation-day',
+      name_sid: 'tang.schedule.nation_day.name_sid',
+      blocks: [
+        {
+          id: 'block:nation-day/night-rest',
+          label_sid: 'tang.block.nation_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 5,
+          practice_id: null,
+          icon_sid: 'tang.block.nation_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:nation-day/dawn-sitting',
+          label_sid: 'tang.block.nation_day.dawn_sitting.label_sid',
+          startHour: 5,
+          endHour: 8,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.nation_day.dawn_sitting.icon_sid',
+        },
+        {
+          id: 'block:nation-day/morning-copying',
+          label_sid: 'tang.block.nation_day.morning_copying.label_sid',
+          startHour: 8,
+          endHour: 12,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.nation_day.morning_copying.icon_sid',
+        },
+        {
+          id: 'block:nation-day/midday-rites',
+          label_sid: 'tang.block.nation_day.midday_rites.label_sid',
+          startHour: 12,
+          endHour: 15,
+          practice_id: 'practice:tang/medicine-rite',
+          icon_sid: 'tang.block.nation_day.midday_rites.icon_sid',
+        },
+        {
+          id: 'block:nation-day/afternoon-alms',
+          label_sid: 'tang.block.nation_day.afternoon_alms.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:tang/alms-round',
+          icon_sid: 'tang.block.nation_day.afternoon_alms.icon_sid',
+        },
+        {
+          id: 'block:nation-day/evening-watch',
+          label_sid: 'tang.block.nation_day.evening_watch.label_sid',
+          startHour: 19,
+          endHour: 22,
+          practice_id: null,
+          icon_sid: 'tang.block.nation_day.evening_watch.icon_sid',
+        },
+        {
+          id: 'block:nation-day/lamps-down',
+          label_sid: 'tang.block.nation_day.lamps_down.label_sid',
+          startHour: 22,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.nation_day.lamps_down.icon_sid',
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // World-day — the world cadence (Phase 8 Task 2). Mirrors the region
+    // precedent: shipped for the registry though its unit rows never run
+    // it. Recitation bookends, copying through the middle of the day.
+    // Resolved by `policy:world-base`; id drops the `tang/` prefix for
+    // the same reason the others do.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:world-day',
+      name_sid: 'tang.schedule.world_day.name_sid',
+      blocks: [
+        {
+          id: 'block:world-day/night-rest',
+          label_sid: 'tang.block.world_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 6,
+          practice_id: null,
+          icon_sid: 'tang.block.world_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:world-day/morning-recitation',
+          label_sid: 'tang.block.world_day.morning_recitation.label_sid',
+          startHour: 6,
+          endHour: 10,
+          practice_id: 'practice:tang/nianfo-recitation',
+          icon_sid: 'tang.block.world_day.morning_recitation.icon_sid',
+        },
+        {
+          id: 'block:world-day/midday-copying',
+          label_sid: 'tang.block.world_day.midday_copying.label_sid',
+          startHour: 10,
+          endHour: 14,
+          practice_id: 'practice:tang/sutra-copying',
+          icon_sid: 'tang.block.world_day.midday_copying.icon_sid',
+        },
+        {
+          id: 'block:world-day/afternoon-rest',
+          label_sid: 'tang.block.world_day.afternoon_rest.label_sid',
+          startHour: 14,
+          endHour: 17,
+          practice_id: null,
+          icon_sid: 'tang.block.world_day.afternoon_rest.icon_sid',
+        },
+        {
+          id: 'block:world-day/evening-recitation',
+          label_sid: 'tang.block.world_day.evening_recitation.label_sid',
+          startHour: 17,
+          endHour: 21,
+          practice_id: 'practice:tang/six-syllable-recitation',
+          icon_sid: 'tang.block.world_day.evening_recitation.icon_sid',
+        },
+        {
+          id: 'block:world-day/lamps-down',
+          label_sid: 'tang.block.world_day.lamps_down.label_sid',
+          startHour: 21,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.world_day.lamps_down.icon_sid',
+        },
+      ],
+    },
   ],
 }

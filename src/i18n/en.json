@@ -109,6 +109,10 @@
     "kind_monument_sid": "Monument",
     "kind_legend_sid": "Legend",
     "kind_road_sid": "Road",
+    "kind_edict_sid": "Edict",
+    "kind_ministry_sid": "Ministry",
+    "kind_chronicle_sid": "Chronicle",
+    "kind_horizon_sid": "Horizon",
     "tier_person_sid": "One life",
     "tier_household_sid": "Household",
     "tier_org_sid": "Workshop",
@@ -333,6 +337,12 @@
       },
       "region_day": {
         "name_sid": "A region's day"
+      },
+      "nation_day": {
+        "name_sid": "The nation's day"
+      },
+      "world_day": {
+        "name_sid": "The world's day"
       }
     },
     "block": {
@@ -471,6 +481,62 @@
         },
         "lamps_down": {
           "label_sid": "Roadhouse lamps down",
+          "icon_sid": "star"
+        }
+      },
+      "nation_day": {
+        "night_rest": {
+          "label_sid": "Curfew hours",
+          "icon_sid": "moon"
+        },
+        "dawn_sitting": {
+          "label_sid": "Dawn sitting",
+          "icon_sid": "star"
+        },
+        "morning_copying": {
+          "label_sid": "Morning copying",
+          "icon_sid": "brush"
+        },
+        "midday_rites": {
+          "label_sid": "Midday rites",
+          "icon_sid": "bowl"
+        },
+        "afternoon_alms": {
+          "label_sid": "Afternoon alms",
+          "icon_sid": "rice"
+        },
+        "evening_watch": {
+          "label_sid": "Wall watch",
+          "icon_sid": "lamp"
+        },
+        "lamps_down": {
+          "label_sid": "Palace lamps down",
+          "icon_sid": "star"
+        }
+      },
+      "world_day": {
+        "night_rest": {
+          "label_sid": "Still roads",
+          "icon_sid": "moon"
+        },
+        "morning_recitation": {
+          "label_sid": "Morning recitation",
+          "icon_sid": "bell"
+        },
+        "midday_copying": {
+          "label_sid": "Midday copying",
+          "icon_sid": "brush"
+        },
+        "afternoon_rest": {
+          "label_sid": "Afternoon rest",
+          "icon_sid": "rice"
+        },
+        "evening_recitation": {
+          "label_sid": "Evening recitation",
+          "icon_sid": "bell"
+        },
+        "lamps_down": {
+          "label_sid": "The last lamps",
           "icon_sid": "star"
         }
       }

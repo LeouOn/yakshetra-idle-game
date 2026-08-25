@@ -369,5 +369,119 @@
       min_quality: 0,
       match: { no_dominant: true },
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Nation-scale rows (Phase 8). Ministry carries the people-facing
+    // windows (a nation's standing bodies meet and decide); edict carries
+    // the practice-shaped and empty windows (proclamations outlast the
+    // ministries that seal them). Same TOTAL distribution as city/region.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'ministry',
+      scale: 'nation',
+      pinnable: false,
+      catalog_ref: 'core/ministry',
+      sid_ns: 'studio.kind_ministry_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'edict',
+      scale: 'nation',
+      pinnable: false,
+      catalog_ref: 'core/edict',
+      sid_ns: 'studio.kind_edict_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'ministry',
+      scale: 'nation',
+      pinnable: false,
+      catalog_ref: 'core/ministry',
+      sid_ns: 'studio.kind_ministry_sid',
+      min_quality: 0,
+      match: { dominant_in: ['event_resolved', 'resource_edge', 'life_ended'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'edict',
+      scale: 'nation',
+      pinnable: false,
+      catalog_ref: 'core/edict',
+      sid_ns: 'studio.kind_edict_sid',
+      min_quality: 0,
+      match: { dominant_in: ['practice_tick', 'lens_chosen'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'edict',
+      scale: 'nation',
+      pinnable: false,
+      catalog_ref: 'core/edict',
+      sid_ns: 'studio.kind_edict_sid',
+      min_quality: 0,
+      match: { no_dominant: true },
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // World-scale rows (Phase 8). Chronicle carries the people-facing
+    // windows (the world's told things weave through nations); horizon
+    // carries the practice-shaped and empty windows (the world's edges
+    // outlast the stories). Same TOTAL distribution as city/region.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      schema_version: 'kind/v0',
+      id: 'chronicle',
+      scale: 'world',
+      pinnable: false,
+      catalog_ref: 'core/chronicle',
+      sid_ns: 'studio.kind_chronicle_sid',
+      min_quality: 0,
+      match: { social: true },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'horizon',
+      scale: 'world',
+      pinnable: false,
+      catalog_ref: 'core/horizon',
+      sid_ns: 'studio.kind_horizon_sid',
+      min_quality: 0,
+      match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'chronicle',
+      scale: 'world',
+      pinnable: false,
+      catalog_ref: 'core/chronicle',
+      sid_ns: 'studio.kind_chronicle_sid',
+      min_quality: 0,
+      match: { dominant_in: ['event_resolved', 'resource_edge', 'life_ended'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'horizon',
+      scale: 'world',
+      pinnable: false,
+      catalog_ref: 'core/horizon',
+      sid_ns: 'studio.kind_horizon_sid',
+      min_quality: 0,
+      match: { dominant_in: ['practice_tick', 'lens_chosen'] },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'horizon',
+      scale: 'world',
+      pinnable: false,
+      catalog_ref: 'core/horizon',
+      sid_ns: 'studio.kind_horizon_sid',
+      min_quality: 0,
+      match: { no_dominant: true },
+    },
   ],
 }

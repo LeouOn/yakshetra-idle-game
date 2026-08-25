@@ -843,6 +843,200 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Nation-scale kinds (Phase 8 Task 2). Edict: a nation's fixed marks —
+    // the proclamations and registers that outlast the ministries that
+    // seal them. Ministry: a nation's standing bodies, the offices that
+    // meet and decide.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'edict',
+      entries: [
+        {
+          name: 'The salt monopoly edict',
+          one_liner: 'One sheet of paper that fixed the price of salt for a decade.',
+          subject: 'a salt monopoly edict',
+          detail:
+            'Sealed twice — ministry and throne — and posted at every prefecture gate. The clerks who copied it added their own errors; the collectors enforced those too. Salt stayed cheap at the coast and dear in the mountains, exactly as written.',
+          tags: ['edict', 'salt'],
+        },
+        {
+          name: 'The amnesty proclamation',
+          one_liner: 'Printed and read aloud in every county seat on the same morning.',
+          subject: 'an amnesty proclamation',
+          detail:
+            'Debts deferred, minor offenses struck, and three named exiles told they could come home. Two of the three arrived before the notice did. The third sent a letter and stayed where he was.',
+          tags: ['amnesty', 'proclamation'],
+        },
+        {
+          name: 'The canal toll statute',
+          one_liner: 'The single page that made a thousand miles of water pay for itself.',
+          subject: 'a canal toll statute',
+          detail:
+            'One cash per loaded barge, half for grain, nothing for ferrymen crossing with their own families. The toll-houses stamp a wooden tally at every lock, and the statute itself hangs framed in the northernmost one, gone amber with steam.',
+          tags: ['canal', 'toll'],
+        },
+        {
+          name: 'The census register',
+          one_liner: 'The empire counting itself, household by household, on one long scroll.',
+          subject: 'the national census scroll',
+          detail:
+            'Every roof, every ox, every son of fighting age, called out to a clerk and written down in triplicate. The scroll is wrong in the ways the empire is wrong, and accurate in the ways it is stubborn.',
+          tags: ['census', 'register'],
+        },
+        {
+          name: 'The frontier command',
+          one_liner: 'The order that moved ten thousand men by naming one man.',
+          subject: 'a frontier command',
+          detail:
+            "It appoints a general, fixes his supply, and wishes him luck in the classical style. The seal is the largest in the ministry's cabinet, and the smallest part of the document it closes.",
+          tags: ['frontier', 'command'],
+        },
+      ],
+    },
+    {
+      kind: 'ministry',
+      entries: [
+        {
+          name: 'The canal board',
+          one_liner: 'Five commissioners who argue one river into obedience.',
+          subject: 'the canal board',
+          detail:
+            "They meet above the lock-gates every tenth day. Upstream wants water, downstream wants it more, and the board allocates both with an abacus and infinite patience. Their minute-books are the river's other bed.",
+          tags: ['canal', 'board'],
+        },
+        {
+          name: 'The census bureau',
+          one_liner: 'The counting house that never finishes counting.',
+          subject: 'the census bureau',
+          detail:
+            'A courtyard of copyists updating a nation that will not hold still. Births arrive faster than brushes; whole villages move in the time it takes to ink their names. The bureau calls this margin of error, and the villages call it living.',
+          tags: ['census', 'bureau'],
+        },
+        {
+          name: 'The salt inspectorate',
+          one_liner: "The office that tastes the empire's salt and sets its price.",
+          subject: 'the salt inspectorate',
+          detail:
+            'Inspectors sample every pan at the coast and every sack at the pass. The honest salt passes; the honest inspector is promoted, usually somewhere damp. The inspectorate balances its ledger to the coin, which is its way of praying.',
+          tags: ['salt', 'inspectorate'],
+        },
+        {
+          name: 'The granary commission',
+          one_liner: 'The desks where famine is arithmetic, and the arithmetic is kind.',
+          subject: 'the granary commission',
+          detail:
+            "They track the empire's stored grain the way physicians track a pulse: too fast is as bad as too slow. When a prefecture runs low, the commission moves surplus before the prefecture's letter arrives, then charges it to the ledger politely.",
+          tags: ['granary', 'commission'],
+        },
+        {
+          name: 'The relay administration',
+          one_liner: "The office that keeps the empire's horses where its news is.",
+          subject: 'the relay administration',
+          detail:
+            'Stables, stages, and a wall-map stabbed with pins for every rider. An order crossed the empire in nine days last spring, which the administration mentions at every meeting, and which no other office has yet matched.',
+          tags: ['relay', 'administration'],
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // World-scale kinds (Phase 8 Task 2). Chronicle: the world's told
+    // things, carried across nations but belonging to none of them.
+    // Horizon: the world's edges — the capes, wells, and straits where the
+    // known road gives way to the next one.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      kind: 'chronicle',
+      entries: [
+        {
+          name: 'The comet-year chronicle',
+          one_liner: 'Every surviving copy says the tail pointed somewhere different.',
+          subject: 'the comet-year chronicle',
+          detail:
+            'The comet appeared at harvest and stayed through the frost. Nine chroniclers in nine cities drew it nine ways, and each drawing predicts the dynasty that commissioned the next. The sky has not repeated itself since.',
+          tags: ['comet', 'chronicle'],
+        },
+        {
+          name: 'The ledger of favors',
+          one_liner: 'A record kept by nobody official and consulted by everyone.',
+          subject: 'the ledger of favors',
+          detail:
+            'Not a book — a habit. Somewhere in every generation someone writes down who saved whom, and the debt outlives the paper. The current keeper lives above a dye shop and tells no one, which is how everyone knows.',
+          tags: ['favors', 'ledger'],
+        },
+        {
+          name: 'The pilgrimage accounts',
+          one_liner: 'Every road to every shrine, told by the people who walked them.',
+          subject: 'the pilgrimage accounts',
+          detail:
+            'A genre without an author: travelers leaving notes at inns for travelers behind them. The water at the third spring is safe; the pass is cruel in the fourth month; the innkeeper at the border counts spoons. The accounts grow by one page a year and are never finished.',
+          tags: ['pilgrimage', 'accounts'],
+        },
+        {
+          name: 'The famine letters',
+          one_liner: 'The correspondence of two bad years, kept because it should not repeat.',
+          subject: 'the famine letters',
+          detail:
+            'A magistrate wrote north for grain and the north wrote back for time. Between the requests and the refusals, the letters trace exactly how a bad year becomes a worse one. Schools copy them now, badly, on purpose.',
+          tags: ['famine', 'letters'],
+        },
+        {
+          name: 'The map of the mute cartographer',
+          one_liner: 'A map of the whole world drawn by a man who never described it.',
+          subject: "the mute cartographer's map",
+          detail:
+            'He walked the roads for forty years and drew what he found, and never once wrote what he thought. The map is accurate where he went and speculative where he dreamed, and the difference has never been settled.',
+          tags: ['map', 'cartographer'],
+        },
+      ],
+    },
+    {
+      kind: 'horizon',
+      entries: [
+        {
+          name: "The silk road's western end",
+          one_liner: 'Where the road stops agreeing about its own name.',
+          subject: "the silk road's western end",
+          detail:
+            'Caravans arrive speaking three languages and none of them calls the road the same thing. The last stone marker stands in a market that has outgrown it, and the road continues past its own ending out of habit.',
+          tags: ['silk', 'road'],
+        },
+        {
+          name: "The sea route's first cape",
+          one_liner: 'The headland where coastal courage becomes ocean courage.',
+          subject: "the sea route's first cape",
+          detail:
+            'Sailors round it with a sacrifice and return without explaining what they gave. Past the cape the water changes color and the captains change gods, or so the taverns claim. The lighthouse is newer than the fear.',
+          tags: ['sea', 'cape'],
+        },
+        {
+          name: 'The pillar of the northern pass',
+          one_liner: 'The last marker before the road stops being a road.',
+          subject: 'the northern terminus pillar',
+          detail:
+            'Beyond it the pass narrows to a footpath and the footpath to a story. Traders leave what they cannot carry at its base; the pile has been robbed, rebuilt, and robbed again for longer than the pillar has stood.',
+          tags: ['pillar', 'pass'],
+        },
+        {
+          name: "The desert's middle well",
+          one_liner: 'The one water between here and there, and everyone knows it.',
+          subject: "the desert's middle well",
+          detail:
+            'Dug in a dynasty the current one does not name, maintained by whoever needs it next. The well has never gone dry and never been guarded; the desert enforces its own etiquette.',
+          tags: ['desert', 'well'],
+        },
+        {
+          name: 'The strait of two tides',
+          one_liner: 'Where two oceans argue and the ships wait for a decision.',
+          subject: 'the strait of two tides',
+          detail:
+            'The tides meet from opposite directions and the water stands up in ridges. Pilots cross only at the slack, in company, with the older ships going first. The strait has swallowed fleets and returned letters, which it keeps.',
+          tags: ['strait', 'tides'],
+        },
+      ],
+    },
   ],
 
   // ──────────────────────────────────────────────────────────────────────

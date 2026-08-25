@@ -48,5 +48,27 @@
       schedule_ref: 'schedule:region-day',
       choice_weights: {},
     },
+    {
+      schema_version: 'policy/v0',
+      id: 'policy:nation-base',
+      practices: [
+        'practice:tang/sutra-copying',
+        'practice:tang/medicine-rite',
+        'practice:tang/breath-sitting',
+      ],
+      schedule_ref: 'schedule:nation-day',
+      choice_weights: {},
+    },
+    {
+      schema_version: 'policy/v0',
+      id: 'policy:world-base',
+      practices: [
+        'practice:tang/six-syllable-recitation',
+        'practice:tang/nianfo-recitation',
+        'practice:tang/evening-visit',
+      ],
+      schedule_ref: 'schedule:world-day',
+      choice_weights: {},
+    },
   ],
 }
