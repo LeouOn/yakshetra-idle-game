@@ -10,7 +10,7 @@
 // harvest priority, gate badges — iterates registries().tiers; no tier id is
 // hardcoded past the embodied person tier.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Platform,
@@ -36,7 +36,9 @@ import {
   computeGlobalRewards,
   endowableSlots,
   evaluateLifeContext,
+  fillManifestSafe,
   harvestTableFill,
+  harvestWithFiller,
   hydrateStudioSession,
   pendingResidue,
   pinnableCards,
@@ -47,6 +49,7 @@ import {
   tableFillManifest,
   upgradeQuality,
   type ArchiveStats,
+  type HarvestResult,
   type IdleState,
   type LifeState,
   type Manifest,
@@ -57,6 +60,7 @@ import {
   type StudioSession,
   type StudioState,
 } from '@/engine';
+import { oneShotFiller, type ManifestCompileRequest } from '@/engine/fill-adapter';
 import { canEndow, endowManifest } from '@/engine/endowment';
 import { activeVisitorFor, noteVisitorHarvest, visitorTableOverride } from '@/engine/visitors';
 import type { CatalogMap } from '@/engine/table-catalog';
@@ -112,6 +116,9 @@ export interface StudioViewProps {
   readonly storage?: StudioKv;
   /** Unix seconds. Injected so catch-up stays testable. */
   readonly clock?: () => number;
+  /** Host-injected model completer (SPEC §16.2). Undefined → tables only;
+   * the default Expo bundle never provides one. */
+  readonly completeManifest?: (request: ManifestCompileRequest) => Promise<unknown>;
   readonly epoch?: CalendarEpoch;
 }
 
@@ -308,6 +315,7 @@ export default function StudioView({
   persist = false,
   storage,
   clock = defaultClock,
+  completeManifest,
   epoch = DEFAULT_EPOCH,
 }: StudioViewProps) {
   const {
@@ -523,7 +531,7 @@ export default function StudioView({
   }
 
   /** Folded-residue bays fill at the tier's scale with its rule set. */
-  function harvestBenchTier(tierId: string): void {
+  async function harvestBenchTier(tierId: string): Promise<void> {
     const bench = benches[tierId];
     if (bench === undefined) {
       return;
@@ -545,19 +553,37 @@ export default function StudioView({
       scale,
     );
     const catalog = visitorTierCatalog(tierId) ?? registries().catalogs;
-    const manifest = tableFillManifest(
-      request.residue,
-      request.brief,
-      request.quality_tier,
-      rngRef.current,
-      request.rng_seed,
-      request.id,
-      request.focus,
-      request.life_context,
-      request.scale,
-      rules,
-      catalog,
-    );
+    const tableFill = (): Manifest =>
+      tableFillManifest(
+        request.residue,
+        request.brief,
+        request.quality_tier,
+        rngRef.current,
+        request.rng_seed,
+        request.id,
+        request.focus,
+        request.life_context,
+        request.scale,
+        rules,
+        catalog,
+      );
+    let manifest: Manifest;
+    if (completeManifest === undefined) {
+      manifest = tableFill();
+    } else {
+      try {
+        const raw = await completeManifest(request);
+        const filled = fillManifestSafe(request, rngRef.current, oneShotFiller(raw));
+        manifest =
+          filled.provenance.source === 'model'
+            ? filled
+            : // Model garbage fell back inside the safe ingest — redo with the
+              // tier's own rules and (possibly swapped) catalog.
+              tableFill();
+      } catch {
+        manifest = tableFill();
+      }
+    }
     setStudio((current) => ({ ...current, archive: [...current.archive, manifest] }));
     setWorldDrafts(withRecordedDrafts([...studio.archive, manifest], worldDrafts));
     decayVisitorSeat(tierId);
@@ -569,30 +595,74 @@ export default function StudioView({
     setExported(false);
   }
 
-  function harvest(): void {
-    const priority = highestReadyTier();
-    if (priority !== null) {
-      harvestBenchTier(priority);
+  const harvestingRef = useRef(false);
+
+  async function harvest(): Promise<void> {
+    // The guard only matters while a completer fill is in flight; a table
+    // harvest resolves its state synchronously, and the `finally` below
+    // clears the flag on a microtask — gating on the completer keeps a
+    // back-to-back table press (tier rung, then the next) from being eaten
+    // by that microtask tail.
+    if (completeManifest !== undefined && harvestingRef.current) {
       return;
     }
-    const reg = registries();
-    const seat = activeVisitorFor(buildSession(), EMBODIED_TIER);
-    const swap = visitorTableOverride(
-      reg.visitors,
-      seat?.id ?? null,
-      reg.visitorTables,
-      reg.catalogs,
-    );
-    const visitorEntries = swap === reg.catalogs ? null : (swap[EMBODIED_TIER] ?? null);
-    const result = harvestTableFill(studio, rngRef.current, lifeContext, visitorEntries);
-    if (result === null) {
-      return;
+    harvestingRef.current = true;
+    try {
+      const priority = highestReadyTier();
+      if (priority !== null) {
+        await harvestBenchTier(priority);
+        return;
+      }
+      const reg = registries();
+      const seat = activeVisitorFor(buildSession(), EMBODIED_TIER);
+      const swap = visitorTableOverride(
+        reg.visitors,
+        seat?.id ?? null,
+        reg.visitorTables,
+        reg.catalogs,
+      );
+      const visitorEntries = swap === reg.catalogs ? null : (swap[EMBODIED_TIER] ?? null);
+      const tableResult = (): HarvestResult | null =>
+        harvestTableFill(studio, rngRef.current, lifeContext, visitorEntries);
+
+      const bay = studio.bay;
+      let result: HarvestResult | null;
+      if (completeManifest !== undefined && bay !== null && bay.status === 'ready') {
+        const request = compileRequestFromBay(
+          bay,
+          studio.quality_tier,
+          studio.harvest_count,
+          lifeContext,
+        );
+        try {
+          const raw = await completeManifest(request);
+          const attempt = harvestWithFiller(
+            studio,
+            rngRef.current,
+            oneShotFiller(raw),
+            lifeContext,
+          );
+          result =
+            attempt !== null && attempt.manifest.provenance.source === 'model'
+              ? attempt
+              : tableResult();
+        } catch {
+          result = tableResult();
+        }
+      } else {
+        result = tableResult();
+      }
+      if (result === null) {
+        return;
+      }
+      decayVisitorSeat(EMBODIED_TIER);
+      setStudio(result.studio);
+      setWorldDrafts(withRecordedDrafts(result.studio.archive, worldDrafts));
+      setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
+      setExported(false);
+    } finally {
+      harvestingRef.current = false;
     }
-    decayVisitorSeat(EMBODIED_TIER);
-    setStudio(result.studio);
-    setWorldDrafts(withRecordedDrafts(result.studio.archive, worldDrafts));
-    setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
-    setExported(false);
   }
 
   function deepen(): void {
@@ -902,7 +972,7 @@ export default function StudioView({
           testID="studio-harvest"
           accessibilityLabel={resolveSid('studio.harvest_button_sid')}
           disabled={!harvestable}
-          onPress={harvestable ? harvest : undefined}
+          onPress={harvestable ? () => void harvest() : undefined}
           style={[styles.button, harvestable ? styles.buttonHarvest : styles.buttonDisabled]}
         >
           <Text style={styles.buttonText}>{resolveSid('studio.harvest_button_sid')}</Text>
