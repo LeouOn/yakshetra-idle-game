@@ -28,7 +28,18 @@ import type { CatalogEntry, CatalogMap } from './table-catalog';
 
 export const MANIFEST_SCHEMA_VERSION = 'manifest/v1' as const;
 export const MANIFEST_LEGACY_VERSION = 'manifest/v0' as const;
-export const SCALE_VALUES = ['person', 'household', 'org', 'town', 'city', 'region'] as const;
+// Eight tiers since the phase-8 amendment (SPEC §1.1): nation is a
+// member-bearing tier; world is the terminal unit tier.
+export const SCALE_VALUES = [
+  'person',
+  'household',
+  'org',
+  'town',
+  'city',
+  'region',
+  'nation',
+  'world',
+] as const;
 export type ManifestScale = (typeof SCALE_VALUES)[number];
 
 export const TABLE_FILL_REVISION = 'table/v0' as const;

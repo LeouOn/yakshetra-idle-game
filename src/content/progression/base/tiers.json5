@@ -1,4 +1,4 @@
-// Six-tier chain ladder, order is load-bearing. `index` is the ladder
+// Eight-tier chain ladder, order is load-bearing. `index` is the ladder
 // position; `unlock_milestone` is null only for the starting tier (`person`).
 {
   tiers: [
@@ -79,6 +79,32 @@
       fold_cadence: 4,
       endowment_slots: 4,
       visitor_table_ref: 'visitors/region',
+    },
+    {
+      schema_version: 'tier/v0',
+      id: 'nation',
+      scale: 'nation',
+      index: 6,
+      roster_size: { min: 4, max: 60 },
+      member_unit: 'household',
+      role_table_ref: 'roles/nation',
+      unlock_milestone: 'unlock-nation',
+      fold_cadence: 4,
+      endowment_slots: 5,
+      visitor_table_ref: 'visitors/nation',
+    },
+    {
+      schema_version: 'tier/v0',
+      id: 'world',
+      scale: 'world',
+      index: 7,
+      roster_size: { min: 2, max: 16 },
+      member_unit: 'nation',
+      role_table_ref: 'roles/world',
+      unlock_milestone: 'unlock-world',
+      fold_cadence: 4,
+      endowment_slots: 6,
+      visitor_table_ref: 'visitors/world',
     },
   ],
 }

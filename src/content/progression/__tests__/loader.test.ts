@@ -11,7 +11,8 @@ import { loadEraPack } from '@/content/loader';
 describe('loadProgression', () => {
   const registries = loadProgression();
 
-  it('loads the six tiers in ladder order', () => {
+  it('loads eight tiers in ladder order through world', () => {
+    // Eight tiers since the phase-8 amendment (SPEC §1.1).
     expect(registries.tiers.map((t) => t.id)).toEqual([
       'person',
       'household',
@@ -19,8 +20,19 @@ describe('loadProgression', () => {
       'town',
       'city',
       'region',
+      'nation',
+      'world',
     ]);
-    expect(registries.tiers.map((t) => t.index)).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(registries.tiers.map((t) => t.index)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  it('seats nation as member-bearing with a policy and world as a unit tier without one', () => {
+    const nation = registries.roles.nation;
+    const world = registries.roles.world;
+    expect(nation?.policy).toBe('policy:nation-base');
+    expect(world?.policy).toBeUndefined();
+    expect(registries.tiers.find((t) => t.id === 'nation')?.member_unit).toBe('household');
+    expect(registries.tiers.find((t) => t.id === 'world')?.member_unit).toBe('nation');
   });
 
   it('person tier is the only one without an unlock milestone', () => {
@@ -86,12 +98,15 @@ describe('loadProgression', () => {
   });
 
   it('ships one unlock milestone per non-person tier', () => {
+    // Eight tiers since the phase-8 amendment — seven gated rungs.
     expect(registries.milestones.map((m) => m.id)).toEqual([
       'unlock-household',
       'unlock-org',
       'unlock-town',
       'unlock-city',
       'unlock-region',
+      'unlock-nation',
+      'unlock-world',
     ]);
   });
 

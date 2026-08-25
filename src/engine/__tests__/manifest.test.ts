@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ManifestSchema, createRng, tableFillManifest } from '../';
+import { ManifestSchema, SCALE_VALUES, createRng, tableFillManifest } from '../';
 import type { ResidueEvent } from '../residue';
 
 const WINDOW: readonly ResidueEvent[] = [
@@ -83,5 +83,21 @@ describe('tableFillManifest', () => {
     expect(a).toEqual(b);
     expect(a.tags).toContain('briefed');
     expect(a.tags).toContain('deepened');
+  });
+});
+
+describe('SCALE_VALUES', () => {
+  it('carries all eight scales in ladder order', () => {
+    // Eight tiers since the phase-8 amendment (SPEC §1.1).
+    expect(SCALE_VALUES).toEqual([
+      'person',
+      'household',
+      'org',
+      'town',
+      'city',
+      'region',
+      'nation',
+      'world',
+    ]);
   });
 });

@@ -1,4 +1,4 @@
-// Progression content schemas — the data contract for the six-tier chain.
+// Progression content schemas — the data contract for the eight-tier chain.
 //
 // Every row is versioned (`tier/v0`, `kind/v0`, …). Evolution is additive:
 // new optional fields or new rows; renames get a new version plus a
@@ -273,6 +273,8 @@ export const RolesFileSchema = z
     town: RolesBlockSchema.optional(),
     city: RolesBlockSchema.optional(),
     region: RolesBlockSchema.optional(),
+    nation: RolesBlockSchema.optional(),
+    world: RolesBlockSchema.optional(),
   })
   .strict();
 export type RolesFile = z.infer<typeof RolesFileSchema>;

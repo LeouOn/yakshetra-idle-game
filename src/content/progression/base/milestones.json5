@@ -71,5 +71,31 @@
       },
       grants: { tier: 'region', ceremony_sid: 'graduation.region' },
     },
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-nation',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'archived.legend', value: 1 },
+          { op: 'gte', key: 'archived.road', value: 1 },
+          { op: 'gte', key: 'world_drafts.region', value: 2 },
+        ],
+      },
+      grants: { tier: 'nation', ceremony_sid: 'graduation.nation' },
+    },
+    {
+      schema_version: 'milestone/v0',
+      id: 'unlock-world',
+      predicate: {
+        op: 'and',
+        operands: [
+          { op: 'gte', key: 'archived.edict', value: 1 },
+          { op: 'gte', key: 'archived.ministry', value: 1 },
+          { op: 'gte', key: 'world_drafts.nation', value: 2 },
+        ],
+      },
+      grants: { tier: 'world', ceremony_sid: 'graduation.world' },
+    },
   ],
 }

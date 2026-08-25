@@ -115,6 +115,8 @@
     "tier_town_sid": "Town",
     "tier_city_sid": "City",
     "tier_region_sid": "Region",
+    "tier_nation_sid": "Nation",
+    "tier_world_sid": "World",
     "tier_locked_sid": "Locked",
     "tier_ready_badge_sid": "{n} ready",
     "tier_progress_badge_sid": "{n}/{m}",
@@ -196,6 +198,10 @@
     "city_line_sid": "Institutions and a town now share one wall.",
     "region_title_sid": "A region learns its own roads",
     "region_line_sid": "Towns and cities answer to one ledger now.",
+    "nation_title_sid": "The commission arrives",
+    "nation_line_sid": "The region's ledgers close and the nation's open; the first harvest is a ministry.",
+    "world_title_sid": "The last bench seats",
+    "world_line_sid": "The chronicle takes the region, the nation, and everything below it; the chain closes without a verdict.",
     "dismiss_button_sid": "To the bench"
   },
   "compendium": {

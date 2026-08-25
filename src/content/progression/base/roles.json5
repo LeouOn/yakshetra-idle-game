@@ -32,4 +32,17 @@
     roles: ['circuit-magistrate', 'salt-inspector', 'road-warden'],
     names: ['the Circuit Office', 'the Salt House', 'the High Road'],
   },
+  // Nation is member-bearing (Phase 8): the national institutions run
+  // autonomously under `policy:nation-base`, mirroring the city pattern.
+  nation: {
+    roles: ['canal-commissioner', 'census-keeper', 'relay-inspector'],
+    names: ['the Canal Board', 'the Counting House', 'the Relay Office'],
+    policy: 'policy:nation-base',
+  },
+  // World is the terminal unit tier (nation is the member_unit): its roster
+  // rows never run autonomously — mirroring the region pattern.
+  world: {
+    roles: ['chronicler', 'horizon-keeper', 'archive-master'],
+    names: ['the Long Chronicle', 'the Cape Lighthouse', 'the Deep Archive'],
+  },
 }
