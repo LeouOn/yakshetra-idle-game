@@ -192,7 +192,7 @@ describe('loadEraPack — sutras + mantras + figures loading', () => {
     expect(Array.isArray(pack.mantras)).toBe(true);
     expect(pack.mantras.length).toBe(10);
     expect(Array.isArray(pack.figures)).toBe(true);
-    expect(pack.figures.length).toBe(32);
+    expect(pack.figures.length).toBe(35);
   });
 
   test('LoadedEraPack carries the new fields for fantasy-mahayana too', async () => {

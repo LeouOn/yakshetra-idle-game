@@ -1331,6 +1331,24 @@
         "attribute_sid": "The all-pervading teacher whose influence is described in the lineage as reaching throughout the field of beings.",
         "iconography_sid": "Seated teacher in meditation posture; the twentieth Buddha of the past, the last in this representative sequence before the three teachers of our own historical era.",
         "reverence_sid": "Reverenced for the all-pervading field of benefit established by an awakened teacher."
+      },
+      "21": {
+        "display_name_sid": "Kakusandha",
+        "attribute_sid": "The first teacher of the present auspicious aeon; the Pali lineage lists open with him, and the Sanskrit tradition says Krakucchanda for the same seat.",
+        "iconography_sid": "A seated awakened teacher in monastic robes, hands in the gesture of meditation; the standard form of a past Buddha, placed first in the row.",
+        "reverence_sid": "Invoked at the head of the Buddhas of the past in the confession liturgies that purify broken precept."
+      },
+      "22": {
+        "display_name_sid": "Koṇāgamana",
+        "attribute_sid": "The second teacher of the present aeon, called Kanakamuni in the Sanskrit lists — one teacher, two names.",
+        "iconography_sid": "A seated awakened teacher in monastic robes; second in the row of past Buddhas, sometimes shown beneath a nagara tree in the commentaries.",
+        "reverence_sid": "Reverenced in the confession liturgy as the second of the past Buddhas of the auspicious aeon."
+      },
+      "23": {
+        "display_name_sid": "Kassapa",
+        "attribute_sid": "The third teacher of the present aeon, the one immediately before Śākyamuni; the Sanskrit lists say Kāśyapa.",
+        "iconography_sid": "A seated awakened teacher in monastic robes, third in the row; his form closes the sequence of past Buddhas before the historical teacher.",
+        "reverence_sid": "Reverenced as the teacher whose era ended just before ours; the confession liturgy names him third among the past Buddhas."
       }
     }
   },

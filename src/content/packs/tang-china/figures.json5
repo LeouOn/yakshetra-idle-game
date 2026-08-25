@@ -464,8 +464,38 @@
       iconography_sid: 'figure.bhadrakalpa.20.iconography_sid',
       reverence_note_sid: 'figure.bhadrakalpa.20.reverence_sid',
     },
-    // Kakusandha, Koṇāgamana, and Kassapa (the three teachers of this
-    // historical era before Śākyamuni) belong here with SIDs in en.json.
-    // Do not add them as unlocalized rows — resolveSid will throw.
+    {
+      id: 'figure:bhadrakalpa-21',
+      display_name_sid: 'figure.bhadrakalpa.21.display_name_sid',
+      transliterated_names: ['Kakusandha', 'Krakucchanda'],
+      role: 'historical-buddha',
+      primary_attribute_sid: 'figure.bhadrakalpa.21.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:bhadrakalpa'],
+      iconography_sid: 'figure.bhadrakalpa.21.iconography_sid',
+      reverence_note_sid: 'figure.bhadrakalpa.21.reverence_sid',
+    },
+    {
+      id: 'figure:bhadrakalpa-22',
+      display_name_sid: 'figure.bhadrakalpa.22.display_name_sid',
+      transliterated_names: ['Koṇāgamana', 'Kanakamuni'],
+      role: 'historical-buddha',
+      primary_attribute_sid: 'figure.bhadrakalpa.22.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:bhadrakalpa'],
+      iconography_sid: 'figure.bhadrakalpa.22.iconography_sid',
+      reverence_note_sid: 'figure.bhadrakalpa.22.reverence_sid',
+    },
+    {
+      id: 'figure:bhadrakalpa-23',
+      display_name_sid: 'figure.bhadrakalpa.23.display_name_sid',
+      transliterated_names: ['Kassapa', 'Kāśyapa'],
+      role: 'historical-buddha',
+      primary_attribute_sid: 'figure.bhadrakalpa.23.attribute_sid',
+      mantra_id: null,
+      sutra_ids: ['sutra:bhadrakalpa'],
+      iconography_sid: 'figure.bhadrakalpa.23.iconography_sid',
+      reverence_note_sid: 'figure.bhadrakalpa.23.reverence_sid',
+    },
   ],
 }
