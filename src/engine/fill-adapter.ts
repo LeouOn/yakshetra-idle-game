@@ -118,6 +118,20 @@ export function tableFillerWithCatalog(entries: readonly CatalogEntry[]): Manife
 }
 
 /**
+ * A filler whose fill result is an externally produced payload (SPEC §16.2 —
+ * the model path). Parsing happens here so `fillManifestSafe` remains the
+ * only ingest: garbage throws, and the safe wrapper falls back to tables.
+ * The payload's own `fill_status`/`provenance` must already say "model";
+ * a table fallback is never stamped model.
+ */
+export function oneShotFiller(raw: unknown): ManifestFiller {
+  return {
+    id: 'model/one-shot',
+    fill: () => parseManifest(raw),
+  };
+}
+
+/**
  * Run `filler`, validate the Manifest, and fall back to tables on any throw
  * or schema miss. Table failure is not swallowed.
  */
