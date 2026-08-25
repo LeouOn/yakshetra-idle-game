@@ -290,7 +290,7 @@ Use a development build, not Expo Go.
 
 ## 14. What to build next
 
-The ladder (§1.1) is shipped through region — six tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), SpaceXAI harvest behind `fillManifestSafe` (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done).
+The ladder (§1.1) is shipped through region — six tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done). Model harvest behind `fillManifestSafe` is the one open build item; it ships provider-pluggable (Z.ai, MiniMax) as Phase 6 of the harvest-quality program (`docs/superpowers/specs/2026-08-24-harvest-quality-program.md`).
 
 **One item is still open**, deferred on purpose: a second develop bay, a new family, or a new pack. §10.15 said quality before width; the cards and the city/region content still have room to get better. Polish, do not widen.
 
