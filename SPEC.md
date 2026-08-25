@@ -21,7 +21,7 @@ This is the project. It is not a tool we are building so a later game can exist.
 
 ### 1.1 The ladder
 
-Six tiers compose. A tier's roster reflects its rung: member-bearing tiers (household, org, city) seat autonomous lives for that tier; unit tiers (town, region) seat one inert row per unlocked lower rung. Every bench keeps its own residue window and cooks its own tier's Manifests; in addition, a fixed share of each bench's residue (every `fold_cadence`-th event) flows into its parent bench's window as a copy carrying one extra id, `folded_from:<childBenchId>`. Unlocked benches tick, cook, and hold harvests on their own; only the tier with the embodied member takes active play. The archive — pinned Manifests and world drafts — is the only proof of progress. Nothing is spent.
+Eight tiers compose. A tier's roster reflects its rung: member-bearing tiers (household, org, city, nation) seat autonomous lives for that tier; unit tiers (town, region, world) seat one inert row per unlocked lower rung. Every bench keeps its own residue window and cooks its own tier's Manifests; in addition, a fixed share of each bench's residue (every `fold_cadence`-th event) flows into its parent bench's window as a copy carrying one extra id, `folded_from:<childBenchId>`. Unlocked benches tick, cook, and hold harvests on their own; only the tier with the embodied member takes active play. The archive — pinned Manifests and world drafts — is the only proof of progress. Nothing is spent.
 
 | #   | Tier      | Roster contains                                         | Unlock                                                                 |
 | --- | --------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -31,8 +31,10 @@ Six tiers compose. A tier's roster reflects its rung: member-bearing tiers (hous
 | 3   | town      | households + organizations                              | 1 archived `charter` + 2 org-scale world drafts                        |
 | 4   | city      | city institutions (member-bearing, autonomous)          | 1 archived `festival` + 1 archived `landmark` + 2 town-scale drafts    |
 | 5   | region    | person + households + orgs + towns + cities (unit rows) | 1 archived `institution` + 1 archived `monument` + 2 city-scale drafts |
+| 6   | nation    | national institutions (member-bearing, autonomous)      | 1 archived `legend` + 1 archived `road` + 2 region-scale drafts        |
+| 7   | world     | person → nations (unit rows, one per unlocked rung)     | 1 archived `edict` + 1 archived `ministry` + 2 nation-scale drafts     |
 
-Crossing a milestone fires a graduation (ceremony + guaranteed first harvest auto-queued at the new tier). Kind registry, endowment tracks, visitors, compendium, offline cap, and the studio shell all generalize through region — the chain ships.
+Crossing a milestone fires a graduation (ceremony + guaranteed first harvest auto-queued at the new tier). Kind registry, endowment tracks, visitors, compendium, offline cap, and the studio shell all generalize through world — the chain ships.
 
 ---
 
@@ -212,7 +214,7 @@ The old constitution was a museum. These are the new walls. They are fewer and t
 12. **Do not lecture the player.** No moral grade. No "you have understood."
 13. **Disclaimer is a toast.** Show it once. Remember "Got it." Do not make it a ritual gate. Do not delete the settings path that can bring it back.
 14. **Content warnings are player filters**, not ship gates. Keep the taxonomy as a courtesy. Do not block a pack because an advisory folder is empty.
-15. **Quality before width.** One bay, one compile, better cards — then more families, then more bays.
+15. **Quality before width.** One bay, one compile, better cards — then more families, then more bays. The quality pass landed 2026-08 (named figures, model harvest, rubric-enforced cards); the ladder earned its rungs to world after it. A second bay, a new family, and a new pack stay deferred.
 
 ### Drop
 
@@ -290,9 +292,9 @@ Use a development build, not Expo Go.
 
 ## 14. What to build next
 
-The ladder (§1.1) is shipped through region — six tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done). Model harvest behind `fillManifestSafe` shipped provider-pluggable (Z.ai, MiniMax) as Phase 6 of the harvest-quality program (`docs/superpowers/specs/2026-08-24-harvest-quality-program.md`); the default build still harvests from tables alone.
+The ladder (§1.1) shipped through region and extends to nation and world as Phase 8 of the harvest-quality program — eight tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done). Model harvest behind `fillManifestSafe` shipped provider-pluggable (Z.ai, MiniMax) as Phase 6 of the harvest-quality program (`docs/superpowers/specs/2026-08-24-harvest-quality-program.md`); the default build still harvests from tables alone.
 
-**Another item is deferred**, on purpose: a second develop bay, a new family, or a new pack. §10.15 said quality before width; the cards and the city/region content still have room to get better. Polish, do not widen.
+**Still deferred**, on purpose: a second develop bay, a new family, or a new pack. §10.15's quality pass landed as Phases 5–7; the ladder's width to world was earned as Phase 8. Polish the new rungs before widening anything else.
 
 ---
 
