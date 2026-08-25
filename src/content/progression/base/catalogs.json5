@@ -848,27 +848,97 @@
   // ──────────────────────────────────────────────────────────────────────
   // Visitor tables (Phase 4 Task 2). A visitor row with `table_ref` swaps
   // the tier's kind catalog for the whole pool of entries living under
-  // that namespace. Ship one namespace; no visitor carries `table_ref`
-  // today, so the runtime swap is a future-hook, but the data shape must
-  // exist for the loader test and the swap unit test to drive. The
-  // entries use names that NEVER appear in the per-kind tables, so the
-  // a swap is observable in the harvested manifest name.
+  // that namespace. Phase 7 Task 4 wired two real tables: the city's
+  // court-auditor and the region's road-surveyor sit at their own tables,
+  // and sample-arrival keeps its fixture seat with polished copy. The
+  // entries use names that NEVER appear in the per-kind tables, so a
+  // swap is observable in the harvested manifest name.
   // ──────────────────────────────────────────────────────────────────────
   visitor_tables: {
     'visitor-table/sample-arrival': [
       {
         name: 'A guest-epoch card',
-        one_liner: 'A card that did not come from the bench.',
-        subject: 'a visitor-table card',
-        detail: 'The card came from a visitor\'s table, not the bench\'s catalog. The bench\'s shelf was empty when the harvest happened.',
+        one_liner: 'A card stamped by whoever was seated, not by the bench.',
+        subject: 'a visitor-stamped card',
+        detail:
+          "The harvest came up from the guest's own table while the seat was warm. The bench's shelf had nothing to do with it, and the card is none the worse for that.",
         tags: ['visitor', 'table'],
       },
       {
         name: 'A swap-flavored stamp',
-        one_liner: 'A stamp that proves the table was swapped.',
-        subject: 'a swap-stamp',
-        detail: 'Whoever stamped it was clearly seated when the harvest happened. The kind is not the one the bench would have picked.',
+        one_liner: 'A mark proving the table was swapped mid-window.',
+        subject: 'a swap stamp',
+        detail:
+          'Whoever pressed it was seated when the residue cooked. The kind is not the one the bench would have picked, which is the point of having guests.',
         tags: ['visitor', 'swap'],
+      },
+    ],
+    'visitor-table/court-audit': [
+      {
+        name: "The assessor's seal",
+        one_liner: 'A stamp that follows the number, not the asker.',
+        subject: "an assessor's seal",
+        detail:
+          "The court's man presses it under the tally and the tally becomes true everywhere. Wax the color of dried persimmon, a handle worn to the grain of one particular hand.",
+        tags: ['seal', 'audit'],
+      },
+      {
+        name: 'The re-counted granary',
+        one_liner: 'The same sacks, a different number, and the number held.',
+        subject: 'a re-counted granary',
+        detail:
+          'The auditors opened every bin and found the surplus smaller than reported and larger than feared. The correction outlived the magistrate who ordered it.',
+        tags: ['granary', 'count'],
+      },
+      {
+        name: "The auditor's lodging",
+        one_liner: "The bureau's guest room, which no guest enjoys.",
+        subject: 'an official lodging',
+        detail:
+          "A clean pallet in the bureau's back court, one lamp, one lock. Assessors accept it as part of the fee. The ledger of its occupants is the city's honest history.",
+        tags: ['lodging', 'audit'],
+      },
+      {
+        name: 'The clerk who sleeps well',
+        one_liner: 'He signs last and sleeps first.',
+        subject: 'a trusted clerk',
+        detail:
+          "Thirty years of entering other men's numbers without once adjusting one. The court trusts his sleep more than its own seals.",
+        tags: ['clerk', 'trust'],
+      },
+    ],
+    'visitor-table/road-survey': [
+      {
+        name: "The surveyor's chain",
+        one_liner: 'A measured length the whole road agrees on.',
+        subject: "a surveyor's chain",
+        detail:
+          'Brass links, a hundred to the chain, carried shoulder-sore across three prefectures. Where the chain ends and is lifted, that is a mile, whatever the map says.',
+        tags: ['chain', 'measure'],
+      },
+      {
+        name: 'The re-drawn ford',
+        one_liner: 'The crossing moved, and the map admitted it.',
+        subject: 'a re-drawn ford',
+        detail:
+          'The river shifted in the spring floods; the surveyor walked the new bank and moved the ink. Two villages discovered they were now half a day nearer each other.',
+        tags: ['ford', 'map'],
+      },
+      {
+        name: 'The milestone at the false crest',
+        one_liner: 'A stone that lies about the distance, on purpose.',
+        subject: 'an encouraging milestone',
+        detail:
+          'The first surveyor set it past the crest where tired walkers could see it, saving them despair. Every survey since has preserved the error.',
+        tags: ['milestone', 'crest'],
+      },
+      {
+        name: 'The chain-apprentice',
+        one_liner: 'Counts her steps in her sleep, she says.',
+        subject: 'a chain-apprentice',
+        detail:
+          'She carries the spare chain and a grudge against hills. Her notebook margins fill with birds, which the surveyor pretends not to see.',
+        tags: ['apprentice', 'survey'],
       },
     ],
   },

@@ -183,13 +183,16 @@ describe('loadProgression', () => {
     ).toBe(true);
   });
 
-  it('exposes visitorTables for the seeded sample namespace (Phase 4 Task 2)', () => {
-    // The namespace + entries live in catalogs.json5 under `visitor_tables`.
-    // No shipped visitor carries `table_ref` yet, but the data shape must
-    // survive the loader so the swap unit test can drive it.
+  it('exposes visitorTables for the sample namespace and both Phase 7 tables', () => {
+    // The namespaces + entries live in catalogs.json5 under `visitor_tables`.
+    // Phase 7 Task 4 wired two real tables: the city court-auditor and the
+    // region road-surveyor carry `table_ref`s that resolve here.
     const tables = registries.visitorTables;
-    expect(tables['visitor-table/sample-arrival']).toBeDefined();
-    expect(tables['visitor-table/sample-arrival']?.length).toBeGreaterThan(0);
+    expect(Object.keys(tables)).toEqual([
+      'visitor-table/sample-arrival',
+      'visitor-table/court-audit',
+      'visitor-table/road-survey',
+    ]);
     for (const entry of tables['visitor-table/sample-arrival'] ?? []) {
       expect(entry.name.length).toBeGreaterThan(0);
       expect(entry.one_liner.length).toBeGreaterThan(0);

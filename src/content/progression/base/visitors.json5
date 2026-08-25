@@ -9,7 +9,9 @@
 // Phase 4 Task 2: sample-arrival is the swap fixture — a row whose
 // `table_ref` resolves to a `visitor_tables` namespace in catalogs.json5.
 // The harvested manifest name comes from the visitor table, not the
-// tier catalog, while the guest is seated. No other behavior ships.
+// tier catalog, while the guest is seated. Phase 7 Task 4 seated two
+// more guests at real tables: court-auditor (city) and road-surveyor
+// (region).
 {
   visitors: [
     {
@@ -39,21 +41,25 @@
     // City visitor (Phase 4 Task 3): a court auditor walks the city's
     // benches. Long cadence (~1000 ticks) so the city sees audits rarely;
     // modest jitter so the audit does not always fall on the same block.
-    // Effects only — the table_ref swap is a Task 2 fixture, kept as a
-    // future-hook with `visitor/sample-arrival`.
+    // Phase 7 Task 4 wired the real table: while seated, harvests come
+    // from `visitor-table/court-audit` (effects rows unchanged).
     {
       schema_version: 'visitor/v0', id: 'visitor/court-auditor', tiers: ['city'],
       cadence_ticks: 1080, jitter_ticks: 240, duration_windows: 3,
       effects: [{ op: 'add_resource', key: 'cook_speed', delta: 1 }],
+      table_ref: 'visitor-table/court-audit',
       sid_ns: 'visitor.court_auditor',
     },
     // Region visitor (Phase 4 Task 3): a road surveyor walks the road-side
     // benches. Mid cadence so the region sees them seasonally. Effects only
-    // — the surplus_rate delta lands at the region's absorb site.
+    // — the surplus_rate delta lands at the region's absorb site. Phase 7
+    // Task 4 wired the real table: while seated, harvests come from
+    // `visitor-table/road-survey`.
     {
       schema_version: 'visitor/v0', id: 'visitor/road-surveyor', tiers: ['region'],
       cadence_ticks: 720, jitter_ticks: 180, duration_windows: 3,
       effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 1 }],
+      table_ref: 'visitor-table/road-survey',
       sid_ns: 'visitor.road_surveyor',
     },
   ],

@@ -220,8 +220,10 @@ export const VisitorSchema = z
     sid_ns: z.string().min(1),
   })
   .strict()
-  .refine((v) => (v.effects === undefined) !== (v.table_ref === undefined), {
-    message: 'visitor must set exactly one of effects or table_ref',
+  // Phase 7 Task 4: guests may boost AND swap (engine reads effects and
+  // table_ref independently); at least one is still required.
+  .refine((v) => v.effects !== undefined || v.table_ref !== undefined, {
+    message: 'visitor must set at least one of effects or table_ref',
   });
 export type Visitor = z.infer<typeof VisitorSchema>;
 

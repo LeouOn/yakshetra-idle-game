@@ -119,7 +119,7 @@ describe('remaining progression schemas', () => {
     expect(EndowmentTrackSchema.parse(track).slot_cost).toBe(1);
   });
 
-  it('VisitorSchema requires exactly one of effects or table_ref', () => {
+  it('VisitorSchema requires at least one of effects or table_ref (both allowed since Phase 7)', () => {
     const base = {
       schema_version: 'visitor/v0',
       id: 'visitor/gate-yaksa',
@@ -127,16 +127,16 @@ describe('remaining progression schemas', () => {
       cadence_ticks: 240,
       jitter_ticks: 60,
       duration_windows: 2,
-      sid_ns: 'visitor.gate-yaksa',
+      sid_ns: 'visitor.gate_yaksa',
     };
     expect(() => VisitorSchema.parse({ ...base })).toThrow();
-    expect(() =>
+    expect(
       VisitorSchema.parse({
         ...base,
         effects: [{ op: 'add_resource', key: 'surplus_rate', delta: 1 }],
         table_ref: 'tables/yaksa',
-      }),
-    ).toThrow();
+      }).table_ref,
+    ).toBe('tables/yaksa');
     expect(VisitorSchema.parse({ ...base, table_ref: 'tables/yaksa' }).table_ref).toBe(
       'tables/yaksa',
     );
