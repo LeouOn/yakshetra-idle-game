@@ -98,5 +98,33 @@
       maxProgress: 10,
       effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 8. Medicine rite — generosity. Recite for the sick at the clinic
+    // door; bound to Bhaiṣajyaguru by catalog tag (SPEC §16.1 reach).
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/medicine-rite',
+      label_sid: 'tang.practice.medicine_rite.label_sid',
+      description_sid: 'tang.practice.medicine_rite.description_sid',
+      lens: 'generosity',
+      progressPerTick: 0.3,
+      maxProgress: 10,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 9. Six-syllable recitation — collected attention. Hold the
+    // six-syllable mantra through the working day; bound to Guanyin.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/six-syllable-recitation',
+      label_sid: 'tang.practice.six_syllable_recitation.label_sid',
+      description_sid: 'tang.practice.six_syllable_recitation.description_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.35,
+      maxProgress: 12,
+      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+    },
   ],
 }

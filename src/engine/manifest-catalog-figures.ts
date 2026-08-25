@@ -45,7 +45,12 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
     subject: 'a healer of the sick',
     detail:
       'Tang monasteries held his rite for the ill. The bowl holds medicine, not gold, and the hand that lifts it does not ask who can pay.',
-    tags: ['figure:medicine-buddha', 'mantra:medicine-buddha', 'healing'],
+    tags: [
+      'figure:medicine-buddha',
+      'mantra:medicine-buddha',
+      'practice:tang/medicine-rite',
+      'healing',
+    ],
   },
   {
     name: 'Vairocana',
@@ -69,7 +74,13 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
     subject: 'the one who hears the cries',
     detail:
       "The Lotus Sutra's universal gate chapter reached Chang'an as Guanyin. A willow branch, a vase of water, and a willingness to arrive in whatever shape the hour needs.",
-    tags: ['figure:avalokiteshvara', 'mantra:six-syllable', 'compassion', 'guanyin'],
+    tags: [
+      'figure:avalokiteshvara',
+      'mantra:six-syllable',
+      'practice:tang/six-syllable-recitation',
+      'compassion',
+      'guanyin',
+    ],
   },
   {
     name: 'Mañjuśrī (Wenshu)',

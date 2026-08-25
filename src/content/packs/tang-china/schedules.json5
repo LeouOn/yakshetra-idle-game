@@ -237,12 +237,12 @@
           icon_sid: 'tang.block.city_day.midday_yard.icon_sid',
         },
         {
-          id: 'block:city-day/afternoon-petitions',
-          label_sid: 'tang.block.city_day.afternoon_petitions.label_sid',
+          id: 'block:city-day/medicine-rite',
+          label_sid: 'tang.block.city_day.medicine_rite.label_sid',
           startHour: 15,
           endHour: 19,
-          practice_id: 'practice:tang/breath-sitting',
-          icon_sid: 'tang.block.city_day.afternoon_petitions.icon_sid',
+          practice_id: 'practice:tang/medicine-rite',
+          icon_sid: 'tang.block.city_day.medicine_rite.icon_sid',
         },
         {
           id: 'block:city-day/evening-watch',
@@ -314,12 +314,12 @@
           icon_sid: 'tang.block.region_day.evening_visit.icon_sid',
         },
         {
-          id: 'block:region-day/evening-copying',
-          label_sid: 'tang.block.region_day.evening_copying.label_sid',
+          id: 'block:region-day/six-syllable',
+          label_sid: 'tang.block.region_day.six_syllable.label_sid',
           startHour: 20,
           endHour: 23,
-          practice_id: 'practice:tang/sutra-copying',
-          icon_sid: 'tang.block.region_day.evening_copying.icon_sid',
+          practice_id: 'practice:tang/six-syllable-recitation',
+          icon_sid: 'tang.block.region_day.six_syllable.icon_sid',
         },
         {
           id: 'block:region-day/lamps-down',

@@ -302,6 +302,14 @@
       "nianfo_recitation": {
         "label_sid": "Nianfo recitation",
         "description_sid": "Hold Amitābha's name through the evening hour. The trust it builds is ordinary: a steadier voice for the people who need one."
+      },
+      "medicine_rite": {
+        "label_sid": "Medicine rite",
+        "description_sid": "Recite at the clinic door for whoever is inside. The trust it builds is the ordinary kind: neighbors who know you will come."
+      },
+      "six_syllable_recitation": {
+        "label_sid": "Six-syllable recitation",
+        "description_sid": "Hold the six syllables through the working day. The energy it returns is ordinary: a steadier hand for the afternoon."
       }
     },
     "schedule": {
@@ -417,9 +425,9 @@
           "label_sid": "Midday yard",
           "icon_sid": "yard"
         },
-        "afternoon_petitions": {
-          "label_sid": "Afternoon petitions",
-          "icon_sid": "brush"
+        "medicine_rite": {
+          "label_sid": "Medicine rite",
+          "icon_sid": "bowl"
         },
         "evening_watch": {
           "label_sid": "Evening watch",
@@ -451,9 +459,9 @@
           "label_sid": "Evening roadhouse",
           "icon_sid": "lamp"
         },
-        "evening_copying": {
-          "label_sid": "Evening copying",
-          "icon_sid": "brush"
+        "six_syllable": {
+          "label_sid": "Six syllables",
+          "icon_sid": "bell"
         },
         "lamps_down": {
           "label_sid": "Roadhouse lamps down",
