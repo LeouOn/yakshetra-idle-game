@@ -1,4 +1,5 @@
-// Visitors — deterministic boost guests on the benches.
+// Visitors — deterministic guests on the benches: boosters while seated,
+// and harvest-table swappers when a table_ref is set.
 //
 // Arrivals are pure functions of (tier counters, ctx seed, content rows):
 // no clock, no global RNG. One visitor sits at a tier at a time; counters

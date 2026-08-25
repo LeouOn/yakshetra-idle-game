@@ -60,6 +60,9 @@ describe('catalog rubric (SPEC 10.15 quality pass)', () => {
     for (const [kind, entries] of Object.entries(registries.catalogs)) {
       entries.forEach((entry, i) => out.push({ table: kind, i, entry }));
     }
+    for (const [ns, entries] of Object.entries(registries.visitorTables)) {
+      entries.forEach((entry, i) => out.push({ table: ns, i, entry }));
+    }
     return out;
   }
 
@@ -92,6 +95,10 @@ describe('catalog rubric (SPEC 10.15 quality pass)', () => {
     for (const [kind, entries] of Object.entries(registries.catalogs)) {
       const names = entries.map((e) => e.name);
       expect(new Set(names).size, kind).toBe(names.length);
+    }
+    for (const [ns, entries] of Object.entries(registries.visitorTables)) {
+      const names = entries.map((e) => e.name);
+      expect(new Set(names).size, ns).toBe(names.length);
     }
   });
 });

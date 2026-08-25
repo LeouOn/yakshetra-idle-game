@@ -261,8 +261,8 @@ OpenAI-shaped request core with provider baseURL and auth.
 ## 10. Polish audit record (Phase 7, 2026-08-24)
 
 Rubric: written into `src/content/progression/__tests__/catalogs.test.ts` and
-enforced on every kind table (name/one_liner/subject/detail bands, sentence
-counts, tag counts, uniqueness, no meter tokens).
+enforced on every kind table and visitor table (name/one_liner/subject/detail
+bands, sentence counts, tag counts, uniqueness, no meter tokens).
 
 - Core tables: rows brought inside the rubric bands; names unchanged.
 - Tier tables: deepened 4 → 5 rows each (10 new entries, one per kind).
