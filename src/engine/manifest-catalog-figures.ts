@@ -52,7 +52,7 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
     one_liner: 'The cosmic Buddha the Huayan masters placed at the source.',
     subject: 'the cosmic Buddha',
     detail:
-      'In Huayan halls he sits at the center of the array, and every other figure arranges itself around him like light around a lamp.',
+      'In Huayan halls he sits at the center of the array. Every other figure arranges itself around him like light around a lamp.',
     tags: ['figure:vairocana', 'cosmic', 'huayan'],
   },
   {
@@ -100,7 +100,7 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
     one_liner: 'One of the three sages of the West, standing beside Amitābha.',
     subject: 'the power of wisdom arriving',
     detail:
-      'Dashizhi in Chinese halls, less carved than his companions and named exactly as often in the sutras.',
+      'Dashizhi in Chinese halls, less carved than his companions. The sutras name him exactly as often.',
     tags: ['figure:mahasthamaprapta', 'wisdom', 'western'],
   },
   {

@@ -182,7 +182,7 @@
         },
         {
           name: 'The courtyard guest',
-          one_liner: 'Neither pet nor stranger. Just here.',
+          one_liner: 'Neither pet nor stranger, just here.',
           subject: 'a being in the yard',
           detail:
             'It eats what is left and watches the door. You have started leaving the better scraps.',
@@ -231,7 +231,7 @@
           one_liner: 'The cosmic Buddha the Huayan masters placed at the source.',
           subject: 'the cosmic Buddha',
           detail:
-            'In Huayan halls he sits at the center of the array, and every other figure arranges itself around him like light around a lamp.',
+            'In Huayan halls he sits at the center of the array. Every other figure arranges itself around him like light around a lamp.',
           tags: ['figure:vairocana', 'cosmic', 'huayan'],
         },
         {
@@ -278,7 +278,7 @@
           one_liner: 'One of the three sages of the West, standing beside Amitābha.',
           subject: 'the power of wisdom arriving',
           detail:
-            'Dashizhi in Chinese halls, less carved than his companions and named exactly as often in the sutras.',
+            'Dashizhi in Chinese halls, less carved than his companions. The sutras name him exactly as often.',
           tags: ['figure:mahasthamaprapta', 'wisdom', 'western'],
         },
         {

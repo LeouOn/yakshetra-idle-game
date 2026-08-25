@@ -182,7 +182,7 @@ const PEOPLE: readonly CatalogEntry[] = [
   },
   {
     name: 'The courtyard guest',
-    one_liner: 'Neither pet nor stranger. Just here.',
+    one_liner: 'Neither pet nor stranger, just here.',
     subject: 'a being in the yard',
     detail:
       'It eats what is left and watches the door. You have started leaving the better scraps.',
