@@ -292,7 +292,7 @@ Use a development build, not Expo Go.
 
 The ladder (§1.1) is shipped through region — six tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done). Model harvest behind `fillManifestSafe` is the one open build item; it ships provider-pluggable (Z.ai, MiniMax) as Phase 6 of the harvest-quality program (`docs/superpowers/specs/2026-08-24-harvest-quality-program.md`).
 
-**One item is still open**, deferred on purpose: a second develop bay, a new family, or a new pack. §10.15 said quality before width; the cards and the city/region content still have room to get better. Polish, do not widen.
+**Another item is deferred**, on purpose: a second develop bay, a new family, or a new pack. §10.15 said quality before width; the cards and the city/region content still have room to get better. Polish, do not widen.
 
 ---
 
@@ -315,7 +315,7 @@ These are implementation briefs, not a second constitution. Follow the fences in
 - `R-NO-SACRED-NAMES` and `R-NO-REAL-MANTRA` are removed from `lintPack`.
 - `scripts/audit-plan.mjs` no longer greps the 40-name list.
 - Tests assert those rules stay gone (`retired R-NO-SACRED-NAMES` / `retired R-NO-REAL-MANTRA` in `src/content/__tests__/lint.test.ts`).
-- Incomplete `figure:bhadrakalpa-21`…`25` rows (no SIDs, two of them aliases) were stripped. Count stays 32 until you add localized rows.
+- Incomplete `figure:bhadrakalpa-21`…`25` rows (no SIDs, two of them aliases) were stripped; `21`–`23` later landed localized, and the count is 35.
 
 **Goal**
 
@@ -326,7 +326,7 @@ A harvest can come back as Guanyin, Dizang, a courtyard yakṣa, Bodhidharma —
 1. **Catalog first.** Add named entries to `PEOPLE` (and a couple of `PLACES` / `THINGS` if a site or object is the figure's) in `src/engine/manifest-catalog.ts`. Start with the twelve core Tang figures that already have SIDs (`figure:shakyamuni` … `figure:bodhidharma`). Use the real names. Keep the generic clerk/courier rows as fallbacks.
 2. **Wire pick.** `tableFillManifest` should prefer a catalog row whose tags or id match a residue `ids[]` token (`figure:…`, `mantra:…`, a practice bound to that figure). If nothing matches, keep the current table pick. Pin `about_id` / `about_name` when the window is about a figure.
 3. **Let figures act.** One Tang event or practice that _does something with_ a named figure — a guest, a demand, a courtyard presence — with SIDs in `src/i18n/en.json`. Prefer an event over a glossary entry.
-4. **Finish the last three of this era only if you need them.** Kakusandha, Koṇāgamana, Kassapa. Add four SIDs each (`display_name`, `attribute`, `iconography`, `reverence`) under `figure.bhadrakalpa.21`–`23`, then the rows. Do **not** add Krakucchanda / Kanakamuni as extra figures; those are the same two people. Bump the `toHaveLength(32)` assertions in `pack.test.ts` and `sacred-types.test.ts` if the count changes.
+4. **The last three of this era are done.** Kakusandha, Koṇāgamana, Kassapa shipped with four SIDs each under `figure.bhadrakalpa.21`–`23`. Krakucchanda / Kanakamuni live in `transliterated_names` only — the same two people, not extra rows. The count assertions sit at 35.
 5. **Mantras.** Pack mantras already exist (`mantra:nianfo`, Heart Sutra close, six-syllable, etc.). You may put the seed syllables in player-facing SID text. Do not mint a `merit` resource for reciting them.
 
 **Do not**
