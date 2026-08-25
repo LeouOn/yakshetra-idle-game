@@ -179,7 +179,7 @@ A `ManifestFiller` is a function: `(request, rng) → Manifest`. `tableFiller` i
 
 When a model filler is wired:
 
-- Provider is **SpaceXAI** (xAI API). Base URL `https://api.x.ai/v1`. Key env var `XAI_API_KEY`.
+- Providers are **Z.ai** and **MiniMax** behind the registry in `src/ai/providers.ts` (Z.ai `https://api.z.ai/api/paas/v4`, MiniMax `https://api.minimax.io/v1`). Key env vars `ZAI_API_KEY` / `MINIMAX_API_KEY`, override `YAK_FILLER_PROVIDER`.
 - The key lives server-side or in a git-ignored local env. It is never in the Expo bundle, never in `src/engine`, never committed.
 - Call at harvest first. Background fill comes later.
 - The model compiles residue + life context + brief + focus into slots. It does not invent fields. It does not chat with the player.
@@ -290,7 +290,7 @@ Use a development build, not Expo Go.
 
 ## 14. What to build next
 
-The ladder (§1.1) is shipped through region — six tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done). Model harvest behind `fillManifestSafe` is the one open build item; it ships provider-pluggable (Z.ai, MiniMax) as Phase 6 of the harvest-quality program (`docs/superpowers/specs/2026-08-24-harvest-quality-program.md`).
+The ladder (§1.1) is shipped through region — six tiers, archive milestones, graduation, residue fold-up, endowment, visitors, compendium, offline cap, the studio shell. The order once listed here is closed: named figures on the bench (done), pinned persons/places changing the next life (done), life-chain persistence at parity with the bench (done), campaign screens on the studio visual language (done). Model harvest behind `fillManifestSafe` shipped provider-pluggable (Z.ai, MiniMax) as Phase 6 of the harvest-quality program (`docs/superpowers/specs/2026-08-24-harvest-quality-program.md`); the default build still harvests from tables alone.
 
 **Another item is deferred**, on purpose: a second develop bay, a new family, or a new pack. §10.15 said quality before width; the cards and the city/region content still have room to get better. Polish, do not widen.
 
@@ -341,7 +341,7 @@ A harvest can come back as Guanyin, Dizang, a courtyard yakṣa, Bodhidharma —
 - A cooked window whose residue mentions `figure:avalokiteshvara` (or the compassion practice) harvests a card named for Guanyin / Avalokiteśvara, pinable, with `about_id`.
 - `pnpm test` is green. Tang pack still loads. No new lint rule.
 
-### 16.2 SpaceXAI harvest
+### 16.2 Model harvest
 
 **Goal**
 
@@ -351,14 +351,16 @@ At harvest, if a key is available _outside the client bundle_, a model writes th
 
 - `src/engine` stays sync and network-free. Do not make `ManifestFiller.fill` async. Do not import `fetch` or `process.env` there.
 - `fillManifestSafe` remains the only ingest path. Invalid JSON → table fallback. Table failure is not swallowed.
-- Key env var is `XAI_API_KEY`. Provider name is SpaceXAI. Base URL is `https://api.x.ai/v1`. Confirm the current model on https://docs.x.ai before wiring. Never invent `SPACEXAI_*`.
-- The key must not appear in the Expo web bundle. That means no `EXPO_PUBLIC_XAI_API_KEY`, no key in `app.json`, no key in any file under `src/ui` or `app/` that Metro will pack.
+- Key env vars are `ZAI_API_KEY` / `MINIMAX_API_KEY` (override `YAK_FILLER_PROVIDER`). Provider facts live in the registry at `src/ai/providers.ts`: Z.ai `https://api.z.ai/api/paas/v4` (model `glm-4.6`, JSON mode via `response_format`), MiniMax `https://api.minimax.io/v1` (model `MiniMax-M3`, no `response_format` on its OpenAI-compatible endpoint — prompt-only JSON plus `<think>` stripping; thinking disabled where the model allows it). Confirm current model ids from the provider docs before editing the registry. Never invent provider env vars.
+- The key must not appear in the Expo web bundle. That means no `EXPO_PUBLIC_*` key vars, no key in `app.json`, no key in any file under `src/ui` or `app/` that Metro will pack.
 
 **Shape**
 
 ```
-src/ai/spacexai-manifest.ts     // NOT imported by src/engine
-  completeManifest(request, fetchImpl, apiKey) → Promise<unknown>
+src/ai/providers.ts             // provider facts as data; NOT imported by src/engine
+src/ai/manifest-completer.ts    // NOT imported by src/engine
+  createManifestCompleter(providerId, apiKey, fetchImpl?) → (request) => Promise<unknown>
+  makeCompleterFromEnv(env, fetchImpl?) → completer | null
 
 src/engine/fill-adapter.ts      // unchanged contract
   ManifestFiller.fill is sync
@@ -377,25 +379,25 @@ UI / hook (StudioView harvest path)
 
 Expo has no server in this repo. Do not pretend it does.
 
-- **Tests (Node):** read `process.env.XAI_API_KEY` in `src/ai/` or the test file. Mock `fetch` for the default suite so CI does not need a key. One optional live test, skipped without the key, is enough.
+- **Tests (Node):** read `process.env.ZAI_API_KEY` / `process.env.MINIMAX_API_KEY` in `src/ai/` or the test file. Mock `fetch` for the default suite so CI does not need a key. One optional live test per provider, skipped without its key, is enough.
 - **App:** `StudioView` already takes injectable collaborators (`storage`, `clock`, `rng`). Add an optional `completeManifest?: (req) => Promise<unknown>`. Default is undefined → tables. A later local proxy or desktop host injects the function. The default Expo web build never sees the key.
 
 **Prompt**
 
 Send the `ManifestCompileRequest` as JSON (`schema_version`, residue, summary, brief, focus, `life_context`, quality_tier). Instruct the model:
 
-- Return a single JSON object that satisfies `manifest/v0`.
+- Return a single JSON object that satisfies `manifest/v1` (v0's kind enum cannot carry the higher-scale kinds).
 - Fill `name`, `one_liner`, `subject`, `detail`, `tags` only. Keep `kind` as compiled unless the request's residue clearly demands a different kind in the existing pick rules.
 - Named figures from `life_context` and residue ids are in play.
 - Do not add keys. Do not write a chat reply. Do not claim attainment.
-- `fill_status` must be `"model"`. `provenance` is `{ source: "model", revision: "spacexai/<model-id>" }`.
+- `fill_status` must be `"model"`. `provenance` is `{ source: "model", revision: "<registry slug>" }` — `zai/glm-4.6`, `minimax/MiniMax-M3`.
 
 **Tests to write**
 
 - `fillManifestSafe` + garbage one-shot filler → table card (`fill-adapter.test.ts` already covers this pattern).
 - `completeManifest` builds the right URL, header `Authorization: Bearer …`, and body. Mock fetch.
 - Missing key / fetch throw / non-JSON / extra keys / missing `name` → harvest still returns a valid table Manifest.
-- No file under `src/engine` imports `src/ai` or `process.env`.
+- No file under `src/engine` imports `src/ai` or `process.env` (an engine-purity test walks `src/engine` and fails on either).
 - `StudioView` without `completeManifest` still harvests (existing test).
 
 **Do not**
@@ -410,4 +412,4 @@ Send the `ManifestCompileRequest` as JSON (`schema_version`, residue, summary, b
 - `pnpm test` is green with no API key.
 - Injecting a stub `completeManifest` that returns a valid Manifest produces `fill_status: "model"` in the archive.
 - Breaking that stub still produces a table card.
-- `rg XAI_API_KEY src/engine app src/ui` is empty.
+- `rg 'ZAI_API_KEY|MINIMAX_API_KEY' src/engine app src/ui` is empty.

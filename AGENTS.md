@@ -28,7 +28,7 @@ These are not style. Breaking them is a bug.
 
 **Table fallback.** `fillManifestSafe` must still produce a valid table Manifest if the model throws or misses the schema. Do not swallow a table failure.
 
-**Secrets.** `XAI_API_KEY` never enters the Expo bundle, never enters `src/engine`, never gets committed. LLM calls live behind a filler adapter invoked from UI/persistence/server-side code. Provider is SpaceXAI (`https://api.x.ai/v1`). Confirm current model names from https://docs.x.ai before wiring.
+**Secrets.** `ZAI_API_KEY` / `MINIMAX_API_KEY` never enter the Expo bundle, never enter `src/engine`, never get committed. LLM calls live in `src/ai/manifest-completer.ts`, invoked from UI-side code through StudioView's optional `completeManifest` collaborator. Provider facts (base URLs, models, JSON-mode support) live in `src/ai/providers.ts`; confirm current model ids from the provider docs before editing the registry.
 
 **Residue is ids and numbers.** No prose on `ResidueEvent`. The compiler writes sentences.
 
@@ -102,6 +102,7 @@ Not Expo Go. `curl` in PowerShell is an alias; use the real tool or `Invoke-WebR
 | Manifest + tables          | `src/engine/manifest.ts`, `manifest-catalog.ts`                                      |
 | Cook / harvest / pin       | `src/engine/operations.ts`, `play-cursor.ts`, `practice-progress.ts`, `focus.ts`     |
 | Filler slot                | `src/engine/fill-adapter.ts`                                                         |
+| Model completer            | `src/ai/providers.ts`, `src/ai/manifest-completer.ts`                                |
 | World                      | `src/engine/world-draft.ts`, `world-scale.ts`                                        |
 | Six-tier ladder            | `src/engine/session-ladder.ts`, `graduation.ts`, `bench-mapping.ts`, `tier-state.ts` |
 | Shared ladder constants    | `src/engine/ladder-const.ts`                                                         |
@@ -135,7 +136,7 @@ Not Expo Go. `curl` in PowerShell is an alias; use the real tool or `Invoke-WebR
 - Do not restore sacred-name or mantra bans.
 - Do not add a second develop bay before quality tier and named-figure harvest feel good.
 - Do not put LLM calls or API keys in `src/engine`.
-- Do not invent `SPACEXAI_*` env vars. The key is `XAI_API_KEY`.
+- Do not invent provider env vars. The keys are `ZAI_API_KEY` / `MINIMAX_API_KEY` (override `YAK_FILLER_PROVIDER`); models change in the registry, not env.
 - Do not treat `docs/roadmap.md` (P2–P4) as the plan.
 - Do not expand scope into "the next game." Export JSON if you must; ship this one.
 
