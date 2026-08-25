@@ -18,8 +18,13 @@ import type { LifeContext } from './life-context';
 // CatalogEntry has the same shape), so the default slots into the param.
 import { CATALOG as DEFAULT_CATALOG } from './manifest-catalog';
 import type { Rng } from './rng';
-import { residueWindowId, summarizeResidue, type ResidueEvent } from './residue';
-import type { CatalogMap } from './table-catalog';
+import {
+  residueWindowId,
+  summarizeResidue,
+  type ResidueEvent,
+  type ResidueSummary,
+} from './residue';
+import type { CatalogEntry, CatalogMap } from './table-catalog';
 
 export const MANIFEST_SCHEMA_VERSION = 'manifest/v1' as const;
 export const MANIFEST_LEGACY_VERSION = 'manifest/v0' as const;
@@ -110,6 +115,34 @@ function lastSegment(id: string): string {
   return cut >= 0 ? id.slice(cut + 1) : id;
 }
 
+/** A catalog row that names a figure and matches a residue id (SPEC §16.1). */
+interface FigureCandidate {
+  readonly kind: string;
+  readonly entry: CatalogEntry;
+  readonly figureId: string;
+}
+
+/**
+ * Rows whose tags reference an id the residue window carries. Only rows
+ * tagged `figure:*` are candidates; the visitor table swap (a Proxy with no
+ * own keys) yields none, which preserves the swap's replace-not-merge rule.
+ */
+function figureCandidates(summary: ResidueSummary, catalog: CatalogMap): FigureCandidate[] {
+  const out: FigureCandidate[] = [];
+  for (const [kind, entries] of Object.entries(catalog)) {
+    for (const entry of entries) {
+      const figureTag = entry.tags.find((t) => t.startsWith('figure:'));
+      if (figureTag === undefined) {
+        continue;
+      }
+      if (entry.tags.some((t) => summary.ids.includes(t))) {
+        out.push({ kind, entry, figureId: figureTag });
+      }
+    }
+  }
+  return out;
+}
+
 /**
  * Compile a residue window into a Manifest using authored tables.
  * Same window + brief + rng stream ⇒ same Manifest.
@@ -128,20 +161,32 @@ export function tableFillManifest(
   catalog: CatalogMap = DEFAULT_CATALOG,
 ): Manifest {
   const summary = summarizeResidue(window);
-  const kind = pickKindFromRegistry(summary, kindRules);
+  let kind: string = pickKindFromRegistry(summary, kindRules);
   const entries = catalog[kind];
   if (entries === undefined) {
     throw new Error(`tableFillManifest: no table catalog for kind "${kind}"`);
   }
-  const entry = rng.pick(entries);
+  const candidates = figureCandidates(summary, catalog);
+  let entry: CatalogEntry;
+  let figureAbout: { id: string; name: string } | null = null;
+  if (candidates.length > 0) {
+    const picked = rng.pick(candidates);
+    kind = picked.kind;
+    entry = picked.entry;
+    figureAbout = { id: picked.figureId, name: picked.entry.name };
+  } else {
+    entry = rng.pick(entries);
+  }
   const rarity = pickRarity(summary.count, qualityTier, rng);
   const subjectId = summary.ids[0];
   const subject =
     focus !== null
       ? `${entry.subject} — ${focus.name}`
-      : subjectId === undefined
-        ? entry.subject
-        : `${entry.subject} (${lastSegment(subjectId)})`;
+      : figureAbout !== null
+        ? `${entry.subject} (${lastSegment(figureAbout.id)})`
+        : subjectId === undefined
+          ? entry.subject
+          : `${entry.subject} (${lastSegment(subjectId)})`;
   const tags = [...entry.tags];
   if (brief !== null && brief.trim().length > 0) {
     tags.push('briefed');
@@ -181,7 +226,11 @@ export function tableFillManifest(
     fill_status: 'table',
     quality_tier: qualityTier,
     provenance: { source: 'table', revision: TABLE_FILL_REVISION },
-    ...(focus === null ? {} : { about_id: focus.id, about_name: focus.name }),
+    ...(focus !== null
+      ? { about_id: focus.id, about_name: focus.name }
+      : figureAbout !== null
+        ? { about_id: figureAbout.id, about_name: figureAbout.name }
+        : {}),
   };
   return ManifestSchema.parse(manifest);
 }
