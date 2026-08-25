@@ -404,6 +404,14 @@
             'The same brush, the same characters, the same door. The hand that paints it changes. The slant of the last stroke changes with it, on purpose.',
           tags: ['verse', 'door'],
         },
+        {
+          name: 'The door-god print',
+          one_liner: 'A woodblock pair re-pasted every new year, slightly crooked.',
+          subject: 'a re-pasted door print',
+          detail:
+            'The same two guardians, printed from the worn block the family shares with three other households. The paste is flour and water. The crook is on purpose — a print hung too straight means the house thinks too highly of itself.',
+          tags: ['print', 'door'],
+        },
       ],
     },
     {
@@ -441,12 +449,20 @@
             'The lid sits a finger-width off true. Whoever first opened it left their scent in the tin and the next opener carried it forward, one cup at a time.',
           tags: ['tea', 'canister'],
         },
+        {
+          name: 'The weighing beam',
+          one_liner: 'A steelyard that has judged every sale since the grandfather.',
+          subject: 'a family steelyard',
+          detail:
+            "The pivot cord is new; the beam is not. Its sliding weight is worn smooth on one face from a thumb holding it steady while the price is argued. It reads true, which is why the neighbors borrow it to settle disputes.",
+          tags: ['steelyard', 'trade'],
+        },
       ],
     },
 
     // ──────────────────────────────────────────────────────────────────────
     // Org-scale kinds (Phase 3 Task 3). Charter: agreements the workshop
-    // runs on. Ware: what the workshop puts into the world. Four entries
+    // runs on. Ware: what the workshop puts into the world. Five entries
     // each, same compiled-card register as the household tables.
     // ──────────────────────────────────────────────────────────────────────
     {
@@ -484,6 +500,14 @@
             'East bank pays for the rope, west bank for the hull, and the crossing stays one coin for anyone carrying their own load. The compact\'s copy hangs in two customs sheds, damp at both ends.',
           tags: ['ferry', 'compact'],
         },
+        {
+          name: 'The apprentice rolls',
+          one_liner: "The workshop's list of who owes whom how many years.",
+          subject: 'apprentice rolls',
+          detail:
+            'Each boy enters in ink; the master counts the years served in chalk beneath the name. The rolls outlast most of the names on them, and the workshop feeds whoever\'s page is still open.',
+          tags: ['apprentice', 'rolls'],
+        },
       ],
     },
     {
@@ -520,6 +544,14 @@
           detail:
             'Scraps go in the rough book; the fair copy goes to the clerk with the best brush. Its columns are straight enough to rest a ruler on, and the guildmaster signs the last page of every month.',
           tags: ['ledger', 'office'],
+        },
+        {
+          name: "The dyer's blacks",
+          one_liner: 'A black the workshop sells to every mourning household.',
+          subject: 'a workshop black dye',
+          detail:
+            'Iron-gall and soot, steeped longer than anyone thinks necessary. Every family in the district has worn it once. The dyer keeps the recipe unwritten and the vat covered, and mourns nothing himself.',
+          tags: ['dye', 'black'],
         },
       ],
     },
@@ -563,6 +595,14 @@
             'The watchman strikes the tower bell a hundred times, one for each boat the river took and one for the year itself. Nobody speaks on the walk home; the boots in the snow are loud enough.',
           tags: ['bell', 'midwinter'],
         },
+        {
+          name: 'The cold-food morning',
+          one_liner: 'One breakfast eaten cold, together, before the fires are relit.',
+          subject: 'a cold-food morning',
+          detail:
+            "The town lets its hearths go dark for a single night. At dawn the bread is stale, the tea is unheated, and the whole street compares how badly they slept. The first new fire is walked door to door from the temple's ember.",
+          tags: ['cold-food', 'morning'],
+        },
       ],
     },
     {
@@ -599,6 +639,14 @@
           detail:
             'A drum of stone, an iron winch, and a rope the rope-maker renews each year without being asked. The water is ordinary. The gossip is not.',
           tags: ['well', 'common'],
+        },
+        {
+          name: 'The flood stones',
+          one_liner: 'One engraved stone per flood, stacked where the water stopped.',
+          subject: 'a stack of flood stones',
+          detail:
+            'Eleven stones now, the oldest half-buried. Each carries a year and a line where the river peaked. The mason who cuts them has an arrangement with the river he refuses to explain.',
+          tags: ['flood', 'stones'],
         },
       ],
     },
@@ -643,6 +691,14 @@
             'Straw mats in rows, a single iron stove, and a register the attendant reads by lamplight. Nobody is turned away at night. In the morning, those who can work are pointed toward the bureau that knows them by name.',
           tags: ['dormitory', 'paupers'],
         },
+        {
+          name: 'The archives vault',
+          one_liner: 'Where the city keeps the papers that outlast the magistrates.',
+          subject: 'a city archives vault',
+          detail:
+            'Three clerks, forty years of tax rolls, and a smell of camphor. The newest magistrate always orders a re-counting; the oldest clerk always finds the same numbers, on purpose, slowly.',
+          tags: ['archives', 'vault'],
+        },
       ],
     },
     {
@@ -679,6 +735,14 @@
           detail:
             'Granite taller than a man, the characters weathered on the third line, the rest protected by a small roof that does not quite cover it in a hard rain. Each New Year a clerk repaints the surviving strokes. Nobody knows which name is now on it.',
           tags: ['stela', 'founder'],
+        },
+        {
+          name: 'The unfinished pagoda',
+          one_liner: 'A pagoda that stopped at the third roof, two hundred years ago.',
+          subject: 'an unfinished pagoda',
+          detail:
+            'The funding died with the donor; the will did not. Scaffolding holes dot the upper courses, and every generation debates finishing it. The birds have voted already, floor by floor.',
+          tags: ['pagoda', 'unfinished'],
         },
       ],
     },
@@ -724,6 +788,14 @@
             'A flood so wide that the river crossed two provinces and forgot which valley it lived in. When it went home, the new channel stayed. Every town along the old bed tells the story from the side it ended up on, and rarely the same way.',
           tags: ['river', 'flood'],
         },
+        {
+          name: 'The collector who returned',
+          one_liner: 'A story every region tells about a tax that came back.',
+          subject: 'a legend of returned taxes',
+          detail:
+            'A collector walked the whole circuit, then walked it again in the other direction, handing back what he had taken. In some tellings he was dismissed; in others, promoted. In all of them the second walk is longer.',
+          tags: ['collector', 'return'],
+        },
       ],
     },
     {
@@ -760,6 +832,14 @@
           detail:
             'A switchback through two valleys, marked by shrines at each turning. Most travelers cross it at dawn, when the wind is light and the prayer-flags are still. The few who cross at night agree, quietly, never to do so again.',
           tags: ['pass', 'mountain'],
+        },
+        {
+          name: 'The relay stages',
+          one_liner: 'A road measured in horses rather than miles.',
+          subject: 'a relay road',
+          detail:
+            "Stables a hard day apart, each with fresh mounts and a ledger of who went by. The grooms know the road's whole gossip by its riders. Imperial orders and love letters travel at the same speed, which is the road's one democracy.",
+          tags: ['relay', 'stages'],
         },
       ],
     },
