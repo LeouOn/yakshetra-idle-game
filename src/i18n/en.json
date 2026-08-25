@@ -298,6 +298,10 @@
       "evening_visit": {
         "label_sid": "Stop by someone else's door",
         "description_sid": "A short visit with no errand. Energy returns as the evening is shared."
+      },
+      "nianfo_recitation": {
+        "label_sid": "Nianfo recitation",
+        "description_sid": "Hold Amitābha's name through the evening hour. The trust it builds is ordinary: a steadier voice for the people who need one."
       }
     },
     "schedule": {
@@ -331,9 +335,9 @@
           "label_sid": "Midday work",
           "icon_sid": "brush"
         },
-        "evening_reflection": {
-          "label_sid": "Evening sitting",
-          "icon_sid": "lamp"
+        "evening_recitation": {
+          "label_sid": "Evening recitation",
+          "icon_sid": "bell"
         },
         "night_rest": {
           "label_sid": "Night rest",

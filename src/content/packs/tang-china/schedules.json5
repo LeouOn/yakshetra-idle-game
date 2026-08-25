@@ -11,7 +11,7 @@
   schedules: [
     // ──────────────────────────────────────────────────────────────────────
     // Monastic day — pre-dawn sitting, morning alms, midday work, evening
-    // reflection, night rest.
+    // nianfo recitation, night rest.
     // ──────────────────────────────────────────────────────────────────────
     {
       id: 'schedule:tang/monastic-day',
@@ -42,12 +42,12 @@
           icon_sid: 'tang.block.monastic_day.midday_work.icon_sid',
         },
         {
-          id: 'block:tang/monastic-day/evening-reflection',
-          label_sid: 'tang.block.monastic_day.evening_reflection.label_sid',
+          id: 'block:tang/monastic-day/evening-recitation',
+          label_sid: 'tang.block.monastic_day.evening_recitation.label_sid',
           startHour: 17,
           endHour: 20,
-          practice_id: 'practice:tang/breath-sitting',
-          icon_sid: 'tang.block.monastic_day.evening_reflection.icon_sid',
+          practice_id: 'practice:tang/nianfo-recitation',
+          icon_sid: 'tang.block.monastic_day.evening_recitation.icon_sid',
         },
         {
           id: 'block:tang/monastic-day/night-rest',

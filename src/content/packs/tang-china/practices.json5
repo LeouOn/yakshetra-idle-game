@@ -83,5 +83,20 @@
       maxProgress: 11,
       effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 7. Nianfo recitation — collected attention. Hold Amitābha's name
+    // through the evening hour; the practice is bound to the figure by
+    // catalog tag so a window of it harvests an Amitābha card (SPEC §16.1).
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/nianfo-recitation',
+      label_sid: 'tang.practice.nianfo_recitation.label_sid',
+      description_sid: 'tang.practice.nianfo_recitation.description_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.35,
+      maxProgress: 10,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
   ],
 }
