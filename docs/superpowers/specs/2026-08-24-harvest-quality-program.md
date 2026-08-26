@@ -256,7 +256,7 @@ OpenAI-shaped request core with provider baseURL and auth.
   stamped only on real model parses; without a key or on any failure, tables
   — and the default bundle cannot see a key.
 - Phase 7: rubric written, every tier's rows pass it.
-- Phase 8: user-approved §1.1 amendment, then the new rungs ship as data.
+- Phase 8: user-approved §1.1 amendment (86efc4f) shipped nation and world as data — eight graduations through real content; the recorder semantics (Task 3.5 fix) made the `≥2` world-draft gates reachable in live play.
 
 ## 10. Polish audit record (Phase 7, 2026-08-24)
 
@@ -278,3 +278,42 @@ bands, sentence counts, tag counts, uniqueness, no meter tokens).
 Verdict: every tier's rows pass the rubric. §10.15's quality work for cards
 and city/region content is done; the deferred width item (second bay, new
 family, new pack) remains deferred.
+
+## 11. Ladder extension record (Phase 8, 2026-08-24)
+
+Amendment gate: SPEC §1.1's eight-tier table was presented to the user
+for explicit approval before any code landed (commit 86efc4f on the branch).
+The gate satisfied the program's "approve-amendment-before-building" rule.
+
+Two rungs were appended to the ladder:
+
+- **nation (index 6), member-bearing**: the canal board, the census,
+  the frontier command — autonomous member rows run under
+  `policy:nation-base`. Member unit: household.
+- **world (index 7), terminal unit tier**: one inert row per unlocked
+  lower rung. Member unit: nation.
+
+Kind pairs (TOTAL fallbacks, 5 rows each):
+
+- nation: `edict` (the realm's decrees) + `ministry` (the standing bodies).
+- world: `chronicle` (the world's told things) + `horizon` (the world's edges).
+
+Unlocks as ratified in SPEC §1.1: nation from 1 archived legend + 1
+archived road + 2 region-scale drafts; world from 1 archived edict +
+1 archived ministry + 2 nation-scale drafts.
+
+Engine code changes: `SCALE_VALUES` widened to eight scales in
+`src/engine/manifest.ts`; a follow-on recorder-semantics fix
+(Task 3.5, commit c79c55a) made the `≥2` world-draft gates reachable in
+live play by accruing one `{scale}` reference per assembled world
+(world `k` at scale `X` = cards[2k] and [2k+1]; recordWorldDraftAtScale
+grows the ledger monotonically up to `floor(cardsAtScale / 2)` per scale).
+
+Everything else is content in the established pattern: kinds, catalogs,
+policies, schedules, roles, milestones, SIDs.
+
+Verdict: the harvest-quality program is complete. The ladder's eight
+rungs end to end through real harvests, the model layer still fills from
+tables alone in the default build, and every table card is rubric-clean.
+Only deferred width remains open: a second develop bay, a new practice
+family, or a new pack (still governed by §10.15 quality-before-width).
