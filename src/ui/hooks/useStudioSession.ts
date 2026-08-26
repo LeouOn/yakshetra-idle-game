@@ -46,7 +46,7 @@ import {
   type StudioState,
   type WorldDraftReference,
 } from '@/engine';
-import { assembleWorldDraftAtScale, recordWorldDraftAtScale } from '@/engine/world-scale';
+import { withRecordedDrafts as withRecordedDraftsForScales } from '@/engine/world-scale';
 import {
   addBenchModifiers,
   computeBenchModifiers,
@@ -196,22 +196,17 @@ export function sessionFromSlices(slices: BenchSlices, lastVisitedAtUnix?: numbe
 }
 
 /**
- * World-draft ledger: once the archive assembles a draft at ANY tier scale,
- * that assembly is recorded (once per scale). Called wherever the archive
- * can grow — mount, persisted load, and each harvest.
+ * World-draft ledger: one reference per assembled world at every tier scale
+ * (person caps at one; every other scale accrues floor(cards/2)). The pure
+ * recorder lives in the engine (`withRecordedDrafts` in world-scale.ts);
+ * this wrapper injects the registry's tier scales. Called wherever the
+ * archive can grow — mount, persisted load, and each harvest.
  */
 export function withRecordedDrafts(
   archive: readonly Manifest[],
   drafts: readonly WorldDraftReference[],
 ): readonly WorldDraftReference[] {
-  let out = drafts;
-  for (const scale of tierScales()) {
-    if (assembleWorldDraftAtScale(archive, scale) === null) {
-      continue;
-    }
-    out = recordWorldDraftAtScale(out, scale);
-  }
-  return out;
+  return withRecordedDraftsForScales(archive, drafts, tierScales());
 }
 
 /**

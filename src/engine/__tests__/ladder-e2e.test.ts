@@ -4,10 +4,11 @@
 //   (a) graduating person → household → org → town → city → region →
 //       nation → world in ONE session appends each unlock milestone, opens
 //       a fresh bench for the tier, and never re-fires a done milestone
-//   (b) the nation and world gates open through REAL harvests: feeding the
-//       region bench a legend + a road and recording two region drafts
-//       fires unlock-nation; feeding the nation bench a ministry + an
-//       edict with two nation drafts fires unlock-world
+//   (b) the nation and world gates open through REAL harvests and the REAL
+//       recorder: four region-scale harvests (two legends, two roads) feed
+//       withRecordedDrafts, which assembles two distinct region worlds and
+//       fires unlock-nation; four nation harvests do the same two rungs up
+//       for unlock-world — no hand-built draft lists anywhere
 //   (c) the fold chain carries residue from the embodied bench across every
 //       rung of the ladder: a multi-tick step on a fully-unlocked session
 //       deposits fold markers on each of the eight benches
@@ -40,11 +41,13 @@ import {
   StudioSessionSchema,
   tableFillManifest,
   tickStudio,
+  withRecordedDrafts,
   type BenchState,
   type KindRule,
   type Manifest,
   type ManifestScale,
   type StudioSession,
+  type WorldDraftReference,
 } from '@/engine';
 import type { SessionStepContext } from '@/engine/session-step';
 import type { DailySchedule } from '@/engine/schedule';
@@ -217,28 +220,42 @@ function withArchivedCards(session: StudioSession, cards: readonly Manifest[]): 
   return StudioSessionSchema.parse({ ...session, archive: [...session.archive, ...cards] });
 }
 
+/** Distinct tier scales in ladder order — the engine-side mirror of the
+ *  studio hook's tierScales (the recorder walks these). */
+function tierScales(): readonly ManifestScale[] {
+  return [...new Set(loadProgression().tiers.map((tier) => tier.scale))];
+}
+
 /**
  * Graduate through all eight rungs. The nation and world gates are fed the
- * way play feeds them: real harvests off the gate tier's bench (the social
- * window claims the people-facing kind, the practice window the fixed one)
- * plus two recorded world drafts of the gate scale — checkMilestones must
- * fire exactly the next unlock before the graduation runs.
+ * way play feeds them: FOUR real harvests at the gate tier's scale (a
+ * social-window pair and a practice-window pair), archived, then recorded
+ * through withRecordedDrafts — the recorder assembles two distinct worlds
+ * from the two card pairs and checkMilestones fires exactly the next
+ * unlock before the graduation runs. The ledger threads forward gate to
+ * gate the way the session persists it.
  */
 function graduateFullChain(): StudioSession {
   const reg = loadProgression();
   let session = graduateThroughRegion();
   let fed: StudioSession;
+  let ledger: readonly WorldDraftReference[] = [];
 
-  // nation gate: archived.legend >= 1, archived.road >= 1, and two
-  // region-scale world drafts.
+  // nation gate: one legend + one road satisfies the archived operands;
+  // four region cards (two pairs) satisfy world_drafts.region >= 2.
   const legend = harvestAtScale('region', socialWindow(1), 1201n, 'e2e-region-legend');
   const road = harvestAtScale('region', practiceWindow(11), 1213n, 'e2e-region-road');
-  fed = withArchivedCards(session, [legend, road]);
-  const firedNation = checkMilestones(
-    fed,
-    [{ scale: 'region' }, { scale: 'region' }],
-    reg.milestones,
-  );
+  const legendAgain = harvestAtScale('region', socialWindow(41), 1249n, 'e2e-region-legend-2');
+  const roadAgain = harvestAtScale('region', practiceWindow(51), 1251n, 'e2e-region-road-2');
+  fed = withArchivedCards(session, [legend, road, legendAgain, roadAgain]);
+  ledger = withRecordedDrafts(fed.archive, [], tierScales());
+  const regionWorlds = ledger.filter((draft) => draft.scale === 'region').length;
+  if (regionWorlds !== 2) {
+    throw new Error(
+      `ladder-e2e: four region cards should record two region worlds, got ${regionWorlds}`,
+    );
+  }
+  const firedNation = checkMilestones(fed, ledger, reg.milestones);
   if (firedNation.length !== 1 || firedNation[0] !== 'unlock-nation') {
     throw new Error(
       `ladder-e2e: region harvest should open only unlock-nation, got [${firedNation.join(', ')}]`,
@@ -254,16 +271,15 @@ function graduateFullChain(): StudioSession {
   }
   session = graduateToTier(fed, 'nation', nationRow, nationRoles, createRng(127n));
 
-  // world gate: archived.edict >= 1, archived.ministry >= 1, and two
-  // nation-scale world drafts.
+  // world gate: one ministry + one edict satisfies the archived operands;
+  // four nation cards (two pairs) satisfy world_drafts.nation >= 2.
   const ministry = harvestAtScale('nation', socialWindow(21), 1223n, 'e2e-nation-ministry');
   const edict = harvestAtScale('nation', practiceWindow(31), 1231n, 'e2e-nation-edict');
-  fed = withArchivedCards(session, [ministry, edict]);
-  const firedWorld = checkMilestones(
-    fed,
-    [{ scale: 'nation' }, { scale: 'nation' }],
-    reg.milestones,
-  );
+  const ministryAgain = harvestAtScale('nation', socialWindow(61), 1259n, 'e2e-nation-ministry-2');
+  const edictAgain = harvestAtScale('nation', practiceWindow(71), 1261n, 'e2e-nation-edict-2');
+  fed = withArchivedCards(session, [ministry, edict, ministryAgain, edictAgain]);
+  ledger = withRecordedDrafts(fed.archive, ledger, tierScales());
+  const firedWorld = checkMilestones(fed, ledger, reg.milestones);
   if (firedWorld.length !== 1 || firedWorld[0] !== 'unlock-world') {
     throw new Error(
       `ladder-e2e: nation harvest should open only unlock-world, got [${firedWorld.join(', ')}]`,
@@ -436,35 +452,64 @@ describe('ladder-e2e (Phase 4 Task 4, eight tiers since Phase 8)', () => {
     expect(Object.keys(session.benches).sort()).toEqual([...FULL_LADDER_IDS].sort());
   });
 
-  it('feeds the nation and world gates with real region/nation harvests', () => {
+  it('feeds the nation and world gates through the recorder, not literals', () => {
     const reg = loadProgression();
-    let session = graduateThroughRegion();
+    const session = graduateThroughRegion();
 
     // Region-scale harvests: the social window claims legend, the practice
     // window claims road (the Phase 8 kind rows for the region scale).
     const legend = harvestAtScale('region', socialWindow(1), 1301n, 'gate-region-legend');
     const road = harvestAtScale('region', practiceWindow(11), 1319n, 'gate-region-road');
+    const legendAgain = harvestAtScale('region', socialWindow(41), 1381n, 'gate-region-legend-2');
+    const roadAgain = harvestAtScale('region', practiceWindow(51), 1383n, 'gate-region-road-2');
     expect(legend.scale).toBe('region');
     expect(legend.kind).toBe('legend');
     expect(road.scale).toBe('region');
     expect(road.kind).toBe('road');
 
-    // The fed gate needs BOTH kinds and two region drafts; each missing
-    // half keeps unlock-nation closed.
-    const regionDrafts = [{ scale: 'region' }, { scale: 'region' }];
+    // Each missing kind keeps unlock-nation closed — the recorder over a
+    // one-card archive holds no region world at all.
     expect(
-      checkMilestones(withArchivedCards(session, [legend]), regionDrafts, reg.milestones),
+      checkMilestones(
+        withArchivedCards(session, [legend]),
+        withRecordedDrafts([...session.archive, legend], [], tierScales()),
+        reg.milestones,
+      ),
     ).not.toContain('unlock-nation');
     expect(
-      checkMilestones(withArchivedCards(session, [road]), regionDrafts, reg.milestones),
+      checkMilestones(
+        withArchivedCards(session, [road]),
+        withRecordedDrafts([...session.archive, road], [], tierScales()),
+        reg.milestones,
+      ),
     ).not.toContain('unlock-nation');
-    const fedNation = withArchivedCards(session, [legend, road]);
+
+    // TWO region cards assemble ONE world — one short of the gte 2 operand
+    // that the deduped recorder could never reach.
+    const twoRegionCards = withArchivedCards(session, [legend, road]);
+    const oneWorld = withRecordedDrafts(twoRegionCards.archive, [], tierScales());
+    expect(oneWorld.filter((draft) => draft.scale === 'region')).toHaveLength(1);
+    expect(checkMilestones(twoRegionCards, oneWorld, reg.milestones)).not.toContain(
+      'unlock-nation',
+    );
+
+    // FOUR region cards assemble two distinct region worlds and open the gate.
+    const fedNation = withArchivedCards(session, [legend, road, legendAgain, roadAgain]);
+    const regionDrafts = withRecordedDrafts(fedNation.archive, [], tierScales());
+    expect(regionDrafts.filter((draft) => draft.scale === 'region')).toHaveLength(2);
     expect(checkMilestones(fedNation, regionDrafts, reg.milestones)).toEqual(['unlock-nation']);
 
     // Nation-scale harvests carry the nation scale and nation kinds — the
     // city-scale harvest assertion's sibling two rungs up.
     const ministry = harvestAtScale('nation', socialWindow(21), 1327n, 'gate-nation-ministry');
     const edict = harvestAtScale('nation', practiceWindow(31), 1331n, 'gate-nation-edict');
+    const ministryAgain = harvestAtScale(
+      'nation',
+      socialWindow(61),
+      1387n,
+      'gate-nation-ministry-2',
+    );
+    const edictAgain = harvestAtScale('nation', practiceWindow(71), 1389n, 'gate-nation-edict-2');
     expect(ministry.scale).toBe('nation');
     expect(ministry.kind).toBe('ministry');
     expect(edict.scale).toBe('nation');
@@ -478,14 +523,59 @@ describe('ladder-e2e (Phase 4 Task 4, eight tiers since Phase 8)', () => {
     if (nationRoles === undefined) {
       throw new Error('ladder-e2e: nation roles row missing from registry');
     }
-    session = graduateToTier(fedNation, 'nation', nationRow, nationRoles, createRng(1361n));
+    const graduated = graduateToTier(fedNation, 'nation', nationRow, nationRoles, createRng(1361n));
 
-    const nationDrafts = [{ scale: 'nation' }, { scale: 'nation' }];
+    // Same shape two rungs up: one ministry alone stays closed; two cards
+    // (one world) stay closed; four nation cards open unlock-world.
     expect(
-      checkMilestones(withArchivedCards(session, [ministry]), nationDrafts, reg.milestones),
+      checkMilestones(
+        withArchivedCards(graduated, [ministry]),
+        withRecordedDrafts([...graduated.archive, ministry], [], tierScales()),
+        reg.milestones,
+      ),
     ).not.toContain('unlock-world');
-    const fedWorld = withArchivedCards(session, [ministry, edict]);
+    const twoNationCards = withArchivedCards(graduated, [ministry, edict]);
+    expect(
+      checkMilestones(
+        twoNationCards,
+        withRecordedDrafts(twoNationCards.archive, [], tierScales()),
+        reg.milestones,
+      ),
+    ).not.toContain('unlock-world');
+    const fedWorld = withArchivedCards(graduated, [ministry, edict, ministryAgain, edictAgain]);
+    const nationDrafts = withRecordedDrafts(fedWorld.archive, [], tierScales());
+    expect(nationDrafts.filter((draft) => draft.scale === 'nation')).toHaveLength(2);
     expect(checkMilestones(fedWorld, nationDrafts, reg.milestones)).toEqual(['unlock-world']);
+  });
+
+  it('opens unlock-town through the recorder — four org cards are two org worlds', () => {
+    const reg = loadProgression();
+    let session = emptyBase();
+    session = graduateToHousehold(session, reg.roles['household'], createRng(101n));
+    const orgRow = reg.tiers.find((row) => row.id === 'org');
+    if (orgRow === undefined) {
+      throw new Error('ladder-e2e: org tier row missing from registry');
+    }
+    const orgRoles = reg.roles['org'];
+    if (orgRoles === undefined) {
+      throw new Error('ladder-e2e: org roles row missing from registry');
+    }
+    session = graduateToTier(session, 'org', orgRow, orgRoles, createRng(103n));
+
+    // Org-scale harvests: the social window claims charter, the practice
+    // window claims ware. Four cards = two distinct org worlds.
+    const charter = harvestAtScale('org', socialWindow(1), 1401n, 'gate-org-charter');
+    const ware = harvestAtScale('org', practiceWindow(11), 1409n, 'gate-org-ware');
+    const charterAgain = harvestAtScale('org', socialWindow(21), 1421n, 'gate-org-charter-2');
+    const wareAgain = harvestAtScale('org', practiceWindow(31), 1423n, 'gate-org-ware-2');
+    expect(charter.scale).toBe('org');
+    expect(charter.kind).toBe('charter');
+    expect(ware.kind).toBe('ware');
+
+    const fed = withArchivedCards(session, [charter, ware, charterAgain, wareAgain]);
+    const drafts = withRecordedDrafts(fed.archive, [], tierScales());
+    expect(drafts.filter((draft) => draft.scale === 'org')).toHaveLength(2);
+    expect(checkMilestones(fed, drafts, reg.milestones)).toEqual(['unlock-town']);
   });
 
   it('re-running the chain on an already-unlocked session is idempotent', () => {

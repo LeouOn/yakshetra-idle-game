@@ -143,7 +143,11 @@ export {
   stringifyWorldDraft,
 } from './world-draft';
 export type { WorldDraft, WorldDraftBond, WorldDraftMember } from './world-draft';
-export { assembleWorldDraftAtScale, recordWorldDraftAtScale } from './world-scale';
+export {
+  assembleWorldDraftAtScale,
+  recordWorldDraftAtScale,
+  withRecordedDrafts,
+} from './world-scale';
 export { focusFromManifest, isPinnableKind, nextPinned, pinnableCards } from './focus';
 export { activityFamilyForLens, emptyActivityTotals, summarizeActivities } from './activities';
 export {
