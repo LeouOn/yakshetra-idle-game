@@ -89,7 +89,7 @@ export const StudioSessionSchema = z
     practices: z.array(PracticeSliceSchema),
     members: z.record(z.string(), MemberSliceSchema).default(() => ({})),
     world_drafts: z.array(WorldDraftReferenceSchema).default(() => []),
-    last_visited_at_unix: z.number().optional(),
+    last_visited_at_unix: z.number().finite().optional(),
   })
   .strict();
 
@@ -109,6 +109,7 @@ export function snapshotStudioSession(
 ): StudioSession {
   const members = extras?.members ?? {};
   const world_drafts = extras?.world_drafts ?? [];
+  const visited = lastVisitedAtUnix ?? life.lastVisitedAtUnix;
   return StudioSessionSchema.parse({
     schema_version: STUDIO_SESSION_VERSION,
     benches: {
@@ -137,7 +138,7 @@ export function snapshotStudioSession(
     })),
     members,
     world_drafts,
-    ...(lastVisitedAtUnix === undefined ? {} : { last_visited_at_unix: lastVisitedAtUnix }),
+    ...(visited === undefined ? {} : { last_visited_at_unix: visited }),
   });
 }
 

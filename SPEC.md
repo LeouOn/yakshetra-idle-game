@@ -93,11 +93,7 @@ There is one game with two surfaces.
 
 They share an engine. Play residue folds into the bench through `importPlayResidue` / `syncPlayResidueToStudio`. Studio session (`studio_session/v0`) persists on its own store, not inside the life-chain `SaveBlob`. That split is load-bearing: the bench must survive a rotten life save.
 
-Still owed:
-
-- Pin and world draft actually change the next life, not only the next harvest.
-- Life-chain persistence as durable as the bench.
-- One visual language. Studio is already dark; the campaign screens should follow.
+The campaign life-chain persists through the same durability contract as the bench (platform adapter + integrity envelope). Campaign screens use `studioTheme`. Pins and world drafts seed the next life as ties and flags (`applyStudioToNextLife`). They never write social identity.
 
 ---
 
@@ -415,3 +411,13 @@ Send the `ManifestCompileRequest` as JSON (`schema_version`, residue, summary, b
 - Injecting a stub `completeManifest` that returns a valid Manifest produces `fill_status: "model"` in the archive.
 - Breaking that stub still produces a table card.
 - `rg 'ZAI_API_KEY|MINIMAX_API_KEY' src/engine app src/ui` is empty.
+
+## 17. Material market choices (September 2026)
+
+Copper is an ordinary within-life material currency alongside the residue/Manifest loop. It is not a spiritual score. Active market shifts advance eight simulation steps with daily practices paused while existing cooking continues. A completed shift pays 1 copper, with mutually exclusive tips of +2 (25%) or +5 (5%); 70% pay the base alone. A dedicated deterministic stream uses the persisted completed-shift count, so save/load does not reroll the next payment or perturb harvest RNG.
+
+The purse is life.resources.copper; completed shifts are life.skills.market_shifts, both carried by the existing validated life snapshot. Old saves default to zero when these keys are absent. Paid work is an explicit active action; normal offline catch-up follows the routine and does not fabricate market shifts.
+
+Spending choices are fixed-price: 4 copper hosts tea and adds three social experiences to the person bench's pending window; 3 copper buys eight cook steps, with unused steps banked as surplus. Tea does not alter a batch already cooking. Its combination with existing residue follows the existing kind rules, not a guaranteed reward table. Archive-based tier unlocks remain unchanged; the older “nothing is spent” wording describes tier gates, not this material purse.
+
+Every explicit tend, cook, harvest, shift and purchase shows its actual payoff in a receipt. Automated ticks do not overwrite that receipt. Tune costs and probabilities from playtests; no paid chance purchases or additional spiritual resource.

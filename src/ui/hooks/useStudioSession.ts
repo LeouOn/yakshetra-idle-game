@@ -5,7 +5,7 @@
 // render + handlers; this hook owns the session model:
 //   - slice state (life, idle, studio, practices, progression, members,
 //     world drafts, tier benches) and the benchRef the handlers read;
-//   - the persisted load + away catch-up (stepSession over the absence);
+//   - the persisted load + away catch-up (catchUpSession over the absence);
 //   - the save effect;
 //   - adoption (hydrate a stepped session back into the slices).
 //
@@ -20,6 +20,7 @@ import { loadEraPack } from '@/content/loader';
 import type { Practice as ContentPractice, Ending } from '@/content/schema';
 import { loadProgression, type ProgressionRegistries } from '@/content/progression/loader';
 import {
+  catchUpSession,
   computeGlobalRewards,
   createIdleState,
   createLifeState,
@@ -28,8 +29,6 @@ import {
   defaultProgression,
   hydrateStudioSession,
   snapshotStudioSession,
-  stepSession,
-  studioTicksAway,
   type BenchState,
   type IdleState,
   type KindRule,
@@ -406,14 +405,17 @@ export function useStudioSession({
         return;
       }
       if (session !== null) {
-        // Catch-up rides the same stepSession path as live ticks (ticks math
-        // via studioTicksAway) so autonomous members and every unlocked tier
-        // bench advance during absence too; a household-locked session reduces
-        // to the old person-only catch-up by stepSession's golden invariant.
-        // The away cap carries the person tier's endowed offline_cap.
-        const awayTicks = studioTicksAway(
-          session.last_visited_at_unix ?? 0,
-          clock(),
+        // Catch-up is one engine call: capped ticks, stepSession, stamp
+        // last_visited. Autonomous members and every unlocked tier advance;
+        // a household-locked session reduces to person-only by stepSession's
+        // golden invariant. Persist the stamped session before ready so a
+        // remount cannot re-apply the same absence.
+        const nowUnix = clock();
+        const caught = catchUpSession(
+          session,
+          stepCtx(session),
+          nowUnix,
+          rngRef.current,
           effectiveAwayCap(
             session,
             registries().endowment,
@@ -421,11 +423,7 @@ export function useStudioSession({
             registries().visitors,
           ),
         );
-        const stepped =
-          awayTicks.ticks > 0
-            ? stepSession(session, stepCtx(session), awayTicks.ticks, rngRef.current)
-            : null;
-        const next = stepped === null ? session : stepped.session;
+        const next = caught.session;
         const hydrated = hydrateStudioSession(
           next,
           initialLife ?? defaultLife(),
@@ -439,13 +437,14 @@ export function useStudioSession({
         setMembers({ ...hydrated.members });
         setWorldDrafts(withRecordedDrafts(hydrated.studio.archive, hydrated.world_drafts));
         setBenches(nonPersonBenches(next));
-        if (stepped !== null && stepped.summary.embodiedTicks > 0) {
+        if (caught.summary.embodiedTicks > 0) {
           setAway({
-            ticksSimulated: stepped.summary.embodiedTicks,
+            ticksSimulated: caught.summary.embodiedTicks,
             residueGained: next.life.residue.length - session.life.residue.length,
-            bayReady: stepped.summary.benchesReady.length > 0,
-            capped: awayTicks.capped,
+            bayReady: caught.summary.benchesReady.length > 0,
+            capped: caught.summary.capped,
           });
+          void saveStudioSession(next, storage);
         }
       }
       setReady(true);

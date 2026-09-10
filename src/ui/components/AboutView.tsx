@@ -12,6 +12,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 
 /** Ordered glossary term keys (≥10 per plan). Each has a term + definition SID. */
 const GLOSSARY_KEYS: readonly string[] = [
@@ -44,7 +45,12 @@ export interface AboutViewProps {
 
 export default function AboutView({ onBack }: AboutViewProps) {
   return (
-    <ScrollView testID="about-screen" role="main" contentContainerStyle={styles.container}>
+    <ScrollView
+      testID="about-screen"
+      role="main"
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+    >
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('about.title_sid')}
       </Text>
@@ -139,29 +145,31 @@ export default function AboutView({ onBack }: AboutViewProps) {
 }
 
 const styles = StyleSheet.create({
+  scroll: { flex: 1, backgroundColor: t.bg },
   container: { paddingHorizontal: 24, paddingVertical: 28, gap: 28 },
-  title: { fontSize: 26, fontWeight: '700' },
+  title: { fontSize: 26, fontWeight: '700', color: t.text },
   backButton: {
     alignSelf: 'flex-start',
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: t.line,
   },
-  backButtonText: { fontSize: 14, fontWeight: '600', color: '#111827' },
+  backButtonText: { fontSize: 14, fontWeight: '600', color: t.text },
   section: { gap: 10 },
   sectionHeading: {
     fontSize: 15,
     fontWeight: '700',
     textTransform: 'uppercase',
     opacity: 0.8,
+    color: t.gold,
   },
-  body: { fontSize: 15, lineHeight: 22, color: '#1f2937' },
+  body: { fontSize: 15, lineHeight: 22, color: t.text },
   glossaryList: { gap: 12 },
   glossaryItem: { gap: 2 },
-  glossaryTerm: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  glossaryDefinition: { fontSize: 14, lineHeight: 20, opacity: 0.8, color: '#1f2937' },
+  glossaryTerm: { fontSize: 15, fontWeight: '700', color: t.text },
+  glossaryDefinition: { fontSize: 14, lineHeight: 20, opacity: 0.8, color: t.muted },
   bibliographyList: { gap: 8 },
-  bibliographyEntry: { fontSize: 13, lineHeight: 19, opacity: 0.75, color: '#1f2937' },
+  bibliographyEntry: { fontSize: 13, lineHeight: 19, opacity: 0.75, color: t.muted },
 });

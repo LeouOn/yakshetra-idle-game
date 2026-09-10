@@ -25,26 +25,27 @@ export const FIGURE_IDS = [
 export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
   {
     name: 'Śākyamuni',
-    one_liner: 'The historical teacher, seated at the center of every hall.',
-    subject: 'the historical teacher',
+    one_liner:
+      'He touches the bare earth when challenged, calling the common soil itself as witness.',
+    subject: 'the teacher touching the earth',
     detail:
-      "Chang'an's monasteries seat him as the teacher of our era. The robe, the ushṇīṣa, the earth-touching gesture — fixed long before the Tang, and every school bows to the same form.",
+      'He walks the morning street with an earthen bowl, stopping wherever ordinary work is done. When doubts rise, he presses his right fingers into the common dust, refusing debate while the firm ground answers for him.',
     tags: ['figure:shakyamuni', 'teacher', 'historical'],
   },
   {
     name: 'Amitābha',
-    one_liner: 'The Buddha of the Western direction, recited by name.',
-    subject: 'the Buddha of the western direction',
+    one_liner: "He extends an open hand westward each dusk as the day's labor closes.",
+    subject: 'the welcoming light of the west',
     detail:
-      "Pure Land halls in Chang'an chant his name through the day. The hand holds a lotus; the face waits for whoever looks west.",
+      'At sundown when the market drum signals closing, his name passes among tired laborers packing their stalls. He leans outward from the western sky with an open palm, taking in every weary call without asking for credentials.',
     tags: ['figure:amitabha', 'mantra:nianfo', 'practice:tang/nianfo-recitation', 'western'],
   },
   {
     name: 'Bhaiṣajyaguru, the Medicine Buddha',
-    one_liner: 'Called on when someone is sick.',
-    subject: 'a healer of the sick',
+    one_liner: 'He offers bitter herbs and clean water to whoever is burning with fever.',
+    subject: 'the healer with the medicine bowl',
     detail:
-      'Tang monasteries held his rite for the ill. The bowl holds medicine, not gold, and the hand that lifts it does not ask who can pay.',
+      'He sits beside the sickbed with an iron bowl of steeped myrobalan, cooling hot foreheads through the midnight watch. His twelve vows answer common aches directly, dispensing bitter draughts without asking what copper is in your purse.',
     tags: [
       'figure:medicine-buddha',
       'mantra:medicine-buddha',
@@ -54,26 +55,26 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
   },
   {
     name: 'Vairocana',
-    one_liner: 'The cosmic Buddha the Huayan masters placed at the source.',
-    subject: 'the cosmic Buddha',
+    one_liner: 'He illuminates every rafter, loom, and dust mote without casting a single shadow.',
+    subject: 'the primordial light at work',
     detail:
-      'In Huayan halls he sits at the center of the array. Every other figure arranges itself around him like light around a lamp.',
+      "He turns his hands in the wisdom-fist, sending dawn through the courtyard tiles and kitchen smoke. Nothing is pushed aside; the cobbler's hammer and the abbot's bell catch the same unbroken brightness at the very same instant.",
     tags: ['figure:vairocana', 'cosmic', 'huayan'],
   },
   {
     name: 'Maitreya',
-    one_liner: 'The future teacher, waiting in Tuṣita.',
-    subject: 'the coming teacher',
+    one_liner: 'He sits with ankles crossed, leaning forward to watch the city wake.',
+    subject: 'the coming teacher keeping watch',
     detail:
-      'He is honored now for a patience the world has not needed yet. Tang sculptors give him a seat already, so the room is ready when he stands.',
+      "He rests his chin on two fingers, watching the carts roll through Chang'an's south gate. He has prepared his seat for centuries, yet his gaze stays fixed on muddy sandals and hurried footsteps, waiting for his hour to step down.",
     tags: ['figure:maitreya', 'future', 'patience'],
   },
   {
     name: 'Avalokiteśvara (Guanyin)',
-    one_liner: 'The bodhisattva of great compassion, known here as Guanyin.',
-    subject: 'the one who hears the cries',
+    one_liner: 'She dips a willow branch in clean water and steps into the crowded lane.',
+    subject: 'the hearer of cries stepping near',
     detail:
-      "The Lotus Sutra's universal gate chapter reached Chang'an as Guanyin. A willow branch, a vase of water, and a willingness to arrive in whatever shape the hour needs.",
+      'She walks directly toward shouting boatmen and frightened children, listening before anyone explains the trouble. With a flick of the damp willow she cools the heat of an argument, changing shape so easily that you mistake her for an aunt.',
     tags: [
       'figure:avalokiteshvara',
       'mantra:six-syllable',
@@ -84,50 +85,50 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
   },
   {
     name: 'Mañjuśrī (Wenshu)',
-    one_liner: 'The bodhisattva whose sword cuts confusion.',
-    subject: 'wielding discriminative wisdom',
+    one_liner: 'He raises a flaming blade to sever the tangled knot of your dispute.',
+    subject: 'the sword cutting the knot',
     detail:
-      'Wutai Shan in the north is his seat. The sword is not raised at anyone; it is raised at the knot.',
+      'He rides down through northern pine groves on a roaring green lion, holding a palm-leaf scroll in his left hand. The bright blade does not strike flesh; it cleaves through stubborn evasions and muddled ledgers until only honest ground remains.',
     tags: ['figure:manjushri', 'wisdom', 'sword', 'wutai'],
   },
   {
     name: 'Samantabhadra (Puxian)',
-    one_liner: 'The bodhisattva of great practice, riding the six-tusked elephant.',
-    subject: 'practice carried through',
+    one_liner: 'He urges his six-tusked mount along the rocky ditch to haul the wagon out.',
+    subject: 'the heavy labor carried through',
     detail:
-      'The Lotus Sutra closes with him. Where Mañjuśrī cuts, he walks the ground afterward and makes the path real.',
+      'Where sharp words settle the law, he arrives with ropes and an unhurried white elephant to do the digging. He steps into the mud alongside laborers, steadying timber and testing bridge foundations until the promised road is truly built.',
     tags: ['figure:samantabhadra', 'practice', 'elephant'],
   },
   {
     name: 'Kṣitigarbha (Dizang)',
-    one_liner: 'The bodhisattva who stays until the last cell opens.',
-    subject: 'the great vow held',
+    one_liner: 'He strikes the flagstones with his ringed staff, lighting the darkest pit.',
+    subject: 'the staff ringing in the dark',
     detail:
-      'Dizang in Tang China, strongest at Jiuhua Shan. The staff rings in the places no one else goes, and he does not leave early.',
+      'He walks down into damp prisons and forgotten ditches where no candle is ever lit. His bronze rings chime against stone, shattering iron padlocks and guiding lost wanderers up the stairs by the glow of a warm jewel cupped in his palm.',
     tags: ['figure:ksitigarbha', 'vow', 'dizang'],
   },
   {
     name: 'Mahāsthāmaprāpta (Dashizhi)',
-    one_liner: 'One of the three sages of the West, standing beside Amitābha.',
-    subject: 'the power of wisdom arriving',
+    one_liner: 'He steps onto the firm road and the ground shivers with sudden courage.',
+    subject: 'the surging stride of wisdom',
     detail:
-      'Dashizhi in Chinese halls, less carved than his companions. The sutras name him exactly as often.',
+      "He stands at Amitābha's right shoulder, but his stride belongs to active ground. When indecision paralyzes a workshop, his heavy footstep shakes the rafters, waking sluggish minds and filling timid hands with quiet, resolute strength.",
     tags: ['figure:mahasthamaprapta', 'wisdom', 'western'],
   },
   {
     name: 'Nāgārjuna',
-    one_liner: 'The teacher whose arguments grounded the Prajñāpāramitā.',
-    subject: 'a founder of the middle way',
+    one_liner: 'He sits in the courtyard taking apart rigid arguments like dry wicker.',
+    subject: 'the dismantler of false claims',
     detail:
-      'Tang scholastics read him as the fourteenth patriarch of the lineages Chan claimed. The works are older than the claim and outlast it.',
+      'He leans over the stone bench with ink-stained fingers, showing that neither gain nor loss stands by itself. When disputants grow heated, he points to two rafters propping up the barn roof: each stands only because the other leans in.',
     tags: ['figure:nagarjuna', 'teacher', 'madhyamaka'],
   },
   {
     name: 'Bodhidharma',
-    one_liner: 'The teacher who came from the west and sat facing a wall.',
-    subject: 'the first patriarch of Chan',
+    one_liner: 'He sits wrapped in rough wool, ignoring flowery speech to point at the stone.',
+    subject: 'the teacher facing the rock',
     detail:
-      'Wall-gazing, one sandal, and a refusal to explain what can be done instead of said. Tang Chan traces its beginning to his arrival.',
+      'He sits through freezing frost on Shaoshi mountain with his boots kicked off and his gaze pinned to bare rock. When clever scholars arrive with written treatises, he turns his head just enough to tell them to fetch firewood instead.',
     tags: ['figure:bodhidharma', 'chan', 'teacher'],
   },
 ];

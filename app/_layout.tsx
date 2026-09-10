@@ -27,7 +27,7 @@ export default function RootLayout() {
         <title>Yakshetra</title>
       </Head>
       {/* `auto` respects the user's light/dark preference (userInterfaceStyle). */}
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
       <Slot />
     </SafeAreaProvider>
   );

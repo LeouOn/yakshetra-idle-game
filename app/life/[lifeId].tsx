@@ -10,15 +10,34 @@
 //
 // Plan reference: todo 13.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { loadEraPack } from '@/content/loader';
 import type { Choice, EraPack, Event } from '@/content/schema';
-import { applyChoice, createLifeState, createRng } from '@/engine';
-import type { EraId, IntentRoot, LifeId, LifeState, Lens, ResourceId, RoleId } from '@/engine';
+import {
+  applyChoice,
+  applyStudioToNextLife,
+  createLifeState,
+  createRng,
+  currentLife,
+  snapshotLifeChain,
+} from '@/engine';
+import { loadStudioSession } from '@/persistence';
+import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+import type {
+  EraId,
+  IntentRoot,
+  LifeId,
+  LifeState,
+  Lens,
+  ResourceId,
+  RoleId,
+  SaveBlob,
+} from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 import ReflectCard, { type ReflectEntry } from '@/ui/components/ReflectCard';
 import {
   EngineProvider,
@@ -263,12 +282,57 @@ function createInitialLife(lifeId: string | undefined): LifeState {
 export default function LifeTurnScreen() {
   const router = useRouter();
   const { lifeId } = useLocalSearchParams<{ lifeId: string }>();
+  const { state: blob, loading: saveLoading, dispatch: saveDispatch } = useSaveSlot(1);
+  const [initialState, setInitialState] = useState<LifeState | null>(null);
+  const openedRef = useRef(false);
+  const chainRef = useRef<SaveBlob | null>(null);
 
-  const initialState = useMemo<LifeState>(() => createInitialLife(lifeId), [lifeId]);
+  useEffect(() => {
+    if (saveLoading || openedRef.current) {
+      return;
+    }
+    openedRef.current = true;
+    let cancelled = false;
+    void loadStudioSession().then((session) => {
+      if (cancelled) {
+        return;
+      }
+      const saved = blob === null ? null : currentLife(blob);
+      if (saved !== null) {
+        chainRef.current = blob;
+        setInitialState(saved);
+        return;
+      }
+      const base = createInitialLife(lifeId);
+      setInitialState(session === null ? base : applyStudioToNextLife(base, session));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lifeId, saveLoading, blob]);
+
   const eraPack = useMemo<EraPack | null>(
-    () => resolveEraPack(initialState.era),
-    [initialState.era],
+    () => (initialState === null ? null : resolveEraPack(initialState.era)),
+    [initialState],
   );
+
+  const persistLife = useCallback(
+    (life: LifeState) => {
+      const nowUnix = Math.floor(Date.now() / 1000);
+      const next = snapshotLifeChain(life, chainRef.current, nowUnix);
+      chainRef.current = next;
+      void saveDispatch({ type: 'PERSIST', blob: next });
+    },
+    [saveDispatch],
+  );
+
+  if (initialState === null) {
+    return (
+      <View role="main" style={styles.center}>
+        <Text accessibilityRole="header">{resolveSid('life.turn.loading_sid')}</Text>
+      </View>
+    );
+  }
 
   return (
     <TurnScreen
@@ -278,6 +342,7 @@ export default function LifeTurnScreen() {
         router.push('/bardo');
       }}
       syncStudio
+      persistLife={persistLife}
       onOpenStudio={() => {
         router.push('/studio');
       }}
@@ -295,6 +360,8 @@ export interface TurnScreenProps {
   readonly onDeath: () => void;
   /** When true, this life's residue charges the Manifest bench. */
   readonly syncStudio?: boolean;
+  /** When set, write the life-chain SaveBlob on every reducer change. */
+  readonly persistLife?: (life: LifeState) => void;
   readonly onOpenStudio?: () => void;
 }
 
@@ -303,6 +370,7 @@ export function TurnScreen({
   eraPack,
   onDeath,
   syncStudio = false,
+  persistLife,
   onOpenStudio,
 }: TurnScreenProps) {
   return (
@@ -311,6 +379,7 @@ export function TurnScreen({
         eraPack={eraPack}
         onDeath={onDeath}
         syncStudio={syncStudio}
+        {...(persistLife === undefined ? {} : { persistLife })}
         {...(onOpenStudio === undefined ? {} : { onOpenStudio })}
       />
     </EngineProvider>
@@ -321,13 +390,24 @@ interface TurnScreenBodyProps {
   readonly eraPack: EraPack | null;
   readonly onDeath: () => void;
   readonly syncStudio: boolean;
+  readonly persistLife?: (life: LifeState) => void;
   readonly onOpenStudio?: () => void;
 }
 
-function TurnScreenBody({ eraPack, onDeath, syncStudio, onOpenStudio }: TurnScreenBodyProps) {
+function TurnScreenBody({
+  eraPack,
+  onDeath,
+  syncStudio,
+  persistLife,
+  onOpenStudio,
+}: TurnScreenBodyProps) {
   const { state, dispatch } = useEngineReducer();
   const [reflect, setReflect] = useState<ReflectEntry | null>(null);
   usePlayResidueBridge(state, syncStudio);
+
+  useEffect(() => {
+    persistLife?.(state);
+  }, [persistLife, state]);
 
   // Death navigation: fires once when `alive` flips to false (resource exhausted
   // via ADVANCE_TURN, or the dev DIE button). Re-running when alive toggles
@@ -703,52 +783,59 @@ function DevTools({ onSkipTurn, onDie }: DevToolsProps) {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: t.bg,
+    padding: 24,
+  },
   screen: {
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
-    backgroundColor: '#0f0f12',
+    backgroundColor: t.bg,
   },
   topBar: {
     flexDirection: 'row',
     gap: 16,
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#2a2a30',
+    borderBottomColor: t.line,
   },
   topBarText: {
-    color: '#e7e7ea',
+    color: t.text,
     fontSize: 14,
     fontWeight: '600',
   },
   orient: {
     gap: 6,
-    backgroundColor: '#15151a',
+    backgroundColor: t.surface,
     borderRadius: 8,
     padding: 12,
   },
   phase: {
     gap: 8,
-    backgroundColor: '#15151a',
+    backgroundColor: t.surface,
     borderRadius: 8,
     padding: 12,
   },
   heading: {
-    color: '#e7e7ea',
+    color: t.text,
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   subheading: {
-    color: '#a0a0a8',
+    color: t.muted,
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
   },
   body: {
-    color: '#f4f4f6',
+    color: t.text,
     fontSize: 15,
     lineHeight: 21,
   },
@@ -758,7 +845,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   resourceCell: {
-    color: '#d7d2c4',
+    color: t.gold,
     fontSize: 13,
     fontFamily: 'monospace',
   },
@@ -769,21 +856,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   lensCard: {
-    backgroundColor: '#1f1f25',
+    backgroundColor: t.chip,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     minWidth: 140,
   },
   lensCardSelected: {
-    backgroundColor: '#2c4a2c',
+    backgroundColor: t.harvest,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     minWidth: 140,
   },
   lensCardText: {
-    color: '#f4f4f6',
+    color: t.text,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -792,25 +879,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   actionCard: {
-    backgroundColor: '#1f1f25',
+    backgroundColor: t.chip,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
   actionCardDisabled: {
-    backgroundColor: '#161619',
+    backgroundColor: t.disabled,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
     opacity: 0.5,
   },
   actionCardText: {
-    color: '#f4f4f6',
+    color: t.text,
     fontSize: 15,
     fontWeight: '500',
   },
   endLifeButton: {
-    borderColor: '#6b6b73',
+    borderColor: t.line,
     borderRadius: 8,
     borderWidth: 1,
     paddingHorizontal: 14,
@@ -819,7 +906,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   endLifeButtonText: {
-    color: '#e7e7ea',
+    color: t.text,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -829,16 +916,16 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#2a2a30',
+    borderTopColor: t.line,
   },
   devButton: {
-    backgroundColor: '#3a2a1a',
+    backgroundColor: t.chip,
     borderRadius: 6,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   devButtonText: {
-    color: '#f4f4f6',
+    color: t.text,
     fontSize: 12,
     fontFamily: 'monospace',
   },

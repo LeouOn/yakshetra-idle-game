@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 import type { IntentRoot, Lens, ResourceId } from '@/engine/types';
 import { formatSid, resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 
 const DEFAULT_AUTO_DISMISS_MS = 8000;
 const SLIDE_DISTANCE = 24;
@@ -342,7 +343,7 @@ export default function ReflectCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1b1b1f',
+    backgroundColor: t.surface,
     borderRadius: 12,
     padding: 20,
     gap: 16,
@@ -351,19 +352,19 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   heading: {
-    color: '#e7e7ea',
+    color: t.gold,
     fontSize: 13,
     fontWeight: '700',
     letterSpacing: 0.4,
     textTransform: 'uppercase',
   },
   body: {
-    color: '#f4f4f6',
+    color: t.text,
     fontSize: 16,
     lineHeight: 22,
   },
   memory: {
-    color: '#d7d2c4',
+    color: t.muted,
     fontSize: 15,
     fontStyle: 'italic',
     lineHeight: 21,
@@ -373,11 +374,11 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   deltaPositive: {
-    color: '#9bcf9b',
+    color: t.harvestText,
     fontSize: 14,
   },
   deltaNegative: {
-    color: '#cf9b9b',
+    color: t.danger,
     fontSize: 14,
   },
   actions: {
@@ -386,25 +387,25 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   continueButton: {
-    backgroundColor: '#e7e7ea',
+    backgroundColor: t.accentDeep,
     borderRadius: 8,
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
   continueButtonText: {
-    color: '#1b1b1f',
+    color: t.text,
     fontSize: 15,
     fontWeight: '700',
   },
   rememberButton: {
-    borderColor: '#6b6b73',
+    borderColor: t.line,
     borderRadius: 8,
     borderWidth: 1,
     paddingHorizontal: 18,
     paddingVertical: 12,
   },
   rememberButtonText: {
-    color: '#e7e7ea',
+    color: t.text,
     fontSize: 15,
     fontWeight: '600',
   },

@@ -6,6 +6,7 @@
 
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { studioTheme as t } from '@/ui/studio-theme';
 
 export interface RoutePlaceholderProps {
   /** Screen heading. */
@@ -37,8 +38,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+    backgroundColor: t.bg,
   },
-  title: { fontSize: 24, fontWeight: '700' },
-  message: { fontSize: 15, opacity: 0.7, textAlign: 'center' },
+  title: { fontSize: 24, fontWeight: '700', color: t.text },
+  message: { fontSize: 15, opacity: 0.7, textAlign: 'center', color: t.muted },
   extra: { marginTop: 8 },
 });

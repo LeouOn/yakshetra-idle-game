@@ -463,5 +463,141 @@
         },
       ],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Merchant day — West Market trade cadence. Night rest, dawn draft
+    // animal staging, morning stalls, midday accounts and ledger review,
+    // afternoon pagoda lamp offering, evening shuttered stall vigil.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:tang/merchant-day',
+      name_sid: 'tang.schedule.merchant_day.name_sid',
+      blocks: [
+        {
+          id: 'block:tang/merchant-day/night-rest',
+          label_sid: 'tang.block.merchant_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 5,
+          practice_id: null,
+          icon_sid: 'tang.block.merchant_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:tang/merchant-day/dawn-staging',
+          label_sid: 'tang.block.merchant_day.dawn_staging.label_sid',
+          startHour: 5,
+          endHour: 7,
+          practice_id: 'practice:tang/caravan-care',
+          icon_sid: 'tang.block.merchant_day.dawn_staging.icon_sid',
+        },
+        {
+          id: 'block:tang/merchant-day/morning-market',
+          label_sid: 'tang.block.merchant_day.morning_market.label_sid',
+          startHour: 7,
+          endHour: 12,
+          practice_id: 'practice:tang/curfew-endurance',
+          icon_sid: 'tang.block.merchant_day.morning_market.icon_sid',
+        },
+        {
+          id: 'block:tang/merchant-day/midday-accounts',
+          label_sid: 'tang.block.merchant_day.midday_accounts.label_sid',
+          startHour: 12,
+          endHour: 15,
+          practice_id: 'practice:tang/market-ledger',
+          icon_sid: 'tang.block.merchant_day.midday_accounts.icon_sid',
+        },
+        {
+          id: 'block:tang/merchant-day/afternoon-offering',
+          label_sid: 'tang.block.merchant_day.afternoon_offering.label_sid',
+          startHour: 15,
+          endHour: 18,
+          practice_id: 'practice:tang/lamp-tallow-gift',
+          icon_sid: 'tang.block.merchant_day.afternoon_offering.icon_sid',
+        },
+        {
+          id: 'block:tang/merchant-day/evening-vigil',
+          label_sid: 'tang.block.merchant_day.evening_vigil.label_sid',
+          startHour: 18,
+          endHour: 21,
+          practice_id: 'practice:tang/shuttered-vigil',
+          icon_sid: 'tang.block.merchant_day.evening_vigil.icon_sid',
+        },
+        {
+          id: 'block:tang/merchant-day/lamps-out',
+          label_sid: 'tang.block.merchant_day.lamps_out.label_sid',
+          startHour: 21,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.merchant_day.lamps_out.icon_sid',
+        },
+      ],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Artisan day — Courtyard timber and stonecraft cadence.
+    // Dawn breath sitting, morning joinery at the bench, midday courtyard
+    // garden check, afternoon carving, evening lantern offering.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'schedule:tang/artisan-day',
+      name_sid: 'tang.schedule.artisan_day.name_sid',
+      blocks: [
+        {
+          id: 'block:tang/artisan-day/night-rest',
+          label_sid: 'tang.block.artisan_day.night_rest.label_sid',
+          startHour: 0,
+          endHour: 5,
+          practice_id: null,
+          icon_sid: 'tang.block.artisan_day.night_rest.icon_sid',
+        },
+        {
+          id: 'block:tang/artisan-day/dawn-sitting',
+          label_sid: 'tang.block.artisan_day.dawn_sitting.label_sid',
+          startHour: 5,
+          endHour: 8,
+          practice_id: 'practice:tang/breath-sitting',
+          icon_sid: 'tang.block.artisan_day.dawn_sitting.icon_sid',
+        },
+        {
+          id: 'block:tang/artisan-day/morning-bench',
+          label_sid: 'tang.block.artisan_day.morning_bench.label_sid',
+          startHour: 8,
+          endHour: 13,
+          practice_id: 'practice:tang/workbench-carving',
+          icon_sid: 'tang.block.artisan_day.morning_bench.icon_sid',
+        },
+        {
+          id: 'block:tang/artisan-day/midday-garden',
+          label_sid: 'tang.block.artisan_day.midday_garden.label_sid',
+          startHour: 13,
+          endHour: 15,
+          practice_id: 'practice:tang/courtyard-beings',
+          icon_sid: 'tang.block.artisan_day.midday_garden.icon_sid',
+        },
+        {
+          id: 'block:tang/artisan-day/afternoon-bench',
+          label_sid: 'tang.block.artisan_day.afternoon_bench.label_sid',
+          startHour: 15,
+          endHour: 19,
+          practice_id: 'practice:tang/workbench-carving',
+          icon_sid: 'tang.block.artisan_day.afternoon_bench.icon_sid',
+        },
+        {
+          id: 'block:tang/artisan-day/evening-offering',
+          label_sid: 'tang.block.artisan_day.evening_offering.label_sid',
+          startHour: 19,
+          endHour: 21,
+          practice_id: 'practice:tang/lamp-tallow-gift',
+          icon_sid: 'tang.block.artisan_day.evening_offering.icon_sid',
+        },
+        {
+          id: 'block:tang/artisan-day/lamps-down',
+          label_sid: 'tang.block.artisan_day.lamps_down.label_sid',
+          startHour: 21,
+          endHour: 24,
+          practice_id: null,
+          icon_sid: 'tang.block.artisan_day.lamps_down.icon_sid',
+        },
+      ],
+    },
   ],
 }

@@ -13,6 +13,7 @@ import {
   type CoreManifestKind,
   type KindRule,
 } from './kind-registry';
+import { evaluateLifeActivity } from './activities';
 import type { LifeContext } from './life-context';
 // Structurally identical to CatalogMap in ./table-catalog (its local
 // CatalogEntry has the same shape), so the default slots into the param.
@@ -208,6 +209,10 @@ export function tableFillManifest(
   if (qualityTier >= 1 && !tags.includes('settled')) {
     tags.push('deepened');
   }
+  const activityEval = evaluateLifeActivity(lifeContext?.activity);
+  if (activityEval.tag !== null) {
+    tags.push(activityEval.tag);
+  }
   const briefNote =
     brief !== null && brief.trim().length > 0 ? ` You asked for: ${brief.trim()}.` : '';
   const focusNote = focus !== null ? ` This working is about ${focus.name}.` : '';
@@ -216,9 +221,7 @@ export function tableFillManifest(
       ? ''
       : ` It is year ${lifeContext.setting.year} in ${lifeContext.setting.era_id}.`;
   const tieNote =
-    lifeContext?.strongest_tie !== null && lifeContext !== null
-      ? ` Closest tie: ${lifeContext.strongest_tie}.`
-      : '';
+    lifeContext?.strongest_tie != null ? ` Closest tie: ${lifeContext.strongest_tie}.` : '';
   const qualityNote = qualityTier >= 1 ? ' The work went long enough to leave a second mark.' : '';
   const manifest: Manifest = {
     schema_version: MANIFEST_SCHEMA_VERSION,
@@ -231,7 +234,7 @@ export function tableFillManifest(
     name: entry.name,
     one_liner: entry.one_liner,
     subject,
-    detail: `${entry.detail}${briefNote}${focusNote}${settingNote}${tieNote}${qualityNote}`,
+    detail: `${entry.detail}${briefNote}${focusNote}${settingNote}${tieNote}${activityEval.note}${qualityNote}`,
     tags,
     rarity,
     fill_status: 'table',

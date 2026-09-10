@@ -10,6 +10,7 @@ import type { Practice as ContentPractice } from '@/content/schema';
 import type { Practice } from '@/engine';
 import type { DailySchedule } from '@/engine/schedule';
 import { resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 import StudioView from '@/ui/components/StudioView';
 
 const DEFAULT_ERA = 'tang-china';
@@ -104,6 +105,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-    backgroundColor: '#0c0a12',
+    backgroundColor: t.bg,
   },
 });

@@ -10,6 +10,7 @@ import {
   createStudioState,
   queueDevelop,
   recordStudioResidues,
+  stepStudio,
   studioTicksAway,
 } from '../';
 import type { LifeState, Practice } from '../';
@@ -146,5 +147,121 @@ describe('catchUpStudio', () => {
     expect(result.summary.bayReady).toBe(true);
     expect(result.studio.bay?.status).toBe('ready');
     expect(result.practices[0]?.currentProgress).toBeGreaterThan(0);
+  });
+
+  it('honors a caller-supplied cap above the default', () => {
+    const cap = 300;
+    const result = catchUpStudio(
+      createStudioState(),
+      createIdleState(),
+      makeLife(),
+      [makePractice()],
+      ALL_DAY,
+      [],
+      1,
+      1 + 250 * 60,
+      createRng(4n),
+      cap,
+    );
+    expect(result.summary.ticksSimulated).toBe(250);
+    expect(result.summary.capped).toBe(false);
+    expect(result.life.lastVisitedAtUnix).toBe(1 + 250 * 60);
+  });
+
+  it('does not re-apply the same absence after the life stamp', () => {
+    const first = catchUpStudio(
+      createStudioState(),
+      createIdleState(),
+      makeLife(),
+      [makePractice()],
+      ALL_DAY,
+      [],
+      1_000,
+      1_000 + 12 * 60,
+      createRng(5n),
+    );
+    expect(first.summary.ticksSimulated).toBe(12);
+    const second = catchUpStudio(
+      first.studio,
+      first.idle,
+      first.life,
+      first.practices,
+      ALL_DAY,
+      [],
+      first.life.lastVisitedAtUnix ?? 0,
+      1_000 + 12 * 60,
+      createRng(5n),
+    );
+    expect(second.summary.ticksSimulated).toBe(0);
+    expect(second.idle.lastSimulatedTick).toBe(first.idle.lastSimulatedTick);
+    expect(second.life.turn).toBe(first.life.turn);
+  });
+
+  it('leaves a ready bay ready instead of harvesting it', () => {
+    let studio = recordStudioResidues(createStudioState(), residue(MIN_RESIDUE_TO_DEVELOP));
+    studio = queueDevelop(studio, null, createRng(6n));
+    studio = {
+      ...studio,
+      bay:
+        studio.bay === null
+          ? null
+          : { ...studio.bay, cook_ticks_done: studio.bay.cook_ticks_total, status: 'ready' },
+    };
+    const result = catchUpStudio(
+      studio,
+      createIdleState(),
+      makeLife(),
+      [makePractice()],
+      ALL_DAY,
+      [],
+      1_000,
+      1_000 + 30 * 60,
+      createRng(7n),
+    );
+    expect(result.studio.bay?.status).toBe('ready');
+    expect(result.studio.archive).toHaveLength(0);
+    expect(result.summary.ticksSimulated).toBe(30);
+  });
+});
+
+describe('stepStudio — foreground batch vs single ticks', () => {
+  it('advances life and idle the same for N ticks as for N single ticks', () => {
+    const life = makeLife();
+    const idle = createIdleState();
+    const practices = [makePractice()];
+    const batch = stepStudio(
+      createStudioState(),
+      idle,
+      life,
+      practices,
+      ALL_DAY,
+      [],
+      8,
+      createRng(8n),
+    );
+    let studio = createStudioState();
+    let nextIdle = idle;
+    let nextLife = life;
+    let nextPractices = practices;
+    for (let i = 0; i < 8; i++) {
+      const step = stepStudio(
+        studio,
+        nextIdle,
+        nextLife,
+        nextPractices,
+        ALL_DAY,
+        [],
+        1,
+        createRng(8n),
+      );
+      studio = step.studio;
+      nextIdle = step.idle;
+      nextLife = step.life;
+      nextPractices = step.practices;
+    }
+    expect(batch.life.turn).toBe(nextLife.turn);
+    expect(batch.life.resources).toEqual(nextLife.resources);
+    expect(batch.idle.lastSimulatedTick).toBe(nextIdle.lastSimulatedTick);
+    expect(batch.practices[0]?.currentProgress).toBe(nextPractices[0]?.currentProgress);
   });
 });

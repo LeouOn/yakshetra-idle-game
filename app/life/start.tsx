@@ -28,7 +28,9 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { EraPack } from '@/content/schema';
 import { loadEraPack } from '@/content/loader';
+import { currentLife } from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 
 const DEFAULT_ERA_ID = 'tang-china';
@@ -80,9 +82,9 @@ function buildRoleCards(eraId: string): RoleCardData[] {
 }
 
 export default function LifeStartScreen() {
-  const params = useLocalSearchParams<{ era?: string }>();
+  const params = useLocalSearchParams<{ era?: string; resume?: string }>();
   const eraId = params.era ?? DEFAULT_ERA_ID;
-  const { state: saveState } = useSaveSlot();
+  const { state: saveState, loading: saveLoading } = useSaveSlot();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const [pack, setPack] = useState<EraPack | null>(null);
 
@@ -106,6 +108,20 @@ export default function LifeStartScreen() {
       cancelled = true;
     };
   }, [eraId]);
+
+  useEffect(() => {
+    if (params.resume !== '1' || saveLoading) {
+      return;
+    }
+    const life = saveState === null ? null : currentLife(saveState);
+    if (life === null) {
+      return;
+    }
+    router.replace({
+      pathname: '/life/[lifeId]',
+      params: { lifeId: life.id, era: life.era },
+    });
+  }, [params.resume, saveLoading, saveState]);
 
   const handleSelectRole = (roleKey: RoleKey): void => {
     router.push({
@@ -248,7 +264,7 @@ const ReadyView: FC<ReadyViewProps> = ({ pack, eraId, hasSave, onSelectRole }) =
 };
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1 },
+  scroll: { flex: 1, backgroundColor: t.bg },
   content: { paddingHorizontal: 24, paddingVertical: 32, gap: 20 },
   center: {
     flex: 1,
@@ -256,41 +272,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 16,
+    backgroundColor: t.bg,
   },
-  heading: { fontSize: 26, fontWeight: '700' },
-  subheading: { fontSize: 13, fontWeight: '700', letterSpacing: 0.4, textTransform: 'uppercase' },
-  label: { fontSize: 12, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.5 },
-  eraName: { fontSize: 22, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22 },
-  resumeHint: { fontSize: 13, opacity: 0.7, fontStyle: 'italic' },
+  heading: { fontSize: 26, fontWeight: '700', color: t.text },
+  subheading: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: t.gold,
+  },
+  label: {
+    fontSize: 12,
+    opacity: 0.6,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    color: t.muted,
+  },
+  eraName: { fontSize: 22, fontWeight: '600', color: t.text },
+  body: { fontSize: 15, lineHeight: 22, color: t.text },
+  resumeHint: { fontSize: 13, opacity: 0.7, fontStyle: 'italic', color: t.muted },
   section: { gap: 8 },
   collapseButton: {
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#6b6b73',
+    borderColor: t.line,
     alignSelf: 'flex-start',
   },
-  collapseButtonText: { fontSize: 14, fontWeight: '600' },
+  collapseButtonText: { fontSize: 14, fontWeight: '600', color: t.text },
   warningList: { gap: 4, marginTop: 4 },
-  warningItem: { fontSize: 14, lineHeight: 20 },
+  warningItem: { fontSize: 14, lineHeight: 20, color: t.muted },
   roles: { gap: 12 },
   roleCard: {
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#3a3a42',
+    borderColor: t.line,
+    backgroundColor: t.surface,
     padding: 16,
     gap: 6,
   },
-  roleTitle: { fontSize: 17, fontWeight: '600' },
-  roleDescription: { fontSize: 14, lineHeight: 20, opacity: 0.8 },
+  roleTitle: { fontSize: 17, fontWeight: '600', color: t.text },
+  roleDescription: { fontSize: 14, lineHeight: 20, opacity: 0.8, color: t.muted },
   button: {
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#111827',
+    backgroundColor: t.accentDeep,
     alignItems: 'center',
   },
-  buttonText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
+  buttonText: { color: t.text, fontSize: 15, fontWeight: '600' },
 });

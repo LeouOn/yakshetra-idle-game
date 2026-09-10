@@ -67,12 +67,16 @@ export function hydrateStudioSession(
     lastSimulatedTick: BigInt(session.idle.last_simulated_tick),
     totalIdleTicks: BigInt(session.idle.total_idle_ticks),
   };
+  const { lastVisitedAtUnix: _drop, ...base } = baseLife;
   const life: LifeState = {
-    ...baseLife,
+    ...base,
     turn: session.life.turn,
-    resources: { ...baseLife.resources, ...session.life.resources },
+    resources: { ...base.resources, ...session.life.resources },
     skills: { ...session.life.skills },
     residue: session.life.residue,
+    ...(session.last_visited_at_unix === undefined
+      ? {}
+      : { lastVisitedAtUnix: session.last_visited_at_unix }),
   };
   const bench = session.benches['person'];
   const studio: StudioState =

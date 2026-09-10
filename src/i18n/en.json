@@ -38,6 +38,7 @@
       "unavailable_about_button_sid": "Learn about this project"
     },
     "turn": {
+      "loading_sid": "Opening this life…",
       "screen_label_sid": "Turn screen",
       "top_bar_label_sid": "Turn status",
       "turn_label_sid": "Turn {n}",
@@ -173,6 +174,18 @@
     "activity_meditation_sid": "Meditation",
     "activity_other_sid": "Other",
     "activity_value_sid": "{n}",
+    "balance_heading_sid": "Rhythm & Balance",
+    "balance_ratio_sid": "{labor}% active labor · {quiet}% contemplation",
+    "balance_unformed_sid": "Days yet unshaped by regular labor or collected attention.",
+    "balance_artisan_sid": "Days shaped largely by craft, physical effort, and trade.",
+    "balance_householder_sid": "A balanced life between street craft and evening quiet.",
+    "balance_equal_sid": "Labor and contemplation walking side-by-side in equal measure.",
+    "balance_scholar_sid": "Days shaped largely by study, copying, and discernment.",
+    "balance_recluse_sid": "A secluded rhythm centered almost entirely in silence.",
+    "work_stats_heading_sid": "Craft & Community Footprint",
+    "work_shifts_sid": "Market shifts: {n}",
+    "work_copper_sid": "Purse: {n} copper",
+    "work_folded_sid": "Folded to household: {n} events",
     "life_heading_sid": "This life",
     "life_when_sid": "Year {year}, month {month}, day {day}",
     "life_who_sid": "{role} · age {age}",
@@ -189,7 +202,58 @@
     "next_gate_sid": "Gather {name} ({n}/{m})",
     "next_develop_sid": "Cook the bench's window",
     "next_visitor_sid": "The guest waits ({name})",
-    "next_endow_sid": "Endow a card on {tier}"
+    "next_endow_sid": "Endow a card on {tier}",
+    "journey_heading_sid": "A life becoming a world",
+    "journey_empty_sid": "Begin with an ordinary day.",
+    "journey_preview_sid": "Taking shape: {kind}",
+    "journey_gather_hint_sid": "Cook these experiences now, or keep tending to let the pattern change.",
+    "journey_frozen_sid": "This batch holds the experiences you chose to cook. New experiences gather for the next one.",
+    "journey_focus_sid": "This story follows {name}.",
+    "journey_reveal_sid": "Reveal a discovery",
+    "journey_tend_sid": "Help it take shape",
+    "journey_cook_sid": "Cook these experiences",
+    "journey_gather_sid": "Live a little",
+    "journey_latest_sid": "Your latest discovery",
+    "journey_discovery_sid": "Discovered: {name}",
+    "journey_detail_sid": "“{detail}”",
+    "journey_saved_sid": "Kept in your archive, where it can contribute to your growing world.",
+    "journey_follow_sid": "Follow this story next",
+    "journey_unfollow_sid": "Let the next story wander",
+    "milestone_heading_sid": "Growing toward {tier}",
+    "milestone_hint_sid": "Every requirement below counts toward the next chapter. The tier opens automatically when they are met.",
+    "milestone_world_sid": "World drafts assembled",
+    "milestone_world_scale_sid": "World drafts at {tier} scale",
+    "milestone_archived_sid": "Archived discoveries: {name}",
+    "milestone_pinned_sid": "Pinned discoveries: {name}",
+    "milestone_harvests_sid": "Harvests of {name} rarity",
+    "milestone_and_sid": "Complete all of these:",
+    "milestone_or_sid": "Complete any of these:",
+    "milestone_not_sid": "This condition must not hold:",
+    "milestone_requirement_sid": "{status} {label}: {current} ({comparison} {target})",
+    "milestone_done_sid": "Complete —",
+    "milestone_pending_sid": "To grow —",
+    "milestone_gte_sid": "at least",
+    "milestone_gt_sid": "more than",
+    "milestone_eq_sid": "exactly",
+    "journey_start_hint_sid": "Tend your daily life to gather experiences. Their pattern shapes what you discover.",
+    "journey_progress_sid": "Experiences gathered: {n} · ready to cook from {min}",
+    "journey_cooking_progress_sid": "This working: {done} of {total} steps complete",
+    "market_wallet_sid": "Your purse: {n} copper",
+    "market_intro_sid": "Choose your pace: tending gathers experiences; a market shift earns copper over 8 steps. Cooking continues during work, but daily practices pause.",
+    "market_work_sid": "Work a market shift · earn 1–6 copper",
+    "market_odds_sid": "Every shift pays 1 copper. A small tip adds 2 (25%); a generous tip adds 5 (5%). No tip: 70%. Paid shifts are an active choice.",
+    "market_tea_sid": "Host tea · {cost} copper",
+    "market_tea_hint_sid": "Add 3 social experiences to the next batch. Its preview shows how they combine with what you have gathered.",
+    "market_supplies_sid": "Buy supplies · {cost} copper",
+    "market_supplies_hint_sid": "Add 8 cook steps. Unused steps carry into later workings.",
+    "market_receipt_empty_sid": "Your next action’s payoff will appear here.",
+    "market_tend_receipt_sid": "+{n} experiences · advanced {ticks} steps.",
+    "market_work_receipt_sid": "+{copper} copper {bonus}· +{n} experiences · advanced {ticks} steps.",
+    "market_bonus_sid": "— a customer left a tip! ",
+    "market_cook_receipt_sid": "Started a working with {n} experiences. They are now cooking, not lost.",
+    "market_harvest_receipt_sid": "+1 discovery: {name}. Kept in your archive.",
+    "market_tea_receipt_sid": "−{cost} copper · +3 social experiences for the next working.",
+    "market_supplies_receipt_sid": "−{cost} copper · +8 cook steps, used now or saved for later."
   },
   "graduation": {
     "household_title_sid": "The household gathers",
@@ -274,6 +338,10 @@
         "label_sid": "Merchant",
         "description_sid": "You move goods through markets and along caravan routes, relying on provisions, timing, contracts, and trust that can change with every stop."
       },
+      "artisan": {
+        "label_sid": "Courtyard artisan",
+        "description_sid": "You shape timber, stone, and tile with your hands, measuring each cut against grain, balance, patience, and the daily needs of the courtyard."
+      },
       "peasant": {
         "label_sid": "Peasant farmer",
         "description_sid": "You cultivate rented or family land, measuring each season against household needs, village obligations, weather, and the demands of officials."
@@ -320,6 +388,30 @@
       "six_syllable_recitation": {
         "label_sid": "Six-syllable recitation",
         "description_sid": "Hold the six syllables through the working day. The energy it returns is ordinary: a steadier hand for the afternoon."
+      },
+      "market_ledger": {
+        "label_sid": "Market ledger inspection",
+        "description_sid": "Reviewing credit tallies, testing coin strings, and balancing weights with an even steelyard."
+      },
+      "caravan_care": {
+        "label_sid": "Caravan draft care",
+        "description_sid": "Tending pack mules and camels after mountain travel, checking hooves and watering them before rest."
+      },
+      "curfew_endurance": {
+        "label_sid": "Curfew endurance",
+        "description_sid": "Waiting through market inspections, gate crowds, and shuttering drums with patience and steady composure."
+      },
+      "workbench_carving": {
+        "label_sid": "Workbench timber craft",
+        "description_sid": "Planing wood, cutting dovetail mortises, and shaping brackets at the courtyard workbench."
+      },
+      "lamp_tallow_gift": {
+        "label_sid": "Pagoda lamp offering",
+        "description_sid": "Providing clear tallow and pressed sesame oil to maintain the flame in the courtyard pagoda lantern."
+      },
+      "shuttered_vigil": {
+        "label_sid": "Shuttered stall vigil",
+        "description_sid": "Sitting quietly in the darkened stall after market curfew, contemplating impermanence amidst trade goods."
       }
     },
     "schedule": {
@@ -343,6 +435,12 @@
       },
       "world_day": {
         "name_sid": "The world's day"
+      },
+      "merchant_day": {
+        "name_sid": "West Market day"
+      },
+      "artisan_day": {
+        "name_sid": "Courtyard artisan day"
       }
     },
     "block": {
@@ -538,6 +636,66 @@
         "lamps_down": {
           "label_sid": "The last lamps",
           "icon_sid": "star"
+        }
+      },
+      "merchant_day": {
+        "night_rest": {
+          "label_sid": "Curfew night rest",
+          "icon_sid": "moon"
+        },
+        "dawn_staging": {
+          "label_sid": "Dawn staging & pack care",
+          "icon_sid": "road"
+        },
+        "morning_market": {
+          "label_sid": "Morning market stalls",
+          "icon_sid": "bowl"
+        },
+        "midday_accounts": {
+          "label_sid": "Midday ledger review",
+          "icon_sid": "brush"
+        },
+        "afternoon_offering": {
+          "label_sid": "Afternoon lamp offering",
+          "icon_sid": "lamp"
+        },
+        "evening_vigil": {
+          "label_sid": "Curfew shuttered vigil",
+          "icon_sid": "star"
+        },
+        "lamps_out": {
+          "label_sid": "Lamps down & rest",
+          "icon_sid": "moon"
+        }
+      },
+      "artisan_day": {
+        "night_rest": {
+          "label_sid": "Night rest",
+          "icon_sid": "moon"
+        },
+        "dawn_sitting": {
+          "label_sid": "Dawn sitting",
+          "icon_sid": "star"
+        },
+        "morning_bench": {
+          "label_sid": "Morning workbench joinery",
+          "icon_sid": "brush"
+        },
+        "midday_garden": {
+          "label_sid": "Midday courtyard check",
+          "icon_sid": "yard"
+        },
+        "afternoon_bench": {
+          "label_sid": "Afternoon carving & plane",
+          "icon_sid": "brush"
+        },
+        "evening_offering": {
+          "label_sid": "Evening lantern light",
+          "icon_sid": "lamp"
+        },
+        "lamps_down": {
+          "label_sid": "Courtyard rest",
+          "icon_sid": "moon"
         }
       }
     }
@@ -1221,75 +1379,75 @@
   "figure": {
     "shakyamuni": {
       "display_name_sid": "Śākyamuni",
-      "attribute_sid": "The historical teacher whose discourses ground the early and Mahāyāna canons alike.",
-      "iconography_sid": "Seated in padmāsana, right hand in bhūmisparśa-mudrā (earth-touching gesture), monastic robe draped over the left shoulder, ushnisha crowned by a jewel.",
-      "reverence_sid": "Revered across every school active in Tang Chang'an as the teacher whose first turning of the wheel set the dharma in motion."
+      "attribute_sid": "The teacher who walked market lanes with an earthen alms-bowl and touched the ground as his sole witness.",
+      "iconography_sid": "Bare right hand pressed firmly against the soil, a patched mendicant robe over one shoulder, steady eyes meeting the crowd.",
+      "reverence_sid": "Honored in Tang Chang'an not as distant stone, but as the walker whose practical conduct opened every monastery door."
     },
     "amitabha": {
       "display_name_sid": "Amitābha",
-      "attribute_sid": "The Buddha of boundless light and the western pure land Sukhāvatī.",
-      "iconography_sid": "Red-skinned, seated in dhyāna-mudrā with a monk's alms-bowl, sometimes flanked by Avalokiteśvara and Mahāsthāmaprāpta.",
-      "reverence_sid": "Honor across the Tang Jingtu schools through the recitation of his name, captured in the nianfo mantra below."
+      "attribute_sid": "The Buddha of boundless light who reaches toward weary laborers whenever the evening sun sinks low.",
+      "iconography_sid": "Reaching hand lowered in welcome, an open lotus cupped in the left palm, robes glowing like cinnabar at twilight.",
+      "reverence_sid": "Invoked across Tang alleys and workshops through steady recitation, carried by ordinary voices between daily chores."
     },
     "medicine-buddha": {
       "display_name_sid": "Bhaiṣajyaguru",
-      "attribute_sid": "The Medicine Buddha whose twelve vows establish a field of healing for body and mind.",
-      "iconography_sid": "Lapis-blue complexion, right hand extended over the knee holding a myrobalan branch, left hand in dhyāna-mudrā cradling a medicine bowl.",
-      "reverence_sid": "Honor in Tang monastic rites for the sick through the recitation of his dharani and the copying of his sutra."
+      "attribute_sid": "The Medicine Buddha whose twelve vows turn common herbs and fresh water into remedies for afflicted bodies.",
+      "iconography_sid": "Lapis-dark presence holding a myrobalan branch, left hand steadying a heavy medicine jar of simple salve.",
+      "reverence_sid": "Sought out in sickrooms and Tang dispensary halls, invoked with incense and blue banners when fever strikes a house."
     },
     "vairocana": {
       "display_name_sid": "Vairocana",
-      "attribute_sid": "The cosmic Buddha identified in Tang Huayan scholasticism with the dharmakāya — the truth-body from which all other buddhas emanate.",
-      "iconography_sid": "White-skinned, hands in the bodhyagri-mudrā (wisdom-fist gesture), crowned and ornamented in sambhogakāya form.",
-      "reverence_sid": "Central to the Huayan cosmology that Tang court and monastic scholastics elaborated from the Avataṃsaka literature."
+      "attribute_sid": "The cosmic truth-body whose clear illumination touches weaving looms, roofbeams, and temple bells alike.",
+      "iconography_sid": "Upright and unmoving in golden light, hands gathered in the bodhyagri-mudrā, crowned like a sovereign who rules without a throne.",
+      "reverence_sid": "Central to Tang Huayan thought, where scholars and workshop masters saw every small task mirrored in his vast field."
     },
     "maitreya": {
       "display_name_sid": "Maitreya",
-      "attribute_sid": "The bodhisattva of patient hope who dwells in Tuṣita heaven awaiting his future birth as the next historical Buddha.",
-      "iconography_sid": "In Tang iconography, a regal bodhisattva seated western-style with a stupa on the crown; later popular forms depict him as a smiling mendicant.",
-      "reverence_sid": "Revered across Tang scholastic and devotional lineages as both the future teacher and a present source of inspiration."
+      "attribute_sid": "The patient future teacher who leans forward from his heavenly seat to watch the road unfold.",
+      "iconography_sid": "Seated western-style with ankles crossed, one finger raised toward his cheek in thought, a miniature stupa in his high crown.",
+      "reverence_sid": "Treasured by Tang devotees who kept an empty stool ready in anticipation of his promised coming down to earth."
     },
     "avalokiteshvara": {
       "display_name_sid": "Avalokiteśvara (Guanyin)",
-      "attribute_sid": "The bodhisattva of great compassion who perceives the cries of the world.",
-      "iconography_sid": "Crowned bodhisattva holding a lotus or willow branch; in Tang iconography often eleven-headed or thousand-armed in esoteric forms transmitted by Amoghavajra.",
-      "reverence_sid": "The Lotus Sutra's universal-gate chapter made Guanyin the most widely honored bodhisattva in Tang lay and monastic life."
+      "attribute_sid": "The bodhisattva who hears the muffled cry of every creature and steps forward without delay.",
+      "iconography_sid": "Graceful presence holding a porcelain vase and dewy willow sprig, robes fluttering like river mist over walking sandals.",
+      "reverence_sid": "Beloved in every Tang neighborhood, called upon at ferry crossings, birthings, and sudden storms along the road."
     },
     "manjushri": {
       "display_name_sid": "Mañjuśrī (Wenshu)",
-      "attribute_sid": "The bodhisattva of discriminative wisdom whose sword cuts through confusion.",
-      "iconography_sid": "Youthful bodhisattva riding a lion, right hand holding a flaming sword raised to cleave ignorance, left hand a palm-leaf manuscript.",
-      "reverence_sid": "Wutai Shan in northern Tang China was honored as his bodhimanda and became a destination for pilgrims from across the empire and beyond."
+      "attribute_sid": "The bodhisattva whose sharp blade severs confusion and cuts straight through entangled pretenses.",
+      "iconography_sid": "Youthful prince mounted on a fierce lion, lifting a sword of blazing insight while steadying a palm-leaf text.",
+      "reverence_sid": "Sought by pilgrims on the cold slopes of Wutai Shan, asked to dispel stubborn ignorance and tangled quarrels."
     },
     "samantabhadra": {
       "display_name_sid": "Samantabhadra (Puxian)",
-      "attribute_sid": "The bodhisattva of great practice whose ten great vows structure the Mahāyāna path of action.",
-      "iconography_sid": "Crowned bodhisattva riding a six-tusked white elephant, often holding a lotus or a sutra-scroll.",
-      "reverence_sid": "Emei Shan in southwestern Tang China was reverenced as his bodhimanda; the Lotus Sutra's closing chapter centers on him."
+      "attribute_sid": "The bodhisattva of relentless practice who turns grand vows into shovel work and sturdy roads.",
+      "iconography_sid": "Riding a massive six-tusked elephant with quiet tread, holding an open scroll or blooming lotus as he marches.",
+      "reverence_sid": "Reverenced at Mount Emei and in village building guilds as the patron of endurance and completed obligations."
     },
     "ksitigarbha": {
       "display_name_sid": "Kṣitigarbha (Dizang)",
-      "attribute_sid": "The bodhisattva of the great vow who remains in the world until the hells are emptied.",
-      "iconography_sid": "Shaven-headed monastic with a monk's staff ringing with rings, holding a wish-fulfilling jewel in the left hand.",
-      "reverence_sid": "Jiuhua Shan in southern Tang China was honored as his bodhimanda; the Kṣitigarbha literature spread widely in this period."
+      "attribute_sid": "The bodhisattva of the earth-vow who descends to the lowest pits to unlock every chained door.",
+      "iconography_sid": "Shaven-headed traveler in monk's robes, holding a six-ringed staff that jingles with each step and a bright wish-granting gem.",
+      "reverence_sid": "Invoked at Jiuhua Shan and family burial grounds to succor deceased kinsfolk and release prisoners from despair."
     },
     "mahasthamaprapta": {
       "display_name_sid": "Mahāsthāmaprāpta (Dashizhi)",
-      "attribute_sid": "The bodhisattva of the power of wisdom who illuminates all worlds with the light of practice.",
-      "iconography_sid": "Crowned bodhisattva holding a lotus marked with a wisdom-vessel, sometimes shown flanking Amitābha with Avalokiteśvara as one of the three sages of the west.",
-      "reverence_sid": "Honor in Tang Pure Land devotion as one of the three sages of Sukhāvatī, named in the Contemplation Sutra."
+      "attribute_sid": "The bodhisattva of boundless vigor whose firm stride shatters hesitation and awakens practical resolve.",
+      "iconography_sid": "Stately bodhisattva bearing a treasure-flask in his crown, poised to leap forward with hands raised in encouragement.",
+      "reverence_sid": "Venerated beside Amitābha and Guanyin as the quiet powerhouse who lends fortitude to unsteady practitioners."
     },
     "nagarjuna": {
       "display_name_sid": "Nāgārjuna",
-      "attribute_sid": "The historical founder of the Mādhyamaka school whose Mūlamadhyamakakārikā grounded Tang Prajñāpāramitā scholarship.",
-      "iconography_sid": "Shaved-headed monastic or brahmin-style sage, often shown with a canopy of nāgas overhead referencing the legend of his retrieving the Prajñāpāramitā texts from the nāga realm.",
-      "reverence_sid": "Revered in Tang transmission lineages as the fourteenth patriarch and a foundational authority for Huayan, Sanlun, and Pure Land scholastic traditions."
+      "attribute_sid": "The keen dialectician who shows that all things arise together and none can stand in lonely isolation.",
+      "iconography_sid": "Lean scholastic monk sheltered by a hood of coiled river serpents, one finger raised to puncture hollow assumptions.",
+      "reverence_sid": "Studied in Tang lecture halls for his uncompromising logic, which cured stubborn dogmatism and grounded compassion in reality."
     },
     "bodhidharma": {
       "display_name_sid": "Bodhidharma (Damo)",
-      "attribute_sid": "The historical teacher traditionally credited with bringing Chan from the west and founding the lineage that became Chinese Chan.",
-      "iconography_sid": "Bearded, hooded or bare-headed South Indian monk, shown seated in meditation facing a wall, often with a single sandal (referencing the legend of his return to the west).",
-      "reverence_sid": "Honor in Tang Chan lineages as the first patriarch; the Platform Sutra carries forward the lineage he is traditionally credited with starting."
+      "attribute_sid": "The fierce founder who pointed directly at human conduct and brushed aside empty recitation.",
+      "iconography_sid": "Broad-shouldered traveler with bulging eyes, thick beard, and patched coarse cloak, carrying one empty straw sandal.",
+      "reverence_sid": "Claimed by Tang Chan monasteries as the first patriarch whose unbending silence demanded genuine, lived awakening."
     },
     "bhadrakalpa": {
       "1": {

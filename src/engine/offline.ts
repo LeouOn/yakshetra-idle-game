@@ -49,22 +49,30 @@ export function computeOfflineSummary(
   const calendarBefore: CalendarComponents = tickToCalendar(idle.lastSimulatedTick, epoch);
   const stamped: LifeState = { ...state, lastVisitedAtUnix: nowUnix };
 
-  const lastVisited = state.lastVisitedAtUnix ?? 0;
+  const emptySummary = (): OfflineSummary => ({
+    idleTicksSimulated: 0n,
+    resourcesGained: {},
+    practicesAdvanced: [],
+    eventsTriggered: [],
+    endingTriggered: null,
+    calendarBefore,
+    calendarAfter: calendarBefore,
+  });
+
+  // Missing lastVisited is "never visited" — do not treat a fresh life as
+  // decades away from unix epoch. An explicit 0 remains a valid epoch start
+  // (tests and migrated blobs use it that way).
+  if (state.lastVisitedAtUnix === undefined) {
+    return { state: stamped, idle, summary: emptySummary() };
+  }
+
+  const lastVisited = state.lastVisitedAtUnix;
   const elapsedSeconds = nowUnix - lastVisited;
   const elapsedMinutes = elapsedSeconds <= 0 ? 0 : Math.floor(elapsedSeconds / SECONDS_PER_MINUTE);
   const ticks = BigInt(Math.floor(elapsedMinutes / MINUTES_PER_HOUR));
 
   if (ticks <= 0n) {
-    const empty: OfflineSummary = {
-      idleTicksSimulated: 0n,
-      resourcesGained: {},
-      practicesAdvanced: [],
-      eventsTriggered: [],
-      endingTriggered: null,
-      calendarBefore,
-      calendarAfter: calendarBefore,
-    };
-    return { state: stamped, idle, summary: empty };
+    return { state: stamped, idle, summary: emptySummary() };
   }
 
   const rng = createRng(rngSeed);

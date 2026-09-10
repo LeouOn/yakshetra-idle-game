@@ -16,6 +16,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Echo, EchoType } from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 
 // ---------------------------------------------------------------------------
 // Era option model + the prototype's static era set
@@ -159,7 +160,12 @@ export default function BardoView({ previousEra, echoes, eras, onPickEra }: Bard
   const groups = groupEchoes(echoes);
 
   return (
-    <ScrollView testID="bardo-screen" role="main" contentContainerStyle={styles.container}>
+    <ScrollView
+      testID="bardo-screen"
+      role="main"
+      style={{ flex: 1, backgroundColor: t.bg }}
+      contentContainerStyle={styles.container}
+    >
       <View style={styles.section}>
         <Text accessibilityRole="header" style={styles.heading}>
           {resolveSid('bardo.life_ended_heading_sid')}
@@ -254,22 +260,29 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 32,
     gap: 28,
+    backgroundColor: t.bg,
   },
   section: { gap: 10 },
-  heading: { fontSize: 26, fontWeight: '700' },
-  subheading: { fontSize: 16, opacity: 0.75 },
-  sectionHeading: { fontSize: 15, fontWeight: '700', textTransform: 'uppercase', opacity: 0.8 },
-  muted: { fontSize: 15, opacity: 0.6, fontStyle: 'italic' },
+  heading: { fontSize: 26, fontWeight: '700', color: t.text },
+  subheading: { fontSize: 16, opacity: 0.75, color: t.muted },
+  sectionHeading: {
+    fontSize: 15,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    opacity: 0.8,
+    color: t.gold,
+  },
+  muted: { fontSize: 15, opacity: 0.6, fontStyle: 'italic', color: t.muted },
   echoGroup: { gap: 4, marginTop: 6 },
-  echoGroupHeading: { fontSize: 14, fontWeight: '600', opacity: 0.85 },
-  echoItem: { fontSize: 15, lineHeight: 21, opacity: 0.9 },
+  echoGroupHeading: { fontSize: 14, fontWeight: '600', opacity: 0.85, color: t.text },
+  echoItem: { fontSize: 15, lineHeight: 21, opacity: 0.9, color: t.text },
   eraList: { gap: 12, marginTop: 4 },
   eraButton: {
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#111827',
+    backgroundColor: t.accentDeep,
     alignItems: 'center',
   },
-  eraButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
+  eraButtonText: { color: t.text, fontSize: 16, fontWeight: '600' },
 });

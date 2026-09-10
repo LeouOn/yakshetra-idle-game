@@ -17,6 +17,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 import DisclaimerModal from '@/ui/components/DisclaimerModal';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 
@@ -85,19 +86,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 32,
-    backgroundColor: '#0c0a12',
+    backgroundColor: t.bg,
   },
   heading: { alignItems: 'center', gap: 8 },
-  title: { fontSize: 32, fontWeight: '700', color: '#f4eef8' },
-  subtitle: { fontSize: 16, color: '#b5a9c4' },
+  title: { fontSize: 32, fontWeight: '700', color: t.text },
+  subtitle: { fontSize: 16, color: t.muted },
   actions: { width: '100%', maxWidth: 360, gap: 12 },
   button: {
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#6d4aa8',
+    backgroundColor: t.accentDeep,
     alignItems: 'center',
   },
-  buttonSecondary: { backgroundColor: '#2a2238' },
-  buttonText: { color: '#f4eef8', fontSize: 16, fontWeight: '600' },
+  buttonSecondary: { backgroundColor: t.chip },
+  buttonText: { color: t.text, fontSize: 16, fontWeight: '600' },
 });

@@ -604,6 +604,47 @@ describe('StudioView', () => {
     const household = saved?.benches['household'];
     expect(household?.residue.some((e) => e.ids.includes('member:m1'))).toBe(true);
     expect(household?.residue.some((e) => e.ids.includes('bench:person'))).toBe(true);
+    // Catch-up stamps last_visited to now so a remount cannot double-apply.
+    expect(saved?.last_visited_at_unix).toBe(1_000_000);
+  });
+
+  it('does not re-apply away ticks when remounting a stamped session', async () => {
+    const awayTicks = 120;
+    const seeded = StudioSessionSchema.parse({
+      ...graduatedSession([109n, 113n, 127n]),
+      last_visited_at_unix: 1_000_000 - awayTicks * STUDIO_SECONDS_PER_TICK,
+    });
+    const storage = createMemoryStudioKv({
+      [STUDIO_SESSION_KEY]: JSON.stringify(seeded),
+    });
+    const props = {
+      practices: SIX_PRACTICES,
+      schedule: SIX_SCHEDULE,
+      persist: true as const,
+      storage,
+      clock: () => 1_000_000,
+    };
+
+    const first = render(createElement(StudioView, props));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    const afterFirst = await loadStudioSession(storage);
+    expect(afterFirst?.members['m1']?.life.turn).toBe(awayTicks);
+    expect(afterFirst?.last_visited_at_unix).toBe(1_000_000);
+    act(() => {
+      first.root.unmount();
+    });
+
+    render(createElement(StudioView, props));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    const afterSecond = await loadStudioSession(storage);
+    expect(afterSecond?.members['m1']?.life.turn).toBe(awayTicks);
+    expect(afterSecond?.members['m2']?.life.turn).toBe(awayTicks);
+    expect(afterSecond?.life.turn).toBe(afterFirst?.life.turn);
+    expect(afterSecond?.last_visited_at_unix).toBe(1_000_000);
   });
 
   it('harvests a household card through the live tick path after graduation', async () => {

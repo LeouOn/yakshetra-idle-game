@@ -128,7 +128,7 @@ export const StudioSessionV0Schema = z
     idle: IdleSliceSchema,
     life: LifeSliceSchema,
     practices: z.array(PracticeSliceSchema),
-    last_visited_at_unix: z.number().optional(),
+    last_visited_at_unix: z.number().finite().optional(),
   })
   .strict();
 

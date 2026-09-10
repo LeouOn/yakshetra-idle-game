@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { RoutePlaceholder } from '@/ui/components/RoutePlaceholder';
+import { studioTheme as t } from '@/ui/studio-theme';
 
 export default function ChainCompleteScreen() {
   return (
@@ -29,8 +30,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
-    backgroundColor: '#111827',
+    backgroundColor: t.accentDeep,
     alignItems: 'center',
   },
-  buttonText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
+  buttonText: { color: t.text, fontSize: 15, fontWeight: '600' },
 });

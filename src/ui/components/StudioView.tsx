@@ -25,7 +25,6 @@ import {
 import type { Ending } from '@/content/schema';
 import type { ArchivePredicate, EndowmentTrack } from '@/content/progression/schema';
 import {
-  MIN_RESIDUE_TO_DEVELOP,
   QUALITY_UPGRADE_HARVESTS,
   STUDIO_TEND_TICKS,
   DEFAULT_KIND_RULES,
@@ -91,6 +90,17 @@ import StudioArchive, { type EndowChipState } from './StudioArchive';
 import StudioJuice from './StudioJuice';
 import StudioLife from './StudioLife';
 import StudioNextAction from './StudioNextAction';
+import StudioJourney from './StudioJourney';
+import StudioMarket from './StudioMarket';
+import {
+  completeMarketShift,
+  copperBalance,
+  purchaseMarket,
+  TEA_COST,
+  SUPPLIES_COST,
+  type MarketPurchase,
+} from '@/engine/market';
+import StudioMilestone from './StudioMilestone';
 import StudioRail, { type RailTier } from './StudioRail';
 import StudioRoster from './StudioRoster';
 import StudioWorld from './StudioWorld';
@@ -383,6 +393,10 @@ export default function StudioView({
     setWorldDrafts,
     setBenches,
   });
+  const [receipt, setReceipt] = useState<{ id: number; text: string } | null>(null);
+  function report(text: string): void {
+    setReceipt((current) => ({ id: (current?.id ?? 0) + 1, text }));
+  }
   const [brief, setBrief] = useState('');
   const [endowSelection, setEndowSelection] = useState<{
     readonly cardId: string;
@@ -461,17 +475,65 @@ export default function StudioView({
       ? null
       : (registries().milestones.find((row) => row.id === graduationCeremony) ?? null);
 
-  function applyTicks(ticks: number): void {
+  function applyTicks(ticks: number, marketWork = false, showReceipt = true): void {
     // stepSession keeps the embodied bench on exact stepStudio semantics (its
     // golden-tested invariant) and adds autonomous members plus every
     // unlocked tier bench; a locked session is indistinguishable here.
     const session = sessionFromSlices(benchRef.current);
-    const stepped = stepSession(session, stepCtx(session), ticks, rngRef.current);
-    adoptSteppedSession(stepped.session);
+    const context = stepCtx(session);
+    const workContext = marketWork
+      ? {
+          ...context,
+          embodiedSchedule: {
+            ...context.embodiedSchedule,
+            blocks: context.embodiedSchedule.blocks.map((block) => ({
+              ...block,
+              practice_id: null,
+            })),
+          },
+        }
+      : context;
+    const stepped = stepSession(session, workContext, ticks, rngRef.current);
+    const paid =
+      marketWork && stepped.summary.embodiedTicks === STUDIO_TEND_TICKS
+        ? completeMarketShift(stepped.session)
+        : null;
+    adoptSteppedSession(paid?.session ?? stepped.session);
+    const gained =
+      (stepped.session.benches.person?.residue.length ?? 0) -
+      (session.benches.person?.residue.length ?? 0);
+    if (showReceipt) {
+      report(
+        formatSid(
+          paid === null ? 'studio.market_tend_receipt_sid' : 'studio.market_work_receipt_sid',
+          {
+            n: gained,
+            ticks: stepped.summary.embodiedTicks,
+            copper: paid?.copper ?? 0,
+            bonus: paid !== null && paid.copper > 1 ? resolveSid('studio.market_bonus_sid') : '',
+          },
+        ),
+      );
+    }
     setExported(false);
     if (ticks > 0) {
       setJuiceBurst((n) => n + 1);
     }
+  }
+
+  function buyMarket(purchase: MarketPurchase): void {
+    const current = sessionFromSlices(benchRef.current);
+    const next = purchaseMarket(current, purchase);
+    if (next === current) return;
+    adoptSteppedSession(next);
+    report(
+      formatSid(
+        purchase === 'tea' ? 'studio.market_tea_receipt_sid' : 'studio.market_supplies_receipt_sid',
+        {
+          cost: purchase === 'tea' ? TEA_COST : SUPPLIES_COST,
+        },
+      ),
+    );
   }
 
   function tend(): void {
@@ -483,7 +545,7 @@ export default function StudioView({
       return;
     }
     const timer = setInterval(() => {
-      applyTicks(1);
+      applyTicks(1, false, false);
     }, STUDIO_PULSE_MS);
     return () => clearInterval(timer);
     // applyTicks reads benchRef; listing it would reset the interval every render.
@@ -491,6 +553,7 @@ export default function StudioView({
   }, [running, ready, schedule, endings]);
 
   function develop(): void {
+    report(formatSid('studio.market_cook_receipt_sid', { n: pending.length }));
     const trimmed = brief.trim();
     // The manual develop path queues the person bench, so its endowed
     // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the
@@ -629,6 +692,7 @@ export default function StudioView({
       [tierId]: { ...bench, bay: null, harvest_count: bench.harvest_count + 1 },
     }));
     setFreshHarvestId(prefersReducedMotion ? null : manifest.id);
+    report(formatSid('studio.market_harvest_receipt_sid', { name: manifest.name }));
     setExported(false);
   }
 
@@ -723,6 +787,7 @@ export default function StudioView({
       setStudio(result.studio);
       setWorldDrafts(withRecordedDrafts(result.studio.archive, worldDrafts));
       setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
+      report(formatSid('studio.market_harvest_receipt_sid', { name: result.manifest.name }));
       setExported(false);
     } finally {
       harvestingRef.current = false;
@@ -930,17 +995,33 @@ export default function StudioView({
           </View>
         ))}
 
+        <StudioMarket
+          copper={copperBalance(buildSession())}
+          receipt={receipt}
+          onWork={() => applyTicks(STUDIO_TEND_TICKS, true)}
+          onBuy={buyMarket}
+        />
+        <StudioJourney
+          studio={studio}
+          minimum={personMin}
+          harvestable={harvestable}
+          onTend={tend}
+          onDevelop={develop}
+          onHarvest={() => void harvest()}
+          onPin={pin}
+        />
+        <StudioMilestone session={buildSession()} stats={stats} registries={registries()} />
         <StudioNextAction action={nextAction(buildSession(), worldDrafts, registries())} />
 
         <View style={styles.panel}>
           <Text style={styles.panelLabel}>
-            {formatSid('studio.charge_label_sid', { n: charge, min: MIN_RESIDUE_TO_DEVELOP })}
+            {formatSid('studio.charge_label_sid', { n: charge, min: personMin })}
           </Text>
           <View
             style={styles.barTrack}
             accessibilityLabel={formatSid('studio.charge_label_sid', {
               n: charge,
-              min: MIN_RESIDUE_TO_DEVELOP,
+              min: personMin,
             })}
           >
             <View style={[styles.barFill, { width: `${Math.round(chargeRatio * 100)}%` }]} />
@@ -1060,7 +1141,12 @@ export default function StudioView({
 
         <StudioLife context={lifeContext} {...(onExport === undefined ? {} : { onExport })} />
 
-        <StudioActivities practices={runtimePractices} />
+        <StudioActivities
+          practices={runtimePractices}
+          marketShifts={buildSession().life.skills.market_shifts}
+          copper={copperBalance(buildSession())}
+          residueCount={buildSession().benches.person?.residue.length}
+        />
 
         <StudioWorld
           archive={studio.archive}

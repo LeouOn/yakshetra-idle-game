@@ -15,6 +15,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { WARNING_CATEGORIES, type WarningCategoryId } from '@/content/warning-taxonomy';
 import { formatSid, resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 import type { AppSettings, FontScale, SlotSummary } from '@/ui/hooks/useSaveSlot';
 
 // ---------------------------------------------------------------------------
@@ -101,7 +102,12 @@ export default function SettingsView({
   };
 
   return (
-    <ScrollView testID="settings-screen" role="main" contentContainerStyle={styles.container}>
+    <ScrollView
+      testID="settings-screen"
+      role="main"
+      style={styles.scroll}
+      contentContainerStyle={styles.container}
+    >
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('settings.title_sid')}
       </Text>
@@ -342,16 +348,18 @@ function SlotRow({ summary, onExport, onImport, onDelete }: SlotRowProps) {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  scroll: { flex: 1, backgroundColor: t.bg },
   container: { paddingHorizontal: 24, paddingVertical: 28, gap: 28 },
-  title: { fontSize: 26, fontWeight: '700' },
+  title: { fontSize: 26, fontWeight: '700', color: t.text },
   section: { gap: 10 },
   sectionHeading: {
     fontSize: 15,
     fontWeight: '700',
     textTransform: 'uppercase',
     opacity: 0.8,
+    color: t.gold,
   },
-  help: { fontSize: 14, opacity: 0.65, lineHeight: 19 },
+  help: { fontSize: 14, opacity: 0.65, lineHeight: 19, color: t.muted },
   toggleList: { gap: 8 },
   toggleRow: {
     flexDirection: 'row',
@@ -360,62 +368,62 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: '#f4f4f5',
+    backgroundColor: t.chip,
     gap: 12,
   },
   toggleText: { flex: 1, gap: 2 },
-  toggleLabel: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  toggleDescription: { fontSize: 13, opacity: 0.7, color: '#111827' },
-  stateOn: { fontSize: 14, fontWeight: '700', color: '#166534' },
-  stateOff: { fontSize: 14, fontWeight: '700', color: '#9f1239' },
+  toggleLabel: { fontSize: 15, fontWeight: '600', color: t.text },
+  toggleDescription: { fontSize: 13, opacity: 0.7, color: t.muted },
+  stateOn: { fontSize: 14, fontWeight: '700', color: t.harvestText },
+  stateOff: { fontSize: 14, fontWeight: '700', color: t.danger },
   fontRow: { flexDirection: 'row', gap: 10 },
   fontButton: {
     flex: 1,
     paddingVertical: 14,
     borderRadius: 10,
-    backgroundColor: '#f4f4f5',
+    backgroundColor: t.chip,
     alignItems: 'center',
   },
-  fontButtonSelected: { backgroundColor: '#111827' },
-  fontLabel: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  fontLabelSelected: { fontSize: 14, fontWeight: '700', color: '#ffffff' },
+  fontButtonSelected: { backgroundColor: t.accentDeep },
+  fontLabel: { fontSize: 14, fontWeight: '600', color: t.text },
+  fontLabelSelected: { fontSize: 14, fontWeight: '700', color: t.text },
   slotList: { gap: 10 },
   slotRow: {
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: '#f4f4f5',
+    backgroundColor: t.chip,
     gap: 8,
   },
   slotMeta: { gap: 2 },
-  slotLabel: { fontSize: 15, fontWeight: '600', color: '#111827' },
-  slotMetaText: { fontSize: 13, opacity: 0.65, color: '#111827' },
+  slotLabel: { fontSize: 15, fontWeight: '600', color: t.text },
+  slotMetaText: { fontSize: 13, opacity: 0.65, color: t.muted },
   slotActions: { flexDirection: 'row', gap: 8 },
   slotButton: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: t.surface,
     alignItems: 'center',
   },
   slotButtonDisabled: { opacity: 0.4 },
-  slotButtonText: { fontSize: 13, fontWeight: '600', color: '#111827' },
+  slotButtonText: { fontSize: 13, fontWeight: '600', color: t.text },
   exportResult: { gap: 4, marginTop: 6 },
   exportLabel: { fontSize: 13, fontWeight: '700', opacity: 0.8 },
   exportCode: {
     fontFamily: 'monospace',
     fontSize: 12,
-    color: '#111827',
+    color: t.text,
     opacity: 0.8,
   },
-  success: { fontSize: 14, fontWeight: '600', color: '#166534' },
-  error: { fontSize: 14, fontWeight: '600', color: '#9f1239' },
+  success: { fontSize: 14, fontWeight: '600', color: t.harvestText },
+  error: { fontSize: 14, fontWeight: '600', color: t.danger },
   aboutLink: {
     paddingVertical: 16,
     alignItems: 'center',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: t.line,
   },
-  aboutLinkText: { fontSize: 15, fontWeight: '600', color: '#111827' },
+  aboutLinkText: { fontSize: 15, fontWeight: '600', color: t.text },
 });

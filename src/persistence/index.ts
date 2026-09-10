@@ -21,6 +21,13 @@ export {
 export { MemoryStorageAdapter } from './memory';
 export { NativeStorageAdapter } from './native';
 export { WebStorageAdapter } from './web';
+export { LocalStorageAdapter, LIFE_SLOT_KEY_PREFIX } from './local-storage';
+export {
+  createPlatformStorageAdapter,
+  lifeStorageAdapter,
+  resetLifeStorageAdapter,
+  setLifeStorageAdapter,
+} from './platform-adapter';
 export {
   STUDIO_SESSION_KEY,
   clearStudioSession,

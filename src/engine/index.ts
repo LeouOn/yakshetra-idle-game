@@ -109,6 +109,12 @@ export {
 export type { HydratedStudioSession, StudioSession } from './studio-session';
 export { evaluatePredicate } from './predicates';
 export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './echo';
+export {
+  LIFE_CHAIN_ENGINE_COMPAT,
+  currentLife,
+  reviveLifeState,
+  snapshotLifeChain,
+} from './life-chain';
 export { advanceTurn, advanceIdleTick } from './turn';
 export {
   createIdleState,
@@ -149,7 +155,16 @@ export {
   withRecordedDrafts,
 } from './world-scale';
 export { focusFromManifest, isPinnableKind, nextPinned, pinnableCards } from './focus';
-export { activityFamilyForLens, emptyActivityTotals, summarizeActivities } from './activities';
+export {
+  activityFamilyForLens,
+  activityFlavorNote,
+  computeWorkBalance,
+  countFoldedResidue,
+  dominantActivityFamily,
+  emptyActivityTotals,
+  evaluateLifeActivity,
+  summarizeActivities,
+} from './activities';
 export {
   LIFE_CONTEXT_VERSION,
   LifeContextSchema,
@@ -158,7 +173,7 @@ export {
   stringifyLifeContext,
 } from './life-context';
 export type { BondKind, LifeContext, LifeSetting, LifeTie } from './life-context';
-export type { ActivityFamily, ActivityTotals } from './activities';
+export type { ActivityFamily, ActivityTotals, WorkBalance } from './activities';
 export type { ManifestFocus } from './focus';
 export { canonicalStringify, deserializeSaveBlob, serializeSaveBlob, sha256 } from './serialize';
 export { SaveBlobSchema } from './serialize';
@@ -218,6 +233,15 @@ export { createMemberLife, memberSeed, runAutonomousMember } from './roster';
 export { foldUpEvents, swapEmbodiment } from './roster-fold';
 export { stepSession } from './session-step';
 export type { SessionStepContext, SessionStepResult, SessionStepSummary } from './session-step';
+export { catchUpSession } from './session-catchup';
+export type { SessionCatchUpResult } from './session-catchup';
+export {
+  WORLD_ASSEMBLED_FLAG,
+  applyStudioToNextLife,
+  pinFlag,
+  placeFlag,
+  worldDraftFlag,
+} from './studio-return';
 export { buildCatalog } from './table-catalog';
 export type { CatalogEntry, CatalogMap } from './table-catalog';
 export {

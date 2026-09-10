@@ -22,7 +22,7 @@ import type { ContentWarningSettings, WarningCategoryId } from '@/content/warnin
 import { defaultContentWarningSettings } from '@/content/warning-taxonomy';
 import type { RoleId, SaveBlob } from '@/engine';
 import { deserializeSaveBlob, serializeSaveBlob } from '@/engine';
-import { MemoryStorageAdapter } from '@/persistence';
+import { lifeStorageAdapter } from '@/persistence';
 
 // ---------------------------------------------------------------------------
 // Accessibility + content-warning settings (the in-memory seam)
@@ -159,13 +159,10 @@ export class SaveSlotActionNotImplementedError extends Error {
   }
 }
 
-/**
- * Module-scoped adapter so a single in-memory store is shared across hook
- * instances within a session. Swap for NativeStorageAdapter / WebStorageAdapter
- * (todo 10) once the platform is selected; the {@link StorageAdapter} contract
- * is identical.
- */
-const adapter = new MemoryStorageAdapter();
+/** Durable adapter shared across hook instances (localStorage / native / memory). */
+function adapter() {
+  return lifeStorageAdapter();
+}
 
 /** The save-slot numbers the UI exposes for manual management. */
 const MANAGED_SLOTS: readonly number[] = [1, 2, 3, 4, 5];
@@ -216,7 +213,7 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   const refreshAllSlots = useCallback(async (): Promise<void> => {
     const summaries: SlotSummary[] = [];
     for (const s of MANAGED_SLOTS) {
-      const blob = await adapter.load(s);
+      const blob = await adapter().load(s);
       summaries.push({ slot: s, blob });
     }
     setAllSlots(summaries);
@@ -226,14 +223,14 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
     let cancelled = false;
     void (async () => {
       setLoading(true);
-      const slots = await adapter.listSlots();
-      const blob = slots.includes(slot) ? await adapter.load(slot) : null;
+      const slots = await adapter().listSlots();
+      const blob = slots.includes(slot) ? await adapter().load(slot) : null;
       const summaries: SlotSummary[] = [];
       for (const s of MANAGED_SLOTS) {
         if (s === slot) {
           summaries.push({ slot: s, blob });
         } else {
-          const b = slots.includes(s) ? await adapter.load(s) : null;
+          const b = slots.includes(s) ? await adapter().load(s) : null;
           summaries.push({ slot: s, blob: b });
         }
       }
@@ -274,14 +271,14 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
           throw new SaveSlotActionNotImplementedError(action.type);
 
         case 'PERSIST': {
-          await adapter.save(slot, action.blob);
+          await adapter().save(slot, action.blob);
           setState(action.blob);
           await refreshAllSlots();
           return;
         }
 
         case 'DELETE_SLOT': {
-          await adapter.deleteSlot(slot);
+          await adapter().deleteSlot(slot);
           setState(null);
           await refreshAllSlots();
           return;
@@ -312,7 +309,7 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   const importSlot = useCallback(
     async (target: number, base64: string): Promise<void> => {
       const blob = decodeSaveBlob(base64);
-      await adapter.save(target, blob);
+      await adapter().save(target, blob);
       if (target === slot) {
         setState(blob);
       }
@@ -323,7 +320,7 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
 
   const deleteSlot = useCallback(
     async (target: number): Promise<void> => {
-      await adapter.deleteSlot(target);
+      await adapter().deleteSlot(target);
       if (target === slot) {
         setState(null);
       }

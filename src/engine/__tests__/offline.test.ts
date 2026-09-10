@@ -64,6 +64,51 @@ const ALL_DAY: DailySchedule = {
 };
 
 describe('computeOfflineSummary — elapsed time → ticks', () => {
+  it('does not treat a fresh life (no lastVisited stamp) as decades away', () => {
+    const life = makeLife();
+    expect(life.lastVisitedAtUnix).toBeUndefined();
+    const { summary, idle } = computeOfflineSummary(
+      life,
+      createIdleState(),
+      ALL_DAY,
+      [makePractice()],
+      [],
+      EPOCH,
+      1_700_000_000,
+      SEED,
+    );
+    expect(summary.idleTicksSimulated).toBe(0n);
+    expect(idle.lastSimulatedTick).toBe(0n);
+  });
+
+  it('does not re-apply the same absence after the returned stamp', () => {
+    const life = makeLife({ lastVisitedAtUnix: 0 });
+    const first = computeOfflineSummary(
+      life,
+      createIdleState(),
+      ALL_DAY,
+      [makePractice()],
+      [],
+      EPOCH,
+      5 * 3600,
+      SEED,
+    );
+    expect(first.summary.idleTicksSimulated).toBe(5n);
+    const second = computeOfflineSummary(
+      first.state,
+      first.idle,
+      ALL_DAY,
+      [makePractice()],
+      [],
+      EPOCH,
+      5 * 3600,
+      SEED,
+    );
+    expect(second.summary.idleTicksSimulated).toBe(0n);
+    expect(second.state.turn).toBe(first.state.turn);
+    expect(second.idle.lastSimulatedTick).toBe(first.idle.lastSimulatedTick);
+  });
+
   it('converts 3 hours of elapsed wall-clock to 3 idle ticks', () => {
     const life = makeLife({ lastVisitedAtUnix: 0 });
     const { summary } = computeOfflineSummary(

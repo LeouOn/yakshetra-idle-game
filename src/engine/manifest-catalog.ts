@@ -142,64 +142,71 @@ const CHANGES: readonly CatalogEntry[] = [
 
 const PEOPLE: readonly CatalogEntry[] = [
   {
-    name: 'The night clerk',
-    one_liner: 'Remembers what you owe before you do.',
+    name: 'Shen the night clerk',
+    one_liner:
+      'He works his abacus by tallow dip, noting tea and grain before you recall what was spent.',
     subject: 'a keeper of small debts',
     detail:
-      'The ledger stays open at strange hours. They never charge for the waiting, and they never forget the tab.',
+      'His abacus clicks long past the market curfew while moth wings flutter around the tallow dip. He leaves the back shutter unbolted for late grain porters, charging only what was weighed and never a copper for the late hour.',
     tags: ['clerk', 'debts'],
   },
   {
-    name: 'The early courier',
-    one_liner: 'Arrives an hour before the letter says.',
+    name: 'Zhao the early courier',
+    one_liner:
+      'He arrives while frost still silvers the gate latch, smelling of road dust and river mist.',
     subject: 'a courier ahead of schedule',
     detail:
-      'The parcel is always what you needed yesterday. They refuse the tip and are gone before the gate closes.',
+      "His pony's breath clouds the cold courtyard while he slices the oiled twine around your parcel. He waves off the hot tea you offer, already tightening his girth strap to beat the morning packet boat downriver.",
     tags: ['courier', 'early'],
   },
   {
-    name: 'The keyholder next door',
-    one_liner: 'Keeps a spare key and does not use it.',
+    name: 'Auntie Qian the keyholder',
+    one_liner: 'She keeps your spare iron key on a braided cord behind her kitchen hearth.',
     subject: 'a neighbor holding a key',
     detail:
-      'The key has opened your door exactly once, in weather you no longer discuss. It hangs by theirs, quiet as a promise.',
+      'The heavy latch-key hangs beside her dried peppers, turned once during an autumn flood to save your flour sacks. She never mentions the favor, but always checks your chimney smoke before lighting her own morning stove.',
     tags: ['neighbor', 'key'],
   },
   {
-    name: 'The ferry counter',
-    one_liner: 'Counts everyone across, twice.',
+    name: 'Old Lu the ferry counter',
+    one_liner:
+      'He notches his willow tally-stick for every cart and mendicant that boards the barge.',
     subject: 'a counter of crossings',
     detail:
-      'The morning tally and the evening tally never match. They say the river keeps the difference, and they keep the ledger straight.',
+      'He stands on the gravel slip with hemp cords knotted around his wrist, balancing peasant grain carts against mule litters. When the muddy current swells, he holds the stern rope with his boot until every passenger sits safe.',
     tags: ['ferry', 'tally'],
   },
   {
-    name: 'The quiet mender',
-    one_liner: 'Fixed the fence before you noticed it broke.',
+    name: 'Master Yan the quiet mender',
+    one_liner: 'He binds splintered garden hurdles with peeled willow before anyone asks.',
     subject: 'an unasked mender',
-    detail: 'No note, no bill. The work is good enough that someone must pass this way often.',
+    detail:
+      'He carries an adze and a coil of split bamboo tucked into his hemp sash. You wake to find the garden gate swinging true on greased leather hinges, with only clean cedar shavings left on the swept flagstones.',
     tags: ['mender', 'unasked'],
   },
   {
-    name: 'The courtyard guest',
-    one_liner: 'Neither pet nor stranger, just here.',
+    name: 'Old Wu the courtyard guest',
+    one_liner: 'A stray tortoiseshell hound that sleeps under the tool shed and watches the gate.',
     subject: 'a being in the yard',
     detail:
-      'It eats what is left and watches the door. You have started leaving the better scraps.',
+      'He takes steamed bun crusts from your palm with soft jaws, never barking at late arrivals. By midday he curls over the warm flagstones where the sun hits, keeping sparrows away from your medicinal herbs with a single tail-thump.',
     tags: ['guest', 'yard'],
   },
   {
-    name: 'The evening caller',
-    one_liner: 'Knocks once and waits, even when you are slow.',
+    name: 'Elder Cui the evening caller',
+    one_liner: 'He taps his cane on the threshold at dusk and sits without demanding conversation.',
     subject: 'someone at the door',
-    detail: 'They do not fill the silence. The visit is the gift, and they know it.',
+    detail:
+      'He steps inside with damp sleeves as the evening temple bell rings, setting a small basket of roasted chestnuts on the low table. He sips bitter tea in silence, watching the wick gutter, leaving you feeling less alone in the house.',
     tags: ['caller', 'evening'],
   },
   {
-    name: 'The water-carrier',
-    one_liner: "Fills other people's jars first.",
+    name: 'Brother De the water-carrier',
+    one_liner:
+      'He balances twin cedar buckets from the public cistern, filling the neighborhood vats first.',
     subject: 'a carrier of water',
-    detail: 'The well is public. They treat it as if it belonged to whoever is thirstiest.',
+    detail:
+      "His shoulder-pole creaks under heavy pails through every morning frost. He dumps clear spring water into the communal crock and the baker's trough before drawing a single ladle for his own kettle, humming an old boatman chant.",
     tags: ['water', 'carrier'],
   },
 ];

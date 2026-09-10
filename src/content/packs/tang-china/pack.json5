@@ -12,6 +12,7 @@
     strata: [
       'literati-official',
       'merchant',
+      'artisan',
       'chan-monastic',
       'peasant',
       'soldier',
@@ -40,6 +41,17 @@
         energy: 2,
         provisions: 3,
         trust: 1,
+      },
+    },
+    {
+      id: 'artisan',
+      label_sid: 'tang.role.artisan.label_sid',
+      description_sid: 'tang.role.artisan.description_sid',
+      starting_resources: {
+        time: 3,
+        energy: 4,
+        provisions: 2,
+        trust: 2,
       },
     },
     {

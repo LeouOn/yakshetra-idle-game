@@ -90,4 +90,29 @@ describe('studio session snapshot', () => {
   it('rejects a payload with the wrong version', () => {
     expect(() => parseStudioSession({ schema_version: 'nope' })).toThrow();
   });
+
+  it('round-trips last_visited through hydrate then snapshot without an extra arg', () => {
+    const snap = snapshotStudioSession(
+      createStudioState(),
+      createIdleState(),
+      makeLife(),
+      [],
+      1_700_000_123,
+    );
+    expect(snap.last_visited_at_unix).toBe(1_700_000_123);
+    const hydrated = hydrateStudioSession(snap, makeLife(), []);
+    expect(hydrated.life.lastVisitedAtUnix).toBe(1_700_000_123);
+    const again = snapshotStudioSession(
+      hydrated.studio,
+      hydrated.idle,
+      hydrated.life,
+      hydrated.practices,
+    );
+    expect(again.last_visited_at_unix).toBe(1_700_000_123);
+  });
+
+  it('rejects a non-finite last_visited stamp', () => {
+    const snap = snapshotStudioSession(createStudioState(), createIdleState(), makeLife(), [], 10);
+    expect(() => parseStudioSession({ ...snap, last_visited_at_unix: Number.NaN })).toThrow();
+  });
 });

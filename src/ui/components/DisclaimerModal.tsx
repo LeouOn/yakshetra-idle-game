@@ -6,6 +6,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { resolveSid } from '@/i18n';
+import { studioTheme as t } from '@/ui/studio-theme';
 
 export interface DisclaimerModalProps {
   readonly onUnderstand: () => void;
@@ -59,24 +60,24 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     bottom: 20,
-    backgroundColor: '#221a30',
+    backgroundColor: t.surface,
     borderWidth: 1,
-    borderColor: '#3a314c',
+    borderColor: t.line,
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 16,
     gap: 8,
   },
-  title: { fontSize: 15, fontWeight: '700', color: '#e8c56b' },
-  body: { fontSize: 14, lineHeight: 20, color: '#f4eef8' },
+  title: { fontSize: 15, fontWeight: '700', color: t.gold },
+  body: { fontSize: 14, lineHeight: 20, color: t.text },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 4 },
   primaryButton: {
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: '#6d4aa8',
+    backgroundColor: t.accentDeep,
   },
-  primaryButtonText: { color: '#f4eef8', fontSize: 14, fontWeight: '600' },
+  primaryButtonText: { color: t.text, fontSize: 14, fontWeight: '600' },
   secondaryButton: { paddingVertical: 8, paddingHorizontal: 4 },
-  secondaryButtonText: { color: '#b5a9c4', fontSize: 14, fontWeight: '600' },
+  secondaryButtonText: { color: t.muted, fontSize: 14, fontWeight: '600' },
 });

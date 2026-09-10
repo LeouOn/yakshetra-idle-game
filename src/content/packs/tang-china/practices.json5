@@ -126,5 +126,96 @@
       maxProgress: 12,
       effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
     },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 10. Market ledger inspection — discernment (prajñā).
+    // Balancing credit tallies, inspecting silk thread density, and testing
+    // copper coins with a steady, unhurried hand.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/market-ledger',
+      label_sid: 'tang.practice.market_ledger.label_sid',
+      description_sid: 'tang.practice.market_ledger.description_sid',
+      lens: 'discernment',
+      progressPerTick: 0.35,
+      maxProgress: 10,
+      effects: [{ op: 'add_skill', key: 'steady-hand' }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 11. Caravan draft care — careful conduct (śīla).
+    // Tending mules and camels after travel; inspecting hooves and watering
+    // beasts before taking rest.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/caravan-care',
+      label_sid: 'tang.practice.caravan_care.label_sid',
+      description_sid: 'tang.practice.caravan_care.description_sid',
+      lens: 'careful_conduct',
+      progressPerTick: 0.4,
+      maxProgress: 9,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 12. Curfew endurance — patient courage (kṣānti).
+    // Waiting out market inspections, crowd crushes, and shuttering drums
+    // without irritation or panic.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/curfew-endurance',
+      label_sid: 'tang.practice.curfew_endurance.label_sid',
+      description_sid: 'tang.practice.curfew_endurance.description_sid',
+      lens: 'patient_courage',
+      progressPerTick: 0.3,
+      maxProgress: 11,
+      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 13. Workbench timber craft — joyful effort (vīrya).
+    // Planing timber, cutting mortise-and-tenon joints, and shaping wood
+    // at the courtyard bench.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/workbench-carving',
+      label_sid: 'tang.practice.workbench_carving.label_sid',
+      description_sid: 'tang.practice.workbench_carving.description_sid',
+      lens: 'joyful_effort',
+      progressPerTick: 0.35,
+      maxProgress: 10,
+      effects: [{ op: 'add_resource', key: 'provisions', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 14. Pagoda lamp offering — generosity (dāna).
+    // Providing clear tallow and pressed oil to maintain the night flame
+    // in the courtyard pagoda lantern.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/lamp-tallow-gift',
+      label_sid: 'tang.practice.lamp_tallow_gift.label_sid',
+      description_sid: 'tang.practice.lamp_tallow_gift.description_sid',
+      lens: 'generosity',
+      progressPerTick: 0.45,
+      maxProgress: 9,
+      effects: [{ op: 'add_resource', key: 'trust', delta: 1 }],
+    },
+
+    // ──────────────────────────────────────────────────────────────────────
+    // 15. Shuttered stall vigil — collected attention (dhyāna).
+    // Sitting quietly in the darkened stall after market closing, watching
+    // the breath amidst trade inventory.
+    // ──────────────────────────────────────────────────────────────────────
+    {
+      id: 'practice:tang/shuttered-vigil',
+      label_sid: 'tang.practice.shuttered_vigil.label_sid',
+      description_sid: 'tang.practice.shuttered_vigil.description_sid',
+      lens: 'collected_attention',
+      progressPerTick: 0.4,
+      maxProgress: 12,
+      effects: [{ op: 'add_resource', key: 'energy', delta: 1 }],
+    },
   ],
 }
+

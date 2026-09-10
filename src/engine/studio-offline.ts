@@ -118,6 +118,11 @@ export function stepStudio(
 /**
  * Advance the bench for elapsed absence. `lastVisitedAtUnix <= 0` means
  * "never visited" and is a no-op (do not treat epoch as a week away).
+ * `cap` defaults to STUDIO_AWAY_TICK_CAP so endowment `offline_cap` can
+ * raise the ceiling the same way `studioTicksAway` does.
+ *
+ * When ticks actually run, the returned life is stamped with `nowUnix` so a
+ * second catch-up on the same absence cannot double-apply.
  */
 export function catchUpStudio(
   studio: StudioState,
@@ -129,8 +134,9 @@ export function catchUpStudio(
   lastVisitedAtUnix: number,
   nowUnix: number,
   rng: Rng,
+  cap: number = STUDIO_AWAY_TICK_CAP,
 ): StudioCatchUpResult {
-  const { ticks, capped } = studioTicksAway(lastVisitedAtUnix, nowUnix);
+  const { ticks, capped } = studioTicksAway(lastVisitedAtUnix, nowUnix, cap);
   if (ticks <= 0) {
     return {
       studio,
@@ -143,6 +149,7 @@ export function catchUpStudio(
   const stepped = stepStudio(studio, idle, life, practices, schedule, endings, ticks, rng);
   return {
     ...stepped,
+    life: { ...stepped.life, lastVisitedAtUnix: nowUnix },
     summary: { ...stepped.summary, capped },
   };
 }

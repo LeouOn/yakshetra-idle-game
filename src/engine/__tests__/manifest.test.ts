@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { ManifestSchema, SCALE_VALUES, createRng, tableFillManifest } from '../';
+import { ManifestSchema, SCALE_VALUES, createRng, summarizeResidue, tableFillManifest } from '../';
 import type { ResidueEvent } from '../residue';
 
 const WINDOW: readonly ResidueEvent[] = [
@@ -83,6 +83,43 @@ describe('tableFillManifest', () => {
     expect(a).toEqual(b);
     expect(a.tags).toContain('briefed');
     expect(a.tags).toContain('deepened');
+  });
+
+  it('tags and flavors manifest with dominant activity from lifeContext', () => {
+    const context = {
+      schema_version: 'life_context/v0' as const,
+      life_id: 'l-1',
+      age: 30,
+      turn: 10,
+      alive: true,
+      lens: 'patient_courage',
+      setting: {
+        era_id: 'tang-china',
+        role_id: 'merchant',
+        year: 742,
+        month: 4,
+        day: 12,
+        hour: 9,
+        calendar_label: 'Tianbao 1',
+      },
+      ties: [],
+      strongest_tie: null,
+      flags: [],
+      residue_summary: summarizeResidue(WINDOW),
+      activity: {
+        work: 25,
+        generosity: 0,
+        beings: 0,
+        learning: 0,
+        meditation: 4,
+        other: 0,
+      },
+      world_name: null,
+      world_line: null,
+    };
+    const manifest = tableFillManifest(WINDOW, null, 0, createRng(7n), '7', 'm-act', null, context);
+    expect(manifest.tags).toContain('activity:work');
+    expect(manifest.detail).toContain('physical craft and patient labor');
   });
 });
 
