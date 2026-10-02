@@ -1020,6 +1020,12 @@
       "entry_5_sid": "Deque Systems, axe-core — reference for the automated accessibility audit rules."
     }
   },
+  "not_found": {
+    "title_sid": "Page not found — Yakshetra",
+    "heading_sid": "There is no page at this address.",
+    "home_button_sid": "Go to the start",
+    "home_label_sid": "Go to the start of the game"
+  },
   "disclaimer": {
     "title_sid": "Just a game",
     "body_sid": "Fiction with a contemplative vibe — not a teaching, not a lineage. Play.",

@@ -85,10 +85,13 @@ pnpm exec expo start --web
 Checks before you claim done:
 
 ```bash
+pnpm exec expo export --platform web
 pnpm tsc --noEmit
 pnpm lint
 pnpm test
 ```
+
+Export first: `dist/` is gitignored and `src/a11y/audit.test.ts` stats it, so on a fresh clone `pnpm test` fails with ENOENT until the web build exists. `pnpm check` runs all four in that order.
 
 Not Expo Go. `curl` in PowerShell is an alias; use the real tool or `Invoke-WebRequest` if you need HTTP.
 

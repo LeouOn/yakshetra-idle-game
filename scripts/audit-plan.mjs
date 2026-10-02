@@ -10,7 +10,7 @@
 // empty and the verdict rests on the must-not-have source scan, which needs no
 // plan and still enforces product law. A plan that IS present and fails still
 // exits 1.
-import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 const ROOT = process.cwd();
@@ -230,6 +230,13 @@ ${missingRows.join('\n')}
 ${uncovered.length ? uncovered.map((c) => `- ${c.bullet}`).join('\n') : '- _(none)_'}
 `;
 
+// `.omo/evidence/` holds three files that are tracked (force-added before the
+// `.omo/` ignore rule, which no longer applies to them), so a fresh clone does
+// have the directory. This guard is for the states where it does NOT: `.omo/`
+// absent or removed wholesale — `git clean -xdf`, a sparse checkout, or an
+// evidence directory deleted. Write the report before anything else can fail on
+// a missing directory.
+mkdirSync(EVIDENCE_DIR, { recursive: true });
 writeFileSync(REPORT_PATH, report, 'utf8');
 
 const tag = (k, v) => console.log(`${k}: ${v}`);

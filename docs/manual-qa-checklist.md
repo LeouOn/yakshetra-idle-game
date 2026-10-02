@@ -15,14 +15,12 @@
 >
 > **Cross-references:**
 >
-> - Advisory scope, panel composition, and unanimous stop-ship triggers:
->   `advisory/panel.md` §1–§4.
-> - Closed list of prohibited sacred/devotional names (the QA pass checks
->   that none of these appear on screen, in voiceover, or in save blobs):
->   `advisory/prohibited-names.txt`.
+> - Product law: `SPEC.md` §10 (craft and design fences).
 > - Front-matter disclaimer wiring (T28) and 9-category content-warning
 >   taxonomy: `src/i18n/en.json` (`disclaimer.*`) and
 >   `src/content/warning-taxonomy.ts`.
+> - `advisory/` is archive; its panel and prohibited-names process is
+>   retired (SPEC §10 "Drop") and is not run.
 
 ---
 
@@ -47,9 +45,6 @@ stop and surface to the engineer — do not proceed with a broken setup.
       per platform: `web/`, `ios/`, `android/`.
 - [ ] **Test log opened:** `.omo/evidence/F3-manual-qa/qa-log.md` with
       today's date and the build version at the top.
-- [ ] **Stop-ship reference bookmarked:** `advisory/panel.md` §4.1 and
-      `advisory/prohibited-names.txt` — the QA pass treats any depiction
-      of a prohibited name as an automatic FAIL.
 
 ---
 
@@ -124,9 +119,8 @@ to:
 - [ ] All 7 F3 assertions hold (disclaimer-once, warnings-fire,
       4-echo-types-demonstrable, bardo-works, settings-persist,
       export-import-works, no-crash) — see §7.
-- [ ] No advisory-violating depiction on screen or in the save blob
-      (grep the exported save for `advisory/prohibited-names.txt` —
-      zero matches expected; see §6).
+- [ ] No game-design fence violation on screen or in the save blob
+      (see §6).
 
 ---
 
@@ -183,7 +177,7 @@ to:
 ### 3.6 iOS pass criteria
 
 - [ ] All 7 F3 assertions hold on the iOS build — see §7.
-- [ ] No advisory-violating depiction (see §6).
+- [ ] No game-design fence violation (see §6).
 - [ ] VoiceOver spot-check clean.
 
 ---
@@ -236,7 +230,7 @@ to:
 ### 4.6 Android pass criteria
 
 - [ ] All 7 F3 assertions hold on the Android build — see §7.
-- [ ] No advisory-violating depiction (see §6).
+- [ ] No game-design fence violation (see §6).
 - [ ] TalkBack spot-check clean.
 
 ---
@@ -272,26 +266,33 @@ narration is what makes the videos auditable.
 
 ---
 
-## 6 — Advisory-violation check (runs on every platform)
+## 6 — Game-design fence check (runs on every platform)
 
-After the per-platform runs, run the following grep on the **exported
-save blobs** and on any captured on-screen text transcripts. This is a
-release-blocking check.
+After the per-platform runs, verify the design fences that are still law
+(`SPEC.md` §10: no metaphysical currency, no pay-to-absolve, identity is
+not a score; enforced in lint as `R-NO-KARMA-METER`,
+`R-NO-VISIBLE-KARMA-METER`, `R-NO-DONATION-OFFSET`,
+`R-NO-PRACTICE-AS-CURRENCY`). Two checks:
+
+1. Run the following grep on the **exported save blobs** (key names
+   only; the legal `karma_state` engine field is subtracted — every
+   other key carrying a forbidden token is a violation):
 
 ```
-grep -niE "Shakyamuni|Amit[āa]bha|Avalokite[sś]vara|Guanyin|Kannon|T[āa]r[āa]|Maitreya|Sukh[āa]vat[īi]|Bodhidharma|N[āa]g[āa]rjuna|..." \
+grep -nioE '"[A-Za-z0-9_]*(karma|merit|enlightenment|spiritual_?rank)[A-Za-z0-9_]*"[[:space:]]*:' \
   videos/web/exported-save.json \
   videos/ios/exported-save.json \
-  videos/android/exported-save.json
+  videos/android/exported-save.json \
+  | grep -v '"karma_state"'
 ```
 
-The full list of patterns to grep is `advisory/prohibited-names.txt`
-(see also `advisory/panel.md` §4.1 unanimous-stop-ship trigger 1).
+2. On screen, confirm no karma / merit / enlightenment meter is
+   displayed, and that no purchase or donation cancels a harm
+   (pay-to-absolve).
 
-**Pass criteria:** zero matches across all save blobs and transcripts.
-**Failure:** any single match → FAIL the QA pass, escalate to the user
-within 24 hours, and forward the finding to the advisory panel for the
-gate-6 release-candidate review.
+**Pass criteria:** zero grep matches and no such meter or loop found.
+**Failure:** any single match → FAIL the QA pass and escalate to the
+user within 24 hours.
 
 ---
 
@@ -302,7 +303,7 @@ F3 passes when **all** of the following hold (per plan line 691):
 1. **No crashes** on any platform across the full Tang + Fantasy chain.
 2. **No data loss** — save export / import round-trips identically;
    settings persist across force-quit.
-3. **No advisory-violating depiction** — §6 grep returns zero matches.
+3. **No game-design fence violation** — §6 check returns zero matches.
 4. **The 7 F3 assertions hold on each platform:**
    - [ ] (i) Disclaimer shows once.
    - [ ] (ii) Content warnings fire correctly (9 categories, no
@@ -336,7 +337,7 @@ If F3 fails:
 ### 7.2 Stop conditions (must NOT do)
 
 - Do **not** mark F3 passing with a known crash, a known data-loss
-  bug, or a known advisory-violating depiction.
+  bug, or a known game-design fence violation.
 - Do **not** skip the save export / import round-trip — schema drift
   is the most likely silent failure.
 - Do **not** skip the grep in §6 even if the run "looked clean" — the
@@ -382,14 +383,14 @@ If F3 fails:
 
 ## Appendix B — Quick-reference IDs
 
-| Item                           | Value                                                           |
-| ------------------------------ | --------------------------------------------------------------- |
-| Plan source for F3             | `.omo/plans/buddhist-inspired-incremental-rpg.md` lines 690–691 |
-| Advisory scope / stop-ship     | `advisory/panel.md` §4                                          |
-| Prohibited names (lint-closed) | `advisory/prohibited-names.txt`                                 |
-| Disclaimer (T28)               | `src/i18n/en.json` `disclaimer.*`                               |
-| Content-warning taxonomy (T28) | `src/content/warning-taxonomy.ts` (9 categories)                |
-| Echo types (T26)               | tendency, vow, unresolved-attachment, pattern-break             |
-| a11y baseline (T29)            | `.omo/evidence/task-29-a11y.md`                                 |
-| Web build (T11)                | `dist/` from `npx expo export --platform web`                   |
-| Evidence output                | `.omo/evidence/F3-manual-qa/`                                   |
+| Item                           | Value                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| Plan source for F3             | `.omo/plans/buddhist-inspired-incremental-rpg.md` lines 690–691                             |
+| Product law                    | `SPEC.md` §10                                                                               |
+| Game-design lint rules         | R-NO-KARMA-METER, R-NO-VISIBLE-KARMA-METER, R-NO-DONATION-OFFSET, R-NO-PRACTICE-AS-CURRENCY |
+| Disclaimer (T28)               | `src/i18n/en.json` `disclaimer.*`                                                           |
+| Content-warning taxonomy (T28) | `src/content/warning-taxonomy.ts` (9 categories)                                            |
+| Echo types (T26)               | tendency, vow, unresolved-attachment, pattern-break                                         |
+| a11y baseline (T29)            | `.omo/evidence/task-29-a11y.md`                                                             |
+| Web build (T11)                | `dist/` from `npx expo export --platform web`                                               |
+| Evidence output                | `.omo/evidence/F3-manual-qa/`                                                               |

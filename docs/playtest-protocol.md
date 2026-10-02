@@ -14,10 +14,9 @@
 >
 > **Cross-references:**
 >
-> - Advisory scope, panel composition, and unanimous stop-ship triggers:
->   `advisory/panel.md` §1–§4.
-> - Closed list of prohibited sacred/devotional names (do not appear in any
->   transcript, screenshot, or coded field): `advisory/prohibited-names.txt`.
+> - Product law: `SPEC.md` §10 (craft and design fences). `advisory/` is
+>   archive; its panel and prohibited-names process is retired and is not
+>   run.
 > - Front-matter disclaimer and 9-category content-warning taxonomy:
 >   `src/i18n/en.json` (`disclaimer.*`) and `src/content/warning-taxonomy.ts`.
 > - The 4 demonstrable echo types: tendency, vow, unresolved-attachment,
@@ -36,9 +35,8 @@ Recruit exactly **8 testers** for a 60-minute remote session each:
   ideally **at least 1 East Asian diaspora practitioner** and **at least 1 convert
   practitioner**, with the remaining two drawn from any Mahāyāna background
   (Chan/Zen, Pure Land, Tiantai, Huayan, Yogācāra-influenced, etc.). The cohort
-  is intentionally heterogeneous — the panel in `advisory/panel.md` already
-  bounds representation harms; this cohort tests whether the _implementation_
-  of that bounded design lands respectfully.
+  is intentionally heterogeneous — breadth of tradition bounds representation
+  harms; this cohort tests whether the _implementation_ lands respectfully.
 - **4 non-Buddhist.** Recruit from the same general population as the Buddhist
   cohort (similar age range, similar gaming familiarity). Non-Buddhist testers
   provide the comparison signal: do the cross-life echoes read as a general
@@ -49,9 +47,9 @@ Recruit exactly **8 testers** for a 60-minute remote session each:
 - **Buddhist-studies departments** at universities with Mahāyāna research
   programs (UCSB, McMaster, Leipzig, Vienna, etc.) — academic-list
   announcements are appropriate. Direct individual contact by the engineer is
-  not appropriate; the **user recruits the testers** as documented in
-  `advisory/panel.md` §2 ("Recruitment is user-owned; the engineer authors this
-  document and does not contact candidates").
+  not appropriate; the **user recruits the testers** (recruitment is
+  user-owned; the engineer authors this document and does not contact
+  candidates).
 - **Mahāyāna community mailing lists** and sangha newsletters, via the user.
 - **A playtesting service** (e.g., UserTesting, PlaytestCloud, or equivalent)
   for the non-Buddhist cohort and any Buddhist-identifying testers who prefer
@@ -97,8 +95,8 @@ Compensation: $[AMOUNT] (paid via [INSTRUMENT] within 7 days of the session).
 
 You would see the game for the first time during the session; we will not
 ask you to prepare anything beforehand. The session is recorded only with
-your consent, and the recording is used solely for internal research and
-advisory review — it is not published.
+your consent, and the recording is used solely for internal research —
+it is not published.
 
 If you are interested, please reply with your availability for the next 3
 weeks and confirm that you consent to audio + screen recording. I will
@@ -113,12 +111,11 @@ contact testers directly.
 
 ### 1.5 Compensation and confidentiality
 
-- **Flat fee per completed session** regardless of outcome. Documented in
-  `advisory/reviewer-agreements/` style (see `advisory/panel.md` §6) —
-  figures set by the user during recruitment, not hardcoded here.
-- **Confidentiality:** testers receive the preview build under the same
-  confidentiality terms as the advisory panel — they agree not to
-  redistribute recordings, screenshots, or build artifacts. The build is
+- **Flat fee per completed session** regardless of outcome. Figures are
+  set by the user during recruitment, not hardcoded here.
+- **Confidentiality:** testers receive the preview build under
+  confidentiality terms — they agree not to redistribute
+  recordings, screenshots, or build artifacts. The build is
   **not released publicly** at any point during playtesting (see T33
   "Must NOT do" list, plan line 657).
 
@@ -129,7 +126,7 @@ contact testers directly.
 ### 2.1 Build and tooling checklist (24h before each session)
 
 - [ ] **Build version recorded:** `[BUILD_VERSION]` (commit SHA from `git
-    rev-parse HEAD` at the time the T31 preview was exported).
+rev-parse HEAD` at the time the T31 preview was exported).
 - [ ] **T31 preview build available** for the tester's platform (web URL,
       TestFlight invite, or Play Internal link). The web URL is the
       simplest channel; mobile requires the T31 IPA / APK.
@@ -142,10 +139,6 @@ contact testers directly.
       (see §4 below).
 - [ ] **Aggregation template open** (see §5) for live notes during the
       session.
-- [ ] **Advisory stop-ship reference** bookmarked:
-      `advisory/panel.md` §4.1 (the 4 unanimous triggers) — used if any
-      tester surfaces something during the session that looks like a
-      depiction of a name from `advisory/prohibited-names.txt`.
 
 ### 2.2 Recording consent (at session start, before any gameplay)
 
@@ -153,8 +146,8 @@ The facilitator opens the session with the following script (read aloud,
 verbatim):
 
 > "Before we start, I want to confirm two things. First, do you consent to
-> audio and screen recording of this session for internal research and
-> advisory review? The recording will not be published, and you can ask
+> audio and screen recording of this session for internal research? The
+> recording will not be published, and you can ask
 > me to pause or stop recording at any time. Second, this game is a work
 > of fiction inspired by Buddhist thought, but it does not teach
 > Buddhism and it does not present itself as a religious text. You will
@@ -202,8 +195,8 @@ Within 24 hours of the session, the facilitator:
 - Uploads the recording to `.omo/evidence/task-33-playtest-recordings/`
   (gitignored; see T1).
 - Fills in the per-tester row of the aggregation template (see §5).
-- Flags any items that look like unanimous stop-ship material (see
-  `advisory/panel.md` §4.1) to the user within the same 24h window.
+- Flags any red-flag items (see §5.5) to the user within the same 24h
+  window.
 
 ---
 
@@ -345,18 +338,18 @@ fills the gap).
 - **Pass:** across the cohort, no single lens is selected more than
   2.5× the least-selected lens (per draft hypothesis 6).
 
-### H7 — Advisory panel records zero severe representation defects
+### H7 — Representation lands respectfully
 
-**Note:** this hypothesis is verified by **Task 32 (advisory panel
-6-gate review)**, not by playtest. The playtest contributes **plan probe
-(h) — advisory representation open response**, which is recorded
-qualitatively and forwarded to the panel for the Gate 6 release-candidate
-review (`advisory/panel.md` §5, gate 6).
+**Plan probe (h):** representation open response, scored at the cohort
+level by the playtest itself.
 
 - Open: "Did anything feel disrespectful to Buddhist traditions, or to
   any tradition represented in the game?" (capture verbatim).
-- **Pass:** T32 6-gate review closes with zero unresolved severe
-  findings; playtest contributes supporting qualitative data.
+- Score the open response: `0` = no concern raised, `1` = mild
+  discomfort, `2` = a serious disrespect report (also a red flag under
+  §5.5).
+- **Pass:** no tester scores 2; scores of 1 are recorded as themes for
+  the next iteration.
 
 ### H8 — Absence / rest felt safe and non-punitive
 
@@ -443,7 +436,7 @@ below is filled in once per tester; aggregate tables follow.
 | Count  | n/8| n/8| n/8| n/8| n/8| n/8| n/8| n/8|
 
 *H6 is computed at the cohort level (see below).
-†H7 pass is determined by T32, not playtest.
+†H7 pass is determined by the cohort probe (see §4).
 ```
 
 ### 5.3 Lens-balance computation (H6)
@@ -480,13 +473,13 @@ section capturing cross-tester patterns. Examples of themes to look for
 
 ### 5.5 Red flags
 
-Any verbatim tester quote that resembles a `advisory/panel.md` §4.1
-unanimous stop-ship trigger — particularly any name from
-`advisory/prohibited-names.txt` appearing in the transcript, or any
-description that sounds like karma-to-social-identity mapping — is
-extracted to a "Red flags" subsection and flagged to the user within
-24 hours (see §2.5). A red flag does not auto-fail T33; it triggers
-the same escalation path as a T32 finding.
+Any verbatim tester quote that describes a live design fence being
+broken — karma-to-social-identity mapping, a karma / merit /
+enlightenment meter, a purchase that cancels a harm (pay-to-absolve), or
+the app claiming the authority of a teacher or sangha (`SPEC.md` §10) —
+is extracted to a "Red flags" subsection and flagged to the user within
+24 hours (see §2.5). A red flag does not auto-fail T33; it escalates
+per §6.3.
 
 ---
 
@@ -528,12 +521,14 @@ the facilitator does **not** silently ship. The escalation:
 ### 6.3 Escalation on red flags (§5.5)
 
 A red flag from §5.5 escalates **immediately** — independent of the
-6/8 hypotheses rule. The escalation path is the same as a T32 unanimous
-stop-ship trigger: the content is cut from the prototype, full stop
-(`advisory/panel.md` §4.1 — "The engineer cannot override a unanimous
-stop-ship"). The playtest does not have the authority to _trigger_ a
-unanimous stop-ship, but a red flag is forwarded to the panel and the
-user for adjudication.
+6/8 hypotheses rule. Surface the quote and its context to the user via
+the project's normal communication channel. The user decides whether to
+cut or change the content; a finding that is not a lint-enforced fence
+may instead be accepted and documented. For the four game-design lint
+rules (`R-NO-KARMA-METER`, `R-NO-VISIBLE-KARMA-METER`,
+`R-NO-DONATION-OFFSET`, `R-NO-PRACTICE-AS-CURRENCY`) and engine purity,
+a finding is a bug to fix, not an adjudication (`SPEC.md` §10). T33 is
+**not** marked done with an unadjudicated red flag.
 
 ### 6.4 Stop conditions (must NOT do, plan line 657)
 
@@ -549,14 +544,14 @@ user for adjudication.
 
 ## Appendix A — Quick-reference IDs
 
-| Item                           | Value                                                            |
-| ------------------------------ | ---------------------------------------------------------------- |
-| Plan source for T33            | `.omo/plans/buddhist-inspired-incremental-rpg.md` lines 655–668  |
-| Draft hypotheses source        | `.omo/drafts/buddhist-inspired-incremental-rpg.md` lines 160–169 |
-| Advisory scope / stop-ship     | `advisory/panel.md` §4                                           |
-| Prohibited names (lint-closed) | `advisory/prohibited-names.txt`                                  |
-| Disclaimer (T28)               | `src/i18n/en.json` `disclaimer.*`                                |
-| Content-warning taxonomy (T28) | `src/content/warning-taxonomy.ts` (9 categories)                 |
-| Echo types (T26)               | tendency, vow, unresolved-attachment, pattern-break              |
-| Evidence output                | `.omo/evidence/task-33-playtest-report.md`                       |
-| Recording storage (gitignored) | `.omo/evidence/task-33-playtest-recordings/`                     |
+| Item                           | Value                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------- |
+| Plan source for T33            | `.omo/plans/buddhist-inspired-incremental-rpg.md` lines 655–668                             |
+| Draft hypotheses source        | `.omo/drafts/buddhist-inspired-incremental-rpg.md` lines 160–169                            |
+| Product law                    | `SPEC.md` §10                                                                               |
+| Game-design lint rules         | R-NO-KARMA-METER, R-NO-VISIBLE-KARMA-METER, R-NO-DONATION-OFFSET, R-NO-PRACTICE-AS-CURRENCY |
+| Disclaimer (T28)               | `src/i18n/en.json` `disclaimer.*`                                                           |
+| Content-warning taxonomy (T28) | `src/content/warning-taxonomy.ts` (9 categories)                                            |
+| Echo types (T26)               | tendency, vow, unresolved-attachment, pattern-break                                         |
+| Evidence output                | `.omo/evidence/task-33-playtest-report.md`                                                  |
+| Recording storage (gitignored) | `.omo/evidence/task-33-playtest-recordings/`                                                |
