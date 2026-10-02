@@ -37,10 +37,6 @@ interface IdbKeyvalModule {
  * time so that requiring this file in Node never trigger the DOM-only module.
  */
 async function idb(): Promise<IdbKeyvalModule> {
-  // idb-keyval ships in the web bundle and is intentionally NOT a root
-  // dependency (see package.json), so eslint cannot resolve it here — this is
-  // the whole point of the lazy import.
-  // eslint-disable-next-line import/no-unresolved
   return (await import('idb-keyval')) as IdbKeyvalModule;
 }
 

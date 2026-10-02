@@ -37,14 +37,19 @@ interface RouteSpec {
   readonly file: string;
 }
 
+// Every user-reachable static route in `app/`. `/+not-found` is included
+// because a mistyped URL lands there. `/_sitemap` is excluded: it is a
+// machine-facing head endpoint with no rendered UI to audit.
 const ROUTES: readonly RouteSpec[] = [
   { route: '/', file: 'index.html' },
+  { route: '/studio', file: 'studio.html' },
   { route: '/life/start', file: path.join('life', 'start.html') },
   { route: '/life/[lifeId]', file: path.join('life', '[lifeId].html') },
   { route: '/bardo', file: 'bardo.html' },
   { route: '/chain-complete', file: 'chain-complete.html' },
   { route: '/settings', file: 'settings.html' },
   { route: '/about', file: 'about.html' },
+  { route: '/+not-found', file: '+not-found.html' },
 ];
 
 /**
@@ -144,7 +149,6 @@ describe('accessibility audit (task 29)', () => {
       expect(report).toContain(spec.file.replace(/\\/g, '/'));
     }
 
-     
     console.log(
       `[a11y] report written to ${path.relative(projectRoot, reportPath)} ` +
         `(${(report.length / 1024).toFixed(1)} KiB)`,

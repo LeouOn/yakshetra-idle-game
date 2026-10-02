@@ -3,6 +3,13 @@
 // Walks the work plan, asserts every todo's evidence file exists, maps each
 // must-have bullet to the todo(s) that cover it, and greps the source tree for
 // forbidden tokens. Read-only. Node built-ins only. Exits 0 on PASS, 1 on FAIL.
+//
+// The plan itself lives in `.omo/`, which is local-only state and is never
+// committed, so a fresh checkout — CI included — has no plan to walk. An absent
+// plan is therefore NOT a failure: the todo/evidence/coverage halves report
+// empty and the verdict rests on the must-not-have source scan, which needs no
+// plan and still enforces product law. A plan that IS present and fails still
+// exits 1.
 import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
@@ -10,7 +17,8 @@ const ROOT = process.cwd();
 const PLAN_PATH = join(ROOT, '.omo', 'plans', 'buddhist-inspired-incremental-rpg.md');
 const EVIDENCE_DIR = join(ROOT, '.omo', 'evidence');
 const REPORT_PATH = join(EVIDENCE_DIR, 'F1-compliance.md');
-const plan = readFileSync(PLAN_PATH, 'utf8');
+const PLAN_PRESENT = existsSync(PLAN_PATH);
+const plan = PLAN_PRESENT ? readFileSync(PLAN_PATH, 'utf8') : '';
 
 // --- Parse todos: lines like "- [x] 16. **Title**" or "- [ ] F1. **Title**" ---
 const TODO_RE = /^- \[([ x])\] (\d+|F\d+)\. \*\*(.+?)\*\*/gm;
@@ -176,8 +184,8 @@ const missingRows = evidenceMissing.length
 const report = `# F1 Plan Compliance Audit
 
 Generated: ${new Date().toISOString()}
-Plan: \`.omo/plans/buddhist-inspired-incremental-rpg.md\`
-
+Plan: \`.omo/plans/buddhist-inspired-incremental-rpg.md\` — **${PLAN_PRESENT ? 'present' : 'ABSENT (local-only state, never committed)'}**
+${PLAN_PRESENT ? '' : '\n> The plan is local-only state, so this checkout has none to walk. Todo, evidence, and\n> coverage rows are empty; the must-not-have source scan below still ran and\n> still gates the verdict.\n'}
 ## Summary
 
 - Total todos: **${todos.length}**
@@ -228,6 +236,11 @@ const tag = (k, v) => console.log(`${k}: ${v}`);
 console.log(`\nF1 Plan Compliance Audit`);
 console.log(`========================`);
 tag('Report', relative(ROOT, REPORT_PATH));
+if (!PLAN_PRESENT)
+  tag(
+    'Plan',
+    `ABSENT (${relative(ROOT, PLAN_PATH)}) — coverage half skipped, source scan still gates`,
+  );
 tag('Verdict', verdictPass ? 'PASS' : 'FAIL');
 tag('Todos', `${todos.length}`);
 tag('Completed', `${completed}`);

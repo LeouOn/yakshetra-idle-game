@@ -22,18 +22,32 @@ const BAY = {
 };
 const REQUEST = compileRequestFromBay(BAY, 0, 0);
 
+/** Network calls, not unit tests: never inherit vitest's 5s default. */
+const LIVE_TIMEOUT_MS = 60_000;
+
 describe.skipIf(process.env.ZAI_API_KEY === undefined)('live zai round-trip', () => {
-  it('resolves to a JSON object', async () => {
-    const completer = createManifestCompleter('zai', process.env.ZAI_API_KEY ?? '');
-    const raw = await completer(REQUEST);
-    expect(typeof raw).toBe('object');
-  });
+  it(
+    'resolves to a JSON object',
+    async () => {
+      const completer = createManifestCompleter('zai', process.env.ZAI_API_KEY ?? '');
+      const raw = await completer(REQUEST);
+      expect(typeof raw).toBe('object');
+    },
+    // A real provider round-trip. Vitest's 5s default timeout is shorter than
+    // the provider's own p50, so this test was a coin flip for anyone holding
+    // a key: observed 4.7s pass and 5.0s timeout on consecutive runs.
+    LIVE_TIMEOUT_MS,
+  );
 });
 
 describe.skipIf(process.env.MINIMAX_API_KEY === undefined)('live minimax round-trip', () => {
-  it('resolves to a JSON object', async () => {
-    const completer = createManifestCompleter('minimax', process.env.MINIMAX_API_KEY ?? '');
-    const raw = await completer(REQUEST);
-    expect(typeof raw).toBe('object');
-  });
+  it(
+    'resolves to a JSON object',
+    async () => {
+      const completer = createManifestCompleter('minimax', process.env.MINIMAX_API_KEY ?? '');
+      const raw = await completer(REQUEST);
+      expect(typeof raw).toBe('object');
+    },
+    LIVE_TIMEOUT_MS,
+  );
 });

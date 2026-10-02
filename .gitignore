@@ -45,6 +45,14 @@ Thumbs.db
 advisory/recruitment-log.md
 advisory/reviewer-agreements/
 
+# Agent tooling working-copy state. These are injected by the local agent
+# harness, not project source, and must never be committed: a stray `git add -A`
+# would otherwise sweep plugin code, hook scripts, and local MCP credentials
+# config into the repo.
+.claude/
+.openrig/
+.mcp.json
+
 # TypeScript build info
 *.tsbuildinfo
 

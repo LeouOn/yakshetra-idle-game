@@ -195,12 +195,14 @@ export function renderReport(routes: readonly RouteAudit[], ctx: ReportContext):
   L();
   const RULE_FIXES: Record<string, string> = {
     'document-title':
-      'Each exported HTML contains a **duplicate empty `<title data-rh="true"></title>` before** the real ' +
-      '`<title>Yakshetra</title>`. The `document.title` IDL getter honours the *first* `<title>`, so the ' +
-      'effective document title resolves to **empty** (screen readers / browser tabs see no title in the SSR ' +
-      'shell). Fix: ensure expo-router / React Helmet does not emit an empty leading `<title>` — set the title ' +
-      'via `<Head><title>…</title></Head>` so a single populated element is emitted, or reorder so the populated ' +
-      'title is first. This is an export/template concern, not a per-screen content fix.',
+      'Some route emitted an **empty `<title>`** in its SSR HTML, so the effective document title ' +
+      'resolves to nothing (screen readers and browser tabs see no title). This is **per route, not ' +
+      'an export/template bug**: `app/_layout.tsx` supplies the document title through Helmet and ' +
+      '`app/+html.tsx` deliberately omits a second `<title>`, so any route that renders *outside* ' +
+      "the root layout (expo-router's built-in `+not-found`, before it had its own file) emits no " +
+      'title at all. The other routes each carry exactly one populated `<title>`; the violation ' +
+      'names only the route that has none. Fix: give that route its own `<Head><title>…</title></Head>`, ' +
+      'not a change to `+html.tsx` (adding a title there is what creates the duplicate-empty-title bug).',
     region:
       "Wrap each screen's content in a landmark (`<main>`). React Native Web renders `<View>` as a `<div>` with " +
       'no role, so nothing on the page is a landmark and axe flags all content as outside any region. Set ' +

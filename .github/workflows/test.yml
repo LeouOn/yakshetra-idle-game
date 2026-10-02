@@ -40,6 +40,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # `src/a11y/audit.test.ts` hard-stats `dist/`, and `dist/` is gitignored —
+      # without this export both `pnpm test` and the a11y step below fail with
+      # ENOENT on every push. Keep the build step immediately before them.
+      - name: Export web build (dist/ for the a11y audit)
+        run: pnpm exec expo export --platform web
+
       - name: Lint
         run: pnpm lint
 
