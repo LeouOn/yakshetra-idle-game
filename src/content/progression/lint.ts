@@ -2,6 +2,7 @@
 // meter ban, applied to the progression registries. Pure and deterministic.
 
 import { MODIFIER_KEY_WHITELIST } from '@/engine/endowment';
+import { FIGURE_IDS } from '@/engine/manifest-catalog-figures';
 
 import { containsMeterToken, walkStrings, type LintReport, type LintViolation } from '../lint';
 import type { EffectOp } from '../schema';
@@ -12,6 +13,7 @@ export const R_PROG_CORE_KINDS = 'R-PROG-CORE-KINDS' as const;
 export const R_PROG_KIND_CATALOG = 'R-PROG-KIND-CATALOG' as const;
 export const R_PROG_NO_METER = 'R-PROG-NO-METER' as const;
 export const R_PROG_MODIFIER_KEYS = 'R-PROG-MODIFIER-KEYS' as const;
+export const R_PROG_ENCOUNTERS = 'R-PROG-ENCOUNTERS' as const;
 
 const CORE_KIND_IDS = ['thing', 'outcome', 'change', 'person', 'place'] as const;
 
@@ -92,11 +94,47 @@ export function lintProgression(registries: ProgressionRegistries): LintReport {
     compendium: registries.compendium,
     catalogs: registries.catalogs,
     roles: registries.roles,
+    encounters: registries.encounters,
   };
   for (const { s, path } of walkStrings(meterScope)) {
     if (containsMeterToken(s)) {
       violations.push(
         error(R_PROG_NO_METER, `prohibited meter token "${s}" in progression data`, path),
+      );
+    }
+  }
+
+  const validFigures = new Set<string>(FIGURE_IDS);
+  const validFamilies = new Set(['work', 'generosity', 'beings', 'learning', 'meditation']);
+  for (const encounter of registries.encounters) {
+    if (!validFigures.has(encounter.figure_id)) {
+      violations.push(
+        error(
+          R_PROG_ENCOUNTERS,
+          `encounter "${encounter.id}" references unknown figure "${encounter.figure_id}"`,
+          `encounters[${encounter.id}].figure_id`,
+        ),
+      );
+    }
+    if (
+      encounter.needs.window.family !== undefined &&
+      !validFamilies.has(encounter.needs.window.family)
+    ) {
+      violations.push(
+        error(
+          R_PROG_ENCOUNTERS,
+          `encounter "${encounter.id}" references unknown activity family "${encounter.needs.window.family}"`,
+          `encounters[${encounter.id}].needs.window.family`,
+        ),
+      );
+    }
+    if (encounter.needs.pinned.length < 1 || encounter.needs.pinned.length > 2) {
+      violations.push(
+        error(
+          R_PROG_ENCOUNTERS,
+          `encounter "${encounter.id}" must require 1 or 2 pinned cards`,
+          `encounters[${encounter.id}].needs.pinned`,
+        ),
       );
     }
   }

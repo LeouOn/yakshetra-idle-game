@@ -25,7 +25,8 @@ describe('tableFillManifest', () => {
     expect(a).toEqual(b);
     expect(a.tags).toContain('briefed');
     expect(a.tags).toContain('deepened');
-    expect(a.detail).toContain('a slower morning');
+    // The brief steers which phrasing is used; it is not echoed as a footer.
+    expect(a.detail).not.toMatch(/you asked for/i);
   });
 
   it('compiles event-heavy windows as outcomes', () => {
@@ -119,7 +120,100 @@ describe('tableFillManifest', () => {
     };
     const manifest = tableFillManifest(WINDOW, null, 0, createRng(7n), '7', 'm-act', null, context);
     expect(manifest.tags).toContain('activity:work');
-    expect(manifest.detail).toContain('physical craft and patient labor');
+    // Activity totals stay in the tags. They left the card text: the lead read
+    // thirty cards and heard the same activity sentence on nearly all of them.
+    expect(manifest.detail).not.toContain('physical craft and patient labor');
+  });
+});
+
+describe('no build-internal era tokens reach a harvested card', () => {
+  /**
+   * Regression: the setting sentence used to interpolate `setting.era_id`
+   * directly, so a harvested card ended "It is year 1 in studio-bench@0.1.0."
+   * The bench stand-in life has no era pack, so it supplies no `era_name`, and
+   * the sentence is omitted rather than filled with the token.
+   */
+  const benchLifeContext = {
+    schema_version: 'life_context/v0' as const,
+    life_id: 'studio-bench',
+    age: 0,
+    turn: 0,
+    alive: true,
+    lens: null,
+    setting: {
+      era_id: 'studio-bench@0.1.0',
+      role_id: 'operator',
+      year: 1,
+      month: 1,
+      day: 1,
+      hour: 0,
+      calendar_label: 'Year 1, month 1, day 1',
+    },
+    ties: [],
+    strongest_tie: null,
+    flags: [],
+    residue_summary: summarizeResidue(WINDOW),
+    activity: { work: 0, generosity: 0, beings: 0, learning: 0, meditation: 0, other: 0 },
+    world_name: null,
+    world_line: null,
+  };
+
+  it('omits the setting sentence when no era_name is supplied', () => {
+    const manifest = tableFillManifest(
+      WINDOW,
+      null,
+      0,
+      createRng(11n),
+      '11',
+      'm-noera',
+      null,
+      benchLifeContext,
+    );
+    expect(manifest.detail).not.toContain('studio-bench@');
+    expect(manifest.detail).not.toContain('@0.');
+    expect(manifest.detail).not.toContain('It is year');
+  });
+
+  it('uses the player-facing era name when one is supplied', () => {
+    const context = {
+      ...benchLifeContext,
+      setting: { ...benchLifeContext.setting, era_id: 'tang-china', era_name: 'Late Tang China' },
+    };
+    const manifest = tableFillManifest(
+      WINDOW,
+      null,
+      0,
+      createRng(11n),
+      '11',
+      'm-era',
+      null,
+      context,
+    );
+    // The era decides the row's vocabulary; the card no longer narrates it.
+    expect(manifest.detail).not.toContain('It is year 1 in Late Tang China.');
+    expect(manifest.detail).not.toContain('tang-china');
+    expect(manifest.detail).not.toContain('tang-china');
+  });
+
+  it('never emits an era-id or semver pattern, across seeds and tiers', () => {
+    const forbidden = /studio-bench@|@\d+\.\d+|bench@/;
+    for (let seed = 1; seed <= 60; seed += 1) {
+      for (const tier of [0, 1]) {
+        const manifest = tableFillManifest(
+          WINDOW,
+          null,
+          tier,
+          createRng(BigInt(seed)),
+          String(seed),
+          `m-${seed}-${tier}`,
+          null,
+          benchLifeContext,
+        );
+        expect(manifest.detail).not.toMatch(forbidden);
+        expect(manifest.one_liner).not.toMatch(forbidden);
+        expect(manifest.subject).not.toMatch(forbidden);
+      }
+    }
   });
 });
 

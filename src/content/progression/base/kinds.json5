@@ -91,16 +91,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'tradition',
-      scale: 'household',
-      pinnable: false,
-      catalog_ref: 'core/tradition',
-      sid_ns: 'studio.kind_tradition_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'heirloom',
       scale: 'household',
       pinnable: false,
@@ -108,6 +98,16 @@
       sid_ns: 'studio.kind_heirloom_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'tradition',
+      scale: 'household',
+      pinnable: false,
+      catalog_ref: 'core/tradition',
+      sid_ns: 'studio.kind_tradition_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',
@@ -148,16 +148,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'charter',
-      scale: 'org',
-      pinnable: false,
-      catalog_ref: 'core/charter',
-      sid_ns: 'studio.kind_charter_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'ware',
       scale: 'org',
       pinnable: false,
@@ -165,6 +155,16 @@
       sid_ns: 'studio.kind_ware_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'charter',
+      scale: 'org',
+      pinnable: false,
+      catalog_ref: 'core/charter',
+      sid_ns: 'studio.kind_charter_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',
@@ -204,16 +204,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'festival',
-      scale: 'town',
-      pinnable: false,
-      catalog_ref: 'core/festival',
-      sid_ns: 'studio.kind_festival_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'landmark',
       scale: 'town',
       pinnable: false,
@@ -221,6 +211,16 @@
       sid_ns: 'studio.kind_landmark_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'festival',
+      scale: 'town',
+      pinnable: false,
+      catalog_ref: 'core/festival',
+      sid_ns: 'studio.kind_festival_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',
@@ -263,16 +263,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'institution',
-      scale: 'city',
-      pinnable: false,
-      catalog_ref: 'core/institution',
-      sid_ns: 'studio.kind_institution_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'monument',
       scale: 'city',
       pinnable: false,
@@ -280,6 +270,16 @@
       sid_ns: 'studio.kind_monument_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'institution',
+      scale: 'city',
+      pinnable: false,
+      catalog_ref: 'core/institution',
+      sid_ns: 'studio.kind_institution_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',
@@ -321,16 +321,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'legend',
-      scale: 'region',
-      pinnable: false,
-      catalog_ref: 'core/legend',
-      sid_ns: 'studio.kind_legend_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'road',
       scale: 'region',
       pinnable: false,
@@ -338,6 +328,16 @@
       sid_ns: 'studio.kind_road_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'legend',
+      scale: 'region',
+      pinnable: false,
+      catalog_ref: 'core/legend',
+      sid_ns: 'studio.kind_legend_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',
@@ -378,16 +378,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'ministry',
-      scale: 'nation',
-      pinnable: false,
-      catalog_ref: 'core/ministry',
-      sid_ns: 'studio.kind_ministry_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'edict',
       scale: 'nation',
       pinnable: false,
@@ -395,6 +385,16 @@
       sid_ns: 'studio.kind_edict_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'ministry',
+      scale: 'nation',
+      pinnable: false,
+      catalog_ref: 'core/ministry',
+      sid_ns: 'studio.kind_ministry_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',
@@ -435,16 +435,6 @@
     // ──────────────────────────────────────────────────────────────────────
     {
       schema_version: 'kind/v0',
-      id: 'chronicle',
-      scale: 'world',
-      pinnable: false,
-      catalog_ref: 'core/chronicle',
-      sid_ns: 'studio.kind_chronicle_sid',
-      min_quality: 0,
-      match: { social: true },
-    },
-    {
-      schema_version: 'kind/v0',
       id: 'horizon',
       scale: 'world',
       pinnable: false,
@@ -452,6 +442,16 @@
       sid_ns: 'studio.kind_horizon_sid',
       min_quality: 0,
       match: { dominant: 'practice_level' },
+    },
+    {
+      schema_version: 'kind/v0',
+      id: 'chronicle',
+      scale: 'world',
+      pinnable: false,
+      catalog_ref: 'core/chronicle',
+      sid_ns: 'studio.kind_chronicle_sid',
+      min_quality: 0,
+      match: { social: true },
     },
     {
       schema_version: 'kind/v0',

@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 import type { KindRule } from '@/engine/kind-registry';
+import type { EncounterRecipe } from '@/engine/encounters';
 import { buildCatalog, type CatalogEntry, type CatalogMap } from '@/engine/table-catalog';
 
 import { getProgressionBundle } from './registry';
@@ -13,6 +14,7 @@ import {
   CatalogTableSchema,
   CompendiumEntrySchema,
   EndowmentTrackSchema,
+  EncounterRecipeSchema,
   KindRowSchema,
   MilestoneSchema,
   PolicySchema,
@@ -28,6 +30,8 @@ import {
   type RolesFile,
   type Tier,
   type Visitor,
+  toEngineCatalogEntry,
+  toEngineEncounterRecipe,
 } from './schema';
 
 export interface ProgressionRegistries {
@@ -43,6 +47,7 @@ export interface ProgressionRegistries {
   readonly visitors: readonly Visitor[];
   readonly compendium: readonly CompendiumEntry[];
   readonly roles: RolesFile;
+  readonly encounters: readonly EncounterRecipe[];
   /** `visitor_tables` namespace → catalog entries. Phase 4 Task 2: a seated
    * visitor with `table_ref` swaps the tier catalog for this table. */
   readonly visitorTables: Readonly<Record<string, readonly CatalogEntry[]>>;
@@ -114,7 +119,10 @@ export function loadProgression(): ProgressionRegistries {
   );
   const byKind: Record<string, readonly CatalogEntry[]> = {};
   for (const table of catalogTables) {
-    byKind[table.kind] = [...(byKind[table.kind] ?? []), ...table.entries];
+    byKind[table.kind] = [
+      ...(byKind[table.kind] ?? []),
+      ...table.entries.map(toEngineCatalogEntry),
+    ];
   }
   const milestones = parseFile(
     MilestoneSchema,
@@ -144,11 +152,22 @@ export function loadProgression(): ProgressionRegistries {
   const roles = parseSingleton(RolesFileSchema, bundle.roles, 'roles.json5');
   const kindRules: KindRule[] = kindRows.map((row) => ({ kind: row.id, match: row.match }));
   const catalogsRaw = bundle.catalogs as { visitor_tables?: unknown };
-  const visitorTables = parseSingleton(
+  // A visitor table is a whole replacement pool, so its rows are catalog rows
+  // and need the same optional-key normalization before the engine sees them.
+  const visitorTablesRaw = parseSingleton(
     VisitorTableMapSchema,
     catalogsRaw.visitor_tables ?? {},
     'catalogs.json5 (visitor_tables)',
   );
+  const visitorTables: Readonly<Record<string, readonly CatalogEntry[]>> = Object.fromEntries(
+    Object.entries(visitorTablesRaw).map(([id, rows]) => [id, rows.map(toEngineCatalogEntry)]),
+  );
+  const encounterRows = parseFile(
+    EncounterRecipeSchema,
+    extractArray(bundle.encounters ?? { encounters: [] }, 'encounters', 'encounters.json5'),
+    'encounters.json5',
+  );
+  const encounters = encounterRows.map(toEngineEncounterRecipe);
   const registries: ProgressionRegistries = {
     tiers,
     kindRows,
@@ -160,6 +179,7 @@ export function loadProgression(): ProgressionRegistries {
     visitors,
     compendium,
     roles,
+    encounters,
     visitorTables,
   };
   const lintReport = lintProgression(registries);

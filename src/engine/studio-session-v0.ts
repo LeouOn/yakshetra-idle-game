@@ -30,6 +30,22 @@ export const ResidueEventSchema = z
   })
   .strict();
 
+// Wave 3 pair pin: optional card tags + an optional second card (exactly
+// one deep — recipes need 1-2 pins). Old saves parse unchanged.
+export const PinnedCardSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    kind: z.enum(['person', 'place']),
+    one_liner: z.string().min(1),
+    tags: z.array(z.string().min(1)).optional(),
+  })
+  .strict();
+
+export const PinnedSchema = PinnedCardSchema.extend({
+  second: PinnedCardSchema.optional(),
+});
+
 export const DevelopOperationSchema = z
   .object({
     id: z.string().min(1),
@@ -41,15 +57,11 @@ export const DevelopOperationSchema = z
     cook_ticks_done: z.number().int().nonnegative(),
     status: z.enum(['cooking', 'ready', 'harvested']),
     rng_seed: z.string().min(1),
-    focus: z
-      .object({
-        id: z.string().min(1),
-        name: z.string().min(1),
-        kind: z.enum(['person', 'place']),
-        one_liner: z.string().min(1),
-      })
-      .nullable()
-      .optional(),
+    // Lane B cook length. Defaulted so bays saved before the field existed
+    // parse as a short fire — no session migration required.
+    fire: z.enum(['short', 'long']).default('short'),
+    focus: PinnedSchema.nullable().optional(),
+    encounter_figure_id: z.string().min(1).optional(),
   })
   .strict();
 
@@ -57,15 +69,6 @@ const PlayImportSchema = z
   .object({
     life_id: z.string().min(1),
     index: z.number().int().min(-1),
-  })
-  .strict();
-
-const PinnedSchema = z
-  .object({
-    id: z.string().min(1),
-    name: z.string().min(1),
-    kind: z.enum(['person', 'place']),
-    one_liner: z.string().min(1),
   })
   .strict();
 
@@ -159,12 +162,15 @@ export function migrateStudioSessionV0(v0: StudioSessionV0): StudioSession {
         play_import: v0.studio.play_import ?? null,
         pinned: v0.studio.pinned ?? null,
         surplus: v0.studio.surplus ?? 0,
+        held_residue: [],
+        cook_choices: { long: 0, holdback: 0 },
       }),
     },
     archive,
     tiers: { person: createTierState('person', true) },
     milestones_done: [],
     compendium_done: [],
+    encounters_done: [],
     embodied_member: null,
     idle: v0.idle,
     life: v0.life,

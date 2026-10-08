@@ -77,7 +77,30 @@ describe('evaluateLifeContext', () => {
     expect(ctx.ties.some((t) => t.id === 'aunt' && t.bond === 'close')).toBe(true);
     expect(ctx.ties.some((t) => t.id === 'debtor' && t.bond === 'owed')).toBe(true);
     expect(ctx.ties.some((t) => t.source === 'cast' && t.id === 'm-guest')).toBe(true);
-    expect(ctx.strongest_tie).toBe('aunt');
+    // Cased, per the lead's reading of the 30 cards: never 'aunt'.
+    expect(ctx.strongest_tie).toBe('Aunt');
     expect(stringifyLifeContext(ctx)).toContain('"schema_version":"life_context/v0"');
+  });
+
+  it('omits a tie it cannot name rather than inventing one from its id', () => {
+    // A relationship filed under a manifest handle, with no card in the
+    // archive to name it. Humanizing the handle would print "M Guest", which
+    // reads as a real person and is not one.
+    const life = makeLife();
+    const ctx = evaluateLifeContext({
+      life: {
+        ...life,
+        relationships: { ...life.relationships, 'm-guest': { trust: 9, debt: 0, affection: 9 } },
+      },
+      idle: createIdleState(),
+      epoch: EPOCH,
+    });
+    const tie = ctx.ties.find((t) => t.id === 'm-guest');
+    expect(tie).toBeDefined();
+    expect(tie?.name).toBeNull();
+    // The handle is not echoed anywhere a player can read it.
+    expect(stringifyLifeContext(ctx)).not.toContain('M Guest');
+    // And a real relationship name in the same life still resolves and cased.
+    expect(ctx.ties.some((t) => t.id === 'aunt' && t.name === 'Aunt')).toBe(true);
   });
 });

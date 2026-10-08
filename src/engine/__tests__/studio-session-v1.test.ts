@@ -118,7 +118,18 @@ describe('v1 round-trip', () => {
     const parsed = parseStudioSession(JSON.parse(JSON.stringify(snapshot)));
     const hydrated = hydrateStudioSession(parsed, base.life, []);
     expect(hydrated.studio).toEqual(createStudioState());
-    expect(hydrated.progression).toEqual(defaultProgression());
+    // The parsed session schema-defaults encounters_done (wave 3b), so the
+    // hydrated progression carries it where the in-memory default omits it.
+    expect(hydrated.progression).toEqual({ ...defaultProgression(), encounters_done: [] });
+  });
+
+  it('old sessions without encounters_done hydrate as none found', () => {
+    const base = emptyHydratedSession();
+    const snapshot = snapshotStudioSession(base.studio, base.idle, base.life, base.practices);
+    const legacy = JSON.parse(JSON.stringify(snapshot)) as Record<string, unknown>;
+    delete legacy.encounters_done;
+    const hydrated = hydrateStudioSession(parseStudioSession(legacy), base.life, []);
+    expect(hydrated.progression.encounters_done ?? []).toEqual([]);
   });
 });
 

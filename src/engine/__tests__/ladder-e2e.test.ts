@@ -84,6 +84,8 @@ const EMPTY_BENCH: BenchState = {
   play_import: null,
   pinned: null,
   surplus: 0,
+  held_residue: [],
+  cook_choices: { long: 0, holdback: 0 },
   fold_position: 0,
 };
 

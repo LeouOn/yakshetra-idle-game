@@ -38,25 +38,38 @@ export async function syncPlayResidueToStudio(
           play_import: bench.play_import,
           pinned: bench.pinned,
           surplus: bench.surplus,
+          held_residue: bench.held_residue,
+          cook_choices: bench.cook_choices,
         };
   const next = importPlayResidue(studio, lifeId, lifeLog);
   if (next === studio) {
     return next;
   }
+  // Spread the EXISTING bench and override only the imported fields, so a
+  // bench field added later can never be silently dropped here (wave-1
+  // review #1: the field-listed literal reset held_residue, cook_choices and
+  // fold_position to their zod defaults on every campaign sync — silent
+  // data loss of carried traces).
+  const person = base.benches['person'];
   const saved = parseStudioSession({
     ...base,
     benches: {
       ...base.benches,
-      person: {
-        residue: next.residue,
-        last_harvest_index: next.last_harvest_index,
-        bay: next.bay,
-        quality_tier: next.quality_tier,
-        harvest_count: next.harvest_count,
-        play_import: next.play_import,
-        pinned: next.pinned,
-        surplus: next.surplus,
-      },
+      ...(person === undefined
+        ? {}
+        : {
+            person: {
+              ...person,
+              residue: next.residue,
+              last_harvest_index: next.last_harvest_index,
+              bay: next.bay,
+              quality_tier: next.quality_tier,
+              harvest_count: next.harvest_count,
+              play_import: next.play_import,
+              pinned: next.pinned,
+              surplus: next.surplus,
+            },
+          }),
     },
   });
   await saveStudioSession(saved, kv);

@@ -41,14 +41,21 @@ const PlayImportSchema = z
   })
   .strict();
 
-const PinnedSchema = z
+// Wave 3 pair pin: optional card tags + an optional second card (exactly
+// one deep — recipes need 1-2 pins). Old saves parse unchanged.
+const PinnedCardSchema = z
   .object({
     id: z.string().min(1),
     name: z.string().min(1),
     kind: z.enum(['person', 'place']),
     one_liner: z.string().min(1),
+    tags: z.array(z.string().min(1)).optional(),
   })
   .strict();
+
+const PinnedSchema = PinnedCardSchema.extend({
+  second: PinnedCardSchema.optional(),
+});
 
 const BenchSchema = z
   .object({
@@ -60,6 +67,16 @@ const BenchSchema = z
     play_import: PlayImportSchema.nullable(),
     pinned: PinnedSchema.nullable(),
     surplus: z.number().int().min(0),
+    // Lane B hold-back: residue indices held out of the last cook. Defaulted
+    // so pre-hold-back saves read as "nothing held" with no migration.
+    held_residue: z.array(z.number().int().min(0)).default(() => []),
+    // Lane B instrumented bar: queue-time choice counters.
+    cook_choices: z
+      .object({
+        long: z.number().int().min(0),
+        holdback: z.number().int().min(0),
+      })
+      .default(() => ({ long: 0, holdback: 0 })),
     // Household-bench only: person-bench events the fold-up has already
     // consumed, so sub-cadence batches combine across stepSession calls.
     fold_position: z.number().int().min(0).default(0),
@@ -83,6 +100,9 @@ export const StudioSessionSchema = z
     tiers: z.record(z.string(), TierStateSchema),
     milestones_done: z.array(z.string().min(1)),
     compendium_done: z.array(z.string().min(1)),
+    // Wave 3 sought encounters that have fired (recipe ids), for the
+    // compendium's Sought page. Defaulted: old sessions read as none found.
+    encounters_done: z.array(z.string().min(1)).default(() => []),
     embodied_member: EmbodiedMemberSchema.nullable(),
     idle: IdleSliceSchema,
     life: LifeSliceSchema,
@@ -119,6 +139,9 @@ export function snapshotStudioSession(
     tiers: progression.tiers,
     milestones_done: progression.milestones_done,
     compendium_done: progression.compendium_done,
+    ...(progression.encounters_done === undefined
+      ? {}
+      : { encounters_done: progression.encounters_done }),
     embodied_member: progression.embodied_member,
     idle: {
       mode: idle.mode,

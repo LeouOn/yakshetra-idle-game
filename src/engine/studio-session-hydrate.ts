@@ -22,6 +22,9 @@ export interface SessionProgression {
   readonly tiers: Readonly<Record<string, TierState>>;
   readonly milestones_done: readonly string[];
   readonly compendium_done: readonly string[];
+  /** Sought-encounter recipe ids that have fired (wave 3b). Optional on
+   * in-memory progressions; the session schema defaults it to []. */
+  readonly encounters_done?: readonly string[] | undefined;
   readonly embodied_member: { readonly tier: string; readonly member: string } | null;
 }
 
@@ -92,6 +95,9 @@ export function hydrateStudioSession(
       tiers: session.tiers,
       milestones_done: session.milestones_done,
       compendium_done: session.compendium_done,
+      ...(session.encounters_done === undefined
+        ? {}
+        : { encounters_done: session.encounters_done }),
       embodied_member: session.embodied_member,
     },
     members: session.members,

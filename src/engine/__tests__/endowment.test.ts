@@ -83,6 +83,8 @@ function makeBench(pinned: BenchState['pinned']): BenchState {
     play_import: null,
     pinned,
     surplus: 0,
+    held_residue: [],
+    cook_choices: { long: 0, holdback: 0 },
     fold_position: 0,
   };
 }

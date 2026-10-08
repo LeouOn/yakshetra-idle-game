@@ -6,6 +6,9 @@
 
 import { z } from 'zod';
 
+import type { CardTemplate, CatalogEntry } from '@/engine/table-catalog';
+import type { EncounterRecipe } from '@/engine/encounters';
+
 import { SCALE_VALUES } from '@/engine/manifest';
 
 import { EffectOpSchema } from '../schema';
@@ -58,6 +61,23 @@ export type KindRow = z.infer<typeof KindRowSchema>;
 // Plain strings by design: compiled card output (SPEC §7), NOT SIDs —
 // the one content row where prose is allowed to live outside en.json.
 
+export const CardTemplateSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    one_liner: z.string().min(1).optional(),
+    subject: z.string().min(1).optional(),
+    detail: z.string().min(1),
+    tags: z.array(z.string().min(1)).optional(),
+    gate: z.enum(['uncommon', 'rare']).optional(),
+    flourish: z.string().min(1).optional(),
+    era: z.enum(['tang', 'fantasy']).optional(),
+    // Overrides the parent row's qualifier when this template is a different
+    // object wearing the same row. See CardTemplate.long_fire.
+    long_fire: z.string().min(1).optional(),
+    rare: z.string().min(1).optional(),
+  })
+  .strict();
+
 export const CatalogEntrySchema = z
   .object({
     name: z.string().min(1),
@@ -65,6 +85,18 @@ export const CatalogEntrySchema = z
     subject: z.string().min(1),
     detail: z.string().min(1),
     tags: z.array(z.string().min(1)).min(1),
+    // Optional: authored phrasings the composer fills from the life window. A
+    // row without any still works verbatim, so content can add them one at a
+    // time. Mirrors CardTemplate in src/engine/table-catalog.ts.
+    templates: z.array(CardTemplateSchema).optional(),
+    // One sentence each for a long cook and for a rare card, in the row's own
+    // voice. Absent means the composer falls back to a shared pool.
+    long_fire: z.string().min(1).optional(),
+    rare: z.string().min(1).optional(),
+    // Which era family this ROW belongs to. Absent means era-neutral, and a
+    // neutral row is eligible in every era. Distinct from the template-level
+    // `era`, which scopes a phrasing inside a row rather than the row itself.
+    era: z.enum(['tang', 'fantasy']).optional(),
   })
   .strict();
 export type CatalogEntryRow = z.infer<typeof CatalogEntrySchema>;
@@ -278,3 +310,106 @@ export const RolesFileSchema = z
   })
   .strict();
 export type RolesFile = z.infer<typeof RolesFileSchema>;
+
+/* ---- encounter/v0 -------------------------------------------------------- */
+
+export const ENCOUNTER_VERSION = 'encounter/v0' as const;
+
+export const EncounterPinNeedSchema = z
+  .object({
+    kind: z.enum(['person', 'place']).optional(),
+    tag: z.string().min(1).optional(),
+  })
+  .strict();
+
+export const EncounterWindowNeedSchema = z
+  .object({
+    family: z.enum(['work', 'generosity', 'beings', 'learning', 'meditation', 'other']).optional(),
+    kind: z.string().min(1).optional(),
+    min_count: z.number().int().min(1).optional(),
+  })
+  .strict();
+
+export const EncounterRecipeSchema = z
+  .object({
+    schema_version: z.literal(ENCOUNTER_VERSION),
+    id: z.string().min(1),
+    figure_id: z.string().min(1),
+    needs: z
+      .object({
+        pinned: z.array(EncounterPinNeedSchema).min(1).max(2),
+        window: EncounterWindowNeedSchema,
+      })
+      .strict(),
+    hint_sid: z.string().min(1),
+  })
+  .strict();
+export type EncounterRecipeRow = z.infer<typeof EncounterRecipeSchema>;
+
+export const EncountersFileSchema = z
+  .object({
+    encounters: z.array(EncounterRecipeSchema),
+  })
+  .strict();
+export type EncountersFile = z.infer<typeof EncountersFileSchema>;
+
+/* ---- engine parity ------------------------------------------------------ */
+
+// Zod infers an optional key as `k?: T | undefined`, which under
+// exactOptionalPropertyTypes is a *different* type from the engine's `k?: T`.
+// Rather than loosen the engine type (AGENTS.md: omit the key, do not assign
+// undefined), normalize on the way out. Content that omits a field stays
+// omitted; nothing is widened.
+
+function toCardTemplate(row: z.infer<typeof CardTemplateSchema>): CardTemplate {
+  return {
+    detail: row.detail,
+    ...(row.name === undefined ? {} : { name: row.name }),
+    ...(row.one_liner === undefined ? {} : { one_liner: row.one_liner }),
+    ...(row.subject === undefined ? {} : { subject: row.subject }),
+    ...(row.tags === undefined ? {} : { tags: row.tags }),
+    ...(row.gate === undefined ? {} : { gate: row.gate }),
+    ...(row.flourish === undefined ? {} : { flourish: row.flourish }),
+    ...(row.era === undefined ? {} : { era: row.era }),
+    ...(row.long_fire === undefined ? {} : { long_fire: row.long_fire }),
+    ...(row.rare === undefined ? {} : { rare: row.rare }),
+    ...(row.era === undefined ? {} : { era: row.era }),
+  };
+}
+
+/** A content catalog row in the exact shape the engine's composer consumes. */
+export function toEngineCatalogEntry(row: CatalogEntryRow): CatalogEntry {
+  return {
+    name: row.name,
+    one_liner: row.one_liner,
+    subject: row.subject,
+    detail: row.detail,
+    tags: row.tags,
+    ...(row.templates === undefined ? {} : { templates: row.templates.map(toCardTemplate) }),
+    ...(row.long_fire === undefined ? {} : { long_fire: row.long_fire }),
+    ...(row.rare === undefined ? {} : { rare: row.rare }),
+    ...(row.era === undefined ? {} : { era: row.era }),
+  };
+}
+
+/** A content encounter recipe normalized for the engine's exact optional types. */
+export function toEngineEncounterRecipe(row: EncounterRecipeRow): EncounterRecipe {
+  return {
+    id: row.id,
+    figure_id: row.figure_id,
+    needs: {
+      pinned: row.needs.pinned.map((p) => ({
+        ...(p.kind === undefined ? {} : { kind: p.kind }),
+        ...(p.tag === undefined ? {} : { tag: p.tag }),
+      })),
+      window: {
+        ...(row.needs.window.family === undefined ? {} : { family: row.needs.window.family }),
+        ...(row.needs.window.kind === undefined ? {} : { kind: row.needs.window.kind }),
+        ...(row.needs.window.min_count === undefined
+          ? {}
+          : { min_count: row.needs.window.min_count }),
+      },
+    },
+    hint_sid: row.hint_sid,
+  };
+}

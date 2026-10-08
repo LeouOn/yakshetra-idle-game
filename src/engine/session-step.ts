@@ -30,6 +30,10 @@ export interface SessionStepContext {
   readonly practices: readonly Practice[];
   /** Schedule the embodied life runs on. */
   readonly embodiedSchedule: DailySchedule;
+  /** Wave 1b: the pack's authored schedules, rotated per in-game day by
+   * stepSession (day N runs `schedules[N % length]`). Absent → the single
+   * {@link embodiedSchedule} runs every day, unchanged. */
+  readonly embodiedSchedules?: readonly DailySchedule[];
   /** Resolve a roster policy to its schedule (pack content, UI-supplied). */
   readonly memberScheduleFor: (policy: string) => DailySchedule;
   /** Resolve a roster policy to its runtime practices (pack content, UI-supplied). */
@@ -88,17 +92,59 @@ export function stepSession(
   const withVisitors = stepVisitors(session, ctx, ticks);
 
   // 1. Embodied life on the person bench — stepStudio semantics unchanged.
+  // Wave 2 review fix: the batch is split at in-game midnight (24-tick days)
+  // and each chunk runs on ITS OWN day's authored schedule. Before, a whole
+  // batch ran on its starting day's schedule — fine for an 8-tick tend, but
+  // a 240-tick offline catch-up ran ten days on one day's plan and silently
+  // skipped the rotation. <= ceil(cap/24)+1 iterations for the 240-tick cap.
   const personPrev = session.benches[PERSON_BENCH] ?? emptyBench();
-  const embodied = stepStudio(
-    benchToStudio(personPrev, session.archive),
-    benchIdle(session),
-    benchLife(session),
-    overlayPractices(ctx.practices, session.practices),
-    ctx.embodiedSchedule,
-    ctx.endings,
-    ticks,
-    rng,
-  );
+  const rotation = ctx.embodiedSchedules;
+  const dayScheduleAt = (tick: bigint) =>
+    rotation === undefined || rotation.length === 0
+      ? ctx.embodiedSchedule
+      : (rotation[Number((tick / 24n) % BigInt(rotation.length))] ?? ctx.embodiedSchedule);
+  let embodied = {
+    studio: benchToStudio(personPrev, session.archive),
+    idle: benchIdle(session),
+    life: benchLife(session),
+    practices: overlayPractices(ctx.practices, session.practices),
+    summary: { ticksSimulated: 0, residueGained: 0, bayReady: false, capped: false },
+  };
+  let remaining = ticks;
+  let tickCursor = benchIdle(session).lastSimulatedTick;
+  let appliedTotal = 0;
+  let lastSummary = embodied.summary;
+  while (remaining > 0) {
+    const dayEnd = (tickCursor / 24n + 1n) * 24n;
+    const chunk = Number(dayEnd - tickCursor) < remaining ? Number(dayEnd - tickCursor) : remaining;
+    const stepped = stepStudio(
+      embodied.studio,
+      embodied.idle,
+      embodied.life,
+      embodied.practices,
+      dayScheduleAt(tickCursor),
+      ctx.endings,
+      chunk,
+      rng,
+    );
+    embodied = stepped;
+    lastSummary = stepped.summary;
+    const applied = stepped.summary.ticksSimulated;
+    appliedTotal += applied;
+    tickCursor += BigInt(applied);
+    remaining -= applied;
+    // A life ending halts the batch mid-chunk (stepStudio semantics):
+    // stop chunking — the remaining ticks would run a dead life.
+    if (applied < chunk) {
+      break;
+    }
+  }
+  // The per-chunk summaries each cover only their chunk; the batch reports
+  // the SUM (an ending reports the partial count, as one call did before).
+  embodied = {
+    ...embodied,
+    summary: { ...lastSummary, ticksSimulated: appliedTotal },
+  };
 
   // 2. The tier ladder — every unlocked non-person bench. The person bench's
   // per-call growth feeds the first rung's fold-up.

@@ -14,6 +14,12 @@ export type ResidueEventType =
   | 'resource_edge'
   | 'life_ended';
 
+/** Id prefix marking a practice tick as an engagement with other beings
+ * (SPEC §6's "engagement marker"): the emission layer stamps it on
+ * social-family practice ticks, and the kind rules read it back as social.
+ * A convention on ids, not a new event type. */
+export const ENGAGEMENT_PREFIX = 'engagement:';
+
 /** One structured trace. No prose — the compiler writes sentences. */
 export interface ResidueEvent {
   readonly tick: number;

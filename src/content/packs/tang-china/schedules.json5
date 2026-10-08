@@ -18,6 +18,17 @@
       name_sid: 'tang.schedule.monastic_day.name_sid',
       blocks: [
         {
+          // Wave 1b fix: the authored row started at hour 4, but an engine
+          // DailySchedule must cover [0, 24) — resolveBlock throws on a gap.
+          // The night hours are sleep: a null block, no practice.
+          id: 'block:tang/monastic-day/night-watch',
+          label_sid: 'tang.block.monastic_day.night_watch.label_sid',
+          startHour: 0,
+          endHour: 4,
+          practice_id: null,
+          icon_sid: 'tang.block.monastic_day.night_watch.icon_sid',
+        },
+        {
           id: 'block:tang/monastic-day/pre-dawn',
           label_sid: 'tang.block.monastic_day.pre_dawn.label_sid',
           startHour: 4,

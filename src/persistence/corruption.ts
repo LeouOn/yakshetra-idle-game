@@ -9,17 +9,29 @@
 // `null`, so the UI offers a fresh start rather than crashing on a
 // half-written blob.
 //
-// The SHA-256 itself is computed via the engine's `sha256`, which is backed by
-// `node:crypto`'s `createHash('sha256')` (see `@/engine/serialize`). That keeps
-// a single integrity implementation across the engine and persistence layers —
-// no duplicated hash primitive that could drift.
+// The SHA-256 itself is computed via the engine's `sha256` (see
+// `@/engine/serialize`), which is a pure-TypeScript FIPS 180-4 implementation
+// in `@/engine/sha256`. That keeps a single integrity implementation across the
+// engine and persistence layers — no duplicated hash primitive that could
+// drift — and it keeps the whole stack off platform APIs.
 //
-// PORTABILITY: the memory adapter (and therefore the whole Node/Vitest test
-// path) imports this file directly, so `node:crypto` MUST be resolvable — it
-// is, in Node 18+. The native (RN) and web adapters also import this file; on
-// those platforms a future todo will swap the engine hash primitive to a
-// platform-native one (`expo-crypto` / SubtleCrypto) behind the same `sha256`
-// signature, transparently to this module.
+// HISTORY (why this paragraph used to warn you off something that is now
+// fixed): the engine's `sha256` was `createHash('sha256')` from `node:crypto`.
+// That is resolvable in Node 18+, so the entire Vitest path was green, but the
+// Expo web bundle has no `createHash`: every web life save threw
+// `TypeError: createHash is not a function` as an unhandled rejection, the
+// `yakshetra.life.slot.N` key was never written, and this module's
+// `unwrapBlob` catch could not help because the throw happened in `wrapBlob`
+// on the way out. The engine now hashes without a platform dependency, and
+// `src/engine/__tests__/sha256.test.ts` pins the digest byte-for-byte against
+// `node:crypto` so envelopes written by the old implementation still verify.
+//
+// CAVEAT still true, and unrelated to hashing: `unwrapBlob` classifies ANY
+// throw from `deserializeSaveBlob` as `integrity-hash-mismatch`, so a
+// non-corruption fault during verification would be archived under that reason.
+// That is now a narrow window (the hash primitive is pure), but if a future
+// engine change makes canonicalization able to throw, add a distinct reason
+// rather than letting it hide as corruption.
 //
 // GREP GATE: `grep "Math\.random\|Date\.now"` over `src/persistence/*.ts` must
 // return zero matches in non-comment lines. We read the wall clock via

@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { createLifeState, currentLife, emptyKarma, reviveLifeState, snapshotLifeChain } from '../';
+import {
+  createLifeState,
+  currentLife,
+  emptyKarma,
+  openLife,
+  reviveLifeState,
+  snapshotLifeChain,
+  startNextLife,
+} from '../';
 import type { LifeState, SaveBlob } from '../';
 
 function makeLife(id = 'life-a'): LifeState {
@@ -61,5 +69,53 @@ describe('reviveLifeState', () => {
     const life = currentLife(blob);
     expect(life?.id).toBe('life-b');
     expect(life?.flags.has('pin:m-1')).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Chain advance — the second life must be a NEW life, not the dead one.
+// ---------------------------------------------------------------------------
+
+function deadLife(id = 'life-a'): LifeState {
+  return { ...makeLife(id), alive: false };
+}
+
+describe('openLife', () => {
+  it('returns the current life while it is alive', () => {
+    const blob = snapshotLifeChain(makeLife('life-b'), null, 1);
+    expect(openLife(blob)?.id).toBe('life-b');
+  });
+
+  it('returns null once the current life has ended', () => {
+    const blob = snapshotLifeChain(deadLife(), null, 1);
+    expect(currentLife(blob)?.alive).toBe(false);
+    expect(openLife(blob)).toBeNull();
+  });
+});
+
+describe('startNextLife', () => {
+  it('appends the new life and advances the current index', () => {
+    const first = snapshotLifeChain(deadLife('life-a'), null, 10);
+    const second = { ...makeLife('life-c'), era: 'fantasy-mahayana' as LifeState['era'] };
+    const chain = startNextLife(first, second, 99);
+    expect(chain.chain.life_states).toHaveLength(2);
+    expect(chain.chain.current_life_index).toBe(1);
+    expect(currentLife(chain)?.id).toBe('life-c');
+    expect(openLife(chain)?.era).toBe('fantasy-mahayana');
+    expect(chain.created_at_unix).toBe(10);
+  });
+
+  it('starts a fresh chain from a missing prior blob', () => {
+    const chain = startNextLife(null, makeLife('life-d'), 5);
+    expect(chain.chain.life_states).toHaveLength(1);
+    expect(chain.chain.current_life_index).toBe(0);
+  });
+
+  it('is idempotent for a life already in the current slot', () => {
+    const first = snapshotLifeChain(makeLife('life-a'), null, 10);
+    const advanced = startNextLife(first, { ...makeLife('life-b') }, 20);
+    expect(startNextLife(advanced, advanced.chain.life_states[1] as LifeState, 30)).toEqual(
+      advanced,
+    );
   });
 });

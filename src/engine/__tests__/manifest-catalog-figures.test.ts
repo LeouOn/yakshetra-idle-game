@@ -23,9 +23,11 @@ describe('figure catalog rows (SPEC 16.1)', () => {
     }
   });
 
-  it('keeps the eight generic person rows and six generic place rows as fallbacks', () => {
-    expect(CATALOG.person).toHaveLength(20); // 8 generic + 12 figures
-    expect(CATALOG.place).toHaveLength(8); // 6 generic + 2 sites
+  it('keeps the generic person/place fallback pools at their new intent (wave Garden)', () => {
+    // 8 Tang/neutral generics + 12 Garden generics + 12 figures; 6 Tang/neutral
+    // places + 6 Garden places + 2 figure sites.
+    expect(CATALOG.person).toHaveLength(32);
+    expect(CATALOG.place).toHaveLength(14);
   });
 
   it('binds the nianfo practice and mantras by tag', () => {

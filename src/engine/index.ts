@@ -88,9 +88,29 @@ export {
   queueDevelop,
   recordStudioResidue,
   recordStudioResidues,
+  spendableResidue,
   tickStudio,
   upgradeQuality,
 } from './operations';
+export {
+  LONG_FIRE_EXTRA_TICKS,
+  cookTicksFor,
+  planCookTicks,
+  heldPending,
+  maxHoldBack,
+  pendingIndices,
+} from './cook-window';
+export {
+  groupTraces,
+  reachableKinds,
+  spentEvents,
+  spentIndices,
+  type CookGroup,
+  type ReachableKind,
+  type SpendCounts,
+} from './cook-groups';
+export type { CookChoices } from './cook-window';
+export type { CookFire } from './fill-adapter';
 export type {
   DevelopOperation,
   HarvestResult,
@@ -112,8 +132,10 @@ export { summarizeLife, mergeKarma, applyEchoesToNextLife, emptyKarma } from './
 export {
   LIFE_CHAIN_ENGINE_COMPAT,
   currentLife,
+  openLife,
   reviveLifeState,
   snapshotLifeChain,
+  startNextLife,
 } from './life-chain';
 export { advanceTurn, advanceIdleTick } from './turn';
 export {
@@ -154,7 +176,7 @@ export {
   recordWorldDraftAtScale,
   withRecordedDrafts,
 } from './world-scale';
-export { focusFromManifest, isPinnableKind, nextPinned, pinnableCards } from './focus';
+export { focusFromManifest, isPinnableKind, nextPinned, pinnableCards, pinnedCards } from './focus';
 export {
   activityFamilyForLens,
   activityFlavorNote,
@@ -168,10 +190,10 @@ export {
 export {
   LIFE_CONTEXT_VERSION,
   LifeContextSchema,
-  classifyBond,
   evaluateLifeContext,
   stringifyLifeContext,
 } from './life-context';
+export { classifyBond } from './life-ties';
 export type { BondKind, LifeContext, LifeSetting, LifeTie } from './life-context';
 export type { ActivityFamily, ActivityTotals, WorkBalance } from './activities';
 export type { ManifestFocus } from './focus';
@@ -189,6 +211,7 @@ export {
   isSocialWindow,
   isSpatialWindow,
   pickKindFromRegistry,
+  previewKind,
 } from './kind-registry';
 export type { CoreManifestKind, KindMatch, KindRule } from './kind-registry';
 export { migrateManifestV0, parseManifest } from './manifest-migration';
@@ -232,6 +255,13 @@ export type { HouseholdRolesTable } from './graduation';
 export { createMemberLife, memberSeed, runAutonomousMember } from './roster';
 export { foldUpEvents, swapEmbodiment } from './roster-fold';
 export { stepSession } from './session-step';
+export {
+  buildChronicle,
+  chronicleDatePhrase,
+  chronicleToText,
+  withArticle,
+  type ChronicleEntry,
+} from './chronicle';
 export type { SessionStepContext, SessionStepResult, SessionStepSummary } from './session-step';
 export { catchUpSession } from './session-catchup';
 export type { SessionCatchUpResult } from './session-catchup';
@@ -266,3 +296,11 @@ export {
 } from './visitors';
 export type { VisitorLike, VisitorStepContext, VisitorTablesView } from './visitors';
 export { EMBODIED_TIER } from './ladder-const';
+export { dominantWindowFamily, resolveEncounter, soughtEncounters } from './encounters';
+export type {
+  EncounterPinNeed,
+  EncounterRecipe,
+  EncounterWindowNeed,
+  ResolvedEncounter,
+  SoughtEncounterRow,
+} from './encounters';

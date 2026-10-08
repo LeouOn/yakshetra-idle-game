@@ -18,7 +18,11 @@ describe('figure-tagged catalog preference (SPEC 16.1)', () => {
     expect(m.kind).toBe('person');
     expect(m.about_id).toBe('figure:avalokiteshvara');
     expect(m.about_name).toBe('Avalokiteśvara (Guanyin)');
-    expect(m.subject).toContain('avalokiteshvara');
+    // The subject is player-facing prose, so it names the figure in words and
+    // never by id. It used to end in "(avalokiteshvara)"; that is the leak the
+    // lead flagged from the browser, and it is gone.
+    expect(m.subject).toContain('hearer of cries');
+    expect(m.subject).not.toContain('avalokiteshvara');
   });
 
   it('matches a figure-bound practice id and names its figure', () => {

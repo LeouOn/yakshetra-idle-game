@@ -15,17 +15,14 @@ import {
 } from './kind-registry';
 import { evaluateLifeActivity } from './activities';
 import type { LifeContext } from './life-context';
+import { composeCard, eraFamilyOf } from './card-composer';
+import { pickCatalogRow, pickRarity, type ManifestRarity } from './manifest-pick';
 // Structurally identical to CatalogMap in ./table-catalog (its local
 // CatalogEntry has the same shape), so the default slots into the param.
 import { CATALOG as DEFAULT_CATALOG } from './manifest-catalog';
 import type { Rng } from './rng';
-import {
-  residueWindowId,
-  summarizeResidue,
-  type ResidueEvent,
-  type ResidueSummary,
-} from './residue';
-import type { CatalogEntry, CatalogMap } from './table-catalog';
+import { residueWindowId, summarizeResidue, type ResidueEvent } from './residue';
+import type { CatalogMap } from './table-catalog';
 
 export const MANIFEST_SCHEMA_VERSION = 'manifest/v1' as const;
 export const MANIFEST_LEGACY_VERSION = 'manifest/v0' as const;
@@ -46,8 +43,11 @@ export type ManifestScale = (typeof SCALE_VALUES)[number];
 export const TABLE_FILL_REVISION = 'table/v0' as const;
 
 export type ManifestKind = CoreManifestKind;
-export type ManifestRarity = 'common' | 'uncommon' | 'rare';
+export type { ManifestRarity };
 export type FillStatus = 'latent' | 'table' | 'model';
+
+/** How long the cook ran. A long fire sets a rarity floor (wave 1, lane B). */
+export type ManifestFire = 'short' | 'long';
 
 export interface ManifestProvenance {
   readonly source: 'table' | 'model';
@@ -107,54 +107,6 @@ export const ManifestSchema = z
   })
   .strict();
 
-function pickRarity(count: number, qualityTier: number, rng: Rng): ManifestRarity {
-  const roll = rng.next();
-  const rareCut = qualityTier >= 1 ? 0.18 : 0.08;
-  const uncommonCut = count >= 6 ? 0.42 : 0.22;
-  if (roll < rareCut) {
-    return 'rare';
-  }
-  if (roll < rareCut + uncommonCut) {
-    return 'uncommon';
-  }
-  return 'common';
-}
-
-function lastSegment(id: string): string {
-  const slash = id.lastIndexOf('/');
-  const colon = id.lastIndexOf(':');
-  const cut = Math.max(slash, colon);
-  return cut >= 0 ? id.slice(cut + 1) : id;
-}
-
-/** A catalog row that names a figure and matches a residue id (SPEC §16.1). */
-interface FigureCandidate {
-  readonly kind: string;
-  readonly entry: CatalogEntry;
-  readonly figureId: string;
-}
-
-/**
- * Rows whose tags reference an id the residue window carries. Only rows
- * tagged `figure:*` are candidates; the visitor table swap (a Proxy with no
- * own keys) yields none, which preserves the swap's replace-not-merge rule.
- */
-function figureCandidates(summary: ResidueSummary, catalog: CatalogMap): FigureCandidate[] {
-  const out: FigureCandidate[] = [];
-  for (const [kind, entries] of Object.entries(catalog)) {
-    for (const entry of entries) {
-      const figureTag = entry.tags.find((t) => t.startsWith('figure:'));
-      if (figureTag === undefined) {
-        continue;
-      }
-      if (entry.tags.some((t) => summary.ids.includes(t))) {
-        out.push({ kind, entry, figureId: figureTag });
-      }
-    }
-  }
-  return out;
-}
-
 /**
  * Compile a residue window into a Manifest using authored tables.
  * Same window + brief + rng stream ⇒ same Manifest.
@@ -171,35 +123,57 @@ export function tableFillManifest(
   scale: ManifestScale = 'person',
   kindRules: readonly KindRule[] = DEFAULT_KIND_RULES,
   catalog: CatalogMap = DEFAULT_CATALOG,
+  archiveDetails: readonly string[] = [],
+  fire: ManifestFire = 'short',
+  rarityFloor?: ManifestRarity,
+  archiveTitles: readonly string[] = [],
+  encounterFigureId?: string,
 ): Manifest {
   const summary = summarizeResidue(window);
-  let kind: string = pickKindFromRegistry(summary, kindRules);
-  const entries = catalog[kind];
+  const predictedKind = pickKindFromRegistry(summary, kindRules);
+  const entries = catalog[predictedKind];
   if (entries === undefined) {
-    throw new Error(`tableFillManifest: no table catalog for kind "${kind}"`);
+    throw new Error(`tableFillManifest: no table catalog for kind "${predictedKind}"`);
   }
-  const candidates = figureCandidates(summary, catalog);
-  let entry: CatalogEntry;
-  let figureAbout: { id: string; name: string } | null = null;
-  if (candidates.length > 0) {
-    const picked = rng.pick(candidates);
-    kind = picked.kind;
-    entry = picked.entry;
-    figureAbout = { id: picked.figureId, name: picked.entry.name };
-  } else {
-    entry = rng.pick(entries);
-  }
-  const rarity = pickRarity(summary.count, qualityTier, rng);
-  const subjectId = summary.ids[0];
-  const subject =
-    focus !== null
-      ? `${entry.subject} — ${focus.name}`
-      : figureAbout !== null
-        ? `${entry.subject} (${lastSegment(figureAbout.id)})`
-        : subjectId === undefined
-          ? entry.subject
-          : `${entry.subject} (${lastSegment(subjectId)})`;
-  const tags = [...entry.tags];
+  // The era decides which ROWS this life may harvest at all, which is a
+  // different question from which phrasings a row uses (the composer handles
+  // that one). Same source for both, so the two can never disagree.
+  const era = eraFamilyOf(lifeContext?.setting.era_id) ?? undefined;
+  const row = pickCatalogRow(
+    predictedKind,
+    entries,
+    summary,
+    catalog,
+    rng,
+    archiveTitles,
+    era,
+    encounterFigureId,
+  );
+  const kind = row.kind;
+  const entry = row.entry;
+  const figureAbout = row.about;
+  // A long fire is the wave-1 upgrade lane's lever: it buys a rarity floor,
+  // and rarity buys text (gated templates and a rare flourish).
+  const floor = rarityFloor ?? (fire === 'long' ? 'uncommon' : undefined);
+  const rarity = pickRarity(summary.count, qualityTier, rng, floor);
+  // The subject is player-facing prose. Residue ids used to be appended here as
+  // a "(tea)" / "(knot)" parenthetical; a raw id segment is not a word, so the
+  // suffix is gone. A card that is about a figure already says so in its name
+  // and one-liner, and a focused card names the pin. Nothing internal leaks.
+  const subject = focus !== null ? `${entry.subject} — ${focus.name}` : entry.subject;
+  const card = composeCard(entry, {
+    summary,
+    lifeContext,
+    focus,
+    brief,
+    rarity,
+    qualityTier,
+    fire,
+    usedDetails: archiveDetails,
+    usedTitles: archiveTitles,
+    rng,
+  });
+  const tags = [...entry.tags, ...card.tags];
   if (brief !== null && brief.trim().length > 0) {
     tags.push('briefed');
   }
@@ -213,16 +187,6 @@ export function tableFillManifest(
   if (activityEval.tag !== null) {
     tags.push(activityEval.tag);
   }
-  const briefNote =
-    brief !== null && brief.trim().length > 0 ? ` You asked for: ${brief.trim()}.` : '';
-  const focusNote = focus !== null ? ` This working is about ${focus.name}.` : '';
-  const settingNote =
-    lifeContext === null
-      ? ''
-      : ` It is year ${lifeContext.setting.year} in ${lifeContext.setting.era_id}.`;
-  const tieNote =
-    lifeContext?.strongest_tie != null ? ` Closest tie: ${lifeContext.strongest_tie}.` : '';
-  const qualityNote = qualityTier >= 1 ? ' The work went long enough to leave a second mark.' : '';
   const manifest: Manifest = {
     schema_version: MANIFEST_SCHEMA_VERSION,
     id,
@@ -231,10 +195,10 @@ export function tableFillManifest(
     residue_window_id: residueWindowId(window),
     kind,
     scale,
-    name: entry.name,
-    one_liner: entry.one_liner,
+    name: card.name,
+    one_liner: card.one_liner,
     subject,
-    detail: `${entry.detail}${briefNote}${focusNote}${settingNote}${tieNote}${activityEval.note}${qualityNote}`,
+    detail: card.detail,
     tags,
     rarity,
     fill_status: 'table',

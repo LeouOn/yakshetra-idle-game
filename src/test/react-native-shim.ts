@@ -43,6 +43,9 @@ export const Pressable = host('Pressable');
 export const TouchableOpacity = host('TouchableOpacity');
 export const ScrollView = host('ScrollView');
 export const TextInput = host('TextInput');
+
+/** Desktop default: wide enough that the studio rail renders its side column. */
+export const useWindowDimensions = () => ({ width: 1024, height: 768, scale: 2, fontScale: 1 });
 export const SafeAreaView = host('SafeAreaView');
 export const KeyboardAvoidingView = host('KeyboardAvoidingView');
 export const Modal = host('Modal');

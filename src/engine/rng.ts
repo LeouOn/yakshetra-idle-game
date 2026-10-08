@@ -43,14 +43,65 @@ function swap<T>(arr: T[], i: number, j: number): void {
   arr[j] = a;
 }
 
+const MASK_64 = 0xffffffffffffffffn;
+const GOLDEN_GAMMA = 0x9e3779b97f4a7c15n;
+const MIX_A = 0xbf58476d1ce4e5b9n;
+const MIX_B = 0x94d049bb133111ebn;
+
+/** SplitMix64's output mixer: a bijection on 64 bits. */
+function mix64(value: bigint): bigint {
+  let z = value & MASK_64;
+  z = ((z ^ (z >> 30n)) * MIX_A) & MASK_64;
+  z = ((z ^ (z >> 27n)) * MIX_B) & MASK_64;
+  return (z ^ (z >> 31n)) & MASK_64;
+}
+
+/**
+ * Expands a seed of any width into 128 well-mixed bits.
+ *
+ * The raw big-endian decomposition in `./rng-impl.ts` is faithful to Vigna and
+ * is what the known-answer tests pin — so it stays untouched. But a seed below
+ * 2^32 only populates the LOW state word, and xoshiro128**'s first output is
+ * `rotl(s[1] * 5, 7) * 9`: it depends on `state[1]` alone. Every such seed
+ * therefore yielded a first output of exactly 0, and the first draw of every
+ * session picked the same table row. The engine's own seeds are all small
+ * (`0x5eedn` for the bench, FNV-32 hashes for roster members), so this was not
+ * a theoretical edge.
+ *
+ * Two independent mixers, each seeded from BOTH halves of the input, fix it:
+ * a difference anywhere in the seed changes the whole state.
+ *
+ * The high word is NOT `mix64(lo ^ hi)`. That expression is 0 whenever the two
+ * halves are equal, which is seed 0n and every seed of the form
+ * `(X << 64n) | X`; and `mix64(0n) === 0n`, so those seeds all left state[1]
+ * at 0 and produced a first draw of exactly 0. A nonce term is added to the
+ * high word's input, which makes the map injective AND puts every seed of that
+ * class in a different place. Distinct seeds stay distinct, so determinism and
+ * the injectivity argument above both hold.
+ */
+function expandSeed(seed: bigint): bigint {
+  if (seed < 0n) {
+    throw new RangeError('rng: seed must be a non-negative bigint');
+  }
+  const lo = seed & MASK_64;
+  const hi = (seed >> 64n) & MASK_64;
+  // SEED_NONCE separates the two mixers' inputs. Without it, `lo ^ hi` is 0 for
+  // every seed whose halves agree, and mix64(0) is 0, so the high state word
+  // was 0 for that whole class and xoshiro's first draw was 0 for it too.
+  const SEED_NONCE = 0x9e3779b97f4a7c15n;
+  return (mix64(lo ^ (hi + SEED_NONCE)) << 64n) | mix64((lo + GOLDEN_GAMMA) ^ (hi + MIX_A));
+}
+
 /**
  * Creates a deterministic RNG from a bigint seed.
  *
- * The seed is decomposed big-endian into four uint32 state words; see
- * `./rng-impl.ts`. The same seed always yields an identical output sequence.
+ * The seed is first expanded across all four state words by
+ * {@link expandSeed} — see its comment for why raw decomposition is not enough
+ * — and the core then decomposes the expanded 128-bit value big-endian. The
+ * same seed always yields an identical output sequence.
  */
 export function createRng(seed: bigint): Rng {
-  const core = createXoshiro128StarStar(seed);
+  const core = createXoshiro128StarStar(expandSeed(seed));
   const nextUint32 = (): number => core.nextUint32();
 
   const next = (): number => nextUint32() * INV_TWO_POW_32;

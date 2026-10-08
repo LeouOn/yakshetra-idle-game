@@ -66,6 +66,32 @@ describe('fill adapter', () => {
     expect(req.summary.count).toBe(MIN_RESIDUE_TO_DEVELOP);
   });
 
+  it('carries the lane B fire choice on the request; omits it when unset', () => {
+    const studio = readyStudio();
+    const bay = studio.bay;
+    if (bay === null) {
+      throw new Error('expected bay');
+    }
+    expect(compileRequestFromBay(bay, 0, 0).fire).toBe('short');
+    const { fire: _omit, ...bareBay } = bay;
+    void _omit;
+    const bare = compileRequestFromBay(bareBay, 0, 0);
+    expect('fire' in bare).toBe(false);
+    const long = compileRequestFromBay({ ...bareBay, fire: 'long' }, 0, 0);
+    expect(long.fire).toBe('long');
+  });
+
+  it('carries the archive titles for the composer name-dedup guard', () => {
+    const studio = readyStudio();
+    const bay = studio.bay;
+    if (bay === null) {
+      throw new Error('expected bay');
+    }
+    const req = compileRequestFromBay(bay, 0, 1, null, 'person', undefined, ['d1'], ['Name one']);
+    expect(req.archive_details).toEqual(['d1']);
+    expect(req.archive_titles).toEqual(['Name one']);
+  });
+
   it('falls back to tables when a filler returns garbage', () => {
     const studio = readyStudio();
     const bay = studio.bay;

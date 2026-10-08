@@ -6,14 +6,21 @@ import {
   fillManifestSafe,
   tableFiller,
   tableFillerWithCatalog,
+  type CookFire,
   type ManifestFiller,
 } from './fill-adapter';
+import {
+  EMPTY_COOK_CHOICES,
+  MIN_RESIDUE_TO_DEVELOP,
+  spendableResidue,
+  type CookChoices,
+} from './cook-window';
 import type { LifeContext } from './life-context';
 import { nextPinned, type ManifestFocus } from './focus';
 import type { Manifest } from './manifest';
 import type { PlayImportCursor } from './play-cursor';
 import type { Rng } from './rng';
-import { residueWindowId, windowSince, type ResidueEvent } from './residue';
+import type { ResidueEvent } from './residue';
 import type { CatalogEntry } from './table-catalog';
 
 // Back-compat re-exports of the BD6 splits (play-cursor, practice-progress);
@@ -21,8 +28,17 @@ import type { CatalogEntry } from './table-catalog';
 export { importPlayResidue, type PlayImportCursor } from './play-cursor';
 export { applyPracticeProgress } from './practice-progress';
 
-/** Minimum window size before a develop job can start. */
-export const MIN_RESIDUE_TO_DEVELOP = 3;
+// Cook-window planning (lane B) lives in its own module; the public surface
+// stays reachable from here for existing importers.
+export {
+  LONG_FIRE_EXTRA_TICKS,
+  MIN_RESIDUE_TO_DEVELOP,
+  heldPending,
+  maxHoldBack,
+  pendingResidue,
+  queueDevelop,
+  spendableResidue,
+} from './cook-window';
 
 /** Harvests required before the first quality upgrade. */
 export const QUALITY_UPGRADE_HARVESTS = 3;
@@ -43,6 +59,11 @@ export interface DevelopOperation {
   readonly status: OperationStatus;
   readonly rng_seed: string;
   readonly focus: ManifestFocus | null;
+  /** Cook length chosen at queue time (lane B). Schema-defaulted to 'short'
+   * so bays saved before the field existed still parse. */
+  readonly fire: CookFire;
+  /** Sought-encounter figure id (wave 3): the resolved recipe's figure id. */
+  readonly encounter_figure_id?: string | undefined;
 }
 
 export interface StudioState {
@@ -56,6 +77,11 @@ export interface StudioState {
   readonly pinned: ManifestFocus | null;
   /** Extra cook ticks from tending after the charge bar is already full. */
   readonly surplus: number;
+  /** Residue indices held out of the last cook (lane B hold-back). Events at
+   * these positions stay pending until a later cook spends them. */
+  readonly held_residue: readonly number[];
+  /** Queue-time choice counters for the wave-1 instrumented bar. */
+  readonly cook_choices: CookChoices;
 }
 
 export function createStudioState(): StudioState {
@@ -69,6 +95,8 @@ export function createStudioState(): StudioState {
     play_import: null,
     pinned: null,
     surplus: 0,
+    held_residue: [],
+    cook_choices: EMPTY_COOK_CHOICES,
   };
 }
 
@@ -76,13 +104,11 @@ export function pinFocus(studio: StudioState, card: Manifest): StudioState {
   return { ...studio, pinned: nextPinned(studio.pinned, card) };
 }
 
-/** Residue collected since the last successful queue. */
-export function pendingResidue(studio: StudioState): readonly ResidueEvent[] {
-  return windowSince(studio.residue, studio.last_harvest_index);
-}
+/** The spendable window (pending minus held) is what the queue gate reads.
+ * `pendingResidue` itself is imported from cook-window and re-exported. */
 
 export function canQueueDevelop(studio: StudioState): boolean {
-  return studio.bay === null && pendingResidue(studio).length >= MIN_RESIDUE_TO_DEVELOP;
+  return studio.bay === null && spendableResidue(studio).length >= MIN_RESIDUE_TO_DEVELOP;
 }
 
 export function canHarvest(studio: StudioState): boolean {
@@ -107,13 +133,6 @@ export function recordStudioResidues(
   return { ...studio, residue: [...studio.residue, ...events] };
 }
 
-function cookTicksFor(windowLength: number): number {
-  const extra = windowLength < 8 ? windowLength : 8;
-  return 4 + extra;
-}
-
-const MIN_COOK_TICKS = 2;
-
 /** Overflow tend time becomes faster cooking, never discarded. */
 export function absorbSurplus(studio: StudioState, extraTicks: number): StudioState {
   if (extraTicks <= 0) {
@@ -123,50 +142,6 @@ export function absorbSurplus(studio: StudioState, extraTicks: number): StudioSt
     return tickStudio(studio, extraTicks);
   }
   return { ...studio, surplus: studio.surplus + extraTicks };
-}
-
-/**
- * Snapshot the pending window into the single bay — the window is spent even
- * if harvest fails; charge must be earned again. cookTicksDiscount shortens
- * the cook (floored at MIN_COOK_TICKS); minResidue lowers the queue gate
- * (floored at 1, so no modifier can ever queue an empty window).
- */
-export function queueDevelop(
-  studio: StudioState,
-  brief: string | null,
-  rng: Rng,
-  opts?: { readonly cookTicksDiscount?: number; readonly minResidue?: number },
-): StudioState {
-  const window = pendingResidue(studio);
-  const gate = Math.max(1, opts?.minResidue ?? MIN_RESIDUE_TO_DEVELOP);
-  if (studio.bay !== null || window.length < gate) {
-    return studio;
-  }
-  const seed = rng.nextInt(1, 0x7fffffff);
-  const id = `op-${studio.archive.length}-${seed}`;
-  const baseCook = Math.max(
-    MIN_COOK_TICKS,
-    cookTicksFor(window.length) - (opts?.cookTicksDiscount ?? 0),
-  );
-  const used = Math.min(studio.surplus, Math.max(0, baseCook - MIN_COOK_TICKS));
-  const bay: DevelopOperation = {
-    id,
-    type: 'develop_from_residue',
-    residue_window_id: residueWindowId(window),
-    residue: window,
-    brief,
-    cook_ticks_total: baseCook - used,
-    cook_ticks_done: 0,
-    status: 'cooking',
-    rng_seed: String(seed),
-    focus: studio.pinned,
-  };
-  return {
-    ...studio,
-    bay,
-    last_harvest_index: studio.residue.length - 1,
-    surplus: studio.surplus - used,
-  };
 }
 
 /** Advance the bay by `ticks`. No-op when the bay is empty or already ready. */
@@ -198,16 +173,26 @@ export function harvestWithFiller(
   rng: Rng,
   filler: ManifestFiller = tableFiller(),
   lifeContext: LifeContext | null = null,
+  opts?: { readonly encounterFigureId?: string },
 ): HarvestResult | null {
   const bay = studio.bay;
   if (bay === null || bay.status !== 'ready') {
     return null;
   }
   const request = compileRequestFromBay(
-    bay,
+    opts?.encounterFigureId === undefined
+      ? bay
+      : { ...bay, encounter_figure_id: opts.encounterFigureId },
     studio.quality_tier,
     studio.harvest_count,
     lifeContext,
+    'person',
+    undefined,
+    // Lane A contract: the composer's dedup guards read details AND titles
+    // already in the archive so a repeat window prefers an unread variant
+    // and does not repeat a card's name while an alternative exists.
+    studio.archive.map((card) => card.detail),
+    studio.archive.map((card) => card.name),
   );
   const manifest = fillManifestSafe(request, rng, filler);
   const next: StudioState = {
@@ -227,11 +212,18 @@ export function harvestTableFill(
   rng: Rng,
   lifeContext: LifeContext | null = null,
   visitorTableEntries: readonly CatalogEntry[] | null = null,
+  opts?: { readonly encounterFigureId?: string },
 ): HarvestResult | null {
   if (visitorTableEntries === null) {
-    return harvestWithFiller(studio, rng, tableFiller(), lifeContext);
+    return harvestWithFiller(studio, rng, tableFiller(), lifeContext, opts);
   }
-  return harvestWithFiller(studio, rng, tableFillerWithCatalog(visitorTableEntries), lifeContext);
+  return harvestWithFiller(
+    studio,
+    rng,
+    tableFillerWithCatalog(visitorTableEntries),
+    lifeContext,
+    opts,
+  );
 }
 
 export function upgradeQuality(studio: StudioState): StudioState {

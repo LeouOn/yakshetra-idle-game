@@ -6,7 +6,7 @@
 // (src/content/progression) may pass a longer list with higher-scale kinds.
 // Pure: no Date, no Math.random, no platform APIs.
 
-import type { ResidueEventType, ResidueSummary } from './residue';
+import { ENGAGEMENT_PREFIX, type ResidueEventType, type ResidueSummary } from './residue';
 
 /** The five SPEC §6 core kinds. New kinds arrive via registry rows. */
 export type CoreManifestKind = 'thing' | 'outcome' | 'change' | 'person' | 'place';
@@ -29,11 +29,15 @@ export interface KindRule {
   readonly match: KindMatch;
 }
 
-/** "Social" = ≥2 distinct ids + an engagement marker (SPEC §6). */
+/** "Social" = ≥2 distinct ids + an engagement marker (SPEC §6). Markers:
+ * a chosen lens, a resolved campaign event, or the wave-1b engagement id a
+ * social-family practice (generosity, beings) stamps on its own tick. */
 export function isSocialWindow(summary: ResidueSummary): boolean {
   return (
     summary.ids.length >= 2 &&
-    (summary.typeCounts.lens_chosen > 0 || summary.typeCounts.event_resolved > 0)
+    (summary.typeCounts.lens_chosen > 0 ||
+      summary.typeCounts.event_resolved > 0 ||
+      summary.ids.some((id) => id.startsWith(ENGAGEMENT_PREFIX)))
   );
 }
 
@@ -74,12 +78,27 @@ export function pickKindFromRegistry<K extends string>(
   summary: ResidueSummary,
   rules: readonly { readonly kind: K; readonly match: KindMatch }[],
 ): K {
+  const kind = previewKind(summary, rules);
+  if (kind === null) {
+    throw new Error('pickKindFromRegistry: no rule matched the residue summary');
+  }
+  return kind;
+}
+
+/** Total first-match kind pick: the same order as pickKindFromRegistry,
+ * but a matchless summary returns null instead of throwing. The cook panel
+ * previews the kind of a window the player is still shaping — a preview
+ * must never throw. */
+export function previewKind<K extends string>(
+  summary: ResidueSummary,
+  rules: readonly { readonly kind: K; readonly match: KindMatch }[],
+): K | null {
   for (const rule of rules) {
     if (matchHolds(rule.match, summary)) {
       return rule.kind;
     }
   }
-  throw new Error('pickKindFromRegistry: no rule matched the residue summary');
+  return null;
 }
 
 /**

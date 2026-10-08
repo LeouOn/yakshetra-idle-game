@@ -4,7 +4,12 @@
 
 import type { ManifestFocus } from './focus';
 import type { LifeContext } from './life-context';
-import { tableFillManifest, type Manifest, type ManifestScale } from './manifest';
+import {
+  tableFillManifest,
+  type Manifest,
+  type ManifestFire,
+  type ManifestScale,
+} from './manifest';
 import { parseManifest } from './manifest-migration';
 import { pickKindFromRegistry, type KindRule } from './kind-registry';
 import {
@@ -23,7 +28,19 @@ export interface CompileBayInput {
   readonly brief: string | null;
   readonly rng_seed: string;
   readonly focus?: ManifestFocus | null;
+  /** Cook length chosen at the bench (lane B). Absent = short fire. */
+  readonly fire?: CookFire;
+  /** Sought-encounter figure (wave 3): the resolved recipe's figure id.
+   * When set, the fill prefers that figure's catalog row. */
+  readonly encounter_figure_id?: string | undefined;
 }
+
+/** Cook length for a develop job. `short` is the classic cook. `long` costs
+ * more ticks (operations.ts) and instructs fillers to raise the rarity floor
+ * and give a matching figure row first call — the filler contract for the
+ * shared A+B seam (docs/design/00-direction.md). Alias of `ManifestFire`
+ * (manifest.ts owns the union; both names are the same type). */
+export type CookFire = ManifestFire;
 
 export const MANIFEST_COMPILE_VERSION = 'manifest_compile/v1' as const;
 
@@ -43,6 +60,20 @@ export interface ManifestCompileRequest {
   /** The kind the engine's registry rules pick for this window. Present only
    * when the caller supplied rules; the model prompt pins it. */
   readonly compiled_kind?: string;
+  /** Cook length (lane B). Absent = short fire (classic behavior). A filler
+   * that understands it treats `long` as: rarity floor uncommon, a catalog
+   * figure row whose tag matches a window id gets first call. */
+  readonly fire?: CookFire;
+  /** Sought-encounter figure id (wave 3): the table fill prefers this
+   * figure's row deterministically — the summons the player aimed. */
+  readonly encounter_figure_id?: string | undefined;
+  /**
+   * `detail` strings already in the archive. Additive (lane A): the table
+   * composer uses them to avoid writing a card the player already holds. A
+   * caller that omits this simply loses the dedup guard, never a card.
+   */
+  readonly archive_details?: readonly string[];
+  readonly archive_titles?: readonly string[];
 }
 
 export interface ManifestFiller {
@@ -57,6 +88,8 @@ export function compileRequestFromBay(
   lifeContext: LifeContext | null = null,
   scale: ManifestScale = 'person',
   kindRules?: readonly KindRule[],
+  archiveDetails: readonly string[] = [],
+  archiveTitles: readonly string[] = [],
 ): ManifestCompileRequest {
   const summary = summarizeResidue(bay.residue);
   return {
@@ -71,8 +104,23 @@ export function compileRequestFromBay(
     scale,
     focus: bay.focus ?? null,
     life_context: lifeContext,
+    archive_details: archiveDetails,
+    archive_titles: archiveTitles,
+    ...(bay.fire === undefined ? {} : { fire: bay.fire }),
+    ...(bay.encounter_figure_id === undefined
+      ? {}
+      : { encounter_figure_id: bay.encounter_figure_id }),
     ...(kindRules === undefined ? {} : { compiled_kind: pickKindFromRegistry(summary, kindRules) }),
   };
+}
+
+/**
+ * How long the cook ran, read off the request. `fire` is lane B's field
+ * (fill-adapter.ts); absent means a short cook, which is the classic
+ * behavior, so an old caller or an old save needs no migration.
+ */
+export function fireOf(request: ManifestCompileRequest): CookFire {
+  return request.fire === 'long' ? 'long' : 'short';
 }
 
 export function tableFiller(): ManifestFiller {
@@ -89,6 +137,13 @@ export function tableFiller(): ManifestFiller {
         request.focus,
         request.life_context,
         request.scale,
+        undefined,
+        undefined,
+        request.archive_details ?? [],
+        fireOf(request),
+        undefined,
+        request.archive_titles ?? [],
+        request.encounter_figure_id,
       );
     },
   };
@@ -119,6 +174,11 @@ export function tableFillerWithCatalog(entries: readonly CatalogEntry[]): Manife
         request.scale,
         undefined,
         override,
+        request.archive_details ?? [],
+        fireOf(request),
+        undefined,
+        request.archive_titles ?? [],
+        request.encounter_figure_id,
       );
     },
   };
@@ -160,6 +220,12 @@ export function fillManifestSafe(
       request.focus,
       request.life_context,
       request.scale,
+      undefined,
+      undefined,
+      request.archive_details ?? [],
+      fireOf(request),
+      undefined,
+      request.archive_titles ?? [],
     );
   }
 }

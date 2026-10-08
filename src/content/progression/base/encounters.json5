@@ -1,0 +1,133 @@
+// Sought-encounter recipes (wave 3, engine half).
+//
+// A recipe names a figure card that exists in NO generic reach: the player
+// pins one or two cards and cooks a window of a particular kind of work, and
+// the named figure arrives. Recipes are DATA, era-neutral by construction —
+// window needs key on activity families (work, generosity, beings, learning,
+// meditation) and card kinds/tags, never on pack practice ids, so the same
+// recipe answers in Chang'an and in the Garden. Figures act; they do not
+// preach or grade (SPEC §3, §10.11); this adds REACHABILITY for authored
+// rows, not new rows (SPEC §10.15).
+{
+  encounters: [
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/shakyamuni-witness',
+      figure_id: 'figure:shakyamuni',
+      needs: {
+        pinned: [{ kind: 'person' }],
+        window: { family: 'learning', kind: 'outcome', min_count: 5 },
+      },
+      hint_sid: 'encounter.shakyamuni.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/vairocana-every-rafter',
+      figure_id: 'figure:vairocana',
+      needs: {
+        pinned: [
+          { kind: 'person' },
+          { kind: 'place' },
+        ],
+        window: { family: 'work', min_count: 6 },
+      },
+      hint_sid: 'encounter.vairocana.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/maitreya-waiting-room',
+      figure_id: 'figure:maitreya',
+      needs: {
+        pinned: [{ kind: 'place' }],
+        window: { family: 'meditation', min_count: 5 },
+      },
+      hint_sid: 'encounter.maitreya.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/manjushri-knot',
+      figure_id: 'figure:manjushri',
+      needs: {
+        pinned: [{ kind: 'person' }],
+        window: { family: 'learning', kind: 'thing', min_count: 4 },
+      },
+      hint_sid: 'encounter.manjushri.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/samantabhadra-ditch',
+      figure_id: 'figure:samantabhadra',
+      needs: {
+        pinned: [{ kind: 'place' }],
+        window: { family: 'work', kind: 'thing', min_count: 6 },
+      },
+      hint_sid: 'encounter.samantabhadra.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/ksitigarbha-stair',
+      figure_id: 'figure:ksitigarbha',
+      needs: {
+        pinned: [{ kind: 'person' }],
+        window: { family: 'beings', min_count: 5 },
+      },
+      hint_sid: 'encounter.ksitigarbha.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/mahasthamaprapta-stride',
+      figure_id: 'figure:mahasthamaprapta',
+      needs: {
+        pinned: [
+          { kind: 'person' },
+          { kind: 'place' },
+        ],
+        window: { family: 'work', kind: 'outcome', min_count: 4 },
+      },
+      hint_sid: 'encounter.mahasthamaprapta.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/nagarjuna-rafters',
+      figure_id: 'figure:nagarjuna',
+      needs: {
+        pinned: [{ kind: 'person' }],
+        window: { family: 'learning', kind: 'person', min_count: 4 },
+      },
+      hint_sid: 'encounter.nagarjuna.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/bodhidharma-rock',
+      figure_id: 'figure:bodhidharma',
+      needs: {
+        pinned: [{ kind: 'place' }],
+        window: { family: 'meditation', kind: 'thing', min_count: 6 },
+      },
+      hint_sid: 'encounter.bodhidharma.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/wutai-terrace',
+      figure_id: 'figure:manjushri',
+      needs: {
+        pinned: [
+          { kind: 'place' },
+          { kind: 'person' },
+        ],
+        window: { family: 'meditation', kind: 'place', min_count: 5 },
+      },
+      hint_sid: 'encounter.wutai.hint_sid',
+    },
+    {
+      schema_version: 'encounter/v0',
+      id: 'encounter/ksitigarbha-mountain',
+      figure_id: 'figure:ksitigarbha',
+      needs: {
+        pinned: [{ kind: 'place' }],
+        window: { family: 'beings', kind: 'place', min_count: 6 },
+      },
+      hint_sid: 'encounter.ksitigarbha_mountain.hint_sid',
+    },
+  ],
+}

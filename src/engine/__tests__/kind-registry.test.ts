@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_KIND_RULES, pickKindFromRegistry, type KindRule } from '@/engine/kind-registry';
+import {
+  DEFAULT_KIND_RULES,
+  pickKindFromRegistry,
+  previewKind,
+  type KindRule,
+} from '@/engine/kind-registry';
 import { summarizeResidue, type ResidueEvent, type ResidueEventType } from '@/engine/residue';
 
 function event(tick: number, type: ResidueEventType, ids: readonly string[]): ResidueEvent {
@@ -67,5 +72,30 @@ describe('pickKindFromRegistry', () => {
   it('throws when no rule matches', () => {
     const empty: readonly KindRule[] = [];
     expect(() => pickKindFromRegistry(summarizeResidue([]), empty)).toThrow('no rule matched');
+  });
+});
+
+describe('previewKind (lane B cook preview)', () => {
+  it('agrees with pickKindFromRegistry on every default-rule window shape', () => {
+    const windows = [
+      [event(1, 'practice_level', ['p:zazen'])],
+      [event(1, 'event_resolved', ['choice:x'])],
+      [event(1, 'lens_chosen', ['lens:beings']), event(2, 'practice_tick', ['p:a', 'being:g'])],
+      [event(1, 'practice_tick', ['p:a']), event(2, 'practice_tick', ['p:b'])],
+      [event(1, 'practice_tick', ['p:a'])],
+      [event(1, 'life_ended', ['chain:1'])],
+      [event(1, 'resource_edge', ['copper'])],
+    ];
+    for (const window of windows) {
+      const summary = summarizeResidue(window);
+      expect(previewKind(summary, DEFAULT_KIND_RULES)).toBe(
+        pickKindFromRegistry(summary, DEFAULT_KIND_RULES),
+      );
+    }
+  });
+
+  it('returns null instead of throwing when no rule matches', () => {
+    const empty: readonly KindRule[] = [];
+    expect(previewKind(summarizeResidue([]), empty)).toBeNull();
   });
 });

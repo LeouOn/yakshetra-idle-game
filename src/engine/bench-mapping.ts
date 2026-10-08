@@ -25,6 +25,8 @@ export function emptyBench(): BenchState {
     play_import: null,
     pinned: null,
     surplus: 0,
+    held_residue: [],
+    cook_choices: { long: 0, holdback: 0 },
     fold_position: 0,
   };
 }
@@ -43,6 +45,8 @@ export function benchToStudio(bench: BenchState, archive: readonly Manifest[]): 
     play_import: bench.play_import,
     pinned: bench.pinned,
     surplus: bench.surplus,
+    held_residue: bench.held_residue,
+    cook_choices: bench.cook_choices,
   };
 }
 
@@ -56,6 +60,32 @@ function schemaEvents(log: readonly ResidueEvent[]): BenchState['residue'] {
   }));
 }
 
+/** Runtime focus (readonly arrays) → the schema's mutable pinned shape. */
+function pinnedToSchema(focus: StudioState['pinned']): BenchState['pinned'] {
+  if (focus === null) {
+    return null;
+  }
+  const second = focus.second;
+  return {
+    id: focus.id,
+    name: focus.name,
+    kind: focus.kind,
+    one_liner: focus.one_liner,
+    ...(focus.tags === undefined ? {} : { tags: [...focus.tags] }),
+    ...(second === undefined
+      ? {}
+      : {
+          second: {
+            id: second.id,
+            name: second.name,
+            kind: second.kind,
+            one_liner: second.one_liner,
+            ...(second.tags === undefined ? {} : { tags: [...second.tags] }),
+          },
+        }),
+  };
+}
+
 /** Runtime StudioState → storage bench slice. The archive is NOT stored on
  * the bench. Residue logs and the queued bay window are copied into mutable
  * schema shape; use benchAfterStep on the step path instead, where the
@@ -65,12 +95,21 @@ export function studioToBench(studio: StudioState, foldPosition = 0): BenchState
   return {
     residue: schemaEvents(studio.residue),
     last_harvest_index: studio.last_harvest_index,
-    bay: studio.bay === null ? null : { ...studio.bay, residue: schemaEvents(studio.bay.residue) },
+    bay:
+      studio.bay === null
+        ? null
+        : {
+            ...studio.bay,
+            residue: schemaEvents(studio.bay.residue),
+            focus: pinnedToSchema(studio.bay.focus),
+          },
     quality_tier: studio.quality_tier,
     harvest_count: studio.harvest_count,
     play_import: studio.play_import,
-    pinned: studio.pinned,
+    pinned: pinnedToSchema(studio.pinned),
     surplus: studio.surplus,
+    held_residue: [...studio.held_residue],
+    cook_choices: { ...studio.cook_choices },
     fold_position: foldPosition,
   };
 }
@@ -96,7 +135,11 @@ function bayAfterStep(studio: StudioState, prevBay: BenchState['bay']): BenchSta
     return null;
   }
   if (prevBay === null) {
-    return { ...studio.bay, residue: schemaEvents(studio.bay.residue) };
+    return {
+      ...studio.bay,
+      residue: schemaEvents(studio.bay.residue),
+      focus: pinnedToSchema(studio.bay.focus),
+    };
   }
   return { ...prevBay, cook_ticks_done: studio.bay.cook_ticks_done, status: studio.bay.status };
 }
@@ -117,8 +160,10 @@ export function benchAfterStep(studio: StudioState, prev: BenchState): BenchStat
     quality_tier: studio.quality_tier,
     harvest_count: studio.harvest_count,
     play_import: studio.play_import,
-    pinned: studio.pinned,
+    pinned: pinnedToSchema(studio.pinned),
     surplus: studio.surplus,
+    held_residue: [...studio.held_residue],
+    cook_choices: { ...studio.cook_choices },
     fold_position: prev.fold_position,
   };
 }

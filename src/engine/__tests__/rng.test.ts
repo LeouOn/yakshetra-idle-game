@@ -42,12 +42,66 @@ describe('xoshiro128** known-answer (Vigna reference)', () => {
     expect(got).toEqual([...EXPECTED_UINT32]);
   });
 
-  it('createRng.next() equals nextUint32() / 2^32 (links API to core)', () => {
+  /**
+   * `createRng` expands the seed before handing it to the core (see
+   * `expandSeed` in `../rng.ts`), so it is deliberately NOT the same stream as
+   * `createXoshiro128StarStar(REFERENCE_SEED)`. This test used to assert the
+   * two were identical; that assertion encoded the old raw-decomposition
+   * contract, which is exactly what the seed expansion replaced. The core stays
+   * pinned by the two reference-vector tests above.
+   */
+  it('createRng expands the seed, so it differs from the raw core stream', () => {
     const api = createRng(REFERENCE_SEED);
     const core = createXoshiro128StarStar(REFERENCE_SEED);
-    for (let i = 0; i < 100; i++) {
-      expect(api.next()).toBe(core.nextUint32() / 0x100000000);
+    const apiDraws = Array.from({ length: 100 }, () => api.next());
+    const coreDraws = Array.from({ length: 100 }, () => core.nextUint32() / 0x100000000);
+    expect(apiDraws).not.toEqual(coreDraws);
+    // Both remain valid uniform streams in [0, 1).
+    for (const v of apiDraws) expect(v).toBeGreaterThanOrEqual(0);
+    for (const v of apiDraws) expect(v).toBeLessThan(1);
+  });
+});
+
+describe('small-seed expansion (first-draw regression)', () => {
+  /**
+   * Regression: with raw big-endian decomposition, any seed below 2^32 fills
+   * only the low state word, and xoshiro128**'s first output is a function of
+   * `state[1]` alone. Every small seed therefore produced a first output of
+   * exactly 0, so the first table pick of every session was row 0.
+   */
+  const SMALL_SEEDS = [1n, 2n, 42n, 0x5eedn, 0x3039n, 0xabcdefn, 0xffffffffn, 0x100000000n];
+
+  it('the first 8 draws of a small seed are not all near zero', () => {
+    for (const seed of SMALL_SEEDS) {
+      const rng = createRng(seed);
+      const first = rng.next();
+      const next8 = Array.from({ length: 7 }, () => rng.next());
+      const all = [first, ...next8];
+      // A degenerate stream leaves the first 8 draws pinned near 0; require a
+      // spread out of the low end instead.
+      expect(Math.max(...all)).toBeGreaterThan(0.1);
     }
+  });
+
+  it('the first nextInt(0, 6) is not constant across small seeds', () => {
+    const picks = SMALL_SEEDS.map((seed) => createRng(seed).nextInt(0, 6));
+    expect(new Set(picks).size).toBeGreaterThan(1);
+  });
+
+  it('a low seed no longer reproduces the old all-zero first output', () => {
+    // The exact failure mode: seed 0x5eedn used to yield next() === 0.
+    expect(createRng(0x5eedn).next()).not.toBe(0);
+  });
+
+  it('expansion stays deterministic (same seed, same expanded stream)', () => {
+    const a = createRng(0x5eedn);
+    const b = createRng(0x5eedn);
+    for (let i = 0; i < 500; i++) expect(a.next()).toBe(b.next());
+  });
+
+  it('distinct seeds do not collide after expansion', () => {
+    const seen = new Set(SMALL_SEEDS.map((seed) => createRng(seed).next()));
+    expect(seen.size).toBe(SMALL_SEEDS.length);
   });
 });
 
@@ -55,8 +109,8 @@ describe('rng determinism (fast-check properties)', () => {
   it('same seed produces identical 1000-output next() sequences', () => {
     fc.assert(
       fc.property(fc.bigInt({ min: 0n, max: 2n ** 128n - 1n }), (seed) => {
-        // seed 0 maps to an all-zero state, which is rejected by contract.
-        fc.pre(seed !== 0n);
+        // seed 0 is a valid seed: expansion gives it a non-zero state, so the
+        // old all-zero-state exclusion no longer applies.
         const a = createRng(seed);
         const b = createRng(seed);
         for (let i = 0; i < 1000; i++) {
@@ -185,8 +239,14 @@ describe('createRng rejects invalid seeds', () => {
     expect(() => createRng(-1n)).toThrow(RangeError);
   });
 
-  it('throws RangeError for an all-zero state (seed 0)', () => {
-    expect(() => createRng(0n)).toThrow(RangeError);
+  it('accepts seed 0 (expansion gives it a non-zero state)', () => {
+    // Previously seed 0 decomposed to an all-zero state and was rejected. That
+    // rejection was an artifact of raw decomposition, not a product rule.
+    expect(() => createRng(0n)).not.toThrow();
+  });
+
+  it('the raw core still rejects an all-zero state (Vigna contract, unchanged)', () => {
+    expect(() => createXoshiro128StarStar(0n)).toThrow(RangeError);
   });
 });
 

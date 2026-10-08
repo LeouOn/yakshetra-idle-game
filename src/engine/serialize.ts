@@ -19,12 +19,19 @@
 // layer: a blob is canonicalized, hashed, and the hash is carried alongside the
 // payload so a corrupted or hand-edited save is detectable on load (todo 10's
 // persistence adapter performs the archival fallback on mismatch).
-
-import { createHash } from 'node:crypto';
+//
+// The digest lives in `./sha256`: a pure-TypeScript SHA-256 with no platform
+// dependency, byte-identical to the `createHash('sha256')` this used to call.
+// The web bundle has no `createHash`, so every web life save threw and the slot
+// was never written — while every test stayed green, because they run in Node.
+// See `./sha256` for the full story and its oracle test.
 
 import { z } from 'zod';
 
+import { sha256 } from './sha256';
 import type { AnySaveBlob, SaveBlob, SaveBlobV2 } from './types';
+
+export { sha256 };
 
 /* -------------------------------------------------------------------------------------------------
  * canonicalStringify
@@ -110,14 +117,12 @@ export function canonicalStringify(value: unknown): string {
  * sha256
  * -----------------------------------------------------------------------------------------------*/
 
-/**
- * SHA-256 hex digest of a UTF-8 string. Uses Node's built-in `node:crypto`
- * (available since Node 16). The engine stays platform-pure: this is a hash
- * primitive, not a wall-clock, global-RNG, or network source.
+/*
+ * `sha256(str)` was defined here as
+ * `createHash('sha256').update(str, 'utf8').digest('hex')`. It is now imported
+ * from `./sha256` and re-exported above, so every existing import of
+ * `@/engine/serialize` keeps working with no call-site change.
  */
-export function sha256(str: string): string {
-  return createHash('sha256').update(str, 'utf8').digest('hex');
-}
 
 /* -------------------------------------------------------------------------------------------------
  * SaveBlob integrity envelope (consumed by todo 10 persistence adapters)

@@ -196,6 +196,15 @@ describe('applyStudioToNextLife', () => {
     expect(ctx.ties.some((tie) => tie.id === 'm-guest' && tie.source === 'relationship')).toBe(
       true,
     );
-    expect(ctx.strongest_tie).toBe('m-guest');
+    // The relationship key is a manifest handle, and no card was passed in to
+    // name it, so there is no display name. The tie is omitted rather than
+    // invented: humanizing "m-guest" would print "M Guest", a person who does
+    // not exist. Identity is unaffected — `id` is still `m-guest` above, so pin
+    // and lookup paths keep working.
+    const tie = ctx.ties.find((t) => t.id === 'm-guest');
+    expect(tie?.name ?? null).toBeNull();
+    expect(ctx.strongest_tie).toBeNull();
+    expect(ctx.strongest_tie).not.toBe('M Guest');
+    expect(ctx.strongest_tie).not.toBe('m-guest');
   });
 });

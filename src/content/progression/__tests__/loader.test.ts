@@ -61,49 +61,49 @@ describe('loadProgression', () => {
       'change',
       'outcome',
       'thing',
-      // household (5)
-      'tradition',
+      // household (5) — wave 1b: level kind first (SPEC §6 order)
       'heirloom',
       'tradition',
       'tradition',
       'tradition',
-      // org (5)
-      'charter',
+      'tradition',
+      // org (5) — wave 1b: level kind first
       'ware',
       'charter',
+      'charter',
       'ware',
       'ware',
-      // town (5)
-      'festival',
+      // town (5) — wave 1b: level kind first
       'landmark',
+      'festival',
       'festival',
       'landmark',
       'landmark',
       // city (5) — Phase 4 Task 3, mirrors the org/town TOTAL
       // distribution: institution for social windows, monument for
       // practice-shaped and empty windows.
-      'institution',
       'monument',
+      'institution',
       'institution',
       'monument',
       'monument',
       // region (5) — Phase 4 Task 3, mirrors the same TOTAL pattern.
-      'legend',
       'road',
+      'legend',
       'legend',
       'road',
       'road',
       // nation (5) — Phase 8 Task 2, mirrors the same TOTAL pattern:
       // ministry for social windows, edict for practice-shaped and empty.
-      'ministry',
       'edict',
+      'ministry',
       'ministry',
       'edict',
       'edict',
       // world (5) — Phase 8 Task 2, mirrors the same TOTAL pattern:
       // chronicle for social windows, horizon for practice-shaped and empty.
-      'chronicle',
       'horizon',
+      'chronicle',
       'chronicle',
       'horizon',
       'horizon',
@@ -279,7 +279,8 @@ describe('loadProgression household scale', () => {
     const heirloomIdx = ids.indexOf('heirloom');
     expect(traditionIdx).toBeGreaterThanOrEqual(8);
     expect(heirloomIdx).toBeGreaterThanOrEqual(8);
-    expect(traditionIdx).toBeLessThan(heirloomIdx);
+    // Wave 1b: the level kind (heirloom) precedes the social kind (SPEC §6).
+    expect(heirloomIdx).toBeLessThan(traditionIdx);
   });
 
   it('ships four or more catalog entries for every kind past person', () => {

@@ -37,6 +37,18 @@ export function currentLife(blob: SaveBlob): LifeState | null {
 }
 
 /**
+ * The life a player may still act in: the current one only while it lives.
+ *
+ * `currentLife` answers "which slot is the cursor on" and keeps returning a
+ * finished life, which is what persistence needs. The routes need the other
+ * question — "is there a life to resume?" — so they never reopen a corpse.
+ */
+export function openLife(blob: SaveBlob): LifeState | null {
+  const life = currentLife(blob);
+  return life !== null && life.alive ? life : null;
+}
+
+/**
  * Write `life` into the current chain slot. A missing prior blob starts a
  * new chain. Identity is copied through the life as-is.
  */
@@ -70,6 +82,37 @@ export function snapshotLifeChain(
     chain: {
       ...prior.chain,
       life_states: lives,
+    },
+  };
+}
+
+/**
+ * Open a NEW life in the chain: append it and move the cursor onto it.
+ *
+ * `snapshotLifeChain` overwrites the current slot, so using it for a second
+ * life would land the new life on top of the first — the chain would never
+ * grow past one. This appends instead. Re-opening the life that already
+ * occupies the current slot is a no-op, so a re-render cannot fork the chain.
+ * A missing prior blob starts a new chain, as in `snapshotLifeChain`.
+ */
+export function startNextLife(prior: SaveBlob | null, life: LifeState, nowUnix: number): SaveBlob {
+  if (prior === null) {
+    return snapshotLifeChain(life, null, nowUnix);
+  }
+  const idx = prior.chain.current_life_index;
+  const lives = [...prior.chain.life_states];
+  const atCursor = idx >= 0 && idx < lives.length ? lives[idx] : undefined;
+  if (atCursor !== undefined && atCursor.id === life.id) {
+    lives[idx] = life;
+    return { ...prior, chain: { ...prior.chain, life_states: lives } };
+  }
+  lives.push(life);
+  return {
+    ...prior,
+    chain: {
+      ...prior.chain,
+      life_states: lives,
+      current_life_index: lives.length - 1,
     },
   };
 }

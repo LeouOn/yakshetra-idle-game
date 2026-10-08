@@ -77,7 +77,8 @@ describe('market economy', () => {
     };
     const bought = purchaseMarket(s, 'supplies');
     expect(bought.benches.person?.bay?.status).toBe('ready');
-    expect(bought.benches.person?.surplus).toBe(1);
+    // Lane B: a 3-window short cook is 6 ticks; 8 supplies absorb 6, bank 2.
+    expect(bought.benches.person?.surplus).toBe(2);
     expect(copperBalance(bought)).toBe(0);
     expect(StudioSessionSchema.safeParse(bought).success).toBe(true);
   });
