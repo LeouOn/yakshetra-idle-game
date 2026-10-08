@@ -240,7 +240,12 @@ export function composeCard(entry: CatalogEntry, input: ComposeInput): ComposedC
   // not there", which is how a long fire came to look like it dropped every
   // named figure. The row is one of its own phrasings and belongs in the
   // rotation beside the variants.
-  const candidates = [...eligible.map((t) => ({ t })), { t: null }];
+  // The row's own body joins the rotation only when it belongs to the era
+  // reading it. Figure rows are authored in their Tang iconography; a Garden
+  // life with era-scoped phrasings for that figure must not draw the Tang
+  // scene as a "neutral" competitor (13.7% of Garden figure cards did).
+  const rowBodyEligible = era !== 'fantasy';
+  const candidates = [...eligible.map((t) => ({ t })), ...(rowBodyEligible ? [{ t: null }] : [])];
   const ranked = candidates
     .map((t) => ({ ...t, score: briefScore(t.t, brief) }))
     .sort((a, b) => b.score - a.score);

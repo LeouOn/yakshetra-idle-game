@@ -60,6 +60,7 @@ export const GARDEN_DO_NOT: Readonly<Record<string, readonly string[]>> = {
     'market license',
     'pecks',
     'piculs',
+    'granary',
   ],
   civic: [
     'curfew bell',
@@ -71,6 +72,9 @@ export const GARDEN_DO_NOT: Readonly<Record<string, readonly string[]>> = {
     'garrison',
     'conscription register',
     'drum tower',
+    'watch tower',
+    'clepsydra',
+    'dynasties',
   ],
   agrarian: [
     'mule litter',
@@ -85,6 +89,7 @@ export const GARDEN_DO_NOT: Readonly<Record<string, readonly string[]>> = {
     'loess',
     'tallow',
     'mule',
+    'chopsticks',
   ],
   religious: [
     'monk certificates',

@@ -13,6 +13,7 @@ export type { CatalogEntry, CatalogMap } from './table-catalog';
 const THINGS: readonly CatalogEntry[] = [
   {
     name: 'Sealed token',
+    era: 'tang',
     one_liner:
       "A lead token stamped by the granary clerk, recording a full day's weighing completed at the scales.",
     subject: 'a stamped granary token',
@@ -51,6 +52,7 @@ const THINGS: readonly CatalogEntry[] = [
   },
   {
     name: 'Worn ledger',
+    era: 'tang',
     one_liner:
       'A hemp-stitched account book of mulberry paper, its margins thumbed dark by oil lamp and well-water.',
     subject: 'a stitched mulberry-paper account',
@@ -245,7 +247,7 @@ const THINGS: readonly CatalogEntry[] = [
     one_liner: 'A briar billhook kept sharp on a flat river stone, for green wood only.',
     subject: "the pruner's own billhook",
     detail:
-      'The blade is kept sharp on a flat river stone, and the edge is meant for green wood, not dry. Briar root dulls it in a season, so Dan sharpens it before the light goes.',
+      'The blade is kept sharp on a flat river stone — green wood, never dry. Briar root dulls it in a season, so Dan sharpens it before the light goes.',
     long_fire: ' The haft has taken the sap of a hundred green runs and wears darker at the grip.',
     rare: ' The inner crescent is thin enough to read daylight through, and still has not chipped.',
     tags: ['briar', 'hook', 'cutting'],
@@ -317,7 +319,7 @@ const THINGS: readonly CatalogEntry[] = [
     detail:
       'A promise is easier to keep if it can be counted in laps. The knots are not decoration; each one is a lap walked out and survived.',
     long_fire:
-      ' The fifth knot has gone black with oil, and the wire under it is warm from being worked.',
+      " The fifth knot has gone black with oil; under it, the wire still holds the day's warmth.",
     rare: ' Every notch on this cord has been walked twice, once going out and once coming back.',
     tags: ['cord', 'knot', 'vow'],
     era: 'fantasy',
@@ -340,8 +342,7 @@ const THINGS: readonly CatalogEntry[] = [
     subject: 'the post whistle',
     detail:
       'It makes almost no sound, which is the design. Everyone at the post is already looking the same way, so the whistle only has to be pointed in the right direction.',
-    long_fire:
-      ' The wax has been reheated so often it sits flush, and the note it gives is the same one every time.',
+    long_fire: ' So often reheated that the wax sits flush, it gives the same note every time.',
     rare: ' The reed is split a hairline down one side, and it still carries.',
     tags: ['whistle', 'reed', 'warning'],
     era: 'fantasy',
@@ -365,7 +366,7 @@ const THINGS: readonly CatalogEntry[] = [
     detail:
       'It is not medicine and it is not tea. It is kept at a drinkable warmth for the people who come in too shaken to say what is wrong, and it is always ready.',
     long_fire:
-      ' The root has steeped long enough to lose its edge, and the heat is coming up through the grey clay.',
+      ' The root has steeped long enough to lose its edge. Heat comes up through the grey clay.',
     rare: ' Nobody in the court has ever seen this crock refilled by the person they filled it for.',
     tags: ['crock', 'root', 'warm'],
     era: 'fantasy',
@@ -692,7 +693,7 @@ const OUTCOMES: readonly CatalogEntry[] = [
     one_liner: 'A cup set steaming on the sill and emptied without a question asked.',
     subject: 'a cup on the sill, steaming',
     detail:
-      'Nobody is owed an account of who they are. The cup is set down, it is drunk, and the person who set it does not come back to ask how it was.',
+      'Nobody is owed an account of who they are. The cup goes down, gets drunk, and nobody comes back to ask how it was.',
     long_fire:
       ' The cup is still too hot to hold, and it was set down without a word about who it was for.',
     rare: ' The cup came back empty and rinsed, and nobody has ever asked who drank it.',
@@ -717,7 +718,7 @@ const OUTCOMES: readonly CatalogEntry[] = [
     detail:
       'A gate that stays barred is a wall. Left resting on the bracket through the worst of the night, it is a decision about what the court is for.',
     long_fire:
-      ' The bar is still on the bracket, exactly where it was put, and the cold has not moved it.',
+      ' The bar still sits on its bracket, exactly where it was put; the cold has not moved it.',
     rare: ' Three sets of wet prints go in and none of them knocked.',
     tags: ['gate', 'night', 'latch'],
     era: 'fantasy',
@@ -740,8 +741,8 @@ const OUTCOMES: readonly CatalogEntry[] = [
     detail:
       'Green chalk on a tea-dark page is soft enough to be rubbed out by anyone who feels like trying. The reed is what stops it. The cord keeps the peace, not the chalk.',
     long_fire:
-      ' The reed is split and tight, and the green stroke is broad enough that it will not fade to anything readable.',
-    rare: ' The stroke goes corner to corner, and the reed holding it closed is new.',
+      ' The reed lies split and tight across a green stroke too broad to fade into anything readable.',
+    rare: ' Corner to corner goes the stroke, held closed by a reed so new it still smells green.',
     tags: ['ledger', 'green', 'closure'],
     era: 'fantasy',
     templates: [
@@ -1005,7 +1006,7 @@ const CHANGES: readonly CatalogEntry[] = [
       'Three minutes is long enough to hear a second thing inside the first one. The street never gave you that, because the street never stopped.',
     long_fire:
       ' The three minutes are still running in the bowl, and you can hear the part of it you would have missed before.',
-    rare: ' The hum has a node in it, and the node is where you can hear your own breathing.',
+    rare: ' There is a node in the hum. Inside that node you can hear your own breathing.',
     tags: ['bell', 'listening', 'hum'],
     era: 'fantasy',
     templates: [
@@ -1028,7 +1029,7 @@ const CHANGES: readonly CatalogEntry[] = [
     detail:
       'The roll was never going to say anything it had not already said. The hands, once they stop checking, turn out to be good for carrying things to people.',
     long_fire: ' The hands are empty, and the emptiness is not a lack. It is just hands.',
-    rare: ' The roll has not been opened in a long time, and the bread is out on the bench.',
+    rare: ' It has been a long time since anyone opened the roll. The bread waits out on the bench.',
     tags: ['roll', 'records', 'hands'],
     era: 'fantasy',
     templates: [
@@ -1051,7 +1052,7 @@ const CHANGES: readonly CatalogEntry[] = [
     detail:
       'Cold stone is not the problem. The problem is staying on it while someone else is in trouble, and a body that will not stop shivering cannot do that.',
     long_fire:
-      ' The damp has stopped being cold, and the weight is doing the work the shivering was doing.',
+      ' Somewhere in the damp the cold gave up, and the weight took over the work the shivering used to do.',
     rare: ' You sat through a whole watch on that stone and your back never once complained.',
     tags: ['stone', 'stillness', 'grief'],
     era: 'fantasy',
@@ -1074,7 +1075,7 @@ const CHANGES: readonly CatalogEntry[] = [
     subject: 'a measured rhythm behind the ribs',
     detail:
       'The void does not change. What changes is the count behind the ribs, and past a certain number of counts the looking becomes survivable.',
-    long_fire: ' The breath has found its count, and the void is still exactly as loud as it was.',
+    long_fire: ' The breath has found its count. The void has not changed volume by a hair.',
     rare: ' The rhythm is low enough now that you can hold it across the whole width of the ditch.',
     tags: ['breath', 'boundary', 'void'],
     era: 'fantasy',
@@ -1809,7 +1810,7 @@ const PEOPLE: readonly CatalogEntry[] = [
     detail:
       'An has been on that stone long enough that the stone has taken the shape of them. They do not stand to be told anything, and they do not need to.',
     long_fire:
-      ' The stone under An has a hollow worn into it, and the woolen scrap is dry and smells of nothing.',
+      ' Under An the stone carries a worn hollow; the woolen scrap beside it stays dry, smelling of nothing at all.',
     rare: ' An has counted more arrivals than the court has records, and says so without pride.',
     tags: ['gate', 'listener', 'stone'],
     era: 'fantasy',
@@ -1927,7 +1928,7 @@ const PEOPLE: readonly CatalogEntry[] = [
     one_liner: 'Blowing on the embers and setting down a cup without asking who you are.',
     subject: 'the one over the charcoal',
     detail:
-      'Renn has never once asked. The cup is set, and the question is whether you will drink it, and that is the only part that concerns anyone.',
+      'Renn has never once asked. The cup waits. Whether you drink it is the only part that concerns anyone.',
     long_fire: ' The cracked cup is warm through and the kettle is only just off the embers.',
     rare: ' The cup is set down without a question and nobody comes back to ask about it.',
     tags: ['tea', 'hearth', 'cup'],
@@ -1950,9 +1951,9 @@ const PEOPLE: readonly CatalogEntry[] = [
     one_liner: 'At the last post, shading their eyes against the glare off the void.',
     subject: 'the one shading their eyes at the post',
     detail:
-      'The post is the furthest laid ground, and the reason it is laid at all is that somebody has to stand on it and look outward all day. He counts the breaths between the flash and the sound, and writes the number down.',
+      'This post marks the furthest laid ground — laid because somebody has to stand on it and look outward all day. He counts the breaths between the flash and the sound, and writes the number down.',
     long_fire:
-      ' The bleached post has the glare coming off it, and the squall behind the screens is not being held by much.',
+      ' Glare comes off the bleached post; behind the screens, the squall is barely being held.',
     rare: ' Oris has watched the void long enough to read it the way you read a face.',
     tags: ['storm', 'post', 'watch'],
     era: 'fantasy',
@@ -1976,7 +1977,7 @@ const PEOPLE: readonly CatalogEntry[] = [
     detail:
       'The brush is stiff enough to be unpleasant and the water is lime, and both are because a soft brush on wet slate leaves marks nobody wanted. The wet slate shows her own face for a moment before the damp takes it back.',
     long_fire:
-      ' The lime-water is still cloudy from the last stone, and the set-out tablet is dripping on the bench.',
+      ' The lime-water stays cloudy from the last stone. On the bench, the set-out tablet drips.',
     rare: ' A stone scrubbed this hard gives back a grain so clean you can see the light through it.',
     tags: ['slate', 'lime', 'brush'],
     era: 'fantasy',
@@ -2072,7 +2073,7 @@ const PEOPLE: readonly CatalogEntry[] = [
     detail:
       'Cane is cut to a slant and tested by flex, never by eye. The jade pin is not an ornament; it will outlast the rule it is fitted to.',
     long_fire:
-      ' The green jade pin is polished and set dead true, and the cracked one is on the bench in two pieces.',
+      ' Polished and set dead true, the green jade pin; its cracked twin lies on the bench in two pieces.',
     rare: ' Thess has fitted jade to a rule that will outlast the both of them, and did not charge for the pin.',
     tags: ['cane', 'jade', 'hinge'],
     era: 'fantasy',
@@ -2117,6 +2118,7 @@ const PLACES: readonly CatalogEntry[] = [
   },
   {
     name: 'The river stair',
+    era: 'tang',
     one_liner:
       'Forty granite slabs cut with high-water marks and worn smooth by the bare feet of three dynasties.',
     subject: 'granite slabs down to the ferry slip',
@@ -2159,6 +2161,7 @@ const PLACES: readonly CatalogEntry[] = [
   },
   {
     name: 'The clock attic',
+    era: 'tang',
     one_liner:
       'A timber loft smelling of pine pitch where copper clepsydras and bronze gears measure the watches of the night.',
     subject: 'a water-clock loft in the watch tower',
@@ -2205,6 +2208,7 @@ const PLACES: readonly CatalogEntry[] = [
   },
   {
     name: 'The extra seat',
+    era: 'tang',
     one_liner:
       'A cedar bench with a clean bowl and chopsticks, kept vacant at every evening meal for an unexpected traveler.',
     subject: 'a place set for an unexpected guest',
@@ -2263,8 +2267,8 @@ const PLACES: readonly CatalogEntry[] = [
     detail:
       'Nobody is let past the threshold without being looked at. Not for papers, not for a name, just so that whoever is on the other side is a person and not a rumour.',
     long_fire:
-      ' The grey lintel is cold and the cane wicket is not, and the difference is the whole point of the gate.',
-    rare: ' The wicket is newer than the stone around it, and the stone is much older than anything else here.',
+      ' The grey lintel stays cold while the cane wicket does not — that difference is the whole point of the gate.',
+    rare: ' Newer than the stone around it, the wicket; the stone predates everything else here.',
     tags: ['gate', 'threshold', 'wicket'],
     era: 'fantasy',
     templates: [
@@ -2287,14 +2291,14 @@ const PLACES: readonly CatalogEntry[] = [
     detail:
       'Everything anyone has ever come here to be reminded of is unrolled on these tables, in order, and read out in a voice with no opinion in it. Visitors speak at the door, and the shelves answer in paper.',
     long_fire:
-      ' The mulberry goes brittle where the thumbs have worked the edge, and the whole length of it is soft where it is handled.',
+      ' Where the thumbs have worked the edge, the mulberry goes brittle; the whole handled length has gone soft.',
     rare: ' A roll long enough to need two trestles has been read to the end without anyone being named in it.',
     tags: ['rolls', 'cedar', 'paper'],
     era: 'fantasy',
     templates: [
       {
         detail:
-          'The unrolling goes on and on down the trestle, and the voice reading it has no rise or fall in it at all.',
+          'The unrolling goes on and on down the trestle, read in a voice without rise or fall.',
         tags: ['rolls', 'paper', 'reading'],
       },
       {
@@ -2343,7 +2347,7 @@ const PLACES: readonly CatalogEntry[] = [
     templates: [
       {
         detail:
-          'The bell is hung so low that a seated head is level with the rim, and the hum does not go anywhere.',
+          'Hung low enough that a seated head sits level with the rim, the bell hums and the hum stays put.',
         tags: ['bell', 'hide', 'listening'],
       },
       {
@@ -2372,7 +2376,7 @@ const PLACES: readonly CatalogEntry[] = [
       },
       {
         detail:
-          'The water is not moving as far as you can see, and the leaf on it is not moving either, and both are wrong.',
+          'As far as you can see, the water does not move; the leaf on it does not either. Both are wrong.',
         tags: ['canal', 'water', 'weir'],
       },
     ],

@@ -156,9 +156,31 @@ def render_entry(row):
     return '\n'.join(o)
 
 
+def assert_no_duplicate_names(core):
+    """The loop guard: a duplicated row name in a core array is exactly the
+    pollution that silently tripled the Garden rows once. Refuse to rebuild
+    from a mirror that carries one — rebuilding would launder the duplicate
+    into the engine catalog and the mirror would then justify it."""
+    dupes = []
+    for kind, rows in core.items():
+        seen = set()
+        for r in rows:
+            name = r['name']
+            if name in seen:
+                dupes.append(f"{kind}/{name}")
+            seen.add(name)
+    if dupes:
+        print('refusing to rebuild: duplicate row names in the mirror:',
+              file=sys.stderr)
+        for d in dupes:
+            print(f'  {d}', file=sys.stderr)
+        raise SystemExit(1)
+
+
 def main():
     require_clean_for_this_script()
     core = read_mirror()
+    assert_no_duplicate_names(core)
     # Split figure rows back out: CATALOG re-merges them from the figure module.
     for kind in ('person', 'place'):
         core[kind] = [r for r in core[kind]
