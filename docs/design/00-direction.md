@@ -87,6 +87,8 @@ RULES LEARNED THE HARD WAY (all seats):
 - Green tests were not enough: the web build threw on every life save while the suite passed (Node has node:crypto, the browser does not). Verify in the real browser harness.
 - Measure the thing the player sees, not a proxy: a "96% distinct" metric hid a footer on every card; reading card titles hid figure cards wearing variant titles. Read the output aloud.
 - Wall-clock assertions flake: bound work by complexity, not by 50 ms.
+- Validate the instrument before believing a finding. The browser harness's static server fell back to index.html for every deep link (the bare path /studio does not exist; only studio.html does), so each route hydrated against the HOME page's HTML and produced a React #418 "bug" on six routes for days, and two seats worked on fixes for it. Fixed in ~/proj/rig-lab/yaksh-browser/serve.mjs; the production export hydrates with 0 errors on all routes. The harness now has to assert the served HTML belongs to the route before any hydration test.
+- The pre-commit hook runs `eslint --fix` on staged files; its import/no-duplicates fixer can merge two imports from one module into a broken statement (a double comma). Never leave two imports from one module in a file; run prettier and eslint --fix yourself before committing and re-run the suite.
 - Seats can be rate-limited by their model provider (429 'usage limit', hours of lockout): the stuck-sweep is sometimes right. Check the seat's screen, then reassign the work, do not wait.
 
 ## Decisions that are the operator's
