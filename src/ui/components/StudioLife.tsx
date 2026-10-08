@@ -2,16 +2,21 @@
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { stringifyLifeContext, type LifeContext } from '@/engine';
+import { stringifyLifeContext, type LifeContext, type Manifest } from '@/engine';
+import { safePhrase } from '@/engine/prose';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 
 export interface StudioLifeProps {
   readonly context: LifeContext;
+  /** The archive: cast ties are filed under manifest ids, and the card's
+   * NAME is the word a player may read. Absent → unresolvable cast ties are
+   * omitted rather than printed as ids. */
+  readonly archive?: readonly Manifest[];
   readonly onExport?: (json: string) => void;
 }
 
-export default function StudioLife({ context, onExport }: StudioLifeProps) {
+export default function StudioLife({ context, archive = [], onExport }: StudioLifeProps) {
   return (
     <View testID="studio-life" style={styles.panel}>
       <Text accessibilityRole="header" style={styles.heading}>
@@ -46,11 +51,22 @@ export default function StudioLife({ context, onExport }: StudioLifeProps) {
       {context.ties.length === 0 ? (
         <Text style={styles.muted}>{resolveSid('studio.life_ties_empty_sid')}</Text>
       ) : (
-        context.ties.slice(0, 4).map((tie) => (
-          <Text key={`${tie.source}-${tie.id}`} style={styles.tie}>
-            {formatSid('studio.life_tie_sid', { name: tie.id, bond: tie.bond })}
-          </Text>
-        ))
+        context.ties.slice(0, 4).map((tie) => {
+          // A tie prints a NAME, never an id-shaped token: the filed name
+          // when there is one, else the archived card's name. A tie whose
+          // card is gone (or whose name still reads as an id) is omitted —
+          // silence beats a handle on the screen.
+          const fromArchive = archive.find((card) => card.id === tie.id)?.name ?? null;
+          const name = safePhrase(tie.name) ?? safePhrase(fromArchive);
+          if (name === null) {
+            return null;
+          }
+          return (
+            <Text key={`${tie.source}-${tie.id}`} style={styles.tie}>
+              {formatSid('studio.life_tie_sid', { name, bond: tie.bond })}
+            </Text>
+          );
+        })
       )}
       {onExport === undefined ? null : (
         <Pressable
