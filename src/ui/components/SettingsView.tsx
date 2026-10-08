@@ -16,7 +16,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { WARNING_CATEGORIES, type WarningCategoryId } from '@/content/warning-taxonomy';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
-import type { AppSettings, FontScale, SlotSummary } from '@/ui/hooks/useSaveSlot';
+import type { AppSettings, FontScale, SaveSlotError, SlotSummary } from '@/ui/hooks/useSaveSlot';
+import SaveSlotErrorBar from '@/ui/components/SaveSlotErrorBar';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -25,6 +26,13 @@ import type { AppSettings, FontScale, SlotSummary } from '@/ui/hooks/useSaveSlot
 export interface SettingsViewProps {
   readonly settings: AppSettings;
   readonly slots: readonly SlotSummary[];
+  /** Persistence failures surfaced by the owning route (SaveSlotErrorBar). */
+  readonly error?: SaveSlotError | null;
+  readonly onClearError?: () => void;
+  /** True until mount: the save-slot list is localStorage-derived, so the
+   * server (and the first client render) show placeholders of the same
+   * shape instead of an empty list (React #418). */
+  readonly slotsLoading?: boolean;
   // Content warnings: fire the new enabled value for one category.
   readonly onToggleContentWarning: (id: WarningCategoryId, enabled: boolean) => void;
   // Accessibility toggles.
@@ -56,6 +64,9 @@ function fontScaleLabelSid(scale: FontScale): string {
 // ---------------------------------------------------------------------------
 
 export default function SettingsView({
+  error = null,
+  onClearError,
+  slotsLoading = false,
   settings,
   slots,
   onToggleContentWarning,
@@ -108,6 +119,9 @@ export default function SettingsView({
       style={styles.scroll}
       contentContainerStyle={styles.container}
     >
+      {onClearError === undefined ? null : (
+        <SaveSlotErrorBar error={error} onContinue={onClearError} />
+      )}
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('settings.title_sid')}
       </Text>
@@ -225,6 +239,19 @@ export default function SettingsView({
           {resolveSid('settings.save_slots_heading_sid')}
         </Text>
         <View style={styles.slotList}>
+          {slotsLoading
+            ? [1, 2, 3, 4, 5].map((row) => (
+                <View
+                  key={row}
+                  testID={`settings-slot-placeholder-${row}`}
+                  style={styles.slotPlaceholder}
+                >
+                  <Text style={styles.slotPlaceholderText}>
+                    {resolveSid('settings.slot_placeholder_sid')}
+                  </Text>
+                </View>
+              ))
+            : null}
           {slots.map((summary) => (
             <SlotRow
               key={summary.slot}
@@ -388,6 +415,15 @@ const styles = StyleSheet.create({
   fontLabel: { fontSize: 14, fontWeight: '600', color: t.text },
   fontLabelSelected: { fontSize: 14, fontWeight: '700', color: t.text },
   slotList: { gap: 10 },
+  slotPlaceholder: {
+    borderWidth: 1,
+    borderColor: t.line,
+    borderRadius: 10,
+    padding: 14,
+    minHeight: 64,
+    justifyContent: 'center',
+  },
+  slotPlaceholderText: { color: t.muted, fontSize: 13 },
   slotRow: {
     paddingVertical: 12,
     paddingHorizontal: 14,

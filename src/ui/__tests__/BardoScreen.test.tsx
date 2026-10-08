@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createElement } from 'react';
 
 import BardoView, {
+  CHAIN_LIFE_COUNT,
   DEFAULT_ERA_OPTIONS,
   eraNameSid,
   nextErasAfter,
@@ -10,6 +11,7 @@ import BardoView, {
 } from '@/ui/components/BardoView';
 import type { Echo, LifeId } from '@/engine';
 import { render } from '@/test/rntl';
+import { resolveSid } from '@/i18n';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -110,7 +112,9 @@ describe('BardoView', () => {
   it('shows the graceful "no echoes" message when the life produced none', () => {
     const { getByTestID } = renderBardo({ echoes: [] });
     const node = getByTestID('bardo-no-echoes');
-    expect(node.children[0]).toBe('No echoes were detected. The next life begins unburdened.');
+    expect(node.children[0]).toBe(
+      'No lingering echoes cling to your hands. The next life begins unburdened.',
+    );
   });
 
   it('lists each available era and fires onPickEra with the era id on tap', () => {
@@ -132,6 +136,18 @@ describe('BardoView', () => {
       'No further lives are available in this chain.',
     );
   });
+
+  it('offers a way to close the chain once no eras remain', () => {
+    const onCloseChain = vi.fn();
+    const { getByTestID, press } = renderBardo({ eras: [], onCloseChain });
+    press(getByTestID('bardo-close-chain'));
+    expect(onCloseChain).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not offer chain close while another era is still playable', () => {
+    const { getByTestID } = renderBardo({ eras: nextErasAfter('tang-china') });
+    expect(() => getByTestID('bardo-close-chain')).toThrow();
+  });
 });
 
 describe('BardoView era helpers', () => {
@@ -143,13 +159,36 @@ describe('BardoView era helpers', () => {
   });
 
   it('nextErasAfter offers all eras for a fresh chain and filters the just-played era', () => {
-    const fresh = nextErasAfter(null);
+    const fresh = nextErasAfter(null, 0);
     expect(fresh.map((e: EraOption) => e.id)).toEqual(['tang-china', 'fantasy-mahayana']);
 
-    const afterTang = nextErasAfter('tang-china');
+    const afterTang = nextErasAfter('tang-china', 1);
     expect(afterTang.map((e: EraOption) => e.id)).toEqual(['fantasy-mahayana']);
 
-    const afterFantasy = nextErasAfter('fantasy-mahayana');
+    const afterFantasy = nextErasAfter('fantasy-mahayana', 1);
     expect(afterFantasy.map((e: EraOption) => e.id)).toEqual(['tang-china']);
+  });
+
+  it('gives the FIRST life an authored beat about what it leaves (wave 2b)', () => {
+    const ui = renderBardo({ echoes: [], firstLife: true });
+    expect(ui.getByTestID('bardo-first-life')).toBeDefined();
+    expect(ui.getByText(resolveSid('bardo.first_life_body_sid'))).toBeDefined();
+    // The detection-report line is for later, quieter lives.
+    expect(ui.container.queryAll((n) => n.props.testID === 'bardo-no-echoes')).toHaveLength(0);
+  });
+
+  it('keeps the quiet no-echoes line for later lives', () => {
+    const ui = renderBardo({ echoes: [], firstLife: false });
+    expect(ui.getByTestID('bardo-no-echoes')).toBeDefined();
+    expect(ui.container.queryAll((n) => n.props.testID === 'bardo-first-life')).toHaveLength(0);
+  });
+
+  it('nextErasAfter closes the chain once its lives are spent', () => {
+    // The chain is two lives long, so after the second one there is nothing
+    // to offer — filtering the just-played era alone would let a player
+    // alternate between the two eras forever.
+    expect(nextErasAfter('fantasy-mahayana', 2)).toHaveLength(0);
+    expect(nextErasAfter(null, 2)).toHaveLength(0);
+    expect(CHAIN_LIFE_COUNT).toBe(2);
   });
 });

@@ -134,12 +134,24 @@ describe('TurnScreen', () => {
     expect(() => getByText('Turn 0')).not.toThrow();
     expect(() => getByText('Age 0')).not.toThrow();
 
-    // Orient: every canonical resource appears.
+    // Orient: every canonical resource appears as a readable strip cell —
+    // the value prominent, the label small (wave 2b; was a monospace line).
     for (const id of ['time', 'energy', 'provisions', 'trust', 'skill', 'obligation'] as const) {
       expect(() => getByTestID(`turn-resource-${id}`)).not.toThrow();
     }
+    // Starting values render as prominent numbers inside the cells (energy
+    // and provisions both start at 100, so read the cell, not the page).
+    const energyCell = getByTestID('turn-resource-energy');
+    const energyValue = energyCell.children.find(
+      (child) => typeof (child as { children?: readonly unknown[] }).children?.[0] === 'string',
+    ) as { children: readonly unknown[] };
+    expect(energyValue.children[0]).toBe('100');
+    expect(() => getByText(resolveSid('resource.time_sid'))).not.toThrow();
 
-    // Intend: all six lenses are rendered as tappable cards.
+    // Intend: all six lenses are rendered as tappable cards, each with one
+    // truthful line about what choosing it changes (wave 2b).
+    expect(() => getByTestID('turn-lens-generosity-hint')).not.toThrow();
+    expect(() => getByText(resolveSid('lens.collected_attention_hint_sid'))).not.toThrow();
     expect(() => getByText('Generosity')).not.toThrow();
     expect(() => getByText('Careful Conduct')).not.toThrow();
     expect(() => getByText('Patient Courage')).not.toThrow();

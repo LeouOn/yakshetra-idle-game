@@ -69,12 +69,15 @@ function readyBench(): BenchState {
       status: 'ready',
       rng_seed: '1',
       focus: null,
+      fire: 'short',
     },
     quality_tier: 0,
     harvest_count: 0,
     play_import: null,
     pinned: null,
     surplus: 0,
+    held_residue: [],
+    cook_choices: { long: 0, holdback: 0 },
     fold_position: 0,
   };
 }
@@ -95,6 +98,8 @@ function personBenchWithPending(count: number): BenchState {
     play_import: null,
     pinned: null,
     surplus: 0,
+    held_residue: [],
+    cook_choices: { long: 0, holdback: 0 },
     fold_position: 0,
   };
 }

@@ -92,6 +92,20 @@ function makeFixturePack(
       description_sid: 'rule.default.description_sid',
       enforces: 'social-obligation',
     },
+    starting_roles: [
+      {
+        id: 'peasant',
+        label_sid: 'tang.role.peasant.label_sid',
+        description_sid: 'tang.role.peasant.description_sid',
+        starting_resources: { time: 2, energy: 2 },
+      },
+      {
+        id: 'merchant',
+        label_sid: 'tang.role.merchant.label_sid',
+        description_sid: 'tang.role.merchant.description_sid',
+        starting_resources: { time: 2, energy: 2 },
+      },
+    ],
     endings: [],
     practices: [],
     schedules: [],
@@ -115,7 +129,7 @@ describe('LifeStartScreen', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the era name, lineage notes, content warnings, and 3 role cards when a pack loads', async () => {
+  it('renders the era name, lineage notes, content warnings, and the pack role cards when a pack loads', async () => {
     vi.mocked(loadEraPack).mockReturnValue(makeFixturePack());
 
     const { getByText, getByTextContent, getByTestID } = render(createElement(LifeStartScreen));
@@ -139,15 +153,53 @@ describe('LifeStartScreen', () => {
     expect(() => getByText('References to death and mourning')).not.toThrow();
     expect(() => getByText('Depictions of illness and care')).not.toThrow();
 
-    // Three role cards resolved from era.tang-china.role.* string ids.
+    // Role cards come from the pack's own starting_roles, so any era lists
+    // the roles that era actually authors.
     expect(() => getByTestID('life-start-role-peasant')).not.toThrow();
     expect(() => getByTestID('life-start-role-merchant')).not.toThrow();
-    expect(() => getByTestID('life-start-role-monastic')).not.toThrow();
 
-    // Role titles are visible.
-    expect(() => getByText('Farmer')).not.toThrow();
+    // Role titles are visible — the pack's own labels.
+    expect(() => getByText('Peasant farmer')).not.toThrow();
     expect(() => getByText('Merchant')).not.toThrow();
-    expect(() => getByText('Lay Resident')).not.toThrow();
+  });
+
+  it('lists the second era’s own roles instead of crashing on missing string ids', async () => {
+    vi.mocked(loadEraPack).mockReturnValue(
+      makeFixturePack({
+        name_sid: 'fantasy.name_sid',
+        lineage_notes_sid: 'fantasy.lineage_notes_sid',
+        starting_roles: [
+          {
+            id: 'newly-arrived-soul',
+            label_sid: 'fantasy.role.newly_arrived_soul.label_sid',
+            description_sid: 'fantasy.role.newly_arrived_soul.description_sid',
+            starting_resources: { time: 3, energy: 3 },
+          },
+          {
+            id: 'court-attendant',
+            label_sid: 'fantasy.role.court_attendant.label_sid',
+            description_sid: 'fantasy.role.court_attendant.description_sid',
+            starting_resources: { time: 2, energy: 2 },
+          },
+        ],
+      }),
+    );
+
+    const { getByTestID, press } = render(createElement(LifeStartScreen));
+
+    await act(async () => {
+      await flushPromises();
+    });
+
+    expect(() => getByTestID('life-start-role-newly-arrived-soul')).not.toThrow();
+    expect(() => getByTestID('life-start-role-court-attendant')).not.toThrow();
+    expect(() => getByTestID('life-start-role-peasant')).toThrow();
+
+    press(getByTestID('life-start-role-court-attendant'));
+    expect(router.push).toHaveBeenCalledWith({
+      pathname: '/life/[lifeId]',
+      params: { lifeId: 'pending', roleId: 'court-attendant', era: 'tang-china' },
+    });
   });
 
   it('navigates to the life route with the roleId param when a role card is tapped', async () => {
@@ -179,7 +231,9 @@ describe('LifeStartScreen', () => {
 
     expect(() => getByText('No eras available yet')).not.toThrow();
     expect(() =>
-      getByText('Completing advisory onboarding (todo 0) before content authoring can begin.'),
+      getByText(
+        'No historical chapters are open to inhabit at this hour. Return to the courtyard bench while the records are prepared.',
+      ),
     ).not.toThrow();
     expect(() => getByTestID('life-start-about')).not.toThrow();
 

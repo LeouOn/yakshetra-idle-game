@@ -24,12 +24,20 @@ export default function StudioLife({ context, onExport }: StudioLifeProps) {
           day: context.setting.day,
         })}
       </Text>
-      <Text style={styles.muted}>
-        {formatSid('studio.life_who_sid', {
-          role: context.setting.role_id,
-          age: context.age,
-        })}
-      </Text>
+      {/* The role line is shown only when a real role name came with the
+          context. The bench stand-in life has no pack behind it, and its
+          `role_id` is the placeholder `operator` — printing that under
+          "This life" presented a build-internal token as the player's
+          identity. With no role name, the line is omitted rather than
+          filled with a token. */}
+      {context.setting.role_name === undefined ? null : (
+        <Text style={styles.muted}>
+          {formatSid('studio.life_who_sid', {
+            role: context.setting.role_name,
+            age: context.age,
+          })}
+        </Text>
+      )}
       <Text style={styles.muted}>
         {formatSid('studio.life_world_sid', {
           world: context.world_name ?? resolveSid('studio.life_world_none_sid'),

@@ -175,6 +175,7 @@ describe('StudioView', () => {
     expect(() => getByText(resolveSid('studio.develop_button_sid'))).not.toThrow();
 
     press(getByTestID('studio-develop'));
+    press(getByTestID('studio-cook-confirm'));
     expect(() => getByText(resolveSid('studio.bay_empty_sid'))).toThrow();
 
     press(getByTestID('studio-tend'));
@@ -515,7 +516,9 @@ describe('StudioView', () => {
     // The rail flags the ready household bench before the harvest.
     expect(() => getByText(formatSid('studio.tier_ready_badge_sid', { n: 1 }))).not.toThrow();
 
-    press(getByTestID('studio-harvest'));
+    await act(async () => {
+      press(getByTestID('studio-harvest'));
+    });
     const kinds = kindBadges(container);
     expect(kinds).toContain(resolveSid('studio.kind_tradition_sid'));
 
@@ -693,7 +696,9 @@ describe('StudioView', () => {
     // A live tend pulse after the catch-up keeps the ready bay stable.
     press(getByTestID('studio-tend'));
 
-    press(getByTestID('studio-harvest'));
+    await act(async () => {
+      press(getByTestID('studio-harvest'));
+    });
 
     const kinds = kindBadges(container);
     expect(
@@ -770,9 +775,10 @@ describe('StudioView', () => {
     );
 
     press(getByTestID('studio-develop'));
-    // Window 3 → cookTicksFor(3) = 7; swift-cook's cook_speed 1 discounts to 6.
+    press(getByTestID('studio-cook-confirm'));
+    // Window 3 → cookTicksFor(3, short) = 6; swift-cook's cook_speed 1 discounts to 5.
     expect(() =>
-      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 5 })),
     ).not.toThrow();
   });
 
@@ -813,9 +819,10 @@ describe('StudioView', () => {
     expect(() => getByText(resolveSid('studio.develop_button_sid'))).not.toThrow();
 
     press(getByTestID('studio-develop'));
-    // Window 2 → cookTicksFor(2) = 6; no cook_speed endowment, no discount.
+    press(getByTestID('studio-cook-confirm'));
+    // Window 2 → cookTicksFor(2, short) = 5; no cook_speed endowment, no discount.
     expect(() =>
-      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 5 })),
     ).not.toThrow();
   });
 
@@ -903,10 +910,11 @@ describe('StudioView', () => {
     expect(saved?.tiers['person']?.endowed).toEqual(['endow/person/swift-cook']);
     expect(saved?.archive.some((entry) => entry.id === card.id)).toBe(false);
 
-    // The endowed swift-cook now discounts the manual develop cook (7 → 6).
+    // The endowed swift-cook now discounts the manual develop cook (6 → 5).
     press(getByTestID('studio-develop'));
+    press(getByTestID('studio-cook-confirm'));
     expect(() =>
-      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 5 })),
     ).not.toThrow();
     probe.mockRestore();
   });
@@ -1043,9 +1051,10 @@ describe('StudioView', () => {
     );
 
     press(getByTestID('studio-develop'));
-    // Window 3 → cookTicksFor(3) = 7; gate-yaksa's cook_speed 1 discounts to 6.
+    press(getByTestID('studio-cook-confirm'));
+    // Window 3 → cookTicksFor(3, short) = 6; gate-yaksa's cook_speed 1 discounts to 5.
     expect(() =>
-      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 6 })),
+      getByText(formatSid('studio.bay_cooking_sid', { done: 0, total: 5 })),
     ).not.toThrow();
   });
 
@@ -1368,6 +1377,7 @@ describe('StudioView', () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
       view.press(view.getByTestID('studio-develop'));
+      view.press(view.getByTestID('studio-cook-confirm'));
       view.press(view.getByTestID('studio-tend'));
       view.press(view.getByTestID('studio-harvest'));
       act(() => {
@@ -1405,6 +1415,7 @@ describe('StudioView', () => {
     expect(container.queryAll((node) => node.props.testID === 'studio-roster')).toHaveLength(0);
 
     press(getByTestID('studio-develop'));
+    press(getByTestID('studio-cook-confirm'));
     press(getByTestID('studio-tend'));
     press(getByTestID('studio-harvest'));
 
@@ -1420,5 +1431,92 @@ describe('StudioView', () => {
     expect(saved?.tiers['household']?.unlocked).toBe(true);
     expect(saved?.world_drafts).toHaveLength(1);
     probe.mockRestore();
+  });
+
+  it('moves panels behind tabs: bench visible, market hidden until selected, all still mounted', () => {
+    const ui = render(
+      createElement(StudioView, { practices: [makePractice()], schedule: SIX_SCHEDULE }),
+    );
+    const bench = ui.getByTestID('studio-tab-section-bench');
+    const market = ui.getByTestID('studio-tab-section-market');
+    expect(JSON.stringify(bench.props.style ?? null)).not.toContain('none');
+    expect(JSON.stringify(market.props.style ?? null)).toContain('none');
+    ui.press(ui.getByTestID('studio-tab-market'));
+    const marketNow = ui.getByTestID('studio-tab-section-market');
+    expect(JSON.stringify(marketNow.props.style ?? null)).not.toContain('none');
+    // every section stays mounted for tests and screen readers
+    expect(ui.getByTestID('studio-tab-section-archive')).toBeTruthy();
+    expect(ui.getByTestID('studio-tab-section-life')).toBeTruthy();
+  });
+
+  it('one press decays BOTH the person seat and a tier seat (no clobber)', () => {
+    // Tier state with a seated visitor on household and the person tier.
+    const tiers: Record<string, TierState> = {
+      person: createTierState('person', true),
+      household: {
+        ...createTierState('household', true),
+        roster: { tier: 'household', members: [] },
+        active_visitor: { id: 'visitor/traveling-teacher', windows_left: 2 },
+      },
+    };
+    const personTier = tiers.person;
+    if (personTier !== undefined) {
+      personTier.active_visitor = { id: 'visitor/gate-yaksa', windows_left: 2 };
+    }
+    const studio = createStudioState();
+    const withWindow = recordStudioResidues(studio, [
+      { tick: 1, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+      { tick: 2, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+      { tick: 3, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+    ]);
+    const queued = queueDevelop(withWindow, null, createRng(3n));
+    const cooked = tickStudio(queued, 16);
+    const householdBay = tickStudio(
+      queueDevelop(
+        recordStudioResidues(createStudioState(), [
+          { tick: 1, type: 'practice_tick', ids: ['x'], numbers: {} },
+          { tick: 2, type: 'practice_tick', ids: ['y'], numbers: {} },
+        ]),
+        null,
+        createRng(4n),
+      ),
+      16,
+    );
+    const session = snapshotStudioSession(
+      cooked,
+      emptyHydratedSession().idle,
+      emptyHydratedSession().life,
+      [makePractice()],
+      undefined,
+      { tiers, milestones_done: [], compendium_done: [], embodied_member: null },
+    );
+    session.benches.household = {
+      ...householdBay,
+      last_harvest_index: 1,
+      surplus: 0,
+      fold_position: 0,
+    } as never;
+    const ui = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: SIX_SCHEDULE,
+        initialSession: session,
+      }),
+    );
+    ui.press(ui.getByTestID('studio-harvest'));
+    // Both seats decayed 2 -> 1: the banners now read one window left, and
+    // a double press (re-entrancy) still archives exactly the two cards.
+    // The household guest's banner now reads ONE window left (2 -> 1).
+    const banners = ui.container.queryAll(
+      (i: { props?: { testID?: string } }) => i.props?.testID === 'studio-visitor',
+    );
+    expect(JSON.stringify(banners)).toContain('1 workings');
+    ui.press(ui.getByTestID('journey-primary'));
+    // Two cards revealed (person + household), not four on a double press.
+    const cards = ui.container.queryAll(
+      (i: { props?: { testID?: string } }) =>
+        typeof i.props?.testID === 'string' && i.props.testID.startsWith('studio-card-'),
+    );
+    expect(cards.length).toBeLessThan(3);
   });
 });

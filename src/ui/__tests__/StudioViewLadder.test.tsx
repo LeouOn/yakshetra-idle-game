@@ -298,7 +298,9 @@ describe('StudioView six-tier ladder (Phase 4 Task 4)', () => {
     // The city tier is the highest-index unlocked bench with a ready bay,
     // so harvest priority must pick it and compile at city scale. The
     // social window picks institution (city scale) over monument.
-    press(getByTestID('studio-harvest'));
+    await act(async () => {
+      press(getByTestID('studio-harvest'));
+    });
     const kinds = kindBadgesFor(container);
     expect(kinds).toContain(resolveSid('studio.kind_institution_sid'));
 

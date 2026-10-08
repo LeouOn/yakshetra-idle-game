@@ -9,7 +9,15 @@
 import { router } from 'expo-router';
 
 import AboutView from '@/ui/components/AboutView';
+import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
+import { useMounted } from '@/ui/hooks/useMounted';
 
 export default function AboutScreen() {
+  // Hydration parity: the server and the first client render ship the
+  // skeleton; the ScrollView swaps in after mount (browser finding 3).
+  const mounted = useMounted();
+  if (!mounted) {
+    return <ScreenSkeleton sections={3} testID="about-skeleton" />;
+  }
   return <AboutView onBack={() => router.back()} />;
 }

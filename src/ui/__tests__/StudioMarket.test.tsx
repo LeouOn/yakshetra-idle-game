@@ -35,7 +35,7 @@ describe('market choices in the studio', () => {
     expect(ui.getByTestID('market-tea').props.disabled).toBe(true);
     ui.press(ui.getByTestID('market-work'));
     expect(ui.getByTestID('journey-progress').children[0]).toBe(
-      'Experiences gathered: 0 · ready to cook from 3',
+      'Traces gathered: 0 · ready to cook from 3',
     );
     for (let i = 0; i < 3; i++) ui.press(ui.getByTestID('market-work'));
     const wallet = ui.getByTestID('market-wallet').children[0];
@@ -45,8 +45,8 @@ describe('market choices in the studio', () => {
     expect(ui.getByTestID('market-tea').props.disabled).toBe(false);
     ui.press(ui.getByTestID('market-tea'));
     expect(ui.getByText(`Your purse: ${before - 4} copper`)).toBeTruthy();
-    expect(ui.getByText('Taking shape: Person')).toBeTruthy();
-    expect(ui.getByText('Cook these experiences')).toBeTruthy();
-    expect(ui.getByText('−4 copper · +3 social experiences for the next working.')).toBeTruthy();
+    expect(ui.getByTestID('journey-preview')).toBeTruthy();
+    expect(ui.getByTestID('journey-primary')).toBeTruthy();
+    expect(ui.getByText('−4 copper · +3 social traces for the next working.')).toBeTruthy();
   });
 });

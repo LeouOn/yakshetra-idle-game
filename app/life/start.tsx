@@ -2,16 +2,17 @@
 //
 // On mount it attempts to load the era pack (default 'tang-china', or the
 // 'era' route param). Two render paths:
-//   - ready:        era name + lineage notes + content warnings + 3 role cards.
-//                    Tapping a role navigates to /life/[lifeId]?roleId=...
+//   - ready:        era name + lineage notes + content warnings + the pack's
+//                    own role cards. Tapping a role navigates to
+//                    /life/[lifeId]?roleId=...
 //   - unavailable:  advisory fallback (Wave 4-5 packs are not authored yet;
 //                    todo 0 advisory onboarding gates content authoring).
 //
-// Role cards: the EraPack schema (todo 4) does not yet carry an explicit
-// `roles` array (it is `.strict()` and the field is intentionally absent until
-// the first real pack ships), so role titles/descriptions are resolved via
-// string ids namespaced under the loaded era. When Wave 4 ships authored
-// roles this presentation layer already speaks the same string-id vocabulary.
+// Role cards come from the pack's `starting_roles`, so each era offers the
+// roles it actually authors and the `roleId` param is an id the life route
+// can resolve. They used to be three hardcoded keys resolved through an
+// `era.<id>.role.*` namespace, which only the Tang era defined: picking the
+// second era at the bardo threw `unknown string id` and white-screened.
 //
 // useSaveSlot is wired to surface an existing-save hint. Per-category content
 // warning toggle persistence is deferred until SaveBlob gains a settings
@@ -28,22 +29,21 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { EraPack } from '@/content/schema';
 import { loadEraPack } from '@/content/loader';
-import { currentLife } from '@/engine';
+import { openLife } from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+import { useMounted } from '@/ui/hooks/useMounted';
+import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
+import SaveSlotErrorBar from '@/ui/components/SaveSlotErrorBar';
+import type { SaveSlotError } from '@/ui/hooks/useSaveSlot';
 
 const DEFAULT_ERA_ID = 'tang-china';
-
-// Three stable role keys. Forward-compatible with Wave 4 packs: when authored
-// roles land, the era namespace already carries their titles/descriptions.
-const ROLE_KEYS = ['peasant', 'merchant', 'monastic'] as const;
-type RoleKey = (typeof ROLE_KEYS)[number];
 
 type LoadStatus = 'loading' | 'ready' | 'unavailable';
 
 interface RoleCardData {
-  readonly key: RoleKey;
+  readonly key: string;
   readonly title: string;
   readonly description: string;
   readonly selectLabel: string;
@@ -66,15 +66,20 @@ function warningLabel(warningKey: string): string {
   return tryResolveSid(`content_warning.${warningKey}.label_sid`);
 }
 
-function buildRoleCards(eraId: string): RoleCardData[] {
+/**
+ * One card per role the pack authors, labelled through the pack's own string
+ * ids. A pack without `starting_roles` yields no cards rather than cards that
+ * name roles the era does not have. A role with no label falls back to its raw
+ * id so one thin content row cannot blank the picker.
+ */
+function buildRoleCards(pack: EraPack): RoleCardData[] {
   const cards: RoleCardData[] = [];
-  for (const key of ROLE_KEYS) {
-    const title = resolveSid(`era.${eraId}.role.${key}.title_sid`);
-    const description = resolveSid(`era.${eraId}.role.${key}.description_sid`);
+  for (const role of pack.starting_roles ?? []) {
+    const title = resolveSid(role.label_sid ?? role.title_sid ?? role.id);
     cards.push({
-      key,
+      key: role.id,
       title,
-      description,
+      description: resolveSid(role.description_sid),
       selectLabel: formatSid('life.start.role_select_label_sid', { role: title }),
     });
   }
@@ -84,8 +89,9 @@ function buildRoleCards(eraId: string): RoleCardData[] {
 export default function LifeStartScreen() {
   const params = useLocalSearchParams<{ era?: string; resume?: string }>();
   const eraId = params.era ?? DEFAULT_ERA_ID;
-  const { state: saveState, loading: saveLoading } = useSaveSlot();
+  const { state: saveState, loading: saveLoading, error, clearError } = useSaveSlot();
   const [status, setStatus] = useState<LoadStatus>('loading');
+  const mounted = useMounted();
   const [pack, setPack] = useState<EraPack | null>(null);
 
   useEffect(() => {
@@ -113,7 +119,9 @@ export default function LifeStartScreen() {
     if (params.resume !== '1' || saveLoading) {
       return;
     }
-    const life = saveState === null ? null : currentLife(saveState);
+    // Only a life still in progress is resumable; a chain whose current life
+    // has ended falls through to role selection instead of reopening it.
+    const life = saveState === null ? null : openLife(saveState);
     if (life === null) {
       return;
     }
@@ -123,21 +131,17 @@ export default function LifeStartScreen() {
     });
   }, [params.resume, saveLoading, saveState]);
 
-  const handleSelectRole = (roleKey: RoleKey): void => {
+  const handleSelectRole = (roleKey: string): void => {
     router.push({
       pathname: '/life/[lifeId]',
       params: { lifeId: 'pending', roleId: roleKey, era: eraId },
     });
   };
 
-  if (status === 'loading') {
-    return (
-      <View role="main" style={styles.center}>
-        <Text accessibilityRole="header" style={styles.heading}>
-          {resolveSid('life.start.loading_sid')}
-        </Text>
-      </View>
-    );
+  if (status === 'loading' || !mounted) {
+    // The frame of the arriving screen, not a promise of one — and the same
+    // frame the server shipped, so hydration matches.
+    return <ScreenSkeleton sections={4} testID="life-start-skeleton" />;
   }
 
   if (status === 'unavailable' || pack === null) {
@@ -165,25 +169,33 @@ export default function LifeStartScreen() {
   return (
     <ReadyView
       pack={pack}
-      eraId={eraId}
       hasSave={saveState !== null}
       onSelectRole={handleSelectRole}
+      saveError={error}
+      onClearSaveError={clearError}
     />
   );
 }
 
 interface ReadyViewProps {
   readonly pack: EraPack;
-  readonly eraId: string;
   readonly hasSave: boolean;
-  readonly onSelectRole: (roleKey: RoleKey) => void;
+  readonly onSelectRole: (roleKey: string) => void;
+  readonly saveError: SaveSlotError | null;
+  readonly onClearSaveError: () => void;
 }
 
-const ReadyView: FC<ReadyViewProps> = ({ pack, eraId, hasSave, onSelectRole }) => {
+const ReadyView: FC<ReadyViewProps> = ({
+  pack,
+  hasSave,
+  onSelectRole,
+  saveError = null,
+  onClearSaveError,
+}) => {
   const [warningsExpanded, setWarningsExpanded] = useState(false);
   const eraName = resolveSid(pack.name_sid);
   const lineageNotes = resolveSid(pack.lineage_notes_sid);
-  const roleCards = buildRoleCards(eraId);
+  const roleCards = buildRoleCards(pack);
   const warnings = pack.content_warnings;
 
   return (
@@ -191,6 +203,8 @@ const ReadyView: FC<ReadyViewProps> = ({ pack, eraId, hasSave, onSelectRole }) =
       <Text accessibilityRole="header" style={styles.heading}>
         {resolveSid('life.start.heading_sid')}
       </Text>
+
+      <SaveSlotErrorBar error={saveError} onContinue={onClearSaveError} />
 
       <View style={styles.section}>
         <Text style={styles.label}>{resolveSid('life.start.era_label_sid')}</Text>

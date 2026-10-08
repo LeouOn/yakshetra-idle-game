@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   DEFAULT_KIND_RULES,
   isPinnableKind,
-  pendingResidue,
+  spendableResidue,
   pickKindFromRegistry,
   summarizeResidue,
   type Manifest,
@@ -19,6 +19,9 @@ interface Props {
   readonly onDevelop: () => void;
   readonly onHarvest: () => void;
   readonly onPin: (card: Manifest) => void;
+  /** True while the reveal stage is showing the latest card: the discovery
+   * block under it would be a duplicate, so it is omitted. */
+  readonly hideDiscovery?: boolean;
 }
 
 /** A state-backed preview: cooking uses the frozen window, gathering uses pending residue. */
@@ -30,13 +33,18 @@ export default function StudioJourney({
   onDevelop,
   onHarvest,
   onPin,
+  hideDiscovery,
 }: Props) {
-  const pending = pendingResidue(studio);
-  const window = studio.bay?.residue ?? pending;
+  // The bar, the "ready from N" line, and the gate all read the SAME
+  // spendable count (browser finding 2): pending minus held-out traces.
+  // Reading raw pending here made the screen say "Residue 26 / 3" while the
+  // develop gate truthfully evaluated 2 spendable.
+  const spendable = spendableResidue(studio);
+  const window = studio.bay?.residue ?? spendable;
   const kind =
     window.length === 0 ? null : pickKindFromRegistry(summarizeResidue(window), DEFAULT_KIND_RULES);
   const cooking = studio.bay?.status === 'cooking';
-  const developable = studio.bay === null && pending.length >= minimum;
+  const developable = studio.bay === null && spendable.length >= minimum;
   const action = harvestable ? 'reveal' : cooking ? 'tend' : developable ? 'cook' : 'gather';
   const press = harvestable ? onHarvest : developable ? onDevelop : onTend;
   const latest = studio.archive[studio.archive.length - 1];
@@ -65,7 +73,7 @@ export default function StudioJourney({
       </Text>
       <Text testID="journey-progress" style={styles.hint}>
         {studio.bay === null
-          ? formatSid('studio.journey_progress_sid', { n: pending.length, min: minimum })
+          ? formatSid('studio.journey_progress_sid', { n: spendable.length, min: minimum })
           : formatSid('studio.journey_cooking_progress_sid', {
               done: studio.bay.cook_ticks_done,
               total: studio.bay.cook_ticks_total,
@@ -84,7 +92,7 @@ export default function StudioJourney({
       >
         <Text style={styles.buttonText}>{resolveSid(`studio.journey_${action}_sid`)}</Text>
       </Pressable>
-      {latest === undefined ? null : (
+      {latest === undefined || hideDiscovery ? null : (
         <View testID="journey-discovery" style={styles.discovery}>
           <Text style={styles.hint}>{resolveSid('studio.journey_latest_sid')}</Text>
           <Text style={styles.body}>

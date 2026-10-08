@@ -16,16 +16,23 @@ export interface RailTier {
 
 export interface StudioRailProps {
   readonly tiers: readonly RailTier[];
+  /** side = desktop column; strip = phone top row (wave 2a). */
+  readonly variant?: 'side' | 'strip';
 }
 
-export default function StudioRail({ tiers }: StudioRailProps) {
+export default function StudioRail({ tiers, variant = 'side' }: StudioRailProps) {
+  const strip = variant === 'strip';
   return (
-    <View testID="studio-rail" style={styles.rail}>
+    <View testID="studio-rail" style={strip ? styles.railStrip : styles.rail}>
       <Text accessibilityRole="header" style={styles.heading}>
         {resolveSid('studio.rail_heading_sid')}
       </Text>
       {tiers.map((tier) => (
-        <View key={tier.id} testID={`studio-rail-tier-${tier.id}`} style={styles.tier}>
+        <View
+          key={tier.id}
+          testID={`studio-rail-tier-${tier.id}`}
+          style={strip ? styles.tierStrip : styles.tier}
+        >
           <Text style={tier.unlocked ? styles.label : styles.labelLocked}>
             {resolveSid(tier.unlocked ? tier.labelSid : 'studio.tier_locked_sid')}
           </Text>
@@ -50,8 +57,17 @@ export default function StudioRail({ tiers }: StudioRailProps) {
 
 const styles = StyleSheet.create({
   rail: { width: 132, paddingVertical: 24, gap: 12, backgroundColor: t.surface },
+  railStrip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 10,
+    backgroundColor: t.surface,
+  },
   heading: { fontSize: 13, fontWeight: '700', color: t.muted },
-  tier: { gap: 2 },
+  tier: { gap: 2, minHeight: 44, justifyContent: 'center' },
+  tierStrip: { gap: 2, minWidth: 96, minHeight: 44, justifyContent: 'center' },
   label: { fontSize: 15, fontWeight: '600', color: t.text },
   labelLocked: { fontSize: 15, fontWeight: '600', color: t.muted },
   ready: { fontSize: 12, fontWeight: '700', color: t.harvestText },

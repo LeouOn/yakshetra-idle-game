@@ -10,7 +10,6 @@
 // harvest priority, gate badges — iterates registries().tiers; no tier id is
 // hardcoded past the embodied person tier.
 
-import { useEffect, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Platform,
@@ -20,51 +19,43 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import type { Ending } from '@/content/schema';
-import type { ArchivePredicate, EndowmentTrack } from '@/content/progression/schema';
+import { loadEraPack } from '@/content/loader';
 import {
   QUALITY_UPGRADE_HARVESTS,
   STUDIO_TEND_TICKS,
-  DEFAULT_KIND_RULES,
   canHarvest,
   canUpgradeQuality,
   canonicalStringify,
-  compileRequestFromBay,
+  heldPending,
+  pendingIndices,
   computeArchiveStats,
   computeGlobalRewards,
-  endowableSlots,
   evaluateLifeContext,
-  fillManifestSafe,
-  harvestTableFill,
-  harvestWithFiller,
   hydrateStudioSession,
-  pendingResidue,
+  spendableResidue,
   pinnableCards,
   pinFocus,
   queueDevelop,
   stepSession,
   swapEmbodiment,
-  tableFillManifest,
   upgradeQuality,
-  type ArchiveStats,
-  type HarvestResult,
   type IdleState,
   type LifeContext,
   type LifeState,
   type Manifest,
-  type ManifestScale,
   type Practice,
   type Rng,
   type RosterMember,
   type StudioSession,
   type StudioState,
+  activityFamilyForLens,
 } from '@/engine';
-import { oneShotFiller, type ManifestCompileRequest } from '@/engine/fill-adapter';
 import { canEndow, endowManifest } from '@/engine/endowment';
-import { activeVisitorFor, noteVisitorHarvest, visitorTableOverride } from '@/engine/visitors';
-import type { CatalogEntry, CatalogMap } from '@/engine/table-catalog';
 import type { StudioKv } from '@/persistence';
 import type { CalendarEpoch } from '@/engine/calendar';
 import type { DailySchedule } from '@/engine/schedule';
@@ -72,25 +63,30 @@ import { resolveScheduleState } from '@/engine/schedule';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import {
-  kindRulesByScale,
   modifiersForSession,
   nonPersonBenches,
   registries,
   sessionFromSlices,
   useStudioSession,
-  withRecordedDrafts,
   type BenchSlices,
 } from '@/ui/hooks/useStudioSession';
 import { useStudioProgression } from '@/ui/hooks/useStudioProgression';
 import { nextAction } from '@/ui/hooks/next-action';
+import { useStudioHarvest } from '@/ui/hooks/useStudioHarvest';
+import {
+  endowPlan,
+  endowTierOf,
+  endowTrackLabel,
+  tierProgress,
+} from '@/ui/hooks/studio-view-selectors';
 import { EMBODIED_TIER } from '@/engine/ladder-const';
-import { personEffectiveMin, statValue } from '@/ui/hooks/session-selectors';
+import { personEffectiveMin } from '@/ui/hooks/session-selectors';
 import StudioActivities from './StudioActivities';
 import StudioArchive, { type EndowChipState } from './StudioArchive';
-import StudioJuice from './StudioJuice';
 import StudioLife from './StudioLife';
 import StudioNextAction from './StudioNextAction';
 import StudioJourney from './StudioJourney';
+import StudioCookPanel, { type CookChip, type CookChoice } from './StudioCookPanel';
 import StudioMarket from './StudioMarket';
 import {
   completeMarketShift,
@@ -102,8 +98,13 @@ import {
 } from '@/engine/market';
 import StudioMilestone from './StudioMilestone';
 import StudioRail, { type RailTier } from './StudioRail';
+import StudioRevealStage from './StudioRevealStage';
+import StudioTabs, { TabSection, type StudioTab } from './StudioTabs';
 import StudioRoster from './StudioRoster';
 import StudioWorld from './StudioWorld';
+import StudioChronicle from './StudioChronicle';
+import { buildChronicle } from '@/engine/chronicle';
+import { assembleWorldDraft } from '@/engine/world-draft';
 
 export const STUDIO_TEND_COUNT = STUDIO_TEND_TICKS;
 
@@ -112,10 +113,38 @@ const DEFAULT_EPOCH: CalendarEpoch = { year: 1, month: 1, day: 1, hour: 0 };
 /** Shared default so the `endings` prop keeps one identity across renders. */
 const NO_ENDINGS: readonly Ending[] = [];
 
+/**
+ * Player-facing era/role names for a life, resolved from its era pack.
+ *
+ * The engine stores ids but cannot turn them into labels (no i18n in
+ * `src/engine`), and those ids are build-internal tokens: the bench stand-in
+ * life carries `era: 'studio-bench@0.1.0'` and `role: 'operator'`. When there
+ * is no pack behind the life, both names come back absent — and every consumer
+ * omits the text rather than printing the token. Returns no keys (not
+ * `undefined` values) because `exactOptionalPropertyTypes` is on.
+ */
+function lifeDisplayNames(life: LifeState): { eraName?: string; roleName?: string } {
+  try {
+    const pack = loadEraPack(life.era);
+    const role = pack.starting_roles?.find((candidate) => candidate.id === life.role);
+    const eraName = resolveSid(pack.name_sid);
+    const roleSid = role?.label_sid ?? role?.title_sid;
+    return {
+      eraName,
+      ...(roleSid === undefined ? {} : { roleName: resolveSid(roleSid) }),
+    };
+  } catch {
+    return {};
+  }
+}
+
 export interface StudioViewProps {
   readonly onBack?: () => void;
   readonly practices: readonly Practice[];
   readonly schedule: DailySchedule;
+  /** Authored day schedules the bench rotates per in-game day (lane b1).
+   * Absent → the embodied life runs on `schedule` alone. */
+  readonly embodiedSchedules?: readonly DailySchedule[];
   readonly endings?: readonly Ending[];
   readonly initialLife?: LifeState;
   readonly initialIdle?: IdleState;
@@ -126,13 +155,22 @@ export interface StudioViewProps {
   readonly onExport?: (json: string) => void;
   /** When true, load/save the bench through {@link storage}. */
   readonly persist?: boolean;
+  /** Host-injected model completer (SPEC §16.2). Undefined → tables only. */
+  readonly completeManifest?: (
+    request: import('@/engine/fill-adapter').ManifestCompileRequest,
+  ) => Promise<unknown>;
   readonly storage?: StudioKv;
   /** Unix seconds. Injected so catch-up stays testable. */
   readonly clock?: () => number;
   /** Host-injected model completer (SPEC §16.2). Undefined → tables only;
    * the default Expo bundle never provides one. */
-  readonly completeManifest?: (request: ManifestCompileRequest) => Promise<unknown>;
   readonly epoch?: CalendarEpoch;
+}
+
+function writeChronicleClipboard(text: string): void {
+  // Web-only affordance; guarded so tests and native never throw.
+  const nav = typeof navigator !== 'undefined' ? navigator : undefined;
+  void nav?.clipboard?.writeText?.(text);
 }
 
 function defaultClock(): number {
@@ -221,110 +259,11 @@ function awayDuration(ticks: number): string {
   return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
 
-/** Harvest-priority tier for endowing: the highest unlocked tier that HAS
- * endowment tracks (content-driven; today person + household). */
-function endowTierOf(session: StudioSession): string {
-  const withTracks = new Set(registries().endowment.map((track) => track.tier));
-  const candidates = registries()
-    .tiers.filter((tier) => session.tiers[tier.id]?.unlocked === true && withTracks.has(tier.id))
-    .sort((a, b) => b.index - a.index);
-  return candidates[0]?.id ?? EMBODIED_TIER;
-}
-
-/**
- * Tracks the endow chip may offer for the session: tier match, requires met,
- * not already endowed, slot cost fitting the remaining slots (compendium
- * bonus included). Empty → every chip renders locked.
- */
-function endowPlan(session: StudioSession): readonly EndowmentTrack[] {
-  const tierId = endowTierOf(session);
-  const tier = session.tiers[tierId];
-  if (tier === undefined) {
-    return [];
-  }
-  const global = computeGlobalRewards(session.compendium_done, registries().compendium);
-  const slots = endowableSlots(tierId, session, registries().endowment, registries().tiers, global);
-  return registries().endowment.filter(
-    (track) =>
-      track.tier === tierId &&
-      !tier.endowed.includes(track.id) &&
-      (track.requires === null || session.milestones_done.includes(track.requires)) &&
-      track.slot_cost <= slots,
-  );
-}
-
-/** Display label for a track row; tracks carry no SID namespace, so the id tail names them. */
-function endowTrackLabel(track: EndowmentTrack): string {
-  const parts = track.id.split('/');
-  return parts[parts.length - 1] ?? track.id;
-}
-
-interface GateOperand {
-  readonly key: string;
-  readonly m: number;
-}
-
-/** The gte leaves of a conjunction — the badge-able operands. Non-gte
- * comparisons and or/not junctions yield none (no badge is rendered). */
-function gteOperandsOf(predicate: ArchivePredicate): readonly GateOperand[] {
-  if (predicate.op === 'gte') {
-    return [{ key: predicate.key, m: predicate.value }];
-  }
-  if (predicate.op === 'and') {
-    return predicate.operands.flatMap(gteOperandsOf);
-  }
-  return [];
-}
-
-/** The least-satisfied gte operand of the tier's unlock milestone, as n/m. */
-function tierProgress(stats: ArchiveStats, tierId: string): { n: number; m: number } | null {
-  const tier = registries().tiers.find((row) => row.id === tierId);
-  if (tier === undefined || tier.unlock_milestone === null) {
-    return null;
-  }
-  const milestone = registries().milestones.find((row) => row.id === tier.unlock_milestone);
-  if (milestone === undefined) {
-    return null;
-  }
-  const gates = gteOperandsOf(milestone.predicate);
-  if (gates.length === 0) {
-    return null;
-  }
-  let worst = gates[0]!;
-  let worstRatio = Number.POSITIVE_INFINITY;
-  for (const gate of gates) {
-    const ratio = Math.min(1, statValue(stats, gate.key) / gate.m);
-    if (ratio < worstRatio) {
-      worstRatio = ratio;
-      worst = gate;
-    }
-  }
-  return { n: Math.min(statValue(stats, worst.key), worst.m), m: worst.m };
-}
-
-/** The tier row's scale, as the manifest compiler names it.
- * Throws on an unknown tier id by design: the rail and the harvest path
- * only ever pass `tierId`s they read from `session.tiers` or
- * `registries().tiers`, so a miss means a bug, not a user input. */
-function tierScaleOf(tierId: string): ManifestScale {
-  const tier = registries().tiers.find((row) => row.id === tierId);
-  if (tier === undefined) {
-    throw new Error(`studio: no registered tier "${tierId}"`);
-  }
-  return tier.scale;
-}
-
-/** Model-acceptance gate: a model card is only archived when the record is
- * internally consistent — a model echoing a mixed provenance/fill_status
- * falls to the table path instead of archiving a contradiction. */
-function isModelCard(manifest: Manifest): boolean {
-  return manifest.provenance.source === 'model' && manifest.fill_status === 'model';
-}
-
 export default function StudioView({
   onBack,
   practices,
   schedule,
+  embodiedSchedules,
   endings = NO_ENDINGS,
   initialLife,
   initialIdle,
@@ -366,6 +305,7 @@ export default function StudioView({
   } = useStudioSession({
     practices,
     schedule,
+    ...(embodiedSchedules === undefined ? {} : { embodiedSchedules }),
     endings,
     ...(initialLife === undefined ? {} : { initialLife }),
     ...(initialIdle === undefined ? {} : { initialIdle }),
@@ -398,14 +338,28 @@ export default function StudioView({
     setReceipt((current) => ({ id: (current?.id ?? 0) + 1, text }));
   }
   const [brief, setBrief] = useState('');
+  const [cookOpen, setCookOpen] = useState(false);
+  const [cookPile, setCookPile] = useState<readonly CookChip[] | null>(null);
+  const [cookHeat, setCookHeat] = useState(0);
+  const [cookDiscount, setCookDiscount] = useState(0);
   const [endowSelection, setEndowSelection] = useState<{
     readonly cardId: string;
     readonly trackIndex: number;
   } | null>(null);
   const [exported, setExported] = useState(false);
   const [worldExported, setWorldExported] = useState(false);
-  const [juiceBurst, setJuiceBurst] = useState(0);
   const [freshHarvestId, setFreshHarvestId] = useState<string | null>(null);
+  const [reveal, setReveal] = useState<{
+    readonly card: Manifest;
+    readonly alsoRevealed: readonly Manifest[];
+    /** A sought encounter answered on this reveal (wave 3b). */
+    readonly soughtAnswered?: boolean;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState<StudioTab>('bench');
+  const [milestoneOpen, setMilestoneOpen] = useState(false);
+  const [chronicleCopied, setChronicleCopied] = useState(false);
+  const { width: viewportWidth } = useWindowDimensions();
+  const compact = viewportWidth < 720;
   const [running, setRunning] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -417,8 +371,21 @@ export default function StudioView({
     return () => clearTimeout(timer);
   }, [freshHarvestId]);
 
-  const pending = pendingResidue(studio);
-  const charge = pending.length;
+  // Chips for the cook panel: every pending trace, held-out ones flagged.
+  const cookChips: CookChip[] = [];
+  {
+    const held = new Set(heldPending(studio));
+    for (const index of pendingIndices(studio)) {
+      const event = studio.residue[index];
+      if (event !== undefined) {
+        cookChips.push({ index, event, held: held.has(index) });
+      }
+    }
+  }
+  // Lane B: the charge the player can actually cook — pending minus held-out
+  // traces. Held traces stay visible material for the NEXT cook.
+  const spendable = spendableResidue(studio);
+  const charge = spendable.length;
   // Endowed/visitor window_min widens the manual develop gate; floored at 2.
   // The bar fills to 100% when develop is actually ready, not against the
   // fixed canonical MIN_RESIDUE_TO_DEVELOP.
@@ -428,11 +395,16 @@ export default function StudioView({
   const benchReady = (tierId: string): boolean => benches[tierId]?.bay?.status === 'ready';
   const anyBenchReady = Object.keys(benches).some((tierId) => benchReady(tierId));
   const harvestable = canHarvest(studio) || anyBenchReady;
-  const developable = studio.bay === null && pending.length >= personMin;
+  const developable = studio.bay === null && spendable.length >= personMin;
   const upgradable = canUpgradeQuality(studio);
   const remainingForUpgrade = Math.max(0, QUALITY_UPGRADE_HARVESTS - studio.harvest_count);
   const latest = studio.archive[studio.archive.length - 1];
   const stats = computeArchiveStats(buildSession(), worldDrafts);
+  const chronicle = useMemo(
+    () => buildChronicle(studio.archive, worldDrafts, epoch),
+    [studio.archive, worldDrafts, epoch],
+  );
+  const worldDraft = useMemo(() => assembleWorldDraft(studio.archive), [studio.archive]);
   // Rung-by-rung disclosure: unlocked tiers plus the next locked one (its
   // badge is the climb ahead); deeper rungs stay masked until it unlocks.
   // ASSUMPTION: tiers unlock in registry order. The ladder's milestones
@@ -516,9 +488,6 @@ export default function StudioView({
       );
     }
     setExported(false);
-    if (ticks > 0) {
-      setJuiceBurst((n) => n + 1);
-    }
   }
 
   function buyMarket(purchase: MarketPurchase): void {
@@ -553,18 +522,63 @@ export default function StudioView({
   }, [running, ready, schedule, endings]);
 
   function develop(): void {
-    report(formatSid('studio.market_cook_receipt_sid', { n: pending.length }));
+    // The cook is a hand (lane B): pressing develop opens the shaping panel
+    // instead of queueing immediately. The queue call lives in confirmCook.
+    if (!developable) {
+      return;
+    }
+    // Lock the pile at open: the bench keeps ticking while the panel is up,
+    // and a quick-pick plan computed against a pile that then grew could
+    // preview (and land) as a different kind. New traces wait for the next
+    // cook; they are still pending.
+    setCookPile(cookChips);
+    setCookHeat(studio.surplus);
+    setCookDiscount(modifiersForSession(buildSession())(EMBODIED_TIER).cookSpeed);
+    setCookOpen(true);
+  }
+
+  /** The develop control names the REAL blocker (round 2): a bay waiting to
+   * be revealed, or a working already cooking — never "more work needed"
+   * while a ready bay is the actual hold-up. */
+  function developLabel(): string {
+    if (developable) {
+      return resolveSid('studio.develop_button_sid');
+    }
+    if (studio.bay?.status === 'ready') {
+      return resolveSid('studio.develop_bay_ready_sid');
+    }
+    if (studio.bay !== null) {
+      return resolveSid('studio.develop_bay_cooking_sid');
+    }
+    return resolveSid('studio.develop_locked_sid');
+  }
+
+  function confirmCook(choice: CookChoice): void {
+    setCookOpen(false);
+    setCookPile(null);
+    setCookHeat(0);
+    setCookDiscount(0);
     const trimmed = brief.trim();
     // The manual develop path queues the person bench, so its endowed
     // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the
     // engine) and its endowed/visitor window_min widens the queue gate.
     const personMods = modifiersForSession(buildSession())(EMBODIED_TIER);
-    setStudio(
-      queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current, {
-        cookTicksDiscount: personMods.cookSpeed,
-        minResidue: personMin,
-      }),
-    );
+    const queued = queueDevelop(studio, trimmed.length === 0 ? null : trimmed, rngRef.current, {
+      cookTicksDiscount: personMods.cookSpeed,
+      minResidue: personMin,
+      fire: choice.fire,
+      holdBack: choice.holdBack,
+    });
+    setStudio(queued);
+    if (queued.bay !== null) {
+      report(
+        formatSid('studio.cook_receipt_sid', {
+          n: queued.bay.residue.length,
+          fire: resolveSid(`studio.cook_fire_word_${choice.fire}_sid`),
+          ticks: queued.bay.cook_ticks_total,
+        }),
+      );
+    }
   }
 
   const lifeContext = evaluateLifeContext({
@@ -573,10 +587,41 @@ export default function StudioView({
     epoch,
     practices: runtimePractices,
     archive: studio.archive,
+    ...lifeDisplayNames(life),
   });
 
   /** Live-slice reads for the post-await paths in harvest(): the completer
    * can be in flight for seconds, so render-time closures may be stale. */
+  // Sought encounters (wave 3b): the era's recipes + the practice-id ->
+  // activity-family lookup the resolver needs. familyOf reads the runtime
+  // practices' lenses (activityFamilyForLens), so it works in both eras.
+  const encounterFamilyOf = useCallback(
+    (practiceId: string) => {
+      const practice = runtimePractices.find((row) => row.id === practiceId);
+      return practice === undefined ? null : activityFamilyForLens(practice.lens);
+    },
+    [runtimePractices],
+  );
+
+  const { harvest } = useStudioHarvest({
+    completeManifest,
+    encounters: registries().encounters,
+    familyOf: encounterFamilyOf,
+    rngRef,
+    benchRef,
+    lifeContext,
+    lifeContextOf,
+    prefersReducedMotion,
+    setStudio,
+    setBenches,
+    setProgression,
+    setWorldDrafts,
+    setFreshHarvestId,
+    setReveal,
+    setExported,
+    report,
+  });
+
   function lifeContextOf(slices: BenchSlices): LifeContext {
     return evaluateLifeContext({
       life: slices.life,
@@ -584,214 +629,8 @@ export default function StudioView({
       epoch,
       practices: slices.practices,
       archive: slices.studio.archive,
+      ...lifeDisplayNames(slices.life),
     });
-  }
-
-  /** A harvest from a tier's bench sees its guest off — the seat's windows decay. */
-  function decayVisitorSeat(tierId: string): void {
-    const noted = noteVisitorHarvest(sessionFromSlices(benchRef.current), tierId);
-    setProgression((current) => ({ ...current, tiers: noted.tiers }));
-  }
-
-  /** The person bench's visitor table swap (tier-keyed entries), or null
-   * when the default catalog is in force. */
-  function personVisitorEntriesOf(session: StudioSession): readonly CatalogEntry[] | null {
-    const reg = registries();
-    const seat = activeVisitorFor(session, EMBODIED_TIER);
-    const swap = visitorTableOverride(
-      reg.visitors,
-      seat?.id ?? null,
-      reg.visitorTables,
-      reg.catalogs,
-    );
-    return swap === reg.catalogs ? null : (swap[EMBODIED_TIER] ?? null);
-  }
-
-  /** Harvest priority: the highest-index tier with a ready bench, else the
-   * person bench (the bay the player queued by hand). */
-  function highestReadyTier(): string | null {
-    const ready = registries()
-      .tiers.filter((tier) => benches[tier.id] !== undefined && benchReady(tier.id))
-      .sort((a, b) => b.index - a.index);
-    return ready[0]?.id ?? null;
-  }
-
-  /** The seated visitor's catalog for a tier, or null if no swap is active.
-   * The override is the visitor table for every kind in the base catalog;
-   * missing table_ref content falls back to the base catalog (no throw). */
-  function visitorTierCatalog(tierId: string): CatalogMap | null {
-    const reg = registries();
-    const seat = activeVisitorFor(buildSession(), tierId);
-    if (seat === null) {
-      return null;
-    }
-    const catalog = visitorTableOverride(reg.visitors, seat.id, reg.visitorTables, reg.catalogs);
-    return catalog === reg.catalogs ? null : catalog;
-  }
-
-  /** Folded-residue bays fill at the tier's scale with its rule set. */
-  async function harvestBenchTier(tierId: string): Promise<void> {
-    const bench = benches[tierId];
-    if (bench === undefined) {
-      return;
-    }
-    const bay = bench.bay;
-    if (bay === null || bay.status !== 'ready') {
-      return;
-    }
-    const scale = tierScaleOf(tierId);
-    const rules = kindRulesByScale()[scale];
-    if (rules === undefined) {
-      throw new Error(`studio: no kind rules registered for the ${scale} scale`);
-    }
-    const request = compileRequestFromBay(
-      { ...bay, focus: bay.focus ?? null },
-      bench.quality_tier,
-      bench.harvest_count,
-      null,
-      scale,
-      rules,
-    );
-    const catalog = visitorTierCatalog(tierId) ?? registries().catalogs;
-    const tableFill = (): Manifest =>
-      tableFillManifest(
-        request.residue,
-        request.brief,
-        request.quality_tier,
-        rngRef.current,
-        request.rng_seed,
-        request.id,
-        request.focus,
-        request.life_context,
-        request.scale,
-        rules,
-        catalog,
-      );
-    let manifest: Manifest;
-    if (completeManifest === undefined) {
-      manifest = tableFill();
-    } else {
-      try {
-        const raw = await completeManifest(request);
-        const filled = fillManifestSafe(request, rngRef.current, oneShotFiller(raw));
-        manifest =
-          filled.provenance.source === 'model' && filled.fill_status === 'model'
-            ? filled
-            : // Model garbage fell back inside the safe ingest — redo with the
-              // tier's own rules and (possibly swapped) catalog.
-              tableFill();
-      } catch {
-        manifest = tableFill();
-      }
-    }
-    setStudio((current) => ({ ...current, archive: [...current.archive, manifest] }));
-    setWorldDrafts(withRecordedDrafts([...studio.archive, manifest], worldDrafts));
-    decayVisitorSeat(tierId);
-    setBenches((current) => ({
-      ...current,
-      [tierId]: { ...bench, bay: null, harvest_count: bench.harvest_count + 1 },
-    }));
-    setFreshHarvestId(prefersReducedMotion ? null : manifest.id);
-    report(formatSid('studio.market_harvest_receipt_sid', { name: manifest.name }));
-    setExported(false);
-  }
-
-  const harvestingRef = useRef(false);
-
-  async function harvest(): Promise<void> {
-    // The guard only matters while a completer fill is in flight; a table
-    // harvest resolves its state synchronously, and the `finally` below
-    // clears the flag on a microtask — gating on the completer keeps a
-    // back-to-back table press (tier rung, then the next) from being eaten
-    // by that microtask tail.
-    if (completeManifest !== undefined && harvestingRef.current) {
-      return;
-    }
-    harvestingRef.current = true;
-    try {
-      const priority = highestReadyTier();
-      if (priority !== null) {
-        await harvestBenchTier(priority);
-        return;
-      }
-      const visitorEntries = personVisitorEntriesOf(buildSession());
-      const tableResult = (): HarvestResult | null =>
-        harvestTableFill(studio, rngRef.current, lifeContext, visitorEntries);
-
-      const bay = studio.bay;
-      let result: HarvestResult | null;
-      if (completeManifest !== undefined && bay !== null && bay.status === 'ready') {
-        const request = compileRequestFromBay(
-          bay,
-          studio.quality_tier,
-          studio.harvest_count,
-          lifeContext,
-          'person',
-          DEFAULT_KIND_RULES,
-        );
-        try {
-          const raw = await completeManifest(request);
-          // Real completer latency is seconds: a pulse tick or a tend press
-          // may have landed while the fill was in flight. Read the live bench
-          // slices (the applyTicks pattern) and compute both the model
-          // attempt and the fallback against them, so the commit lands on
-          // top of the newer state instead of rolling it back.
-          const live = benchRef.current;
-          const liveContext = lifeContextOf(live);
-          const tableLive = (): HarvestResult | null =>
-            harvestTableFill(
-              live.studio,
-              rngRef.current,
-              liveContext,
-              personVisitorEntriesOf(sessionFromSlices(live)),
-            );
-          const bayStillHarvestable =
-            live.studio.bay !== null &&
-            live.studio.bay.status === 'ready' &&
-            live.studio.bay.residue_window_id === request.residue_window_id;
-          if (bayStillHarvestable) {
-            const attempt = harvestWithFiller(
-              live.studio,
-              rngRef.current,
-              oneShotFiller(raw),
-              liveContext,
-            );
-            result = attempt !== null && isModelCard(attempt.manifest) ? attempt : tableLive();
-          } else {
-            // Mid-await the bay was replaced (a develop queued a different
-            // window): archive a good model card, never touch the new bay.
-            const card = fillManifestSafe(request, rngRef.current, oneShotFiller(raw));
-            result = isModelCard(card)
-              ? {
-                  studio: { ...live.studio, archive: [...live.studio.archive, card] },
-                  manifest: card,
-                }
-              : null;
-          }
-        } catch {
-          const live = benchRef.current;
-          result = harvestTableFill(
-            live.studio,
-            rngRef.current,
-            lifeContextOf(live),
-            personVisitorEntriesOf(sessionFromSlices(live)),
-          );
-        }
-      } else {
-        result = tableResult();
-      }
-      if (result === null) {
-        return;
-      }
-      decayVisitorSeat(EMBODIED_TIER);
-      setStudio(result.studio);
-      setWorldDrafts(withRecordedDrafts(result.studio.archive, worldDrafts));
-      setFreshHarvestId(prefersReducedMotion ? null : result.manifest.id);
-      report(formatSid('studio.market_harvest_receipt_sid', { name: result.manifest.name }));
-      setExported(false);
-    } finally {
-      harvestingRef.current = false;
-    }
   }
 
   function deepen(): void {
@@ -935,299 +774,362 @@ export default function StudioView({
   }
 
   return (
-    <View style={styles.shell}>
-      <StudioRail tiers={railTiers} />
-      <ScrollView
-        testID="studio-screen"
-        role="main"
-        style={styles.screen}
-        contentContainerStyle={styles.container}
-      >
-        {onBack === undefined ? null : (
-          <Pressable
-            role="button"
-            accessibilityLabel={resolveSid('studio.back_button_sid')}
-            onPress={onBack}
-            style={styles.back}
-          >
-            <Text style={styles.backText}>{resolveSid('studio.back_button_sid')}</Text>
-          </Pressable>
+    <View style={compact ? styles.shellCompact : styles.shell}>
+      <StudioRail tiers={railTiers} variant={compact ? 'strip' : 'side'} />
+      <View style={styles.screenColumn}>
+        {reveal === null ? null : (
+          <StudioRevealStage
+            card={reveal.card}
+            alsoRevealed={reveal.alsoRevealed}
+            reducedMotion={prefersReducedMotion}
+            pinned={studio.pinned}
+            onPin={pin}
+            soughtAnswered={reveal.soughtAnswered === true}
+            onContinue={() => setReveal(null)}
+          />
         )}
+        <ScrollView
+          testID="studio-screen"
+          role="main"
+          style={styles.screen}
+          contentContainerStyle={styles.container}
+        >
+          {onBack === undefined ? null : (
+            <Pressable
+              role="button"
+              accessibilityLabel={resolveSid('studio.back_button_sid')}
+              onPress={onBack}
+              style={styles.back}
+            >
+              <Text style={styles.backText}>{resolveSid('studio.back_button_sid')}</Text>
+            </Pressable>
+          )}
 
-        <Text accessibilityRole="header" style={styles.title}>
-          {resolveSid('studio.title_sid')}
-        </Text>
-        <Text style={styles.subtitle}>{resolveSid('studio.subtitle_sid')}</Text>
+          <Text accessibilityRole="header" style={styles.title}>
+            {resolveSid('studio.title_sid')}
+          </Text>
+          <Text style={styles.subtitle}>{resolveSid('studio.subtitle_sid')}</Text>
 
-        {away === null ? null : (
-          <View testID="studio-away" style={styles.away}>
-            <Text style={styles.awayText}>
-              {formatSid('studio.away_sid', {
-                duration: awayDuration(away.ticksSimulated),
-                residue: away.residueGained,
-              })}
-            </Text>
-            {away.capped ? (
-              <Text style={styles.hint}>{resolveSid('studio.away_capped_sid')}</Text>
+          <StudioTabs active={activeTab} onSelect={setActiveTab} />
+
+          {away === null ? null : (
+            <View testID="studio-away" style={styles.away}>
+              <Text style={styles.awayText}>
+                {formatSid('studio.away_sid', {
+                  duration: awayDuration(away.ticksSimulated),
+                  residue: away.residueGained,
+                })}
+              </Text>
+              {away.capped ? (
+                <Text style={styles.hint}>{resolveSid('studio.away_capped_sid')}</Text>
+              ) : null}
+              {away.bayReady ? (
+                <Text style={styles.ready}>{resolveSid('studio.away_ready_sid')}</Text>
+              ) : null}
+              <Pressable
+                role="button"
+                testID="studio-away-dismiss"
+                accessibilityLabel={resolveSid('studio.away_dismiss_sid')}
+                onPress={() => setAway(null)}
+              >
+                <Text style={styles.backText}>{resolveSid('studio.away_dismiss_sid')}</Text>
+              </Pressable>
+            </View>
+          )}
+
+          {seatedVisitors.map(({ key, sidNs, windows }) => (
+            <View key={key} testID="studio-visitor" style={styles.away}>
+              <Text style={styles.awayText}>
+                {formatSid('studio.visitor_banner_sid', { name: resolveSid(`${sidNs}.name_sid`) })}
+              </Text>
+              <Text style={styles.hint}>
+                {formatSid('studio.visitor_windows_sid', { n: windows })}
+              </Text>
+            </View>
+          ))}
+
+          <TabSection tab="market" active={activeTab}>
+            <StudioMarket
+              copper={copperBalance(buildSession())}
+              receipt={receipt}
+              onWork={() => applyTicks(STUDIO_TEND_TICKS, true)}
+              onBuy={buyMarket}
+            />
+          </TabSection>
+          <TabSection tab="bench" active={activeTab}>
+            <StudioJourney
+              studio={studio}
+              minimum={personMin}
+              harvestable={harvestable}
+              onTend={tend}
+              onDevelop={develop}
+              onHarvest={() => void harvest()}
+              onPin={pin}
+              {...(reveal === null ? {} : { hideDiscovery: true })}
+            />
+            <StudioNextAction action={nextAction(buildSession(), worldDrafts, registries())} />
+
+            <View style={styles.panel}>
+              <Text style={styles.panelLabel}>
+                {formatSid('studio.charge_label_sid', { n: charge, min: personMin })}
+              </Text>
+              <View
+                style={styles.barTrack}
+                accessibilityLabel={formatSid('studio.charge_label_sid', {
+                  n: charge,
+                  min: personMin,
+                })}
+              >
+                <View style={[styles.barFill, { width: `${Math.round(chargeRatio * 100)}%` }]} />
+              </View>
+              <Text style={styles.hint}>
+                {developable
+                  ? resolveSid('studio.charge_ready_sid')
+                  : resolveSid('studio.charge_hint_sid')}
+              </Text>
+              <Text testID="studio-practice-now" style={styles.hint}>
+                {activePracticeLine(schedule, idle, runtimePractices)}
+              </Text>
+              {studio.surplus <= 0 ? null : (
+                <Text testID="studio-surplus" style={styles.banked}>
+                  {formatSid('studio.banked_heat_sid', { n: studio.surplus })}
+                </Text>
+              )}
+            </View>
+
+            <Pressable
+              role="button"
+              testID="studio-tend"
+              accessibilityLabel={resolveSid('studio.tend_button_sid')}
+              onPress={tend}
+              style={[styles.button, styles.buttonSecondary]}
+            >
+              <Text style={styles.buttonText}>{resolveSid('studio.tend_button_sid')}</Text>
+            </Pressable>
+
+            <Pressable
+              role="button"
+              testID="studio-run"
+              accessibilityLabel={
+                running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')
+              }
+              onPress={() => setRunning((value) => !value)}
+              style={[styles.button, styles.buttonSecondary]}
+            >
+              <Text style={styles.buttonText}>
+                {running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')}
+              </Text>
+            </Pressable>
+
+            <Text style={styles.panelLabel}>{resolveSid('studio.brief_label_sid')}</Text>
+            <TextInput
+              testID="studio-brief"
+              accessibilityLabel={resolveSid('studio.brief_label_sid')}
+              placeholder={resolveSid('studio.brief_placeholder_sid')}
+              value={brief}
+              onChangeText={setBrief}
+              style={styles.input}
+            />
+
+            <Pressable
+              role="button"
+              testID="studio-develop"
+              accessibilityLabel={resolveSid('studio.develop_button_sid')}
+              disabled={!developable}
+              onPress={developable ? develop : undefined}
+              style={[styles.button, developable ? null : styles.buttonDisabled]}
+            >
+              <Text testID="studio-develop-label" style={styles.buttonText}>
+                {developLabel()}
+              </Text>
+            </Pressable>
+
+            {cookOpen && developable ? (
+              <StudioCookPanel
+                chips={cookPile ?? cookChips}
+                gate={personMin}
+                onCook={confirmCook}
+                cookTicksDiscount={cookDiscount}
+                surplus={cookHeat}
+                onCancel={() => {
+                  setCookOpen(false);
+                  setCookPile(null);
+                  setCookHeat(0);
+                  setCookDiscount(0);
+                }}
+              />
             ) : null}
-            {away.bayReady ? (
-              <Text style={styles.ready}>{resolveSid('studio.away_ready_sid')}</Text>
+
+            <View style={styles.panel}>
+              {studio.bay === null ? (
+                anyBenchReady ? (
+                  <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
+                ) : (
+                  <Text style={styles.hint}>{resolveSid('studio.bay_empty_sid')}</Text>
+                )
+              ) : studio.bay.status === 'ready' ? (
+                <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
+              ) : (
+                <Text style={styles.hint}>
+                  {formatSid('studio.bay_cooking_sid', {
+                    done: studio.bay.cook_ticks_done,
+                    total: studio.bay.cook_ticks_total,
+                  })}
+                </Text>
+              )}
+            </View>
+
+            <Pressable
+              role="button"
+              testID="studio-harvest"
+              accessibilityLabel={resolveSid('studio.harvest_button_sid')}
+              disabled={!harvestable}
+              onPress={harvestable ? () => void harvest() : undefined}
+              style={[styles.button, harvestable ? styles.buttonHarvest : styles.buttonDisabled]}
+            >
+              <Text style={styles.buttonText}>{resolveSid('studio.harvest_button_sid')}</Text>
+            </Pressable>
+
+            {upgradable ? (
+              <Pressable
+                role="button"
+                testID="studio-upgrade"
+                accessibilityLabel={resolveSid('studio.upgrade_button_sid')}
+                onPress={deepen}
+                style={[styles.button, styles.buttonSecondary]}
+              >
+                <Text style={styles.buttonText}>{resolveSid('studio.upgrade_button_sid')}</Text>
+              </Pressable>
+            ) : remainingForUpgrade > 0 ? (
+              <Text style={styles.hint}>
+                {formatSid('studio.upgrade_hint_sid', { n: remainingForUpgrade })}
+              </Text>
             ) : null}
             <Pressable
               role="button"
-              testID="studio-away-dismiss"
-              accessibilityLabel={resolveSid('studio.away_dismiss_sid')}
-              onPress={() => setAway(null)}
+              testID="studio-milestone-disclosure"
+              accessibilityLabel={resolveSid('studio.milestone_disclosure_sid')}
+              onPress={() => setMilestoneOpen((value) => !value)}
+              style={styles.disclosure}
             >
-              <Text style={styles.backText}>{resolveSid('studio.away_dismiss_sid')}</Text>
+              <Text style={styles.disclosureText}>
+                {resolveSid('studio.milestone_disclosure_sid')}
+              </Text>
             </Pressable>
-          </View>
-        )}
+            {milestoneOpen ? (
+              <StudioMilestone session={buildSession()} stats={stats} registries={registries()} />
+            ) : null}
+          </TabSection>
 
-        {seatedVisitors.map(({ key, sidNs, windows }) => (
-          <View key={key} testID="studio-visitor" style={styles.away}>
-            <Text style={styles.awayText}>
-              {formatSid('studio.visitor_banner_sid', { name: resolveSid(`${sidNs}.name_sid`) })}
-            </Text>
-            <Text style={styles.hint}>
-              {formatSid('studio.visitor_windows_sid', { n: windows })}
-            </Text>
-          </View>
-        ))}
+          <TabSection tab="life" active={activeTab}>
+            <StudioLife context={lifeContext} {...(onExport === undefined ? {} : { onExport })} />
 
-        <StudioMarket
-          copper={copperBalance(buildSession())}
-          receipt={receipt}
-          onWork={() => applyTicks(STUDIO_TEND_TICKS, true)}
-          onBuy={buyMarket}
-        />
-        <StudioJourney
-          studio={studio}
-          minimum={personMin}
-          harvestable={harvestable}
-          onTend={tend}
-          onDevelop={develop}
-          onHarvest={() => void harvest()}
-          onPin={pin}
-        />
-        <StudioMilestone session={buildSession()} stats={stats} registries={registries()} />
-        <StudioNextAction action={nextAction(buildSession(), worldDrafts, registries())} />
-
-        <View style={styles.panel}>
-          <Text style={styles.panelLabel}>
-            {formatSid('studio.charge_label_sid', { n: charge, min: personMin })}
-          </Text>
-          <View
-            style={styles.barTrack}
-            accessibilityLabel={formatSid('studio.charge_label_sid', {
-              n: charge,
-              min: personMin,
-            })}
-          >
-            <View style={[styles.barFill, { width: `${Math.round(chargeRatio * 100)}%` }]} />
-          </View>
-          <Text style={styles.hint}>
-            {developable
-              ? resolveSid('studio.charge_ready_sid')
-              : resolveSid('studio.charge_hint_sid')}
-          </Text>
-          <Text testID="studio-practice-now" style={styles.hint}>
-            {activePracticeLine(schedule, idle, runtimePractices)}
-          </Text>
-          {studio.surplus <= 0 ? null : (
-            <Text testID="studio-surplus" style={styles.gold}>
-              {formatSid('studio.surplus_sid', { n: studio.surplus })}
-            </Text>
-          )}
-        </View>
-
-        <View style={styles.tendWrap}>
-          <Pressable
-            role="button"
-            testID="studio-tend"
-            accessibilityLabel={resolveSid('studio.tend_button_sid')}
-            onPress={tend}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>{resolveSid('studio.tend_button_sid')}</Text>
-          </Pressable>
-          <StudioJuice burstId={juiceBurst} reducedMotion={prefersReducedMotion} />
-        </View>
-
-        <Pressable
-          role="button"
-          testID="studio-run"
-          accessibilityLabel={
-            running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')
-          }
-          onPress={() => setRunning((value) => !value)}
-          style={[styles.button, styles.buttonSecondary]}
-        >
-          <Text style={styles.buttonText}>
-            {running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')}
-          </Text>
-        </Pressable>
-
-        <Text style={styles.panelLabel}>{resolveSid('studio.brief_label_sid')}</Text>
-        <TextInput
-          testID="studio-brief"
-          accessibilityLabel={resolveSid('studio.brief_label_sid')}
-          placeholder={resolveSid('studio.brief_placeholder_sid')}
-          value={brief}
-          onChangeText={setBrief}
-          style={styles.input}
-        />
-
-        <Pressable
-          role="button"
-          testID="studio-develop"
-          accessibilityLabel={resolveSid('studio.develop_button_sid')}
-          disabled={!developable}
-          onPress={developable ? develop : undefined}
-          style={[styles.button, developable ? null : styles.buttonDisabled]}
-        >
-          <Text style={styles.buttonText}>
-            {developable
-              ? resolveSid('studio.develop_button_sid')
-              : resolveSid('studio.develop_locked_sid')}
-          </Text>
-        </Pressable>
-
-        <View style={styles.panel}>
-          {studio.bay === null ? (
-            anyBenchReady ? (
-              <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
-            ) : (
-              <Text style={styles.hint}>{resolveSid('studio.bay_empty_sid')}</Text>
-            )
-          ) : studio.bay.status === 'ready' ? (
-            <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
-          ) : (
-            <Text style={styles.hint}>
-              {formatSid('studio.bay_cooking_sid', {
-                done: studio.bay.cook_ticks_done,
-                total: studio.bay.cook_ticks_total,
-              })}
-            </Text>
-          )}
-        </View>
-
-        <Pressable
-          role="button"
-          testID="studio-harvest"
-          accessibilityLabel={resolveSid('studio.harvest_button_sid')}
-          disabled={!harvestable}
-          onPress={harvestable ? () => void harvest() : undefined}
-          style={[styles.button, harvestable ? styles.buttonHarvest : styles.buttonDisabled]}
-        >
-          <Text style={styles.buttonText}>{resolveSid('studio.harvest_button_sid')}</Text>
-        </Pressable>
-
-        {upgradable ? (
-          <Pressable
-            role="button"
-            testID="studio-upgrade"
-            accessibilityLabel={resolveSid('studio.upgrade_button_sid')}
-            onPress={deepen}
-            style={[styles.button, styles.buttonSecondary]}
-          >
-            <Text style={styles.buttonText}>{resolveSid('studio.upgrade_button_sid')}</Text>
-          </Pressable>
-        ) : remainingForUpgrade > 0 ? (
-          <Text style={styles.hint}>
-            {formatSid('studio.upgrade_hint_sid', { n: remainingForUpgrade })}
-          </Text>
-        ) : null}
-
-        <StudioLife context={lifeContext} {...(onExport === undefined ? {} : { onExport })} />
-
-        <StudioActivities
-          practices={runtimePractices}
-          marketShifts={buildSession().life.skills.market_shifts}
-          copper={copperBalance(buildSession())}
-          residueCount={buildSession().benches.person?.residue.length}
-        />
-
-        <StudioWorld
-          archive={studio.archive}
-          pinned={studio.pinned}
-          onPin={pin}
-          onExportWorld={exportWorld}
-          worldExported={worldExported}
-        />
-
-        {registries()
-          .tiers.filter(
-            (tier) =>
-              tier.id !== EMBODIED_TIER &&
-              (progression.tiers[tier.id]?.roster.members.length ?? 0) > 0,
-          )
-          .map((tier) => (
-            <StudioRoster
-              key={tier.id}
-              members={progression.tiers[tier.id]?.roster.members ?? []}
-              embodiedMemberId={progression.embodied_member?.member ?? null}
-              pinnable={pinnableCards(studio.archive)}
-              onEmbody={embody}
-              onFocus={(id, cardId) => assignFocus(tier.id, id, cardId)}
+            <StudioActivities
+              practices={runtimePractices}
+              marketShifts={buildSession().life.skills.market_shifts}
+              copper={copperBalance(buildSession())}
+              residueCount={buildSession().benches.person?.residue.length}
             />
-          ))}
 
-        <Text accessibilityRole="header" style={styles.archiveHeading}>
-          {resolveSid('studio.archive_heading_sid')}
-        </Text>
-        <StudioArchive
-          archive={studio.archive}
-          freshId={freshHarvestId}
-          endowState={endowStateFor}
-          onEndow={endowPick}
-          onEndowCommit={endowCommit}
-        />
+            <StudioWorld
+              archive={studio.archive}
+              pinned={studio.pinned}
+              onPin={pin}
+              onExportWorld={exportWorld}
+              worldExported={worldExported}
+            />
 
-        {latest === undefined ? null : (
-          <Pressable
-            role="button"
-            testID="studio-export"
-            accessibilityLabel={resolveSid('studio.export_button_sid')}
-            onPress={exportLatest}
-            style={[styles.button, styles.buttonSecondary]}
-          >
-            <Text style={styles.buttonText}>
-              {exported
-                ? resolveSid('studio.export_copied_sid')
-                : resolveSid('studio.export_button_sid')}
+            {registries()
+              .tiers.filter(
+                (tier) =>
+                  tier.id !== EMBODIED_TIER &&
+                  (progression.tiers[tier.id]?.roster.members.length ?? 0) > 0,
+              )
+              .map((tier) => (
+                <StudioRoster
+                  key={tier.id}
+                  members={progression.tiers[tier.id]?.roster.members ?? []}
+                  embodiedMemberId={progression.embodied_member?.member ?? null}
+                  pinnable={pinnableCards(studio.archive)}
+                  onEmbody={embody}
+                  onFocus={(id, cardId) => assignFocus(tier.id, id, cardId)}
+                />
+              ))}
+          </TabSection>
+
+          <TabSection tab="archive" active={activeTab}>
+            <Text accessibilityRole="header" style={styles.archiveHeading}>
+              {resolveSid('studio.archive_heading_sid')}
             </Text>
-          </Pressable>
-        )}
+            <StudioArchive
+              archive={studio.archive}
+              freshId={freshHarvestId}
+              endowState={endowStateFor}
+              onEndow={endowPick}
+              onEndowCommit={endowCommit}
+            />
 
-        <View testID="studio-compendium" style={styles.compendium}>
-          <Text accessibilityRole="header" style={styles.archiveHeading}>
-            {resolveSid('studio.compendium_heading_sid')}
-          </Text>
-          {registries().compendium.map((entry) => {
-            const done = progression.compendium_done.includes(entry.id);
-            return (
-              <View
-                key={entry.id}
-                testID={`studio-compendium-row-${entry.id}`}
-                style={styles.compendiumRow}
+            {latest === undefined ? null : (
+              <Pressable
+                role="button"
+                testID="studio-export"
+                accessibilityLabel={resolveSid('studio.export_button_sid')}
+                onPress={exportLatest}
+                style={[styles.button, styles.buttonSecondary]}
               >
-                <Text style={styles.compendiumName}>{resolveSid(`${entry.sid_ns}.name_sid`)}</Text>
-                {done ? (
-                  <>
-                    <Text style={styles.hint}>{resolveSid(`${entry.sid_ns}.desc_sid`)}</Text>
-                    <Text style={styles.compendiumStatus}>
-                      {resolveSid('studio.compendium_done_sid')}
+                <Text style={styles.buttonText}>
+                  {exported
+                    ? resolveSid('studio.export_copied_sid')
+                    : resolveSid('studio.export_button_sid')}
+                </Text>
+              </Pressable>
+            )}
+
+            <View testID="studio-compendium" style={styles.compendium}>
+              <Text accessibilityRole="header" style={styles.archiveHeading}>
+                {resolveSid('studio.compendium_heading_sid')}
+              </Text>
+              {registries().compendium.map((entry) => {
+                const done = progression.compendium_done.includes(entry.id);
+                return (
+                  <View
+                    key={entry.id}
+                    testID={`studio-compendium-row-${entry.id}`}
+                    style={styles.compendiumRow}
+                  >
+                    <Text style={styles.compendiumName}>
+                      {resolveSid(`${entry.sid_ns}.name_sid`)}
                     </Text>
-                  </>
-                ) : (
-                  <Text style={styles.hint}>{resolveSid('studio.compendium_locked_sid')}</Text>
-                )}
-              </View>
-            );
-          })}
-        </View>
-      </ScrollView>
+                    {done ? (
+                      <>
+                        <Text style={styles.hint}>{resolveSid(`${entry.sid_ns}.desc_sid`)}</Text>
+                        <Text style={styles.compendiumStatus}>
+                          {resolveSid('studio.compendium_done_sid')}
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={styles.hint}>{resolveSid('studio.compendium_locked_sid')}</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          </TabSection>
+
+          <TabSection tab="world" active={activeTab}>
+            <StudioChronicle
+              entries={chronicle}
+              worldName={worldDraft?.name ?? null}
+              worldLine={worldDraft?.one_liner ?? null}
+              onCopy={(text) => {
+                setChronicleCopied(true);
+                writeChronicleClipboard(text);
+              }}
+              copied={chronicleCopied}
+            />
+          </TabSection>
+        </ScrollView>
+      </View>
 
       {ceremonyMilestone === null ? null : (
         <View testID="graduation-overlay" style={styles.overlay}>
@@ -1254,7 +1156,9 @@ export default function StudioView({
 
 const styles = StyleSheet.create({
   shell: { flex: 1, flexDirection: 'row', backgroundColor: t.bg },
+  shellCompact: { flex: 1, flexDirection: 'column', backgroundColor: t.bg },
   screen: { flex: 1, backgroundColor: t.bg },
+  screenColumn: { flex: 1, backgroundColor: t.bg },
   container: { padding: 24, gap: 12, paddingBottom: 48, backgroundColor: t.bg },
   back: { alignSelf: 'flex-start', paddingVertical: 8 },
   backText: { fontSize: 16, color: t.muted },
@@ -1280,8 +1184,10 @@ const styles = StyleSheet.create({
   barFill: { height: 12, backgroundColor: t.accent },
   hint: { fontSize: 14, color: t.muted },
   gold: { fontSize: 14, color: t.gold, fontWeight: '600' },
+  banked: { fontSize: 12, color: t.muted },
+  disclosure: { minHeight: 44, justifyContent: 'center', paddingVertical: 8 },
+  disclosureText: { fontSize: 14, fontWeight: '600', color: t.muted },
   ready: { fontSize: 16, fontWeight: '600', color: t.harvestText },
-  tendWrap: { position: 'relative' },
   input: {
     borderWidth: 1,
     borderColor: t.line,

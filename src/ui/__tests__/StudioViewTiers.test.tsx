@@ -223,19 +223,23 @@ describe('StudioView tier generalization', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-    press(getByTestID('studio-harvest'));
+    await act(async () => {
+      press(getByTestID('studio-harvest'));
+    });
     const kinds = kindBadges(container);
+    // Round 2: one reveal press drains EVERY ready bench in priority order —
+    // the org charter lands BEFORE the household tradition.
     expect(kinds).toContain(resolveSid('studio.kind_charter_sid'));
+    expect(kinds.indexOf(resolveSid('studio.kind_charter_sid'))).toBeLessThan(
+      kinds.indexOf(resolveSid('studio.kind_tradition_sid')),
+    );
 
     press(getByTestID('studio-export'));
     expect(onExport).toHaveBeenCalledTimes(1);
     const json = onExport.mock.calls[0]?.[0] as string;
-    expect(json).toContain('"scale":"org"');
-    expect(json).toContain('"kind":"charter"');
-
-    // The next press falls through to the household rung (tradition scale).
-    press(getByTestID('studio-harvest'));
-    expect(kindBadges(container)).toContain(resolveSid('studio.kind_tradition_sid'));
+    // Latest card = the household rung (drained after org).
+    expect(json).toContain('"scale":"household"');
+    expect(json).toContain('"kind":"tradition"');
     probe.mockRestore();
   });
 

@@ -95,6 +95,24 @@ export interface SlotSummary {
   readonly blob: SaveBlob | null;
 }
 
+/**
+ * A persistence failure that this hook swallowed on purpose.
+ *
+ * Persistence used to fail *uncaught*: `adapter().save()` and `adapter().load()`
+ * were awaited directly, so any throw (a serialization fault, a full quota, a
+ * `localStorage` that throws in private mode) escaped as an unhandled promise
+ * rejection while the hook went on reporting `state: null` — indistinguishable
+ * from a fresh slot. That is how a web build could write no save at all and
+ * still look like a working game. Failures are now captured here instead, so a
+ * screen can show them and a test can assert on them.
+ */
+export interface SaveSlotError {
+  /** Which persistence call failed. */
+  readonly operation: 'load' | 'save' | 'import' | 'export' | 'delete';
+  /** Human-readable detail, including the underlying message. */
+  readonly message: string;
+}
+
 // ---------------------------------------------------------------------------
 // Base64 codec around the canonical save envelope
 // ---------------------------------------------------------------------------
@@ -174,7 +192,11 @@ export interface UseSaveSlotResult {
   /** True until the initial load resolves. */
   readonly loading: boolean;
   /** Send a semantic or persistence action to this slot. */
-  readonly dispatch: (action: SaveSlotAction) => Promise<void>;
+  /** Send a semantic or persistence action to this slot. PERSIST resolves
+   * to `true` when the write landed and `false` when it failed (the error
+   * state says why) — callers that navigate after saving must await it and
+   * check, instead of trusting a resolved promise. */
+  readonly dispatch: (action: SaveSlotAction) => Promise<boolean>;
   /** In-memory accessibility + content-warning settings for this slot. */
   readonly settings: AppSettings;
   /** Merge a partial settings patch into the current settings. */
@@ -194,6 +216,20 @@ export interface UseSaveSlotResult {
   readonly importSlot: (slot: number, base64: string) => Promise<void>;
   /** Delete an arbitrary slot (no-op when absent), then refresh. */
   readonly deleteSlot: (slot: number) => Promise<void>;
+  /**
+   * The most recent persistence failure, or `null`. Screens should surface
+   * this rather than showing an empty slot and implying nothing was ever
+   * saved; `clearError` dismisses it.
+   */
+  readonly error: SaveSlotError | null;
+  /** Dismiss {@link UseSaveSlotResult.error}. */
+  readonly clearError: () => void;
+}
+
+/** Build a `SaveSlotError` from whatever was thrown, without losing the cause. */
+function toSaveSlotError(operation: SaveSlotError['operation'], err: unknown): SaveSlotError {
+  const message = err instanceof Error ? err.message : String(err);
+  return { operation, message: `save slot ${operation} failed: ${message}` };
 }
 
 /**
@@ -209,6 +245,11 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
     disclaimerAccepted: readStoredDisclaimer(),
   }));
   const [allSlots, setAllSlots] = useState<readonly SlotSummary[]>([]);
+  const [error, setError] = useState<SaveSlotError | null>(null);
+
+  const clearError = useCallback((): void => {
+    setError(null);
+  }, []);
 
   const refreshAllSlots = useCallback(async (): Promise<void> => {
     const summaries: SlotSummary[] = [];
@@ -223,21 +264,29 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
     let cancelled = false;
     void (async () => {
       setLoading(true);
-      const slots = await adapter().listSlots();
-      const blob = slots.includes(slot) ? await adapter().load(slot) : null;
-      const summaries: SlotSummary[] = [];
-      for (const s of MANAGED_SLOTS) {
-        if (s === slot) {
-          summaries.push({ slot: s, blob });
-        } else {
-          const b = slots.includes(s) ? await adapter().load(s) : null;
-          summaries.push({ slot: s, blob: b });
+      try {
+        const slots = await adapter().listSlots();
+        const blob = slots.includes(slot) ? await adapter().load(slot) : null;
+        const summaries: SlotSummary[] = [];
+        for (const s of MANAGED_SLOTS) {
+          if (s === slot) {
+            summaries.push({ slot: s, blob });
+          } else {
+            const b = slots.includes(s) ? await adapter().load(s) : null;
+            summaries.push({ slot: s, blob: b });
+          }
         }
-      }
-      if (!cancelled) {
-        setState(blob);
-        setAllSlots(summaries);
-        setLoading(false);
+        if (!cancelled) {
+          setState(blob);
+          setAllSlots(summaries);
+          setError(null);
+        }
+      } catch (err) {
+        // A load that throws must not look like an empty slot. Surface it and
+        // leave `state` null so a fresh start is still possible.
+        if (!cancelled) setError(toSaveSlotError('load', err));
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -260,7 +309,7 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   }, []);
 
   const dispatch = useCallback(
-    async (action: SaveSlotAction): Promise<void> => {
+    async (action: SaveSlotAction): Promise<boolean> => {
       switch (action.type) {
         case 'NEW_CHAIN':
         case 'START_LIFE':
@@ -271,17 +320,34 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
           throw new SaveSlotActionNotImplementedError(action.type);
 
         case 'PERSIST': {
-          await adapter().save(slot, action.blob);
-          setState(action.blob);
+          try {
+            await adapter().save(slot, action.blob);
+            setState(action.blob);
+            setError(null);
+          } catch (err) {
+            // Do not rethrow: callers fire-and-forget this dispatch, so a
+            // rethrow would be an unhandled rejection again. The slot simply
+            // did not change, and `error` says why. The resolved `false`
+            // (wave-1 review #4) lets an awaiting caller know not to
+            // navigate on a failed write.
+            setError(toSaveSlotError('save', err));
+            return false;
+          }
           await refreshAllSlots();
-          return;
+          return true;
         }
 
         case 'DELETE_SLOT': {
-          await adapter().deleteSlot(slot);
-          setState(null);
+          try {
+            await adapter().deleteSlot(slot);
+            setState(null);
+            setError(null);
+          } catch (err) {
+            setError(toSaveSlotError('delete', err));
+            return false;
+          }
           await refreshAllSlots();
-          return;
+          return true;
         }
 
         default: {
@@ -308,10 +374,16 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
 
   const importSlot = useCallback(
     async (target: number, base64: string): Promise<void> => {
-      const blob = decodeSaveBlob(base64);
-      await adapter().save(target, blob);
-      if (target === slot) {
-        setState(blob);
+      try {
+        const blob = decodeSaveBlob(base64);
+        await adapter().save(target, blob);
+        if (target === slot) {
+          setState(blob);
+        }
+        setError(null);
+      } catch (err) {
+        setError(toSaveSlotError('import', err));
+        return;
       }
       await refreshAllSlots();
     },
@@ -341,5 +413,7 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
     exportSlot,
     importSlot,
     deleteSlot,
+    error,
+    clearError,
   };
 }

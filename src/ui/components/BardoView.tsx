@@ -47,12 +47,25 @@ export function eraNameSid(era: string | null): string | null {
 }
 
 /**
- * Compute the eras offered after a completed life. The prototype has exactly
- * two eras: after one, the other is offered; after both, none (the route then
- * navigates to /chain-complete). `null` previous means a fresh chain offers all.
+ * Lives in a chain before it closes. The prototype chain is two lives long
+ * (see the life-chain entry in `src/i18n/en.json`), so the second death is
+ * the chain's end rather than another era to pick.
  */
-export function nextErasAfter(previousEra: string | null): readonly EraOption[] {
-  if (previousEra === null) return DEFAULT_ERA_OPTIONS;
+export const CHAIN_LIFE_COUNT = 2;
+
+/**
+ * Compute the eras offered after a completed life. A chain with lives left
+ * offers the eras it has not played (all of them for a fresh chain); a chain
+ * that has spent its lives offers none, and the route then navigates to
+ * /chain-complete. `null` previous era means a fresh chain.
+ */
+export function nextErasAfter(previousEra: string | null, livesPlayed = 0): readonly EraOption[] {
+  if (livesPlayed >= CHAIN_LIFE_COUNT) {
+    return [];
+  }
+  if (previousEra === null) {
+    return DEFAULT_ERA_OPTIONS;
+  }
   return DEFAULT_ERA_OPTIONS.filter((e) => e.id !== previousEra);
 }
 
@@ -148,9 +161,23 @@ export interface BardoViewProps {
   readonly eras: readonly EraOption[];
   /** Fired when the player picks an era; parent navigates to /life/start. */
   readonly onPickEra: (eraId: string) => void;
+  /**
+   * Fired when the player closes a chain with no eras left; parent navigates
+   * to /chain-complete. Omitted in tests that never reach the chain's end.
+   */
+  readonly onCloseChain?: () => void;
+  /** The chain's first life just ended (no prior lives). */
+  readonly firstLife?: boolean;
 }
 
-export default function BardoView({ previousEra, echoes, eras, onPickEra }: BardoViewProps) {
+export default function BardoView({
+  previousEra,
+  echoes,
+  firstLife = false,
+  eras,
+  onPickEra,
+  onCloseChain,
+}: BardoViewProps) {
   const nameSid = eraNameSid(previousEra);
   const headerLine =
     nameSid !== null
@@ -180,13 +207,23 @@ export default function BardoView({ previousEra, echoes, eras, onPickEra }: Bard
           {resolveSid('bardo.echoes_heading_sid')}
         </Text>
         {echoes.length === 0 ? (
-          <Text
-            testID="bardo-no-echoes"
-            accessibilityLabel={resolveSid('bardo.no_echoes_sid')}
-            style={styles.muted}
-          >
-            {resolveSid('bardo.no_echoes_sid')}
-          </Text>
+          firstLife ? (
+            // The game's most significant moment gets an authored beat, not
+            // a detection report: what a FIRST life leaves is residue on the
+            // bench, and only later lives can choose to carry echoes.
+            <View testID="bardo-first-life" style={styles.firstLifeBeat}>
+              <Text style={styles.subheading}>{resolveSid('bardo.first_life_label_sid')}</Text>
+              <Text style={styles.body}>{resolveSid('bardo.first_life_body_sid')}</Text>
+            </View>
+          ) : (
+            <Text
+              testID="bardo-no-echoes"
+              accessibilityLabel={resolveSid('bardo.no_echoes_sid')}
+              style={styles.muted}
+            >
+              {resolveSid('bardo.no_echoes_sid')}
+            </Text>
+          )
         ) : (
           groups.map((group) => {
             const groupHeading = resolveSid(ECHO_GROUP_HEADING_SID[group.type]);
@@ -223,13 +260,28 @@ export default function BardoView({ previousEra, echoes, eras, onPickEra }: Bard
           {resolveSid('bardo.next_life_heading_sid')}
         </Text>
         {eras.length === 0 ? (
-          <Text
-            testID="bardo-no-eras"
-            accessibilityLabel={resolveSid('bardo.next_life_empty_sid')}
-            style={styles.muted}
-          >
-            {resolveSid('bardo.next_life_empty_sid')}
-          </Text>
+          <View style={styles.eraList}>
+            <Text
+              testID="bardo-no-eras"
+              accessibilityLabel={resolveSid('bardo.next_life_empty_sid')}
+              style={styles.muted}
+            >
+              {resolveSid('bardo.next_life_empty_sid')}
+            </Text>
+            {onCloseChain !== undefined ? (
+              <Pressable
+                testID="bardo-close-chain"
+                accessibilityRole="button"
+                accessibilityLabel={resolveSid('bardo.close_chain_button_sid')}
+                style={styles.eraButton}
+                onPress={onCloseChain}
+              >
+                <Text style={styles.eraButtonText}>
+                  {resolveSid('bardo.close_chain_button_sid')}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         ) : (
           <View style={styles.eraList}>
             {eras.map((era) => {
@@ -263,6 +315,15 @@ const styles = StyleSheet.create({
     backgroundColor: t.bg,
   },
   section: { gap: 10 },
+  firstLifeBeat: {
+    borderWidth: 1,
+    borderColor: t.line,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+    backgroundColor: t.surface,
+  },
+  body: { color: t.text, fontSize: 15, lineHeight: 22 },
   heading: { fontSize: 26, fontWeight: '700', color: t.text },
   subheading: { fontSize: 16, opacity: 0.75, color: t.muted },
   sectionHeading: {

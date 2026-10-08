@@ -3,11 +3,21 @@
     "title_sid": "Yakshetra",
     "subtitle_sid": "Work a day. The residue cooks. A world takes shape.",
     "new_life_button_sid": "Go work a day",
-    "new_life_label_sid": "Begin a new life of work",
+    "new_life_label_sid": "Go work a day, beginning a new life",
     "continue_button_sid": "Back to work",
-    "continue_label_sid": "Continue from your last save",
+    "continue_label_sid": "Back to work, continuing from your last save",
     "settings_button_sid": "Settings",
     "settings_label_sid": "Open settings"
+  },
+  "save_error": {
+    "title_sid": "Something did not keep.",
+    "load_sid": "Your save is still where it was — the bench could not reach it this time.",
+    "save_sid": "The last change was not written down. Nothing you can see was lost yet.",
+    "import_sid": "That save code did not take. The slot keeps what it held.",
+    "export_sid": "The save code could not be read out. The slot itself is fine.",
+    "delete_sid": "The slot was not deleted. It keeps what it held.",
+    "retry_sid": "Try again",
+    "continue_sid": "Go on"
   },
   "life": {
     "reflect": {
@@ -34,7 +44,7 @@
       "loading_sid": "Loading the era…",
       "resume_hint_sid": "A save already exists for this chain.",
       "unavailable_heading_sid": "No eras available yet",
-      "unavailable_body_sid": "Completing advisory onboarding (todo 0) before content authoring can begin.",
+      "unavailable_body_sid": "No historical chapters are open to inhabit at this hour. Return to the courtyard bench while the records are prepared.",
       "unavailable_about_button_sid": "Learn about this project"
     },
     "turn": {
@@ -62,39 +72,69 @@
       "act_hint_sid": "What will you do with this moment?",
       "act_empty_sid": "No actions are open through this lens right now.",
       "no_era_heading_sid": "No events for this era yet",
-      "no_era_body_sid": "End this life early to reach the bardo and test the cross-life flow.",
+      "no_era_body_sid": "This passage holds no further choices. Step forward across the threshold to see what echoes carry into the next life.",
       "end_life_button_sid": "End life early",
       "dev_tools_label_sid": "Dev tools",
       "dev_skip_turn_button_sid": "Skip turn (dev)",
       "dev_die_button_sid": "Die now (dev)",
-      "manifest_charge_sid": "This life is charging Manifest.",
+      "manifest_charge_sid": "This life is leaving traces for the workshop bench.",
       "manifest_open_sid": "Open Manifest"
     }
   },
   "studio": {
-    "home_button_sid": "Manifest",
-    "title_sid": "Manifest",
+    "home_button_sid": "The workshop",
+    "home_button_hint_sid": "Where traces of your work cook into keepsakes.",
+    "title_sid": "The workshop",
     "subtitle_sid": "Work leaves a trace. Harvest what changed.",
-    "charge_label_sid": "Residue {n} / {min}",
-    "charge_ready_sid": "Enough residue to develop",
+    "charge_label_sid": "Traces {n} / {min}",
+    "charge_ready_sid": "Enough traces gathered to begin a working",
     "charge_hint_sid": "Tend the work until the bar fills.",
     "tend_button_sid": "Tend the work",
     "brief_label_sid": "Optional brief",
     "brief_placeholder_sid": "a lighter morning, a kept promise…",
     "develop_button_sid": "Begin a working",
-    "develop_locked_sid": "Need more residue",
-    "bay_empty_sid": "The bay is empty.",
+    "develop_locked_sid": "More traces needed before working",
+    "cook_title_sid": "Shape the working",
+    "cook_preview_sid": "Left unheld, these traces lean toward {kind}.",
+    "cook_preview_none_sid": "The bench will judge the mix as it falls.",
+    "cook_hold_hint_sid": "Spend what this working needs — the rest waits for the next fire.",
+    "cook_chip_held_sid": "held",
+    "cook_chip_practice_tick_sid": "practice",
+    "cook_chip_practice_level_sid": "deepening",
+    "cook_chip_lens_chosen_sid": "intent",
+    "cook_chip_event_resolved_sid": "happening",
+    "cook_chip_resource_edge_sid": "ledger",
+    "cook_chip_life_ended_sid": "ending",
+    "cook_fire_short_sid": "Short fire — {ticks} ticks",
+    "cook_fire_short_hint_sid": "Ready fast. The table weighs the keepsake as it always has.",
+    "cook_fire_long_sid": "Long fire — {ticks} ticks",
+    "cook_fire_long_hint_sid": "Slower by six ticks. The working comes back no lighter than uncommon, and a named figure in the traces answers first.",
+    "cook_fire_word_short_sid": "short",
+    "cook_fire_word_long_sid": "long",
+    "cook_confirm_sid": "Begin the working",
+    "cook_cancel_sid": "Leave the bench",
+    "cook_receipt_sid": "Cooking {n} traces over a {fire} fire — {ticks} ticks.",
+    "develop_bay_ready_sid": "A working waits — reveal it below",
+    "develop_bay_cooking_sid": "A working is already taking shape",
+    "reveal_all_receipt_sid": "Revealed {name} — and {n} more from the benches above.",
+    "cook_reachable_sid": "These traces can become:",
+    "cook_gate_hint_sid": "A working needs at least {n} traces.",
+    "cook_heat_saves_sid": "Banked heat saves {n} ticks.",
+    "cook_spend_less_sid": "Spend one fewer {trace}",
+    "cook_spend_more_sid": "Spend one more {trace}",
+    "cook_group_spent_sid": "{spent} of {count} in the working",
+    "bay_empty_sid": "The bench is empty.",
     "bay_cooking_sid": "Cooking {done} / {total}",
     "bay_ready_sid": "Ready to harvest",
     "harvest_button_sid": "Harvest",
     "upgrade_button_sid": "Deepen the next working",
-    "upgrade_hint_sid": "Harvest {n} more to unlock a deeper fill.",
+    "upgrade_hint_sid": "Harvest {n} more to draw a deeper mark from the bench.",
     "archive_heading_sid": "Archive",
     "archive_empty_sid": "Nothing harvested yet.",
-    "archive_filter_empty_sid": "No cards of that kind yet.",
+    "archive_filter_empty_sid": "Nothing of that kind kept yet.",
     "filter_all_sid": "All",
-    "export_button_sid": "Export latest JSON",
-    "export_copied_sid": "Copied the latest manifest.",
+    "export_button_sid": "Export latest working",
+    "export_copied_sid": "Copied the latest working.",
     "kind_thing_sid": "Thing",
     "kind_outcome_sid": "Outcome",
     "kind_change_sid": "Change",
@@ -136,15 +176,32 @@
     "rarity_common_sid": "Common",
     "rarity_uncommon_sid": "Uncommon",
     "rarity_rare_sid": "Rare",
+    "reveal_subject_sid": "Drawn from {subject}.",
+    "reveal_about_sid": "About {name}",
+    "reveal_also_sid": "Also revealed",
+    "reveal_also_row_sid": "{kind}: {name}",
+    "reveal_continue_sid": "Back to bench",
+    "tab_bench_sid": "The bench",
+    "tab_life_sid": "The life",
+    "tab_market_sid": "The market",
+    "tab_archive_sid": "The archive",
+    "banked_heat_sid": "banked heat: {n} — speeds the next working",
+    "milestone_disclosure_sid": "What the household needs next",
+    "tab_world_sid": "The world",
+    "chronicle_heading_sid": "The chronicle",
+    "chronicle_empty_sid": "Nothing has been kept yet. Harvest a keepsake and the chronicle begins.",
+    "chronicle_world_pending_sid": "No world yet — a place, or two people who need somewhere to stand.",
+    "chronicle_copy_sid": "Copy the chronicle",
+    "chronicle_copied_sid": "Copied",
     "back_button_sid": "Back",
     "unavailable_sid": "The bench cannot load a practice schedule yet.",
     "loading_sid": "Opening the bench…",
-    "away_sid": "While you were away, the bench ran for {duration}. Residue +{residue}.",
-    "away_capped_sid": "Catch-up stopped at the four-hour cap.",
+    "away_sid": "While you were away, the bench ran for {duration}. Traces +{residue}.",
+    "away_capped_sid": "Work at the bench slowed after four hours; tending paused until your return.",
     "away_ready_sid": "A working finished — ready to harvest.",
     "away_dismiss_sid": "Dismiss",
     "visitor_banner_sid": "A guest: {name}",
-    "visitor_windows_sid": "{n} windows",
+    "visitor_windows_sid": "{n} workings",
     "world_heading_sid": "World taking shape",
     "world_empty_sid": "Play a life for people, or tend for a place, and a world starts to form.",
     "world_counts_sid": "{places} places · {people} people",
@@ -156,11 +213,11 @@
     "pin_chip_sid": "About {name}",
     "pinned_sid": "Next working is about {name}.",
     "endow_button_sid": "Endow",
-    "endow_locked_sid": "No slot",
+    "endow_locked_sid": "No room",
     "endow_track_sid": "Into: {track}",
     "endow_done_sid": "Endowed",
-    "export_world_sid": "Export world JSON",
-    "export_world_copied_sid": "Copied the world draft.",
+    "export_world_sid": "Export world scroll",
+    "export_world_copied_sid": "Copied the world scroll.",
     "run_off_sid": "Let the bench run",
     "run_on_sid": "The bench is running",
     "practice_now_sid": "Now: {practice}",
@@ -185,7 +242,7 @@
     "work_stats_heading_sid": "Craft & Community Footprint",
     "work_shifts_sid": "Market shifts: {n}",
     "work_copper_sid": "Purse: {n} copper",
-    "work_folded_sid": "Folded to household: {n} events",
+    "work_folded_sid": "Folded to household: {n} traces",
     "life_heading_sid": "This life",
     "life_when_sid": "Year {year}, month {month}, day {day}",
     "life_who_sid": "{role} · age {age}",
@@ -193,71 +250,77 @@
     "life_world_none_sid": "still forming",
     "life_ties_empty_sid": "No named ties yet — play, or harvest people.",
     "life_tie_sid": "{name} ({bond})",
-    "export_life_sid": "Export life context JSON",
+    "export_life_sid": "Copy life chronicle",
     "compendium_heading_sid": "Compendium",
     "compendium_done_sid": "Kept",
-    "compendium_locked_sid": "Not yet",
+    "compendium_locked_sid": "Still to gather",
     "next_action_heading_sid": "Next:",
     "next_harvest_sid": "Harvest {tier}",
     "next_gate_sid": "Gather {name} ({n}/{m})",
-    "next_develop_sid": "Cook the bench's window",
+    "next_develop_sid": "Cook what has gathered on the bench",
     "next_visitor_sid": "The guest waits ({name})",
-    "next_endow_sid": "Endow a card on {tier}",
-    "journey_heading_sid": "A life becoming a world",
+    "next_endow_sid": "Set a keepsake into {tier}",
+    "journey_heading_sid": "The working",
     "journey_empty_sid": "Begin with an ordinary day.",
-    "journey_preview_sid": "Taking shape: {kind}",
-    "journey_gather_hint_sid": "Cook these experiences now, or keep tending to let the pattern change.",
-    "journey_frozen_sid": "This batch holds the experiences you chose to cook. New experiences gather for the next one.",
-    "journey_focus_sid": "This story follows {name}.",
-    "journey_reveal_sid": "Reveal a discovery",
-    "journey_tend_sid": "Help it take shape",
-    "journey_cook_sid": "Cook these experiences",
+    "journey_preview_sid": "Next keepsake: {kind}",
+    "journey_gather_hint_sid": "Cook these traces now, or keep tending to let the pattern change.",
+    "journey_frozen_sid": "The bench holds the working underway. Fresh traces gather for the next one.",
+    "journey_focus_sid": "Next working is pinned to {name}.",
+    "journey_reveal_sid": "Harvest keepsake",
+    "journey_tend_sid": "Tend the working",
+    "journey_cook_sid": "Cook these traces",
     "journey_gather_sid": "Live a little",
-    "journey_latest_sid": "Your latest discovery",
-    "journey_discovery_sid": "Discovered: {name}",
+    "journey_latest_sid": "Latest keepsake",
+    "journey_discovery_sid": "Harvested: {name}",
     "journey_detail_sid": "“{detail}”",
-    "journey_saved_sid": "Kept in your archive, where it can contribute to your growing world.",
-    "journey_follow_sid": "Follow this story next",
-    "journey_unfollow_sid": "Let the next story wander",
+    "journey_saved_sid": "Kept in your archive, ready for your growing world.",
+    "journey_follow_sid": "Pin to next working",
+    "journey_unfollow_sid": "Unpin from next working",
     "milestone_heading_sid": "Growing toward {tier}",
-    "milestone_hint_sid": "Every requirement below counts toward the next chapter. The tier opens automatically when they are met.",
-    "milestone_world_sid": "World drafts assembled",
-    "milestone_world_scale_sid": "World drafts at {tier} scale",
-    "milestone_archived_sid": "Archived discoveries: {name}",
-    "milestone_pinned_sid": "Pinned discoveries: {name}",
+    "milestone_hint_sid": "Every requirement below counts toward the next chapter. It opens automatically when they are met.",
+    "milestone_world_sid": "Worlds assembled",
+    "milestone_world_scale_sid": "Worlds at {tier} scale",
+    "milestone_archived_sid": "Archived {name} keepsakes",
+    "milestone_pinned_sid": "Pinned {name} keepsakes",
     "milestone_harvests_sid": "Harvests of {name} rarity",
     "milestone_and_sid": "Complete all of these:",
     "milestone_or_sid": "Complete any of these:",
     "milestone_not_sid": "This condition must not hold:",
     "milestone_requirement_sid": "{status} {label}: {current} ({comparison} {target})",
     "milestone_done_sid": "Complete —",
-    "milestone_pending_sid": "To grow —",
+    "milestone_pending_sid": "Still needed —",
     "milestone_gte_sid": "at least",
     "milestone_gt_sid": "more than",
     "milestone_eq_sid": "exactly",
-    "journey_start_hint_sid": "Tend your daily life to gather experiences. Their pattern shapes what you discover.",
-    "journey_progress_sid": "Experiences gathered: {n} · ready to cook from {min}",
-    "journey_cooking_progress_sid": "This working: {done} of {total} steps complete",
+    "journey_start_hint_sid": "Tend your daily life to gather traces. Their pattern shapes what takes form.",
+    "journey_progress_sid": "Traces gathered: {n} · ready to cook from {min}",
+    "journey_cooking_progress_sid": "This working: {done} of {total} ticks complete",
     "market_wallet_sid": "Your purse: {n} copper",
-    "market_intro_sid": "Choose your pace: tending gathers experiences; a market shift earns copper over 8 steps. Cooking continues during work, but daily practices pause.",
+    "market_intro_sid": "Choose your pace: tending gathers traces; a market shift earns copper over 8 ticks. Cooking continues during work, but daily practices pause.",
     "market_work_sid": "Work a market shift · earn 1–6 copper",
-    "market_odds_sid": "Every shift pays 1 copper. A small tip adds 2 (25%); a generous tip adds 5 (5%). No tip: 70%. Paid shifts are an active choice.",
+    "market_odds_sid": "Honest stall labor pays 1 copper into your purse; pleased travelers occasionally leave a gratuity (small tip +2, generous tip +5). Paid work is an active choice.",
     "market_tea_sid": "Host tea · {cost} copper",
-    "market_tea_hint_sid": "Add 3 social experiences to the next batch. Its preview shows how they combine with what you have gathered.",
+    "market_tea_hint_sid": "Share tea to welcome 3 guests into the work. Notice how their company settles into the next working.",
     "market_supplies_sid": "Buy supplies · {cost} copper",
-    "market_supplies_hint_sid": "Add 8 cook steps. Unused steps carry into later workings.",
+    "market_supplies_hint_sid": "Add 8 cook ticks. Unused ticks carry into later workings.",
     "market_receipt_empty_sid": "Your next action’s payoff will appear here.",
-    "market_tend_receipt_sid": "+{n} experiences · advanced {ticks} steps.",
-    "market_work_receipt_sid": "+{copper} copper {bonus}· +{n} experiences · advanced {ticks} steps.",
+    "market_tend_receipt_sid": "+{n} traces · advanced {ticks} ticks.",
+    "market_work_receipt_sid": "+{copper} copper {bonus}· +{n} traces · advanced {ticks} ticks.",
     "market_bonus_sid": "— a customer left a tip! ",
-    "market_cook_receipt_sid": "Started a working with {n} experiences. They are now cooking, not lost.",
-    "market_harvest_receipt_sid": "+1 discovery: {name}. Kept in your archive.",
-    "market_tea_receipt_sid": "−{cost} copper · +3 social experiences for the next working.",
-    "market_supplies_receipt_sid": "−{cost} copper · +8 cook steps, used now or saved for later."
+    "market_cook_receipt_sid": "Started a working with {n} traces. They are now cooking, not lost.",
+    "market_harvest_receipt_sid": "+1 keepsake: {name}. Kept in your archive.",
+    "market_tea_receipt_sid": "−{cost} copper · +3 social traces for the next working.",
+    "market_supplies_receipt_sid": "−{cost} copper · +8 cook ticks, used now or saved for later.",
+    "sought_heading_sid": "Sought",
+    "sought_undiscovered_sid": "Still looked for",
+    "sought_discovered_sid": "Answered",
+    "sought_silhouette_sid": "Someone the bench has not named yet",
+    "pinned_pair_sid": "Pinned for the next working: {a} and {b}",
+    "pinned_one_sid": "Pinned for the next working: {a}"
   },
   "graduation": {
     "household_title_sid": "The household gathers",
-    "household_line_sid": "Three lives now leave residue under one roof.",
+    "household_line_sid": "Three lives now share their work under one roof.",
     "org_title_sid": "The guild takes a seal",
     "org_line_sid": "The work outgrows one roof; a charter holds it.",
     "town_title_sid": "A town keeps the bridge",
@@ -275,7 +338,7 @@
   "compendium": {
     "first_harvest": {
       "name_sid": "First harvest",
-      "desc_sid": "A card came off the bench and stayed."
+      "desc_sid": "A keepsake came off the bench and found a permanent home in the workshop."
     },
     "first_world": {
       "name_sid": "First world",
@@ -287,11 +350,11 @@
     },
     "five_harvests": {
       "name_sid": "Five harvests",
-      "desc_sid": "Five common cards. A sixth slot opened on the bench."
+      "desc_sid": "Five workings completed. Room opened on the bench to take on further labor."
     },
     "househeld": {
       "name_sid": "Househeld",
-      "desc_sid": "A tradition answered to the door."
+      "desc_sid": "A family practice took root across generations."
     }
   },
   "visitor": {
@@ -445,6 +508,10 @@
     },
     "block": {
       "monastic_day": {
+        "night_watch": {
+          "label_sid": "Night watch",
+          "icon_sid": "moon"
+        },
         "pre_dawn": {
           "label_sid": "Pre-dawn sitting",
           "icon_sid": "star"
@@ -910,11 +977,17 @@
   },
   "lens": {
     "generosity_sid": "Generosity",
+    "generosity_hint_sid": "Days that bring someone needing what you have. Its work counts as generosity at the bench.",
     "careful_conduct_sid": "Careful Conduct",
+    "careful_conduct_hint_sid": "Days that bring rules and what they cost. Its work tends other beings.",
     "patient_courage_sid": "Patient Courage",
+    "patient_courage_hint_sid": "Days that bring hard, slow labor. Its work counts as plain work.",
     "joyful_effort_sid": "Joyful Effort",
+    "joyful_effort_hint_sid": "Days that bring what steady energy can fix. Its work counts as learning.",
     "collected_attention_sid": "Collected Attention",
-    "discernment_sid": "Discernment"
+    "collected_attention_hint_sid": "Days that bring quiet, and what it uncovers. Its work counts as meditation.",
+    "discernment_sid": "Discernment",
+    "discernment_hint_sid": "Days that bring questions worth judging. Its work counts as learning."
   },
   "resource": {
     "time_sid": "time",
@@ -935,7 +1008,9 @@
     "life_ended_in_era_sid": "Your life in {era} has ended.",
     "life_ended_generic_sid": "A life has ended.",
     "echoes_heading_sid": "What carried forward",
-    "no_echoes_sid": "No echoes were detected. The next life begins unburdened.",
+    "no_echoes_sid": "No lingering echoes cling to your hands. The next life begins unburdened.",
+    "first_life_body_sid": "This was your first life, and it is over. It was not nothing: every day of it left residue, and the bench keeps what it was given. Nothing follows you into the next life unless a later one chooses to carry it.",
+    "first_life_label_sid": "What a first life leaves",
     "next_life_heading_sid": "Choose your next life",
     "next_life_empty_sid": "No further lives are available in this chain.",
     "choose_era_button_sid": "Begin in {era}",
@@ -950,10 +1025,12 @@
       "vow_kept_sid": "A vow of {vow} was kept.",
       "vow_broken_sid": "A vow of {vow} was broken.",
       "vow_declared_sid": "A vow of {vow} was declared."
-    }
+    },
+    "close_chain_button_sid": "Close the chain"
   },
   "settings": {
     "title_sid": "Settings",
+    "slot_placeholder_sid": "Reading the save slots…",
     "content_warnings_heading_sid": "Content warnings",
     "content_warnings_help_sid": "Turn a category off to filter those events out of your life.",
     "toggle_on_sid": "On",
@@ -1111,7 +1188,7 @@
         "label_sid": "An older monastic in the precinct sends word: a substantial gift would “open the door to advancement” within the community. The framing is careful; the request is not.",
         "give": {
           "label_sid": "Give what is asked",
-          "hint_sid": "You hand over the coin. The framing of “accumulating merit” sits uneasy — this game does not award such a thing; what remains is the gesture, the loss, and the question it left behind."
+          "hint_sid": "You hand over the coin with a polite nod. The promise of spiritual advancement rings hollow in the quiet room; what remains is the lighter purse, the cold transaction, and the uneasy silence between you."
         },
         "refuse_politely": {
           "label_sid": "Decline politely, with a small bow",
@@ -1228,12 +1305,12 @@
         }
       },
       "card": {
-        "corrupt-donation-demand-give-commodification_sid": "The older monastic smiled as the coin changed hands. The teaching spoke of accumulating merit; this game does not award merit. What was given was given; what remains is the gesture, the lighter purse, and the question it left behind."
+        "corrupt-donation-demand-give-commodification_sid": "The older monastic smiled as the coin changed hands, smoothing his sleeve over the purse. What was promised was intangible; what was parted with was real copper. The courtyard feels colder as you step back into the lane."
       }
     },
     "fantasy": {
       "gardener-question": {
-        "label_sid": "The Gardener asks what you carry.",
+        "label_sid": "The keeper of the garden leans on a notched spade at the gate, asking what burden you brought across the crossing.",
         "hint": {
           "name-a-grief_sid": "Name one grief and let it be held in the open.",
           "refuse-to-name_sid": "Keep the grief behind your silence.",
@@ -1241,10 +1318,10 @@
         }
       },
       "soul-in-torment": {
-        "label_sid": "An arriving being is caught in anguish.",
+        "label_sid": "A newly arrived traveler shivers on the cold flagstones, gripping their head as old memories tear like wet paper.",
         "hint": {
           "sit-with_sid": "Sit beside the being until the next bell.",
-          "attempt-to-soothe_sid": "Try to make the anguish settle into a shape you can fix.",
+          "attempt-to-soothe_sid": "Offer steady hands and warm tea, trying to quiet the panic before it consumes them.",
           "ask-gardener-to-take-them_sid": "Ask the Gardener to carry the being away."
         },
         "card": {
@@ -1284,7 +1361,7 @@
           "request-next-life_sid": "Ask to continue into another life."
         },
         "card": {
-          "accept-reading-summary_sid": "The Court gathers tendencies, vows, attachments, and breaks without turning them into a score.",
+          "accept-reading-summary_sid": "The Court unrolls the account of your deeds: tendencies, vows, attachments, and sudden turns laid bare like cloth on a table, judged not by number but by the weight of what remains.",
           "dispute-resistance_sid": "Resistance takes the form of an argument that nothing needs to change."
         }
       },
@@ -1722,5 +1799,60 @@
       "excerpt_sid": "Bodhi is originally no tree; the bright mirror has no stand. Originally there is not a single thing — where could dust gather?",
       "attribution_note_sid": "Excerpt from the verse exchange traditionally attributed to Huineng. The Dunhuang recension (c. 780 CE) is the earliest extant form; Philip Yampolsky's 1967 translation is the standard scholarly reference."
     }
+  },
+  "chain_complete": {
+    "heading_sid": "The chain is complete",
+    "lives_heading_sid": "The lives you worked",
+    "life_line_sid": "{era} — {turns} turns worked",
+    "life_unknown_era_sid": "An unnamed era — {turns} turns worked",
+    "carried_heading_sid": "What carried forward",
+    "carried_none_sid": "Nothing carried forward out of this chain.",
+    "carried_count_sid": "{n} echoes leave this chain with you.",
+    "keeps_heading_sid": "What the bench kept",
+    "keeps_empty_sid": "The bench kept nothing this chain. Cook a batch on the bench and pin what it yields.",
+    "drafts": {
+      "heading_sid": "Worlds assembled",
+      "line_sid": "A {scale} took shape from what you harvested."
+    },
+    "keeps_line_sid": "{name} — {one_liner}",
+    "begin_new_chain_button_sid": "Begin a new chain",
+    "begin_new_chain_label_sid": "Begin a new chain, returning to the start",
+    "loading_sid": "Reading the chain…"
+  },
+  "encounter": {
+    "shakyamuni": {
+      "hint_sid": "A companion who watched the ground answer waits where study bears fruit."
+    },
+    "vairocana": {
+      "hint_sid": "A roofbeam and a hand at labor call the one who fills the rafters."
+    },
+    "maitreya": {
+      "hint_sid": "An empty hall held in stillness draws the one who waits for his hour."
+    },
+    "manjushri": {
+      "hint_sid": "Someone who answers the sword-bearer's question waits where craft meets discernment."
+    },
+    "samantabhadra": {
+      "hint_sid": "The wide worker walks where a ditch is cleared and stones are laid."
+    },
+    "ksitigarbha": {
+      "hint_sid": "A traveler turning toward others meets the staff on the dark stair."
+    },
+    "mahasthamaprapta": {
+      "hint_sid": "A place built with a steady friend shakes when the great stride lands."
+    },
+    "nagarjuna": {
+      "hint_sid": "Two disputants weighing words look up into the open timberwork."
+    },
+    "bodhidharma": {
+      "hint_sid": "A quiet wall and cold stone keep the gaze that never turned."
+    },
+    "wutai": {
+      "hint_sid": "A high terrace and a silent guest stir the five terraces in mist."
+    },
+    "ksitigarbha_mountain": {
+      "hint_sid": "The green mountain sheltering wanderers hears the bronze ring of the staff."
+    },
+    "reveal_line_sid": "Someone you were looking for answered."
   }
 }

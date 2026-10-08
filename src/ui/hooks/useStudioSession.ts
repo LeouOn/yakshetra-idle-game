@@ -229,6 +229,9 @@ export function modifiersForSession(session: StudioSession): (tierId: string) =>
 export interface UseStudioSessionArgs {
   readonly practices: readonly Practice[];
   readonly schedule: DailySchedule;
+  /** Authored day schedules the bench rotates through per in-game day
+   * (lane b1). Absent → the embodied life runs on `schedule` alone. */
+  readonly embodiedSchedules?: readonly DailySchedule[];
   readonly endings: readonly Ending[];
   readonly initialLife?: LifeState;
   readonly initialIdle?: IdleState;
@@ -290,6 +293,7 @@ function defaultLife(): LifeState {
 export function useStudioSession({
   practices,
   schedule,
+  embodiedSchedules,
   endings,
   initialLife,
   initialIdle,
@@ -380,6 +384,7 @@ export function useStudioSession({
       stepCtxRef.current = {
         practices,
         embodiedSchedule: schedule,
+        ...(embodiedSchedules === undefined ? {} : { embodiedSchedules }),
         memberScheduleFor: (id) => resolve(id).schedule,
         memberPracticesFor: (id) => resolve(id).practices,
         endings,

@@ -11,6 +11,8 @@ import { router } from 'expo-router';
 
 import SettingsView from '@/ui/components/SettingsView';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+import { useMounted } from '@/ui/hooks/useMounted';
+import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 
 // Same-session clipboard bridge. On web we additionally push the text to the
 // async platform clipboard (best-effort); the synchronous buffer keeps the
@@ -43,12 +45,22 @@ export default function SettingsScreen() {
     exportSlot,
     importSlot,
     deleteSlot,
+    error,
+    clearError,
   } = useSaveSlot(1);
+  const mounted = useMounted();
+
+  if (!mounted) {
+    return <ScreenSkeleton sections={3} testID="settings-skeleton" />;
+  }
 
   return (
     <SettingsView
       settings={settings}
-      slots={allSlots}
+      slots={mounted ? allSlots : []}
+      slotsLoading={!mounted}
+      error={error}
+      onClearError={clearError}
       onToggleContentWarning={setContentWarning}
       onToggleReducedMotion={(enabled) => updateSettings({ reducedMotion: enabled })}
       onSelectFontScale={(scale) => updateSettings({ fontScale: scale })}

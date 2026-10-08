@@ -21,11 +21,14 @@ import {
   applyStudioToNextLife,
   createLifeState,
   createRng,
-  currentLife,
+  openLife,
   snapshotLifeChain,
+  startNextLife,
 } from '@/engine';
 import { loadStudioSession } from '@/persistence';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+import { useMounted } from '@/ui/hooks/useMounted';
+import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 import type {
   EraId,
   IntentRoot,
@@ -35,6 +38,7 @@ import type {
   ResourceId,
   RoleId,
   SaveBlob,
+  StudioSession,
 } from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
@@ -45,6 +49,7 @@ import {
   useEngineReducer,
 } from '@/ui/hooks/useEngineReducer';
 import { usePlayResidueBridge } from '@/ui/hooks/usePlayResidueBridge';
+import { CHAIN_LIFE_COUNT } from '@/ui/components/BardoView';
 
 // `__DEV__` is injected by Metro/Expo at build time (true in dev, false in
 // production). It is absent under Vitest; the helper below reads it defensively
@@ -263,10 +268,13 @@ function resolveEraPack(era: EraId): EraPack | null {
   }
 }
 
-/** Build a placeholder initial life state from the route's lifeId. */
-function createInitialLife(lifeId: string | undefined): LifeState {
+/**
+ * A fresh, unplayed life. The id is the chain's to give it; the era and role
+ * are placeholders that `resolveLifeEntry` always replaces.
+ */
+function createInitialLife(id: string): LifeState {
   return createLifeState({
-    id: (lifeId ?? 'placeholder') as LifeId,
+    id: id as LifeId,
     era: 'tang-china' as EraId,
     role: 'wanderer' as RoleId,
     identity: {
@@ -279,11 +287,106 @@ function createInitialLife(lifeId: string | undefined): LifeState {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Entry decision — resume the life in progress, or open the next one.
+// ---------------------------------------------------------------------------
+
+/** Eras and roles the prototype ships; anything else falls back. */
+const KNOWN_ERAS: readonly string[] = ['tang-china', 'fantasy-mahayana'];
+const DEFAULT_ERA: EraId = 'tang-china' as EraId;
+const DEFAULT_ROLE: RoleId = 'peasant' as RoleId;
+const SAFE_ID = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+
+/**
+ * Role ids arrive as a route param, so keep only the shape an authored role id
+ * can take. The pack is the source of truth for which roles an era offers;
+ * this only refuses to write junk into the save.
+ */
+function sanitizeRoleId(roleId: string | undefined): RoleId {
+  if (roleId === undefined || !SAFE_ID.test(roleId)) {
+    return DEFAULT_ROLE;
+  }
+  return roleId as RoleId;
+}
+
+export interface LifeEntryInput {
+  /** The chain on disk, or null when the slot is empty. */
+  readonly prior: SaveBlob | null;
+  /** The era chosen at the bardo and the role picked on the start screen. */
+  readonly era: string | undefined;
+  readonly roleId: string | undefined;
+  /** Bench state, used to seed a NEW life with the player's ties. */
+  readonly studio: StudioSession | null;
+  /** Lives a chain holds before it closes (the prototype's two). */
+  readonly livesPerChain?: number;
+}
+
+export interface LifeEntry {
+  /** The life to play. */
+  readonly life: LifeState;
+  /** The blob to write it into; unchanged input blob for a resume. */
+  readonly prior: SaveBlob | null;
+  /** True when `life` is a new life that must be appended to the chain. */
+  readonly isNewLife: boolean;
+}
+
+/**
+ * A life id derived from the chain's own length, not from the route.
+ *
+ * The start screen always navigates with the placeholder `lifeId: 'pending'`,
+ * so an id taken from the param gave every life in a chain the same name —
+ * and the chain could only ever hold one. Position in the chain is stable
+ * across save and reload, which a timestamp or a counter in the URL is not.
+ */
+function lifeIdForChain(prior: SaveBlob | null): string {
+  return `life-${(prior?.chain.life_states.length ?? 0) + 1}`;
+}
+
+/**
+ * Decide what the life route opens.
+ *
+ * Resume only when the chain still has a living current life. A life that has
+ * ended stays in the chain as history and the next one is appended, so the
+ * bardo's second era really is a second life instead of the corpse reopened
+ * (which fired `onDeath` on arrival and looped back to the bardo forever).
+ * Bench ties apply to the new life only — a life in progress is left alone.
+ *
+ * A chain that has already spent its lives is over: the next life starts a
+ * fresh chain rather than a third one, so "Go work a day" on the home screen
+ * cannot reopen a closed record behind the player's back. The bardo points
+ * players at the closing screen instead, and that screen is where the old
+ * chain is read before it is set aside.
+ */
+export function resolveLifeEntry(input: LifeEntryInput): LifeEntry {
+  const resumed = input.prior === null ? null : openLife(input.prior);
+  if (resumed !== null) {
+    return { life: resumed, prior: input.prior, isNewLife: false };
+  }
+  const budget = input.livesPerChain ?? CHAIN_LIFE_COUNT;
+  const spent = input.prior !== null && input.prior.chain.life_states.length >= budget;
+  const prior = spent === true ? null : input.prior;
+  const era = KNOWN_ERAS.includes(input.era ?? '') ? (input.era as EraId) : DEFAULT_ERA;
+  const fresh: LifeState = {
+    ...createInitialLife(lifeIdForChain(prior)),
+    era,
+    role: sanitizeRoleId(input.roleId),
+  };
+  return {
+    life: input.studio === null ? fresh : applyStudioToNextLife(fresh, input.studio),
+    prior,
+    isNewLife: true,
+  };
+}
+
 export default function LifeTurnScreen() {
   const router = useRouter();
-  const { lifeId } = useLocalSearchParams<{ lifeId: string }>();
+  // `lifeId` is the route address, not the life: every life opens at
+  // `/life/pending` and takes its identity from the chain it joins.
+  const { era, roleId } = useLocalSearchParams<{ lifeId: string; era?: string; roleId?: string }>();
   const { state: blob, loading: saveLoading, dispatch: saveDispatch } = useSaveSlot(1);
+  const mounted = useMounted();
   const [initialState, setInitialState] = useState<LifeState | null>(null);
+  const [isNewLife, setIsNewLife] = useState(false);
   const openedRef = useRef(false);
   const chainRef = useRef<SaveBlob | null>(null);
 
@@ -297,19 +400,20 @@ export default function LifeTurnScreen() {
       if (cancelled) {
         return;
       }
-      const saved = blob === null ? null : currentLife(blob);
-      if (saved !== null) {
-        chainRef.current = blob;
-        setInitialState(saved);
-        return;
-      }
-      const base = createInitialLife(lifeId);
-      setInitialState(session === null ? base : applyStudioToNextLife(base, session));
+      const entry = resolveLifeEntry({
+        prior: blob,
+        era,
+        roleId,
+        studio: session,
+      });
+      chainRef.current = entry.prior;
+      setIsNewLife(entry.isNewLife);
+      setInitialState(entry.life);
     });
     return () => {
       cancelled = true;
     };
-  }, [lifeId, saveLoading, blob]);
+  }, [era, roleId, saveLoading, blob]);
 
   const eraPack = useMemo<EraPack | null>(
     () => (initialState === null ? null : resolveEraPack(initialState.era)),
@@ -319,18 +423,25 @@ export default function LifeTurnScreen() {
   const persistLife = useCallback(
     (life: LifeState) => {
       const nowUnix = Math.floor(Date.now() / 1000);
-      const next = snapshotLifeChain(life, chainRef.current, nowUnix);
+      const next = isNewLife
+        ? startNextLife(chainRef.current, life, nowUnix)
+        : snapshotLifeChain(life, chainRef.current, nowUnix);
       chainRef.current = next;
       void saveDispatch({ type: 'PERSIST', blob: next });
     },
-    [saveDispatch],
+    [saveDispatch, isNewLife],
   );
 
-  if (initialState === null) {
+  // Hydration parity: URL params (roleId) exist only on the client, so the
+  // first client render could otherwise build the full screen where the
+  // server shipped the skeleton. Gate until mount.
+  if (initialState === null || !mounted) {
     return (
-      <View role="main" style={styles.center}>
-        <Text accessibilityRole="header">{resolveSid('life.turn.loading_sid')}</Text>
-      </View>
+      <ScreenSkeleton
+        labelSid="life.turn.screen_label_sid"
+        sections={3}
+        testID="life-turn-skeleton"
+      />
     );
   }
 
@@ -576,10 +687,10 @@ function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: Orien
 
   return (
     <View style={styles.orient} accessibilityLabel={resolveSid('life.turn.orient_heading_sid')}>
-      <Text accessibilityRole="header" style={styles.heading}>
-        {resolveSid('life.turn.orient_heading_sid')}
-      </Text>
-      <Text testID="turn-orient-era-role" style={styles.body}>
+      {/* The situation leads: era and role are the headline, the rest is
+          supporting detail in a readable strip, not a debug line. */}
+      <Text style={styles.orientKicker}>{resolveSid('life.turn.orient_heading_sid')}</Text>
+      <Text testID="turn-orient-era-role" accessibilityRole="header" style={styles.heading}>
         {eraRole}
       </Text>
       <Text testID="turn-orient-age" style={styles.body}>
@@ -610,14 +721,11 @@ function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: Orien
       <View style={styles.resourceGrid}>
         {RESOURCES.map((id) => {
           const value = state.resources[id] ?? 0;
-          const row = formatSid('life.turn.orient_resource_row_sid', {
-            resource: resolveSid(resourceNameSid(id)),
-            n: value,
-          });
           return (
-            <Text key={id} testID={`turn-resource-${id}`} style={styles.resourceCell}>
-              {row}
-            </Text>
+            <View key={id} testID={`turn-resource-${id}`} style={styles.resourceCell}>
+              <Text style={styles.resourceValue}>{value}</Text>
+              <Text style={styles.resourceLabel}>{resolveSid(resourceNameSid(id))}</Text>
+            </View>
           );
         })}
       </View>
@@ -654,6 +762,7 @@ function IntendPanel({ state, onChoose }: IntendPanelProps) {
       <View style={styles.lensGrid}>
         {LENSES.map((lens) => {
           const label = resolveSid(lensNameSid(lens));
+          const hint = resolveSid(`lens.${lens}_hint_sid`);
           const selected = state.chosen_lens === lens;
           return (
             <Pressable
@@ -668,6 +777,9 @@ function IntendPanel({ state, onChoose }: IntendPanelProps) {
               }}
             >
               <Text style={styles.lensCardText}>{label}</Text>
+              <Text testID={`turn-lens-${lens}-hint`} style={styles.lensCardHint}>
+                {hint}
+              </Text>
             </Pressable>
           );
         })}
@@ -844,11 +956,22 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 6,
   },
-  resourceCell: {
+  orientKicker: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
     color: t.gold,
-    fontSize: 13,
-    fontFamily: 'monospace',
   },
+  resourceCell: {
+    backgroundColor: t.chip,
+    borderRadius: 8,
+    padding: 8,
+    alignItems: 'center',
+    gap: 2,
+  },
+  resourceValue: { color: t.text, fontSize: 17, fontWeight: '700' },
+  resourceLabel: { color: t.muted, fontSize: 11 },
   lensGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -874,6 +997,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
   },
+  lensCardHint: { color: t.muted, fontSize: 12, lineHeight: 17 },
   actionList: {
     gap: 8,
     marginTop: 4,
