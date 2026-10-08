@@ -48,8 +48,25 @@ function findOne(instances: TestInstance[], describe: string): TestInstance {
   return instances[0]!;
 }
 
+// Every root this harness creates, so cleanup() can unmount them. The repo runs
+// vitest with `globals: false`, so the real Testing Library's auto-cleanup (which
+// needs a global afterEach) never registers; without this, components from an
+// earlier test stay mounted and keep animating, and any test that counts
+// Animated calls passes in file order and fails in every other order.
+const mountedRoots: Root[] = [];
+
+/** Unmount everything render() mounted. Registered for every file in setup.ts. */
+export function cleanup(): void {
+  for (const root of mountedRoots.splice(0)) {
+    act(() => {
+      root.unmount();
+    });
+  }
+}
+
 export function render(element: ReturnType<typeof createElement>): RenderResult {
   const root = createRoot();
+  mountedRoots.push(root);
   act(() => {
     root.render(element);
   });

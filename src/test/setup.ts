@@ -1,4 +1,6 @@
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
+
+import { cleanup } from './rntl';
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -16,4 +18,10 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 vi.mock('react-native', async () => {
   const shim = await import('./react-native-shim');
   return { ...shim };
+});
+
+// Unmount whatever the test rendered so nothing leaks into the next test (see
+// the note on mountedRoots in ./rntl).
+afterEach(() => {
+  cleanup();
 });
