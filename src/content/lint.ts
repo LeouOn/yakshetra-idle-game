@@ -17,6 +17,7 @@
  *   no RNG, no AI/LLM calls. Same pack ⇒ same report.
  */
 
+import { resolveSid } from '../i18n';
 import type { MinigameDef } from './minigame-schema';
 import type { EffectOp, EraPack, Practice } from './schema';
 
@@ -46,6 +47,7 @@ export const R_NO_KARMA_METER = 'R-NO-KARMA-METER' as const;
 export const R_NO_DONATION_OFFSET = 'R-NO-DONATION-OFFSET' as const;
 export const R_NO_VISIBLE_KARMA_METER = 'R-NO-VISIBLE-KARMA-METER' as const;
 export const R_NO_PRACTICE_AS_CURRENCY = 'R-NO-PRACTICE-AS-CURRENCY' as const;
+export const R_RESOLVABLE_OUTCOME_SID = 'R-RESOLVABLE-OUTCOME-SID' as const;
 
 /* -------------------------------------------------------------------------------------------------
  * Compiled patterns
@@ -423,6 +425,73 @@ function checkMinigameRewards(minigames: readonly MinigameDef[], out: LintViolat
   }
 }
 
+function tryResolveSid(sid: string, i18n: Readonly<Record<string, string>>): string | null {
+  if (Object.prototype.hasOwnProperty.call(i18n, sid)) {
+    return i18n[sid] ?? null;
+  }
+  try {
+    return resolveSid(sid);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check that choice `outcome_sid` and `journal_sid`, when present, resolve in
+ * `en.json` (or the provided `i18n` map) and do not contain prohibited
+ * metaphysical-meter tokens in their resolved prose.
+ */
+function checkResolvableOutcomeSids(
+  pack: EraPack,
+  i18n: Readonly<Record<string, string>>,
+  out: LintViolation[],
+): void {
+  for (const ev of pack.events) {
+    for (const ch of ev.choices) {
+      if (ch.outcome_sid !== undefined) {
+        const text = tryResolveSid(ch.outcome_sid, i18n);
+        if (text === null) {
+          out.push(
+            violation(
+              R_RESOLVABLE_OUTCOME_SID,
+              `choice outcome_sid "${ch.outcome_sid}" failed to resolve in en.json`,
+              `events[${ev.id}].choices[${ch.id}].outcome_sid`,
+            ),
+          );
+        } else if (KARMA_METER_RE.test(text)) {
+          out.push(
+            violation(
+              R_NO_KARMA_METER,
+              `prohibited meter token in resolved outcome prose "${text}" in event "${ev.id}"`,
+              `events[${ev.id}].choices[${ch.id}].outcome_sid`,
+            ),
+          );
+        }
+      }
+      if (ch.journal_sid !== undefined) {
+        const text = tryResolveSid(ch.journal_sid, i18n);
+        if (text === null) {
+          out.push(
+            violation(
+              R_RESOLVABLE_OUTCOME_SID,
+              `choice journal_sid "${ch.journal_sid}" failed to resolve in en.json`,
+              `events[${ev.id}].choices[${ch.id}].journal_sid`,
+            ),
+          );
+        } else if (KARMA_METER_RE.test(text)) {
+          out.push(
+            violation(
+              R_NO_KARMA_METER,
+              `prohibited meter token in resolved journal prose "${text}" in event "${ev.id}"`,
+              `events[${ev.id}].choices[${ch.id}].journal_sid`,
+            ),
+          );
+        }
+      }
+    }
+  }
+}
+
 /* -------------------------------------------------------------------------------------------------
  * Entry point
  * -----------------------------------------------------------------------------------------------*/
@@ -459,6 +528,7 @@ export function lintPack(
   checkNoVisibleKarmaMeter(pack, violations);
   checkNoPracticeAsCurrency(practices, i18n, violations);
   checkMinigameRewards(minigames, violations);
+  checkResolvableOutcomeSids(pack, i18n, violations);
   const hasError = violations.some((v) => v.severity === 'error');
   return { passed: !hasError, violations };
 }

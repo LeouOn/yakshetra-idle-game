@@ -273,6 +273,8 @@ export const ChoiceSchema = z
   .object({
     id: TokenSchema,
     label_sid: SidSchema,
+    outcome_sid: SidSchema.optional(),
+    journal_sid: SidSchema.optional(),
     requires: z.array(PredicateSchema),
     effects: z.array(EffectOpSchema),
     forbidden: z.boolean(),

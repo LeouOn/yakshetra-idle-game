@@ -222,6 +222,9 @@ function findIntentRoot(choice: Choice): IntentRoot {
 
 /** Pull a choice's narrative consequence SID, if it has one. */
 function findConsequenceSid(choice: Choice): string | null {
+  if (choice.outcome_sid !== undefined) {
+    return choice.outcome_sid;
+  }
   for (const eff of choice.effects) {
     if (eff.op === 'narrative_card') {
       return eff.card_sid;
@@ -552,7 +555,7 @@ function TurnScreenBody({
       intent_root: findIntentRoot(choice),
       consequence_summary_sid: findConsequenceSid(choice) ?? 'event.default.consequence_sid',
       world_state_delta: computeResourceDelta(state.resources, after.resources),
-      journal_memory_sid: 'event.default.journal_sid',
+      journal_memory_sid: choice.journal_sid ?? 'event.default.journal_sid',
     };
     setReflect(entry);
     dispatch({ type: 'CHOOSE_ACTION', choiceId: choice.id });

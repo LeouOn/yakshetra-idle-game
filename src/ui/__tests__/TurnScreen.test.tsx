@@ -33,13 +33,21 @@ vi.mock('expo-router', () => ({
 // type does not encode it, so a 2-event fixture satisfies the type.
 // ---------------------------------------------------------------------------
 
-function makeChoice(id: string, labelSid: string, effects: Choice['effects']): Choice {
+function makeChoice(
+  id: string,
+  labelSid: string,
+  effects: Choice['effects'],
+  outcomeSid?: string,
+  journalSid?: string,
+): Choice {
   return {
     id,
     label_sid: labelSid,
     requires: [],
     effects,
     forbidden: false,
+    ...(outcomeSid === undefined ? {} : { outcome_sid: outcomeSid }),
+    ...(journalSid === undefined ? {} : { journal_sid: journalSid }),
   };
 }
 
@@ -62,11 +70,17 @@ const fixtureEraPack: EraPack = {
       once_per_run: false,
       content_warnings: [],
       choices: [
-        makeChoice('choice-give-alms', 'test.action.give_alms_label_sid', [
-          { op: 'add_resource', key: 'trust', delta: 3 },
-          { op: 'add_resource', key: 'provisions', delta: -2 },
-          { op: 'set_intent_root', intent_root: 'care' },
-        ]),
+        makeChoice(
+          'choice-give-alms',
+          'test.action.give_alms_label_sid',
+          [
+            { op: 'add_resource', key: 'trust', delta: 3 },
+            { op: 'add_resource', key: 'provisions', delta: -2 },
+            { op: 'set_intent_root', intent_root: 'care' },
+          ],
+          'test.consequence.alms_given_sid',
+          'test.journal.alms_memory_sid',
+        ),
       ],
     },
     {
@@ -216,6 +230,69 @@ describe('TurnScreen', () => {
     // Resource deltas render: trust +3 (positive format).
     expect(() => getByTestID('reflect-delta-trust')).not.toThrow();
     expect(() => getByTestID('reflect-delta-provisions')).not.toThrow();
+
+    // Per-choice prose: What happened and What you carry render choice-specific text
+    expect(() => getByText(resolveSid('test.consequence.alms_given_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('test.journal.alms_memory_sid'))).not.toThrow();
+  });
+
+  it('renders generic fallback prose when the chosen action lacks outcome_sid and journal_sid', () => {
+    const onDeath = vi.fn();
+    const { getByText, getByTestID, press } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: fixtureEraPack,
+        onDeath,
+      }),
+    );
+
+    press(getByTestID('turn-lens-generosity'));
+    // choice-harvest-rice has no outcome_sid or journal_sid
+    press(getByTestID('turn-action-choice-harvest-rice'));
+    expect(() => getByTestID('reflect-card')).not.toThrow();
+
+    // Fallbacks render
+    expect(() => getByText(resolveSid('event.default.consequence_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('event.default.journal_sid'))).not.toThrow();
+    // Deltas still render
+    expect(() => getByTestID('reflect-delta-provisions')).not.toThrow();
+    expect(() => getByTestID('reflect-delta-energy')).not.toThrow();
+  });
+
+  it('drives the turn reducer end-to-end with a fixture choice carrying both outcome_sid and journal_sid', () => {
+    const onDeath = vi.fn();
+    const { getByText, getByTestID, press } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: fixtureEraPack,
+        onDeath,
+      }),
+    );
+
+    // Turn 0 at start
+    expect(() => getByText('Turn 0')).not.toThrow();
+    expect(() => getByText('Lens: none')).not.toThrow();
+
+    // Intend lens
+    press(getByTestID('turn-lens-generosity'));
+    expect(() => getByText('Lens: Generosity')).not.toThrow();
+
+    // Act: select choice with outcome_sid and journal_sid
+    press(getByTestID('turn-action-choice-give-alms'));
+    expect(() => getByTestID('reflect-card')).not.toThrow();
+
+    // Verify per-choice outcome & journal prose and deltas
+    expect(() => getByText(resolveSid('test.consequence.alms_given_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('test.journal.alms_memory_sid'))).not.toThrow();
+    expect(() => getByTestID('reflect-delta-trust')).not.toThrow();
+
+    // Continue: reducer ADVANCE_TURN runs
+    press(getByTestID('reflect-continue'));
+
+    // Turn counter incremented to 1, lens reset, reflect card dismissed
+    expect(() => getByText('Turn 1')).not.toThrow();
+    expect(() => getByText('Lens: none')).not.toThrow();
+    expect(() => getByTestID('reflect-card')).toThrow();
   });
 
   it('advances the turn and returns to Intend when the ReflectCard Continue is pressed', async () => {
