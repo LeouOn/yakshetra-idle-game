@@ -46,6 +46,8 @@ interface Props {
   readonly cookTicksDiscount?: number;
   /** Banked heat (surplus), snapshotted at panel open. */
   readonly surplus?: number;
+  /** The bench's pinned pair, shown above the traces (wave 3b). */
+  readonly pinnedPair?: readonly { readonly name: string }[];
   readonly onCook: (choice: CookChoice) => void;
   readonly onCancel: () => void;
 }
@@ -73,6 +75,7 @@ export default function StudioCookPanel({
   gate,
   cookTicksDiscount = 0,
   surplus = 0,
+  pinnedPair = [],
   onCook,
   onCancel,
 }: Props) {
@@ -142,6 +145,16 @@ export default function StudioCookPanel({
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('studio.cook_title_sid')}
       </Text>
+      {pinnedPair.length === 0 ? null : (
+        <Text testID="studio-cook-pinned" style={styles.pinnedLine}>
+          {pinnedPair.length >= 2 && pinnedPair[1] !== undefined
+            ? formatSid('studio.pinned_pair_sid', {
+                a: pinnedPair[0]?.name ?? '',
+                b: pinnedPair[1].name,
+              })
+            : formatSid('studio.pinned_one_sid', { a: pinnedPair[0]?.name ?? '' })}
+        </Text>
+      )}
       <Text testID="studio-cook-preview" style={styles.preview}>
         {previewText}
       </Text>
@@ -224,6 +237,7 @@ export default function StudioCookPanel({
 }
 
 const styles = StyleSheet.create({
+  pinnedLine: { color: t.gold, fontSize: 13, lineHeight: 18 },
   panel: {
     borderWidth: 1,
     borderColor: t.line,

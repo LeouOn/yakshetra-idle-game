@@ -4,7 +4,14 @@
 import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Manifest, ManifestKind, ManifestRarity } from '@/engine';
+import {
+  isPinnableKind,
+  pinnedCards,
+  type Manifest,
+  type ManifestFocus,
+  type ManifestKind,
+  type ManifestRarity,
+} from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 
@@ -41,6 +48,13 @@ interface StudioArchiveProps {
   readonly archive: readonly Manifest[];
   /** Manifest id harvested just now; draws the flourish border. */
   readonly freshId: string | null;
+  /** The bench's pin (a pair since wave 3b): shown as a strip, either
+   * removable. Absent → no strip, no pin affordances. */
+  readonly pinned?: ManifestFocus | null;
+  /** "Pin to next working" on a pinnable card (nextPinned pair semantics). */
+  readonly onPin?: (card: Manifest) => void;
+  /** Remove one card from the pinned pair, by focus id. */
+  readonly onUnpin?: (focusId: string) => void;
   /** Absent → cards render without the endow chip. */
   readonly endowState?: (cardId: string) => EndowChipState;
   /** Press on the chip: selects the first eligible track, further presses cycle. */
@@ -52,15 +66,38 @@ interface StudioArchiveProps {
 export default function StudioArchive({
   archive,
   freshId,
+  pinned = null,
+  onPin,
+  onUnpin,
   endowState,
   onEndow,
   onEndowCommit,
 }: StudioArchiveProps) {
   const [filter, setFilter] = useState<ArchiveFilter>('all');
   const visible = filter === 'all' ? archive : archive.filter((card) => card.kind === filter);
+  const pair = pinnedCards(pinned);
 
   return (
     <View>
+      {pair.length === 0 ? null : (
+        <View testID="archive-pinned-pair" style={styles.pairStrip}>
+          {pair.map((focus) => (
+            <Pressable
+              key={focus.id}
+              role="button"
+              testID={`archive-unpin-${focus.id}`}
+              accessibilityLabel={formatSid('studio.journey_unfollow_sid', {})}
+              onPress={onUnpin === undefined ? undefined : () => onUnpin(focus.id)}
+              style={styles.pairChip}
+            >
+              <Text style={styles.pairChipText}>
+                {formatSid('studio.pin_chip_sid', { name: focus.name })}
+              </Text>
+              <Text style={styles.pairChipUnpin}>{resolveSid('studio.journey_unfollow_sid')}</Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
       {archive.length === 0 ? null : (
         <View style={styles.chipRow}>
           {ARCHIVE_FILTERS.map((entry) => {
@@ -95,6 +132,14 @@ export default function StudioArchive({
             {...(endowState === undefined ? {} : { endowState: endowState(card.id) })}
             onEndow={onEndow}
             onEndowCommit={onEndowCommit}
+            {...(onPin === undefined || !isPinnableKind(card.kind) ? {} : { onPin })}
+            {...(pinned === null
+              ? {}
+              : {
+                  pinnedNote:
+                    pinned.id === card.id ||
+                    (pinned.second !== undefined && pinned.second.id === card.id),
+                })}
           />
         ))
       )}
@@ -160,12 +205,16 @@ function ManifestCard({
   endowState,
   onEndow,
   onEndowCommit,
+  onPin,
+  pinnedNote = false,
 }: {
   readonly manifest: Manifest;
   readonly highlighted: boolean;
   readonly endowState?: EndowChipState | undefined;
   readonly onEndow: ((cardId: string) => void) | undefined;
   readonly onEndowCommit: ((cardId: string) => void) | undefined;
+  readonly onPin?: ((card: Manifest) => void) | undefined;
+  readonly pinnedNote?: boolean;
 }): ReactNode {
   return (
     <View
@@ -183,6 +232,19 @@ function ManifestCard({
       <Text style={styles.cardName}>{manifest.name}</Text>
       <Text style={styles.cardLine}>{manifest.one_liner}</Text>
       <Text style={styles.cardDetail}>{manifest.detail}</Text>
+      {onPin === undefined ? null : pinnedNote ? (
+        <Text style={styles.pinnedNote}>{resolveSid('studio.journey_follow_sid')}</Text>
+      ) : (
+        <Pressable
+          role="button"
+          testID={`archive-pin-${manifest.id}`}
+          accessibilityLabel={formatSid('studio.pin_label_sid', { name: manifest.name })}
+          onPress={() => onPin(manifest)}
+          style={styles.pinButton}
+        >
+          <Text style={styles.pinButtonText}>{resolveSid('studio.journey_follow_sid')}</Text>
+        </Pressable>
+      )}
       {endowState === undefined ? null : (
         <EndowChipRow
           manifest={manifest}
@@ -216,6 +278,28 @@ function flourishStyle(rarity: ManifestRarity) {
 }
 
 const styles = StyleSheet.create({
+  pairStrip: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 },
+  pairChip: {
+    backgroundColor: t.accentDeep,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 2,
+  },
+  pairChipText: { color: t.text, fontSize: 13, fontWeight: '600' },
+  pairChipUnpin: { color: t.muted, fontSize: 11 },
+  pinButton: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: t.accent,
+    paddingHorizontal: 12,
+    marginTop: 8,
+  },
+  pinButtonText: { color: t.accent, fontSize: 13, fontWeight: '600' },
+  pinnedNote: { color: t.gold, fontSize: 12, marginTop: 8 },
   hint: { fontSize: 14, color: t.muted },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {

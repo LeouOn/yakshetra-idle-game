@@ -40,6 +40,7 @@ import {
   spendableResidue,
   pinnableCards,
   pinFocus,
+  pinnedCards,
   queueDevelop,
   stepSession,
   swapEmbodiment,
@@ -83,6 +84,7 @@ import { EMBODIED_TIER } from '@/engine/ladder-const';
 import { personEffectiveMin } from '@/ui/hooks/session-selectors';
 import StudioActivities from './StudioActivities';
 import StudioArchive, { type EndowChipState } from './StudioArchive';
+import StudioSoughtList from './StudioSoughtList';
 import StudioLife from './StudioLife';
 import StudioNextAction from './StudioNextAction';
 import StudioJourney from './StudioJourney';
@@ -571,12 +573,24 @@ export default function StudioView({
     });
     setStudio(queued);
     if (queued.bay !== null) {
+      // The pair rides the receipt when the working is aimed (wave 3b).
+      const pair = pinnedCards(studio.pinned);
+      const pinNote =
+        pair.length >= 2 && pair[1] !== undefined
+          ? ' ' +
+            formatSid('studio.pinned_pair_sid', {
+              a: pair[0]?.name ?? '',
+              b: pair[1].name,
+            })
+          : pair.length === 1
+            ? ' ' + formatSid('studio.pinned_one_sid', { a: pair[0]?.name ?? '' })
+            : '';
       report(
         formatSid('studio.cook_receipt_sid', {
           n: queued.bay.residue.length,
           fire: resolveSid(`studio.cook_fire_word_${choice.fire}_sid`),
           ticks: queued.bay.cook_ticks_total,
-        }),
+        }) + pinNote,
       );
     }
   }
@@ -635,6 +649,16 @@ export default function StudioView({
 
   function deepen(): void {
     setStudio(upgradeQuality(studio));
+  }
+
+  /** Remove one card from the pinned pair: nextPinned's toggle needs the
+   * card, so look it up in the archive by focus id. */
+  function unpinById(focusId: string): void {
+    const card = studio.archive.find((entry) => entry.id === focusId);
+    if (card === undefined) {
+      return;
+    }
+    setStudio(pinFocus(studio, card));
   }
 
   function pin(card: Manifest): void {
@@ -951,6 +975,7 @@ export default function StudioView({
                 onCook={confirmCook}
                 cookTicksDiscount={cookDiscount}
                 surplus={cookHeat}
+                pinnedPair={pinnedCards(studio.pinned).map((focus) => ({ name: focus.name }))}
                 onCancel={() => {
                   setCookOpen(false);
                   setCookPile(null);
@@ -1022,7 +1047,11 @@ export default function StudioView({
           </TabSection>
 
           <TabSection tab="life" active={activeTab}>
-            <StudioLife context={lifeContext} {...(onExport === undefined ? {} : { onExport })} />
+            <StudioLife
+              context={lifeContext}
+              archive={studio.archive}
+              {...(onExport === undefined ? {} : { onExport })}
+            />
 
             <StudioActivities
               practices={runtimePractices}
@@ -1061,9 +1090,18 @@ export default function StudioView({
             <Text accessibilityRole="header" style={styles.archiveHeading}>
               {resolveSid('studio.archive_heading_sid')}
             </Text>
+            <StudioSoughtList
+              encounters={registries().encounters}
+              encountered={progression.encounters_done ?? []}
+              archive={studio.archive}
+            />
+
             <StudioArchive
               archive={studio.archive}
               freshId={freshHarvestId}
+              pinned={studio.pinned}
+              onPin={pin}
+              onUnpin={unpinById}
               endowState={endowStateFor}
               onEndow={endowPick}
               onEndowCommit={endowCommit}
