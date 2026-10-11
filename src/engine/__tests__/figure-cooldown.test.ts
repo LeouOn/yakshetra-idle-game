@@ -19,7 +19,7 @@ import {
   type ResidueEvent,
   type StudioState,
 } from '@/engine';
- 
+
 import { CATALOG } from '@/engine/manifest-catalog';
 
 function lifeContext(eraId: string, window: readonly unknown[]): LifeContext {
@@ -168,5 +168,86 @@ describe('figure cooldown on the person bench (real path)', () => {
       names.push(card.name);
       expect(card.about_id).toBe('figure:avalokiteshvara');
     }
+  });
+
+  it('a long fire shortens the cooldown to one; a short fire keeps four', () => {
+    const tag = guanyinTag();
+    const w = windowCarrying(tag);
+    const rng = createRng(5n);
+    // Figure card two harvests back (one generic since): a LONG fire may
+    // call her again (cooldown 1 has expired); a SHORT fire may not (four).
+    const titles = ['other person', 'Avalokiteśvara (Guanyin)', 'x', 'y'];
+    const longCard = tableFillManifest(
+      w,
+      null,
+      0,
+      rng,
+      '1',
+      'lf-1',
+      null,
+      lifeContext('tang-china@0.1.0', w),
+      'person',
+      undefined,
+      undefined,
+      [],
+      'long',
+      undefined,
+      titles,
+    );
+    expect(longCard.about_id).toBe('figure:avalokiteshvara');
+    const shortCard = tableFillManifest(
+      w,
+      null,
+      0,
+      rng,
+      '2',
+      'sf-1',
+      null,
+      lifeContext('tang-china@0.1.0', w),
+      'person',
+      undefined,
+      undefined,
+      [],
+      'short',
+      undefined,
+      titles,
+    );
+    expect((shortCard.about_id ?? '').startsWith('figure:')).toBe(false);
+  });
+
+  it('always-long-fire stays a decision, not a camp: share <= 60%, run <= 2', () => {
+    const tag = guanyinTag();
+    const w = windowCarrying(tag);
+    const rng = createRng(9n);
+    const cards: Manifest[] = [];
+    for (let i = 0; i < 80; i += 1) {
+      const card = tableFillManifest(
+        w,
+        null,
+        0,
+        rng,
+        String(i),
+        `al-${i}`,
+        null,
+        lifeContext('tang-china@0.1.0', w),
+        'person',
+        undefined,
+        undefined,
+        [],
+        'long',
+        undefined,
+        cards.map((c) => c.name),
+      );
+      cards.push(card);
+    }
+    const figures = cards.filter((c) => (c.about_id ?? '').startsWith('figure:'));
+    const longest = longestSameRun(cards, (c) =>
+      (c.about_id ?? '').startsWith('figure:') ? 'FIG' : 'gen',
+    );
+    process.stdout.write(
+      `\n  always-long: figure share ${((figures.length / 80) * 100).toFixed(0)}% (${figures.length}/80), longest figure run ${longest}\n`,
+    );
+    expect(figures.length / 80).toBeLessThanOrEqual(0.6);
+    expect(longest).toBeLessThanOrEqual(2);
   });
 });

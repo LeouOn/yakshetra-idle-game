@@ -148,6 +148,7 @@ export function tableFillManifest(
     archiveTitles,
     era,
     encounterFigureId,
+    fire,
   );
   const kind = row.kind;
   const entry = row.entry;
