@@ -258,3 +258,35 @@ chopsticks). Everything untagged below is neutral by that rule.
 - place: The unlisted quay
 
 Total: 21 era-neutral rows.
+
+## Figure rhythm under the cooldown (80-harvest measurement, first 10 verbatim)
+
+A window that always carries the Guanyin-bound token. Before: 80/80 the same
+figure. After the cooldown: figure share 20%, longest same-card run 1, generic
+people fill the rest — the figure ARRIVES, then the bench goes back to work.
+
+### Tang (first 10)
+
+1. **Avalokiteśvara (Guanyin)** (common, FIGURE) — She walks toward the shouting, and you mistake her for an aunt until she has already fixed it.
+2. **Mahāsthāmaprāpta (Dashizhi)** (common) — He steps onto the firm road and the ground shivers with sudden courage.
+3. **Kṣitigarbha (Dizang)** (common) — He strikes the flagstones with his ringed staff, lighting the darkest pit.
+4. **Brother De the water-carrier** (common) — He balances twin cedar buckets from the public cistern, filling the neighborhood vats first.
+5. **Śākyamuni** (common) — He walks the same lane every morning and stops wherever the work is.
+6. **Avalokiteśvara (Guanyin)** (common, FIGURE) — She dips a willow branch in clean water and steps into the crowded lane.
+7. **Samantabhadra (Puxian)** (uncommon) — He turns up where the digging is and does the part nobody wants, and he is enormous.
+8. **Shen the night clerk** (common) — He works his abacus by tallow dip, noting tea and grain before you recall what was spent.
+9. **Amitābha** (common) — He leans out from the west with an open palm, and it is not the gesture you expect.
+10. **Auntie Qian the keyholder** (uncommon) — The heavy latch-key hangs beside the dried peppers, and it is not for the door it opens.
+
+### Garden (first 10)
+
+1. **The attendant on the cold flags** (common, FIGURE) — She dips a willow branch in clean water and steps into the crowded lane.
+2. **An, the gate listener** (common) — On the mounting stone, tipping their chin toward the latch before you arrive.
+3. **The one who stops at the low gate** (common) — He touches the bare earth when challenged, calling the common soil itself as witness.
+4. **Dan, the hedge pruner** (common) — Wiping sap from the hook and pointing out briar in the paving.
+5. **The man under the lee wall** (common) — He sits wrapped in rough wool, ignoring flowery speech to point at the stone.
+6. **The attendant on the cold flags** (common, FIGURE) — She dips a willow branch in clean water and steps into the crowded lane.
+7. **The bell and the man who matches it** (uncommon) — He calls the evening as the temple bell rings, and has for longer than the bell has hung.
+8. **Mire, the water tender** (common) — Skimming the slow reach and watching the current at the sluice.
+9. **The one holding the embankment true** (common) — He urges his six-tusked mount along the rocky ditch to haul the wagon out.
+10. **The one in the root cellar** (uncommon) — He strikes the flagstones with his ringed staff, lighting the darkest pit.

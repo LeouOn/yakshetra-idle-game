@@ -110,6 +110,14 @@ export function rowsForEra(
   return eligible.length > 0 ? eligible : entries;
 }
 
+/**
+ * After a figure card, that figure is off the residue-matched pick for this
+ * many person-bench harvests (see pickCatalogRow). 4 was tuned against the
+ * 80-harvest single-figure measurement: share ~25%, longest run <= 2, generic
+ * people fill the rest.
+ */
+export const FIGURE_COOLDOWN_HARVESTS = 4;
+
 export interface PickedRow {
   readonly kind: string;
   readonly entry: CatalogEntry;
@@ -179,7 +187,22 @@ export function pickCatalogRow(
     }
   }
   const candidates = figureCandidates(summary, catalog, era);
-  if (candidates.length > 0) {
+  // Cooldown: a figure harvested within the last FIGURE_COOLDOWN_HARVESTS
+  // cards cannot be the residue-matched pick. The recent titles are all the
+  // state the rule needs — a figure card's title IS the figure row's name.
+  // Encounters returned above (always answer); a never-harvested figure is
+  // not in the list and never cools. If EVERY candidate is cooling, the
+  // figure lane yields and the generic rows below answer the window.
+  const recent = new Set(archiveTitles.slice(-FIGURE_COOLDOWN_HARVESTS));
+  // A figure card's title is the row's name OR one of its template names
+  // (the Garden renders figures under era-scoped template titles), so the
+  // cooldown matches every title the row can produce.
+  const figureTitles = (entry: CatalogEntry): readonly string[] => [
+    entry.name,
+    ...(entry.templates ?? []).map((t) => t.name).filter((n): n is string => typeof n === 'string'),
+  ];
+  const ready = candidates.filter((c) => !figureTitles(c.entry).some((t) => recent.has(t)));
+  if (ready.length > 0) {
     // A window naming two figures should not serve the same one three times
     // running. With two candidates a uniform pick gives three-in-a-row about a
     // quarter of the time, and the figure lane is the most-looked-at surface
@@ -187,9 +210,8 @@ export function pickCatalogRow(
     // its title is the last thing in `archiveTitles`; if some other figure can
     // answer, that one does.
     const latest = archiveTitles[archiveTitles.length - 1];
-    const other =
-      latest === undefined ? candidates : candidates.filter((c) => c.entry.name !== latest);
-    const pool = other.length > 0 ? other : candidates;
+    const other = latest === undefined ? ready : ready.filter((c) => c.entry.name !== latest);
+    const pool = other.length > 0 ? other : ready;
     const picked = rng.pick(pool);
     return {
       kind: picked.kind,
