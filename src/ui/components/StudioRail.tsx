@@ -56,7 +56,13 @@ export default function StudioRail({ tiers, variant = 'side' }: StudioRailProps)
 }
 
 const styles = StyleSheet.create({
-  rail: { width: 132, paddingVertical: 24, gap: 12, backgroundColor: t.surface },
+  rail: {
+    width: 132,
+    paddingHorizontal: 12,
+    paddingVertical: 24,
+    gap: 12,
+    backgroundColor: t.surface,
+  },
   railStrip: {
     flexDirection: 'row',
     flexWrap: 'wrap',
