@@ -9,10 +9,12 @@
 // Deterministic: no rng. Pure: no Date, no network.
 
 import { type Manifest, type ManifestScale } from './manifest';
+import { isIdShaped } from './prose';
 import {
   WORLD_DRAFT_VERSION,
   WorldDraftSchema,
   assembleWorldDraft,
+  composeWorldDraftLine,
   type WorldDraft,
   type WorldDraftBond,
   type WorldDraftMember,
@@ -58,10 +60,11 @@ export function assembleWorldDraftAtScale(
       });
     }
   }
+  const name = isIdShaped(first.name) ? 'A street that is still deciding' : first.name;
   return WorldDraftSchema.parse({
     schema_version: WORLD_DRAFT_VERSION,
-    name: first.name,
-    one_liner: second.one_liner,
+    name,
+    one_liner: composeWorldDraftLine(first, second, scale),
     places,
     cast,
     tensions,

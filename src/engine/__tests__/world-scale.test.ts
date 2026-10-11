@@ -100,7 +100,9 @@ describe('assembleWorldDraftAtScale (non-person scales)', () => {
     ];
     const draft = assembleWorldDraftAtScale(archive, 'household');
     expect(draft?.name).toBe('The hearth row');
-    expect(draft?.one_liner).toBe('Old Shi waits.');
+    expect(draft?.one_liner).toBe(
+      'By the shared hearth: The hearth row waits. Across the threshold: Old Shi waits.',
+    );
     expect(draft?.places).toHaveLength(1);
     expect(draft?.cast).toHaveLength(1);
   });
@@ -112,7 +114,9 @@ describe('assembleWorldDraftAtScale (non-person scales)', () => {
     ];
     const draft = assembleWorldDraftAtScale(archive, 'town');
     expect(draft?.name).toBe('The west bridge');
-    expect(draft?.one_liner).toBe('Lantern night waits.');
+    expect(draft?.one_liner).toBe(
+      'Where the parish lanes meet at the west bridge: The west bridge waits. Down the high lane: Lantern night waits.',
+    );
   });
 });
 
@@ -129,9 +133,13 @@ describe('assembleWorldDraftAtScale (ordinal pairing)', () => {
     const world0 = assembleWorldDraftAtScale(archive, 'org', 0);
     const world1 = assembleWorldDraftAtScale(archive, 'org', 1);
     expect(world0?.name).toBe('The charter hall');
-    expect(world0?.one_liner).toBe('The oath keeper waits.');
+    expect(world0?.one_liner).toBe(
+      'Sworn before the hall: The charter hall waits. Here: The oath keeper waits.',
+    );
     expect(world1?.name).toBe('The counted yard');
-    expect(world1?.one_liner).toBe('The tally master waits.');
+    expect(world1?.one_liner).toBe(
+      'Through the counted yard, the guild found its footing: The counted yard waits. In the yard: The tally master waits.',
+    );
     expect(world1?.name).not.toBe(world0?.name);
     expect(world1?.one_liner).not.toBe(world0?.one_liner);
   });

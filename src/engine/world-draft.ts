@@ -3,8 +3,11 @@
 
 import { z } from 'zod';
 
-import type { Manifest } from './manifest';
+import type { Manifest, ManifestScale } from './manifest';
+import { isIdShaped } from './prose';
+import { normalizeProse } from './prose-normalize';
 import { canonicalStringify } from './serialize';
+import { WORLD_DRAFT_TEMPLATES, pickTemplate, templatesForScale } from './world-draft-templates';
 
 export const WORLD_DRAFT_VERSION = 'world_draft/v0' as const;
 
@@ -64,6 +67,90 @@ function member(card: Manifest): WorldDraftMember {
   return { id: card.id, name: card.name, one_liner: card.one_liner };
 }
 
+function stripPeriod(text: string): string {
+  return text.trim().replace(/[.!?]+$/, '');
+}
+
+function withLowerArticle(phrase: string): string {
+  return phrase.replace(/^(The|A|An)\b/, (m) => m.toLowerCase());
+}
+
+/** Compose a setting line from cards: person + place at person scale, or tier cards at higher scales. */
+export function composeWorldDraftLine(
+  first: Manifest | undefined | null,
+  second?: Manifest | null,
+  scale: ManifestScale = 'person',
+): string {
+  if (scale === 'person') {
+    let personCard = first?.kind === 'person' ? first : second?.kind === 'person' ? second : null;
+    let placeCard = first?.kind === 'place' ? first : second?.kind === 'place' ? second : null;
+
+    if (!personCard && !placeCard) {
+      if (first && !second) {
+        if (first.kind === 'person') personCard = first;
+        else placeCard = first;
+      }
+    }
+
+    if (personCard && placeCard) {
+      const template = pickTemplate(
+        WORLD_DRAFT_TEMPLATES.personWithPlace,
+        `${personCard.id}:${placeCard.id}:person`,
+      );
+      const rawPersonName = personCard.name;
+      const personName = isIdShaped(rawPersonName) ? 'Someone' : stripPeriod(rawPersonName);
+      const rawPlaceName = placeCard.name;
+      const placeName = isIdShaped(rawPlaceName)
+        ? 'the threshold'
+        : withLowerArticle(stripPeriod(rawPlaceName));
+      const personWhat = stripPeriod(personCard.one_liner);
+      return normalizeProse(
+        template
+          .replace(/{person}/g, personName)
+          .replace(/{place}/g, placeName)
+          .replace(/{line}/g, personWhat),
+      );
+    }
+
+    if (personCard) {
+      const template = pickTemplate(
+        WORLD_DRAFT_TEMPLATES.personOnly,
+        `${personCard.id}:person-only`,
+      );
+      const personWhat = stripPeriod(personCard.one_liner);
+      return normalizeProse(template.replace(/{person}/g, personWhat));
+    }
+
+    if (placeCard) {
+      const template = pickTemplate(WORLD_DRAFT_TEMPLATES.placeOnly, `${placeCard.id}:place-only`);
+      const placeWhat = stripPeriod(placeCard.one_liner);
+      return normalizeProse(template.replace(/{place}/g, placeWhat));
+    }
+
+    return 'A quiet threshold, waiting for someone to arrive.';
+  }
+
+  // Tier scales
+  if (!first && !second) {
+    return 'A quiet threshold, waiting for someone to arrive.';
+  }
+  const card1 = first ?? second!;
+  const card2 = second ?? first!;
+  const templates = templatesForScale(scale);
+  const template = pickTemplate(templates, `${card1.id}:${card2.id}:${scale}`);
+  const rawName = card1.name;
+  const name = isIdShaped(rawName) ? 'the hall' : withLowerArticle(stripPeriod(rawName));
+  const line1 = stripPeriod(card1.one_liner);
+  const line2 = stripPeriod(card2.one_liner);
+
+  return normalizeProse(
+    template
+      .replace(/{name}/g, name)
+      .replace(/{line1}/g, line1)
+      .replace(/{line2}/g, line2),
+  );
+}
+
 /** A world starts with one place, or with two people who need somewhere to stand. */
 export function canAssembleWorld(archive: readonly Manifest[]): boolean {
   const places = archive.filter((card) => card.kind === 'place').length;
@@ -80,15 +167,11 @@ export function assembleWorldDraft(archive: readonly Manifest[]): WorldDraft | n
   const tensions = archive
     .filter((card) => card.kind === 'outcome' || card.kind === 'change')
     .map(member);
-  const firstPlace = places[0];
-  const firstPerson = cast[0];
-  const name = firstPlace?.name ?? 'A street that is still deciding';
-  const one_liner =
-    firstPlace !== undefined && firstPerson !== undefined
-      ? `${firstPerson.name} keeps returning to ${firstPlace.name}.`
-      : firstPlace !== undefined
-        ? firstPlace.one_liner
-        : `${firstPerson?.name ?? 'Someone'} is waiting for a place to land.`;
+  const firstPlace = archive.find((card) => card.kind === 'place');
+  const firstPerson = archive.find((card) => card.kind === 'person');
+  const rawName = firstPlace?.name ?? 'A street that is still deciding';
+  const name = isIdShaped(rawName) ? 'A street that is still deciding' : rawName;
+  const one_liner = composeWorldDraftLine(firstPerson, firstPlace, 'person');
   const bonds: WorldDraftBond[] = [];
   for (const card of archive) {
     if (card.about_id !== undefined && card.about_name !== undefined) {

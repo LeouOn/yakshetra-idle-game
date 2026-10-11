@@ -17,8 +17,8 @@
 import { tickToCalendar, type CalendarEpoch } from './calendar';
 import { normalizeProse } from './prose-normalize';
 import { CHRONICLE_TEMPLATES } from './chronicle-templates';
-import { SCALE_VALUES } from './manifest';
-import type { Manifest } from './manifest';
+import { SCALE_VALUES, type Manifest, type ManifestScale } from './manifest';
+import { composeWorldDraftLine } from './world-draft';
 import type { WorldDraftReference } from './studio-session';
 
 export interface ChronicleEntry {
@@ -241,7 +241,7 @@ function draftEntries(
         index: secondIndex >= 0 ? secondIndex + 0.5 : archive.length,
         scale,
         text: pick(CHRONICLE_TEMPLATES.worldDraft, `${scale}-world-${k}`)
-          .replace(/{line}/g, `${first?.name ?? 'a place'} — ${second.one_liner}`)
+          .replace(/{line}/g, composeWorldDraftLine(first, second, scale as ManifestScale))
           .replace(/{scale-word}/g, SCALE_WORDS[scale] ?? scale),
       });
     }
