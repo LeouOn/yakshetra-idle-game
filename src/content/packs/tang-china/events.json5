@@ -30,6 +30,8 @@
         {
           id: 'comply',
           label_sid: 'event.tang.grain-requisition.comply.label_sid',
+          outcome_sid: 'event.tang.grain-requisition.comply.outcome_sid',
+          journal_sid: 'event.tang.grain-requisition.comply.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'provisions', delta: -3 },
@@ -41,6 +43,8 @@
         {
           id: 'hide_some',
           label_sid: 'event.tang.grain-requisition.hide_some.label_sid',
+          outcome_sid: 'event.tang.grain-requisition.hide_some.outcome_sid',
+          journal_sid: 'event.tang.grain-requisition.hide_some.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'provisions', delta: -1 },
@@ -52,6 +56,8 @@
         {
           id: 'petition',
           label_sid: 'event.tang.grain-requisition.petition.label_sid',
+          outcome_sid: 'event.tang.grain-requisition.petition.outcome_sid',
+          journal_sid: 'event.tang.grain-requisition.petition.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },
@@ -78,6 +84,8 @@
         {
           id: 'take_in',
           label_sid: 'event.tang.sick-traveler.take_in.label_sid',
+          outcome_sid: 'event.tang.sick-traveler.take_in.outcome_sid',
+          journal_sid: 'event.tang.sick-traveler.take_in.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },
@@ -90,6 +98,8 @@
         {
           id: 'pass_by',
           label_sid: 'event.tang.sick-traveler.pass_by.label_sid',
+          outcome_sid: 'event.tang.sick-traveler.pass_by.outcome_sid',
+          journal_sid: 'event.tang.sick-traveler.pass_by.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: 1 },
@@ -101,6 +111,8 @@
         {
           id: 'send_for_lay_brother',
           label_sid: 'event.tang.sick-traveler.send_for_lay_brother.label_sid',
+          outcome_sid: 'event.tang.sick-traveler.send_for_lay_brother.outcome_sid',
+          journal_sid: 'event.tang.sick-traveler.send_for_lay_brother.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },
@@ -133,6 +145,8 @@
         {
           id: 'give',
           label_sid: 'event.tang.corrupt-donation-demand.give.label_sid',
+          outcome_sid: 'event.tang.corrupt-donation-demand.give.outcome_sid',
+          journal_sid: 'event.tang.corrupt-donation-demand.give.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'wealth', delta: -2 },
@@ -147,6 +161,8 @@
         {
           id: 'refuse_politely',
           label_sid: 'event.tang.corrupt-donation-demand.refuse_politely.label_sid',
+          outcome_sid: 'event.tang.corrupt-donation-demand.refuse_politely.outcome_sid',
+          journal_sid: 'event.tang.corrupt-donation-demand.refuse_politely.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'monastics', delta: -1 },
@@ -158,6 +174,8 @@
         {
           id: 'report_to_officials',
           label_sid: 'event.tang.corrupt-donation-demand.report_to_officials.label_sid',
+          outcome_sid: 'event.tang.corrupt-donation-demand.report_to_officials.outcome_sid',
+          journal_sid: 'event.tang.corrupt-donation-demand.report_to_officials.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'monastics', delta: -3 },
@@ -189,6 +207,8 @@
         {
           id: 'help_flee',
           label_sid: 'event.tang.conscripted-brother.help_flee.label_sid',
+          outcome_sid: 'event.tang.conscripted-brother.help_flee.outcome_sid',
+          journal_sid: 'event.tang.conscripted-brother.help_flee.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'family', delta: 2 },
@@ -201,6 +221,8 @@
         {
           id: 'let_go',
           label_sid: 'event.tang.conscripted-brother.let_go.label_sid',
+          outcome_sid: 'event.tang.conscripted-brother.let_go.outcome_sid',
+          journal_sid: 'event.tang.conscripted-brother.let_go.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'officials', delta: 1 },
@@ -213,6 +235,8 @@
         {
           id: 'pay_bribe',
           label_sid: 'event.tang.conscripted-brother.pay_bribe.label_sid',
+          outcome_sid: 'event.tang.conscripted-brother.pay_bribe.outcome_sid',
+          journal_sid: 'event.tang.conscripted-brother.pay_bribe.journal_sid',
           requires: [{ op: 'gte', key: 'wealth', value: 3 }],
           effects: [
             { op: 'add_resource', key: 'wealth', delta: -3 },
@@ -239,6 +263,8 @@
         {
           id: 'share',
           label_sid: 'event.tang.famine-year.share.label_sid',
+          outcome_sid: 'event.tang.famine-year.share.outcome_sid',
+          journal_sid: 'event.tang.famine-year.share.journal_sid',
           requires: [{ op: 'has_resource', key: 'provisions' }],
           effects: [
             { op: 'add_resource', key: 'provisions', delta: -2 },
@@ -250,6 +276,8 @@
         {
           id: 'hoard',
           label_sid: 'event.tang.famine-year.hoard.label_sid',
+          outcome_sid: 'event.tang.famine-year.hoard.outcome_sid',
+          journal_sid: 'event.tang.famine-year.hoard.journal_sid',
           requires: [{ op: 'has_resource', key: 'provisions' }],
           effects: [
             { op: 'add_relationship', target: 'neighbors', delta: -2 },
@@ -261,6 +289,8 @@
         {
           id: 'seek_monastery_granary',
           label_sid: 'event.tang.famine-year.seek_monastery_granary.label_sid',
+          outcome_sid: 'event.tang.famine-year.seek_monastery_granary.outcome_sid',
+          journal_sid: 'event.tang.famine-year.seek_monastery_granary.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },
@@ -292,6 +322,8 @@
         {
           id: 'hide_monk',
           label_sid: 'event.tang.persecution-edict.hide_monk.label_sid',
+          outcome_sid: 'event.tang.persecution-edict.hide_monk.outcome_sid',
+          journal_sid: 'event.tang.persecution-edict.hide_monk.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'sheltered_fugitive_monk' },
@@ -304,6 +336,8 @@
         {
           id: 'comply_and_report',
           label_sid: 'event.tang.persecution-edict.comply_and_report.label_sid',
+          outcome_sid: 'event.tang.persecution-edict.comply_and_report.outcome_sid',
+          journal_sid: 'event.tang.persecution-edict.comply_and_report.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'officials', delta: 2 },
@@ -316,6 +350,8 @@
         {
           id: 'flee_region',
           label_sid: 'event.tang.persecution-edict.flee_region.label_sid',
+          outcome_sid: 'event.tang.persecution-edict.flee_region.outcome_sid',
+          journal_sid: 'event.tang.persecution-edict.flee_region.journal_sid',
           requires: [],
           effects: [
             { op: 'modify_event_weight', event_id: 'event:tang/persecution-edict', multiplier: 0.1 },
@@ -343,6 +379,8 @@
         {
           id: 'spend_all_wealth',
           label_sid: 'event.tang.child-illness.spend_all_wealth.label_sid',
+          outcome_sid: 'event.tang.child-illness.spend_all_wealth.outcome_sid',
+          journal_sid: 'event.tang.child-illness.spend_all_wealth.journal_sid',
           requires: [{ op: 'gte', key: 'wealth', value: 1 }],
           effects: [
             { op: 'add_resource', key: 'wealth', delta: -5 },
@@ -354,6 +392,8 @@
         {
           id: 'pray_and_wait',
           label_sid: 'event.tang.child-illness.pray_and_wait.label_sid',
+          outcome_sid: 'event.tang.child-illness.pray_and_wait.outcome_sid',
+          journal_sid: 'event.tang.child-illness.pray_and_wait.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'prayed_instead_of_seeking_care' },
@@ -364,6 +404,8 @@
         {
           id: 'seek_chan_master',
           label_sid: 'event.tang.child-illness.seek_chan_master.label_sid',
+          outcome_sid: 'event.tang.child-illness.seek_chan_master.outcome_sid',
+          journal_sid: 'event.tang.child-illness.seek_chan_master.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },

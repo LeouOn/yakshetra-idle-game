@@ -131,4 +131,28 @@ describe('Fantasy Mahayana era pack scaffold', () => {
       }
     }
   });
+
+  test('every choice across all events authors outcome_sid and journal_sid that resolve', async () => {
+    const pack = await loadEraPack('fantasy-mahayana');
+    expect(pack.events).toHaveLength(7);
+    let choiceCount = 0;
+    for (const ev of pack.events) {
+      for (const ch of ev.choices) {
+        choiceCount += 1;
+        expect(ch.outcome_sid, `choice ${ch.id} in ${ev.id} must define outcome_sid`).toBeDefined();
+        expect(ch.journal_sid, `choice ${ch.id} in ${ev.id} must define journal_sid`).toBeDefined();
+        if (ch.outcome_sid) {
+          const outcome = resolveSid(ch.outcome_sid);
+          expect(outcome.length).toBeGreaterThan(0);
+          expect(outcome).not.toMatch(/karma|merit|spiritual_rank|enlightenment/i);
+        }
+        if (ch.journal_sid) {
+          const journal = resolveSid(ch.journal_sid);
+          expect(journal.length).toBeGreaterThan(0);
+          expect(journal).not.toMatch(/karma|merit|spiritual_rank|enlightenment/i);
+        }
+      }
+    }
+    expect(choiceCount).toBe(21);
+  });
 });

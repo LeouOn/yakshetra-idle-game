@@ -169,6 +169,7 @@ export {
   assembleWorldDraft,
   canAssembleWorld,
   composeWorldDraftLine,
+  formatPersonInTemplate,
   stringifyWorldDraft,
 } from './world-draft';
 export type { WorldDraft, WorldDraftBond, WorldDraftMember } from './world-draft';

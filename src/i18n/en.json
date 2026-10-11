@@ -385,7 +385,7 @@
   },
   "tang": {
     "name_sid": "Late Tang China",
-    "lineage_notes_sid": "This life is set in late Tang China (8th–9th c CE), a period of intense Mahāyāna Buddhist flourishing followed by the Huichang persecution (845 CE). The game does not depict any historical Buddhist teachers; it depicts ordinary people in a Buddhist-inflected society. Its setting is a wide social field rather than a court chronicle. A capital district, a market road, a monastery precinct, and a farming village are connected by taxes, travel, correspondence, seasonal labor, and the movement of grain. A life may touch several of these places without treating any one of them as the single, authentic center of the age.\n\nThe period is represented through pressures that ordinary people could recognize: a household balancing provisions against obligation, a trader weighing trust against a narrow margin, an official negotiating orders that travel downward through layers of administration, and a monastic community dependent on land, gifts, and protection. Buddhist institutions are part of this social fabric, but they are not presented as automatic sources of safety or moral certainty. People ask for counsel, shelter, food, or a witness; they may also encounter bureaucracy, rivalry, scarcity, and fear. The game keeps these encounters human and local.\n\nThe reference to Mahāyāna flourishing signals the breadth of Buddhist learning, art, charity, ritual life, and monastic organization present across the period. It is historical context, not a claim that every person shared one belief or that every institution behaved in one way. The Huichang persecution of 845 CE marks a later rupture in that landscape. In this game it is understood as a period of political pressure and institutional vulnerability, not as a spectacle and not as a story about named rulers or teachers. The pack can acknowledge displacement, confiscation, concealment, and the fear of denunciation without staging graphic violence.\n\nNo historical Buddhist teacher appears as a character, advisor, narrator, or hidden solution. No named Chan patriarch is required for a player to understand the setting. Chan, literati, and sangha are glossary terms that help describe institutions and social roles in plain English; they are not a ladder of spiritual rank. The six lenses are game abstractions inspired by ethical vocabulary, and they do not measure sanctity, doctrinal correctness, or a person’s final worth.\n\nThis setting also avoids turning historical hardship into exotic scenery. Poverty, illness, war, conscription, and unequal status are content warnings because they affect bodies, households, and choices. The aim is to show constrained agency: people make decisions with incomplete information while carrying obligations to family, neighbors, employers, officials, travelers, and monastic communities. The era is therefore a context for compassionate attention, not a claim to reproduce the whole of Tang history. Players should read the pack as a respectful, limited fiction built from scholarship and open to correction.",
+    "lineage_notes_sid": "Late Tang China, where the Silk Road meets the capital at Chang'an, and monastery bells measure out the market day. A life here is shaped by grain taxes, seasonal labor, family obligations, and quiet encounters along the road. Every choice costs something real — a thinner pot of millet, a neighbor's trust, or a day spent in the dust of the county seat.",
     "social": {
       "mobility_rules_sid": "Movement between stations is possible but uneven. Education, patronage, marriage, trade, military service, migration, and monastic affiliation can open routes, while debt, household duty, taxation, gendered expectations, and official suspicion can close them. A change of station costs time and trust; it is never a hidden reward for a particular virtue. Social obligation is visible in who can ask, who must answer, and whose refusal carries a price."
     },
@@ -769,7 +769,7 @@
   },
   "fantasy": {
     "name_sid": "The Garden of Arrivals",
-    "lineage_notes_sid": "This life is set in the Garden of Arrivals, an original fictional cosmology inspired loosely by Mahāyāna contemplative imagery. It is a work of fiction. It does not represent itself as doctrine, as a teaching of any lineage, teacher, order, or school, or as a faithful depiction of any Buddhist cosmological realm. The six-parami lens set, the cross-life echo system, the intent-root taxonomy, and every event in this pack are game-design choices made in good faith, not claims about how the world actually works or about what any tradition teaches.\n\nThe Garden of Arrivals, its Court, its slow water, the bell that rings once, the memory stones, and every figure who appears in these scenes are original allegorical creations of the game's authors. They have no precedent in any sutra, commentary, oral tradition, or devotional practice. If a detail in this pack resembles a recognized image from any tradition, the resemblance is incidental and not an assertion of shared identity. The game treats its setting as a narrative space for ethical and contemplative reflection, not as a map of any metaphysical territory.\n\nThis pack deliberately excludes and does not depict: any named pure land, including Sukhāvatī, Abhirati, Vaidūryanirbhāsa, and any other named buddha-field from any tradition; any named Buddha or bodhisattva; any named historical teacher, commentator, or lineage holder; any real mantra, dhāraṇī, seed syllable, or ritual utterance; and any depiction of thangka painting, mandala geometry, mudrā gesture, or empowerment ceremony. The Gardener is not an avatar, emanation, or stand-in for any recognized figure. The Court is not a depiction of any post-death judgment scene, judgment deity, or reckoning doctrine found in any tradition. No element of this pack should be read as representing, satirizing, or commenting on any living devotional practice.\n\nThe Gardener is an original allegorical figure created for this game. The Gardener tends the Garden of Arrivals, asks arriving souls what they carry, and witnesses the patterns that cross from one life to the next. The Gardener has no sutra provenance, no devotional name, no liturgical function, and no iconographic tradition. The Gardener is not enlightened, not a teacher, not a judge in any doctrinal sense, and not a deity. The Gardener is a narrative device for exploring care, attention, and release within the game's fiction. Any resemblance to a figure from any tradition is coincidental and unintended. The name 'the Gardener' is a functional description of the figure's role within the Garden, not a title carrying doctrinal significance.\n\nThe pack draws comparative and scholarly context from five works. David L. McMahan, The Making of Buddhist Modernism (Oxford University Press, 2008), provides context on how Mahayana imagery has been received and reframed in modern contexts. Paul Williams, Mahayana Buddhism: The Doctrinal Foundations, 2nd edition (Routledge, 2009), provides doctrinal background on the six-parami framework the lens set is loosely modeled on. Peter Harvey, An Introduction to Buddhism: Teachings, History and Practices, 2nd edition (Cambridge University Press, 2013), provides general historical and ethical context. Robert E. Buswell Jr. and Donald S. Lopez Jr., The Princeton Dictionary of Buddhism (Princeton University Press, 2014), serves as a terminology reference. Rupert Gethin, The Foundations of Buddhism (Oxford University Press, 1998), provides general reference for the ethical framework. These sources inform the game's framing choices only. No source endorses or is represented by this work, and no specific teaching, claim, or doctrinal position from any source is asserted as true within the game's fiction.\n\nThe editorial intent is to provide a contemplative, non-graphic, and non-sectarian fictional space that uses Mahayana-inspired imagery — rebirth, intention, echoes across lives, vows, and release from fixed patterns — as raw material for a game about ethical attention. The setting avoids named devotional elements so that no player's relationship to a living tradition is implicated by the gameplay. Content warnings are surfaced per category and can be toggled off in settings. Difficult themes — separation from loved ones, loss of memory, spiritual disorientation, and encounters with anguish — are named in content-warning tags but never depicted in graphic detail. The game's mechanical model records one canonical intent root per choice for cross-life echo analysis; it does not compute or display any metaphysical score, ranking, or judgment on the player. The vow-enforcement rule variation means that vows taken in one life can mechanically constrain available choices in a later life; breaking a vow unlocks previously gated actions but at narrative cost rather than numerical penalty.",
+    "lineage_notes_sid": "The Garden of Arrivals, a quiet borderland of stone basins, slow water, and four cedar posts where a bell rings once. Arriving souls bring what they carried across thresholds of memory, answering the Gardener and tending the common work. A vow declared here holds across lives, and what you choose to release or keep will shape the ground you return to.",
     "social": {
       "mobility_rules_sid": "Movement between stations in the Garden follows the weight of what you carry, not a fixed hierarchy. A newly arrived soul may be called to attend the Court; a court attendant may take up a vow and become a traveler. Mobility costs trust and time, and it is never a hidden reward for virtue. The vow-enforcement rule means declared vows mechanically constrain which choices are open to you until they are met, transformed, or set aside."
     },
@@ -969,10 +969,64 @@
   },
   "content_warning": {
     "references-to-death": {
-      "label_sid": "References to death and mourning"
+      "label_sid": "References to death and mourning",
+      "description_sid": "References to death and mourning."
     },
     "depiction-of-illness": {
-      "label_sid": "Depictions of illness and care"
+      "label_sid": "Depictions of illness and care",
+      "description_sid": "Depictions of illness and care."
+    },
+    "death-of-self": {
+      "label_sid": "Death of self",
+      "description_sid": "The player character's own death, referenced or depicted."
+    },
+    "death-of-family": {
+      "label_sid": "Death of family",
+      "description_sid": "The death of a family member or close relation."
+    },
+    "illness-chronic-suffering": {
+      "label_sid": "Illness and chronic suffering",
+      "description_sid": "Disease, injury, or sustained bodily suffering."
+    },
+    "war-political-violence": {
+      "label_sid": "War and political violence",
+      "description_sid": "Armed conflict, occupation, or organized political violence."
+    },
+    "betrayal": {
+      "label_sid": "Betrayal",
+      "description_sid": "A trusted person breaking a serious bond of trust."
+    },
+    "poverty-starvation": {
+      "label_sid": "Poverty and starvation",
+      "description_sid": "Severe material deprivation or hunger."
+    },
+    "social-oppression": {
+      "label_sid": "Social oppression",
+      "description_sid": "Coercive social hierarchies, caste, or institutional exclusion."
+    },
+    "forced-moral-compromise": {
+      "label_sid": "Forced moral compromise",
+      "description_sid": "Situations with no clean choice, where any path entails some harm."
+    },
+    "separation-from-loved-ones": {
+      "label_sid": "Separation from loved ones",
+      "description_sid": "Involuntary parting from family or close bonds."
+    },
+    "loss-of-memory": {
+      "label_sid": "Loss of memory",
+      "description_sid": "Fading recollections of prior lives and past identities."
+    },
+    "encounters-with-anguish": {
+      "label_sid": "Encounters with anguish",
+      "description_sid": "Witnessing the distress and disorientation of arriving souls."
+    },
+    "spiritual-disorientation": {
+      "label_sid": "Spiritual disorientation",
+      "description_sid": "Testing doubts, unanchored vows, and shifting realities."
+    },
+    "separation": {
+      "label_sid": "Separation and parting",
+      "description_sid": "Parting from companions and familiar grounds."
     }
   },
   "lens": {
@@ -1158,105 +1212,147 @@
         "label_sid": "A bailiff from the county seat stands at the gate, scroll in hand. The magistrate requires a portion of stored grain for the army of the western frontier. The neighbors have already begun to comply; the road is loud with carts.",
         "comply": {
           "label_sid": "Hand over the grain",
-          "hint_sid": "You give what is asked without delay. The scroll is marked satisfied, the bailiff bows, and the household eats thinner through the rest of the season."
+          "hint_sid": "You give what is asked without delay. The scroll is marked satisfied, the bailiff bows, and the household eats thinner through the rest of the season.",
+          "outcome_sid": "The bailiff tallies four sacks against your tax roll and leaves a marked wooden tag. The carts rattle on toward the western pass, and your family measures the remaining winter millet by the half-cup.",
+          "journal_sid": "Four sacks gone to the frontier garrison, and a stamped tag on the lintel."
         },
         "hide_some": {
           "label_sid": "Hide a portion in the back of the storehouse",
-          "hint_sid": "You bury sacks beneath the millet and show the bailiff only part of what you have. The neighbors’ glances when he leaves are not what they were before."
+          "hint_sid": "You bury sacks beneath the millet and show the bailiff only part of what you have. The neighbors’ glances when he leaves are not what they were before.",
+          "outcome_sid": "You bury two sacks beneath straw and sweep the floor before the bailiff enters. He takes what is left without looking twice, but an elder brother will not meet your eyes all evening.",
+          "journal_sid": "Two sacks kept under the straw, and a quiet distance between brothers."
         },
         "petition": {
           "label_sid": "Walk to the county seat and petition for relief",
-          "hint_sid": "A petition buys time, sometimes grain returned, sometimes nothing. You will lose a day in the road dust and the magistrate may remember your name for it."
+          "hint_sid": "A petition buys time, sometimes grain returned, sometimes nothing. You will lose a day in the road dust and the magistrate may remember your name for it.",
+          "outcome_sid": "You walk a day to the county seat and wait outside the clerk's hall until dusk. The clerk listens, waives a single sack for hardship, and charges an administration fee that takes your last copper.",
+          "journal_sid": "A whole day spent waiting in the clerk's courtyard, and an empty coin pouch."
         }
       },
       "sick-traveler": {
         "label_sid": "On the road outside the village, a traveler sits under a persimmon tree, forehead burning and lips dry. They look up but cannot rise.",
         "take_in": {
           "label_sid": "Bring them in and tend to them",
-          "hint_sid": "You give your time and your strength to someone whose name you may never know. Other travelers, hearing of it, may one day look for your gate."
+          "hint_sid": "You give your time and your strength to someone whose name you may never know. Other travelers, hearing of it, may one day look for your gate.",
+          "outcome_sid": "You make a place by the fire and wring cold water onto a cloth until morning. By light he can take broth. He gives no name, and the household eats less that week.",
+          "journal_sid": "The pot was thinner, and nobody mentioned it."
         },
         "pass_by": {
           "label_sid": "Pass by",
-          "hint_sid": "You are not unkind; you are simply occupied. The persimmon tree is a fine shelter, you tell yourself, and there is work waiting."
+          "hint_sid": "You are not unkind; you are simply occupied. The persimmon tree is a fine shelter, you tell yourself, and there is work waiting.",
+          "outcome_sid": "You tighten your pack and walk on without breaking stride. By twilight you reach the town gate before curfew, but your steps feel heavier than the road justifies.",
+          "journal_sid": "A figure coughing in the wayside dust, left behind as the sky darkened."
         },
         "send_for_lay_brother": {
           "label_sid": "Send for the lay-brother who keeps the monastery gate",
-          "hint_sid": "You cannot tend a stranger yourself today, but you can fetch someone who might. A day is spent on the errand; the gate-keeper knows your name now."
+          "hint_sid": "You cannot tend a stranger yourself today, but you can fetch someone who might. A day is spent on the errand; the gate-keeper knows your name now.",
+          "outcome_sid": "You run a league to the monastery side-gate and fetch the gate-keeper with a wheelbarrow. They carry the feverish traveler off to the infirmary, leaving you with bruised feet and half a day of farm chores undone.",
+          "journal_sid": "A league run to the monastery side-gate, and farm chores waiting by lantern-light."
         }
       },
       "corrupt-donation-demand": {
         "label_sid": "An older monastic in the precinct sends word: a substantial gift would “open the door to advancement” within the community. The framing is careful; the request is not.",
         "give": {
           "label_sid": "Give what is asked",
-          "hint_sid": "You hand over the coin with a polite nod. The promise of spiritual advancement rings hollow in the quiet room; what remains is the lighter purse, the cold transaction, and the uneasy silence between you."
+          "hint_sid": "You hand over the coin with a polite nod. The promise of spiritual advancement rings hollow in the quiet room; what remains is the lighter purse, the cold transaction, and the uneasy silence between you.",
+          "outcome_sid": "You count out three strings of coin onto the low table to appease him. The steward sweeps them into his sleeve with a curt nod, and your sister must wait another season for new cloth.",
+          "journal_sid": "Three strings of cash given away to buy silence for another season."
         },
         "refuse_politely": {
           "label_sid": "Decline politely, with a small bow",
-          "hint_sid": "You refuse without accusation. The door does not close, but the warmth behind it cools a degree. You are still welcome in the courtyard; you are no longer invited into the inner rooms."
+          "hint_sid": "You refuse without accusation. The door does not close, but the warmth behind it cools a degree. You are still welcome in the courtyard; you are no longer invited into the inner rooms.",
+          "outcome_sid": "You speak quietly and refuse to part with the coin. The steward marks his ledger with a sharp stroke and leaves without greeting your family; by market day, rumors have reached the mill.",
+          "journal_sid": "A refusal spoken clearly in the courtyard, and cold looks at the mill."
         },
         "report_to_officials": {
           "label_sid": "Carry the matter to the county officials",
-          "hint_sid": "An honest thing to do, and a costly one. The monastic community will not soon forget your name; the officials will note your reliability in other, less kind, files."
+          "hint_sid": "An honest thing to do, and a costly one. The monastic community will not soon forget your name; the officials will note your reliability in other, less kind, files.",
+          "outcome_sid": "You take the extortion complaint to the county magistrate's clerk. The clerk files the grievance with an indifferent stamp, but temple servants glare at your gate and the village elders call you reckless.",
+          "journal_sid": "A formal grievance filed at the county seat, and angry glances across the lane."
         }
       },
       "conscripted-brother": {
         "label_sid": "A labor levy summons your brother to the frontier roadworks. He is not strong, and the roadworks are not kind.",
         "help_flee": {
           "label_sid": "Help him slip away before the caravan leaves",
-          "hint_sid": "You will lose the goodwill of whoever keeps the conscription roll, and you may gain something harder to name. Your brother will remember the night you came for him."
+          "hint_sid": "You will lose the goodwill of whoever keeps the conscription roll, and you may gain something harder to name. Your brother will remember the night you came for him.",
+          "outcome_sid": "You lead your brother through the marsh thickets at midnight to an uncle's farm downriver. The levy officer strikes your family with a heavy fine when the roll is called, and you must harvest the winter wheat alone.",
+          "journal_sid": "A midnight trek through marsh reeds, and an empty bed to answer for."
         },
         "let_go": {
           "label_sid": "Let him go",
-          "hint_sid": "You watch the cart leave. The household is one quieter, the magistrate one less suspicious. The family will speak of this in years to come, and not all of them gently."
+          "hint_sid": "You watch the cart leave. The household is one quieter, the magistrate one less suspicious. The family will speak of this in years to come, and not all of them gently.",
+          "outcome_sid": "You boil provisions for his march, mend his padded coat with double stitches, and see him off at the parish gate. Your mother weeps into the flour bin for three nights, and the field work falls on you.",
+          "journal_sid": "Double stitches in a winter coat, and an empty stool at breakfast."
         },
         "pay_bribe": {
           "label_sid": "Pay the levy officer to strike his name from the list",
-          "hint_sid": "Three strings of coin in the officer’s sleeve and your brother’s name is written over. It is done; it is also done."
+          "hint_sid": "Three strings of coin in the officer’s sleeve and your brother’s name is written over. It is done; it is also done.",
+          "outcome_sid": "You sell the draft ox to an uncle and press three strings of cash into the levy officer's sleeve. Your brother's name is crossed off the list, but plowing the south field will take all your strength by hand.",
+          "journal_sid": "An ox sold before the spring thaw to keep a brother off the border road."
         }
       },
       "famine-year": {
         "label_sid": "The autumn harvest is thin, and the winter ahead is thinner. Provisions in the bin are less than you would wish and less than your neighbors will need.",
         "share": {
           "label_sid": "Share what you have with the neighbors",
-          "hint_sid": "You set aside half of what is in the bin and carry it door to door. By spring, you may eat thin porridge. By spring, your neighbors are still alive."
+          "hint_sid": "You set aside half of what is in the bin and carry it door to door. By spring, you may eat thin porridge. By spring, your neighbors are still alive.",
+          "outcome_sid": "You divide the dried tubers and salted greens among six neighboring doors. Every bowl is light, everyone's ribs show by spring, but no funeral pyre is lit on your lane.",
+          "journal_sid": "Six bowls filled from one shallow bin until the frost broke."
         },
         "hoard": {
           "label_sid": "Keep what you have",
-          "hint_sid": "You nail the bin shut and answer the door less often. The provisions last; the goodwill does not. You will eat in winter; you will eat alone."
+          "hint_sid": "You nail the bin shut and answer the door less often. The provisions last; the goodwill does not. You will eat in winter; you will eat alone.",
+          "outcome_sid": "You bar the storeroom hatch and cook only after dark so smoke does not drift. Your family survives without fever, but the village lane turns hostile and no neighbor offers salt.",
+          "journal_sid": "Cooking after dark behind barred shutters, and silence on the road."
         },
         "seek_monastery_granary": {
           "label_sid": "Walk to the monastery granary and ask",
-          "hint_sid": "A long walk. The granary is not empty, but it is not generous to those it does not know. Time is lost; perhaps a portion is returned."
+          "hint_sid": "A long walk. The granary is not empty, but it is not generous to those it does not know. Time is lost; perhaps a portion is returned.",
+          "outcome_sid": "You stand in the freezing rain at the abbey gate with dozens of begging villagers. The almoner distributes a cup of barley per mouth, and your boots rot through from the muddy trek.",
+          "journal_sid": "A cup of cold barley received in the rain, and waterlogged boots."
         }
       },
       "persecution-edict": {
         "label_sid": "An imperial order comes down the road. Monastics are to be defrocked, statues broken, wandering monks returned to lay status. The order is written in the careful hand of someone who has never read a sutra.",
         "hide_monk": {
           "label_sid": "Hide a wandering monk who came to your gate last night",
-          "hint_sid": "You take them in. You know the cost of being caught, and you know the cost of refusing. They will sleep in your back room until the order is lifted or until your name is written on a list."
+          "hint_sid": "You take them in. You know the cost of being caught, and you know the cost of refusing. They will sleep in your back room until the order is lifted or until your name is written on a list.",
+          "outcome_sid": "You conceal two elderly monks in the tool shed behind bundles of reed. The constables search the main courtyard and move on; you sleep in terror for two weeks, sharing your meager rice in secret.",
+          "journal_sid": "Two shaved heads hidden behind reed bundles, and boots stamping in the yard."
         },
         "comply_and_report": {
           "label_sid": "Carry the order out, and report any who have not yet complied",
-          "hint_sid": "You walk the road with the constables. The monastic community that once knew your name now knows it differently."
+          "hint_sid": "You walk the road with the constables. The monastic community that once knew your name now knows it differently.",
+          "outcome_sid": "You hand over the temple brass and guide the constable to the monks' hiding place behind the granary. You receive three pecks of confiscated grain, but the neighbors turn their backs when you cross the bridge.",
+          "journal_sid": "Three pecks of reward grain eaten in bitter isolation."
         },
         "flee_region": {
           "label_sid": "Take what can be carried and leave the region",
-          "hint_sid": "The road is open in any direction. The household you leave is not your household; the one you reach is not yet home. The persecution continues elsewhere, and you have made sure it does not include you."
+          "hint_sid": "The road is open in any direction. The household you leave is not your household; the one you reach is not yet home. The persecution continues elsewhere, and you have made sure it does not include you.",
+          "outcome_sid": "You pack the cart before dawn, abandoning the winter cabbage plot, and cross into the neighboring prefecture. You sleep on roadside straw for a month, spending your small savings on river tolls.",
+          "journal_sid": "A cabbage plot left behind in the dark, and toll coins paid at every river crossing."
         }
       },
       "child-illness": {
         "label_sid": "Your child has not woken cleanly in three days. The fever is high and the breathing is thin.",
         "spend_all_wealth": {
           "label_sid": "Spend everything you have on a physician",
-          "hint_sid": "You empty the purse for the doctor at the gate. Whether it is enough is not yours to know. The household afterwards is a household with thin walls."
+          "hint_sid": "You empty the purse for the doctor at the gate. Whether it is enough is not yours to know. The household afterwards is a household with thin walls.",
+          "outcome_sid": "You hire a horse cart and pay the physician his steep fee in silver. He brews pungent root medicine that breaks the fever by second watch, but you owe three months of labor to the town.",
+          "journal_sid": "A fever broken by midnight, and three months of debt on the books."
         },
         "pray_and_wait": {
           "label_sid": "Pray, and wait",
-          "hint_sid": "You sit beside the bed. The incense burns. The fever will do what fevers do, and the household will remember whichever way it goes."
+          "hint_sid": "You sit beside the bed. The incense burns. The fever will do what fevers do, and the household will remember whichever way it goes.",
+          "outcome_sid": "You brew willow bark, bathe the small forehead with well water through the night, and never leave the mat. By sunrise the breathing softens, but exhaustion clouds your eyes for days.",
+          "journal_sid": "A vigil on a cold mat, wringing well water until dawn broke."
         },
         "seek_chan_master": {
           "label_sid": "Seek counsel of a Chan master at the nearby monastery",
-          "hint_sid": "A day on the road, an afternoon in the monastery, an evening of questions without easy answers. What you bring back is not a cure. What you bring back is something the household can stand inside of."
+          "hint_sid": "A day on the road, an afternoon in the monastery, an evening of questions without easy answers. What you bring back is not a cure. What you bring back is something the household can stand inside of.",
+          "outcome_sid": "You carry the child up the stone stair to the mountain hermitage. The old teacher presses dried medicinal herbs into your hand and sits vigil with you through the cold night; the child recovers, but the road back is steep.",
+          "journal_sid": "Bitter herbs brewed in a cracked bowl on a mountain hermitage bench."
         }
       },
       "pilgrim-at-wutai": {
@@ -1315,6 +1411,18 @@
           "name-a-grief_sid": "Name one grief and let it be held in the open.",
           "refuse-to-name_sid": "Keep the grief behind your silence.",
           "name-a-joy_sid": "Name a joy without asking it to return."
+        },
+        "name-a-grief": {
+          "outcome_sid": "You speak the grief aloud onto the wet flagstones. The keeper listens without writing it down, nods once, and points along the raked gravel toward the inner pool.",
+          "journal_sid": "A name spoken aloud at the threshold, and a fresh notch in the gate post."
+        },
+        "refuse-to-name": {
+          "outcome_sid": "You clamp your teeth shut and stare past the spade into the grey mist. The Gardener steps aside without pressing, but the cold weight in your chest hardens into a tight knot that drags at your stride.",
+          "journal_sid": "Silence held at the gate, and an old knot carried into the courtyard."
+        },
+        "name-a-joy": {
+          "outcome_sid": "You describe a summer morning by the river, smelling of warm grass and river silt. The Gardener lets you speak until the memory thins into quiet air, leaving your hands empty on your knees.",
+          "journal_sid": "A summer morning remembered clearly, and allowed to drift away."
         }
       },
       "soul-in-torment": {
@@ -1323,6 +1431,18 @@
           "sit-with_sid": "Sit beside the being until the next bell.",
           "attempt-to-soothe_sid": "Offer steady hands and warm tea, trying to quiet the panic before it consumes them.",
           "ask-gardener-to-take-them_sid": "Ask the Gardener to carry the being away."
+        },
+        "sit-with": {
+          "outcome_sid": "You pull your knees up and sit beside the traveler on the damp flags through two cold watches. Their ragged shivering slows as the mist thickens, though your limbs stiffen until you cannot stand without leaning on the wall.",
+          "journal_sid": "Two watches spent on cold flags until a stranger's breath steadied."
+        },
+        "attempt-to-soothe": {
+          "outcome_sid": "You brew bitter root-tea and press the hot cup into their trembling fingers, murmuring assurances that the crossing is done. The steam rises between you, but their terror does not yield to words and the tea cools untouched on the stone.",
+          "journal_sid": "A hot cup of tea pressed into trembling hands, and fear that would not yield to words."
+        },
+        "ask-gardener-to-take-them": {
+          "outcome_sid": "You back away from the thrashing figure and call across the terrace for the Gardener's help. The caretaker arrives with a woolen fleece and takes the watch, while you stand alone under the eaves with guilt burning behind your collar.",
+          "journal_sid": "Backing away from a stranger's anguish to let another shoulder the weight."
         },
         "card": {
           "attempt-to-soothe-delusion_sid": "Your care reaches for a fixed answer. The being does not become a problem you can solve."
@@ -1335,6 +1455,18 @@
           "let-go_sid": "Release the name and the claim it seems to make.",
           "seek-in-court-records_sid": "Search the Court's records for proof of who you were."
         },
+        "meditate": {
+          "outcome_sid": "You sit upright on the stone bench and watch the syllables echo and dissolve against the slow canal. The urge to chase who you were ebbs away, leaving your thoughts clear and your ears open to the single bell.",
+          "journal_sid": "Syllables watched like ripples in the canal until the urge to claim them passed."
+        },
+        "let-go": {
+          "outcome_sid": "You open your fingers over the canal margin and let the phantom syllables sink into the weed. Nothing answers from the water, but the sudden lightness leaves an unexpected ache where a history used to rest.",
+          "journal_sid": "An old title dropped into the current, and an empty palm."
+        },
+        "seek-in-court-records": {
+          "outcome_sid": "You spend half a day unrolling dusty mulberry rolls in the Hall of Rolls, searching for a seal or title you once bore. The ink is flaked and the names blur together; by dusk your thumbs are blackened with grime and no answer has come.",
+          "journal_sid": "Ink on the thumbs from searching dusty rolls for a name that was never there."
+        },
         "card": {
           "meditate-pattern-break_sid": "Attention rests on the name; a different response remains possible.",
           "seek-in-court-records-continuity_sid": "The record offers dates and marks, but no proof that a self can be held there."
@@ -1346,6 +1478,18 @@
           "re-affirm_sid": "Speak the vow again, and accept its living cost.",
           "set-aside_sid": "Set the vow aside when it asks more than you can give.",
           "transform_sid": "Let the vow change shape while care remains."
+        },
+        "re-affirm": {
+          "outcome_sid": "You stand before the open Court and speak the old pledge word for word before the quiet attendants. The words settle into the oiled cord at your sash, tightening like a damp strap across your ribs.",
+          "journal_sid": "A pledge spoken again before the cedar rafters, and a heavy cloak taken back up."
+        },
+        "set-aside": {
+          "outcome_sid": "You tell the court attendants that the promise has outlived the life that made it. They nod once and lay the cord into a shallow cedar box; relief washes over you, followed by a raw, hollow silence where the duty used to burn.",
+          "journal_sid": "A knotted vow laid down at last, leaving a quiet and raw ache behind the ribs."
+        },
+        "transform": {
+          "outcome_sid": "You hold the knotted vow out to the Gardener, who snips the binding twine with his curved billhook. The old loyalty loosens into a wider care for anyone who limps through the gate, costing you the comfort of a single household to protect.",
+          "journal_sid": "The twine of an old promise snipped open so care could reach beyond one hearth."
         },
         "card": {
           "re-affirm-kept_sid": "The vow is marked kept for this passage; its meaning will still be tested by action.",
@@ -1360,6 +1504,18 @@
           "dispute_sid": "Argue that the pattern does not describe you.",
           "request-next-life_sid": "Ask to continue into another life."
         },
+        "accept-reading": {
+          "outcome_sid": "You stand motionless as the attendant reads the full tally of your habits and evasions without anger. The stripped truth leaves no corner to hide in, but the stone beneath your feet feels solid and real.",
+          "journal_sid": "The ledger of habits read aloud without cruelty, leaving nowhere left to hide."
+        },
+        "dispute": {
+          "outcome_sid": "You contest the tally, arguing that hunger, fear, and bad counsel forced your harsher choices. The attendant listens with lowered eyes until your breath runs dry, then gently folds the mulberry paper without striking out a single stroke.",
+          "journal_sid": "Arguments spent against the ledger, and the ink drying unchanged."
+        },
+        "request-next-life": {
+          "outcome_sid": "You bow to the bench and ask for the crossing gate to be unlatched. The attendant marks the roll with a dry brush and gestures toward the outer path; you pick up your walking staff with both hands, ready for whatever road opens.",
+          "journal_sid": "Asking for the crossing gate to open, and hoisting the pack for another road."
+        },
         "card": {
           "accept-reading-summary_sid": "The Court unrolls the account of your deeds: tendencies, vows, attachments, and sudden turns laid bare like cloth on a table, judged not by number but by the weight of what remains.",
           "dispute-resistance_sid": "Resistance takes the form of an argument that nothing needs to change."
@@ -1372,6 +1528,18 @@
           "decline_sid": "Decline, and return to the work beyond this room.",
           "ask-cost_sid": "Ask what staying would require of those who cannot stay."
         },
+        "accept": {
+          "outcome_sid": "You accept a pallet beneath the cedar eaves and a broom to sweep the morning flags. The sheltered days blur into uncounted watches, peaceful and warm, while the road beyond the wicket gate fades into distance.",
+          "journal_sid": "A broom taken up beneath the cedar eaves, and the wider road left behind."
+        },
+        "decline": {
+          "outcome_sid": "You shake your head and step back toward the threshold gate into the cold air. The Gardener watches you with quiet eyes as you pull your damp coat tight and face the unpaved road.",
+          "journal_sid": "Turning away from a sheltered room to meet whatever the road brings next."
+        },
+        "ask-cost": {
+          "outcome_sid": "You ask the Gardener who tends the outer ditch while those inside sleep warm under slate. He taps his spade against the mounting stone and points to the frost gathering on the briars; discernment leaves no room for easy comfort.",
+          "journal_sid": "Asking who pays the price of quiet shelter when the ditch is cold."
+        },
         "card": {
           "accept-fade_sid": "The offered residence is accepted; the separate pattern begins to fade.",
           "ask-cost-discernment_sid": "The question turns toward discernment: who bears the cost of a promise to stay?"
@@ -1383,6 +1551,18 @@
           "investigate_sid": "Walk toward the disturbance at the edge.",
           "warn-gardener_sid": "Warn the Gardener before the storm reaches anyone.",
           "ignore_sid": "Turn away and let the edge keep its silence."
+        },
+        "investigate": {
+          "outcome_sid": "You walk out past the ditch where unhoused memories howl through the blackthorn hedge. You drag a disoriented traveler out of the briars and back to the terrace, nursing scraped forearms and gasping for breath in the freezing gale.",
+          "journal_sid": "Walking into the freezing gale at the boundary to pull someone from the briars."
+        },
+        "warn-gardener": {
+          "outcome_sid": "You run across the flagstones to the tool shed, signaling with the storm-reed whistle. The Gardener drops his spade to brace the outer wicker screens, while you lean against the rain-barrel, chest heaving from the sprint.",
+          "journal_sid": "Sounding the reed whistle across the terrace before the outer squall hit."
+        },
+        "ignore": {
+          "outcome_sid": "You turn your collar up and hurry into the tea pavilion, pulling the felt curtain shut. The warm broth tastes thin while the wind shudders against the cedar posts and an unanswered shout dies out in the squall.",
+          "journal_sid": "Drinking warm tea behind felt curtains while the wind battered the outer ditch."
         },
         "card": {
           "investigate-risk_sid": "At the edge, a small disturbance leaves someone searching for a way back."

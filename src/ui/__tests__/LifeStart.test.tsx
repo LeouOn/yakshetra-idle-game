@@ -253,4 +253,62 @@ describe('LifeStartScreen', () => {
     press(getByTestID('life-start-about'));
     expect(router.push).toHaveBeenCalledWith('/about');
   });
+
+  it('omits unauthored content-warning labels from visible list and renders in-voice generic line if all missing', async () => {
+    // 1. One valid label, one deliberately missing label
+    const packPartial = makeFixturePack({
+      content_warnings: ['references-to-death', 'unauthored-future-category'],
+    });
+    vi.mocked(loadEraPack).mockReturnValue(packPartial);
+
+    const { getByTestID, getByText, toJSON } = render(createElement(LifeStartScreen));
+
+    await act(async () => {
+      await flushPromises();
+    });
+
+    const toggle = getByTestID('life-start-warnings-toggle');
+    act(() => {
+      toggle.props.onPress();
+    });
+
+    // Valid warning label renders
+    expect(() => getByText('References to death and mourning')).not.toThrow();
+    expect(getByTestID('life-start-warning-references-to-death')).toBeDefined();
+
+    // Missing label is completely omitted from the tree, not rendered as raw key
+    expect(() => getByTestID('life-start-warning-unauthored-future-category')).toThrow();
+
+    // Assert no string containing '_sid' or a dot-path appears anywhere in the rendered output
+    const treeJson = JSON.stringify(toJSON());
+    expect(treeJson).not.toContain('_sid');
+    expect(treeJson).not.toContain('unauthored-future-category');
+    expect(treeJson).not.toMatch(/content_warning\.[a-z-]+\.label_sid/);
+
+    // 2. All labels deliberately missing: renders in-voice generic empty line
+    const packAllMissing = makeFixturePack({
+      content_warnings: ['nonexistent-one', 'nonexistent-two'],
+    });
+    vi.mocked(loadEraPack).mockReturnValue(packAllMissing);
+
+    const resultAllMissing = render(createElement(LifeStartScreen));
+    await act(async () => {
+      await flushPromises();
+    });
+
+    const toggleAllMissing = resultAllMissing.getByTestID('life-start-warnings-toggle');
+    act(() => {
+      toggleAllMissing.props.onPress();
+    });
+
+    // In-voice generic line appears
+    expect(() =>
+      resultAllMissing.getByText('No content warnings recorded for this era.'),
+    ).not.toThrow();
+
+    const allMissingJson = JSON.stringify(resultAllMissing.toJSON());
+    expect(allMissingJson).not.toContain('_sid');
+    expect(allMissingJson).not.toContain('nonexistent');
+    expect(allMissingJson).not.toMatch(/content_warning\.[a-z-]+\.label_sid/);
+  });
 });

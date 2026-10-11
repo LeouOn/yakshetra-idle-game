@@ -19,6 +19,8 @@
         {
           id: 'name-a-grief',
           label_sid: 'event.fantasy.gardener-question.hint.name-a-grief_sid',
+          outcome_sid: 'event.fantasy.gardener-question.name-a-grief.outcome_sid',
+          journal_sid: 'event.fantasy.gardener-question.name-a-grief.journal_sid',
           requires: [],
           effects: [
             { op: 'remove_flag', key: 'attachment:memory' },
@@ -30,6 +32,8 @@
         {
           id: 'refuse-to-name',
           label_sid: 'event.fantasy.gardener-question.hint.refuse-to-name_sid',
+          outcome_sid: 'event.fantasy.gardener-question.refuse-to-name.outcome_sid',
+          journal_sid: 'event.fantasy.gardener-question.refuse-to-name.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'attachment:memory' },
@@ -40,6 +44,8 @@
         {
           id: 'name-a-joy',
           label_sid: 'event.fantasy.gardener-question.hint.name-a-joy_sid',
+          outcome_sid: 'event.fantasy.gardener-question.name-a-joy.outcome_sid',
+          journal_sid: 'event.fantasy.gardener-question.name-a-joy.journal_sid',
           requires: [],
           effects: [
             { op: 'remove_flag', key: 'attachment:memory' },
@@ -65,6 +71,8 @@
         {
           id: 'sit-with',
           label_sid: 'event.fantasy.soul-in-torment.hint.sit-with_sid',
+          outcome_sid: 'event.fantasy.soul-in-torment.sit-with.outcome_sid',
+          journal_sid: 'event.fantasy.soul-in-torment.sit-with.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -2 },
@@ -76,6 +84,8 @@
         {
           id: 'attempt-to-soothe',
           label_sid: 'event.fantasy.soul-in-torment.hint.attempt-to-soothe_sid',
+          outcome_sid: 'event.fantasy.soul-in-torment.attempt-to-soothe.outcome_sid',
+          journal_sid: 'event.fantasy.soul-in-torment.attempt-to-soothe.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },
@@ -90,6 +100,8 @@
         {
           id: 'ask-gardener-to-take-them',
           label_sid: 'event.fantasy.soul-in-torment.hint.ask-gardener-to-take-them_sid',
+          outcome_sid: 'event.fantasy.soul-in-torment.ask-gardener-to-take-them.outcome_sid',
+          journal_sid: 'event.fantasy.soul-in-torment.ask-gardener-to-take-them.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'trust-cosmic', delta: -2 },
@@ -113,6 +125,8 @@
         {
           id: 'meditate',
           label_sid: 'event.fantasy.forgotten-name.hint.meditate_sid',
+          outcome_sid: 'event.fantasy.forgotten-name.meditate.outcome_sid',
+          journal_sid: 'event.fantasy.forgotten-name.meditate.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -1 },
@@ -128,6 +142,8 @@
         {
           id: 'let-go',
           label_sid: 'event.fantasy.forgotten-name.hint.let-go_sid',
+          outcome_sid: 'event.fantasy.forgotten-name.let-go.outcome_sid',
+          journal_sid: 'event.fantasy.forgotten-name.let-go.journal_sid',
           requires: [],
           effects: [
             { op: 'remove_flag', key: 'attachment:memory' },
@@ -139,6 +155,8 @@
         {
           id: 'seek-in-court-records',
           label_sid: 'event.fantasy.forgotten-name.hint.seek-in-court-records_sid',
+          outcome_sid: 'event.fantasy.forgotten-name.seek-in-court-records.outcome_sid',
+          journal_sid: 'event.fantasy.forgotten-name.seek-in-court-records.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'time', delta: -2 },
@@ -168,6 +186,8 @@
         {
           id: 're-affirm',
           label_sid: 'event.fantasy.vow-reminder.hint.re-affirm_sid',
+          outcome_sid: 'event.fantasy.vow-reminder.re-affirm.outcome_sid',
+          journal_sid: 'event.fantasy.vow-reminder.re-affirm.journal_sid',
           requires: [{ op: 'has_flag', key: 'vow:protect-family' }],
           effects: [
             { op: 'remove_flag', key: 'vow:protect-family' },
@@ -183,6 +203,8 @@
         {
           id: 'set-aside',
           label_sid: 'event.fantasy.vow-reminder.hint.set-aside_sid',
+          outcome_sid: 'event.fantasy.vow-reminder.set-aside.outcome_sid',
+          journal_sid: 'event.fantasy.vow-reminder.set-aside.journal_sid',
           requires: [{ op: 'has_flag', key: 'vow:protect-family' }],
           effects: [
             { op: 'remove_flag', key: 'vow:protect-family' },
@@ -198,6 +220,8 @@
         {
           id: 'transform',
           label_sid: 'event.fantasy.vow-reminder.hint.transform_sid',
+          outcome_sid: 'event.fantasy.vow-reminder.transform.outcome_sid',
+          journal_sid: 'event.fantasy.vow-reminder.transform.journal_sid',
           requires: [
             { op: 'has_flag', key: 'vow:protect-family' },
             { op: 'has_flag', key: 'pattern-break:attention' },
@@ -229,6 +253,8 @@
         {
           id: 'accept-reading',
           label_sid: 'event.fantasy.court-judgment.hint.accept-reading_sid',
+          outcome_sid: 'event.fantasy.court-judgment.accept-reading.outcome_sid',
+          journal_sid: 'event.fantasy.court-judgment.accept-reading.journal_sid',
           requires: [],
           effects: [
             {
@@ -242,6 +268,8 @@
         {
           id: 'dispute',
           label_sid: 'event.fantasy.court-judgment.hint.dispute_sid',
+          outcome_sid: 'event.fantasy.court-judgment.dispute.outcome_sid',
+          journal_sid: 'event.fantasy.court-judgment.dispute.journal_sid',
           requires: [],
           effects: [
             {
@@ -255,6 +283,8 @@
         {
           id: 'request-next-life',
           label_sid: 'event.fantasy.court-judgment.hint.request-next-life_sid',
+          outcome_sid: 'event.fantasy.court-judgment.request-next-life.outcome_sid',
+          journal_sid: 'event.fantasy.court-judgment.request-next-life.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'requested-next-life' },
@@ -278,6 +308,8 @@
         {
           id: 'accept',
           label_sid: 'event.fantasy.offer-to-stay.hint.accept_sid',
+          outcome_sid: 'event.fantasy.offer-to-stay.accept.outcome_sid',
+          journal_sid: 'event.fantasy.offer-to-stay.accept.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'accepted-residence' },
@@ -292,6 +324,8 @@
         {
           id: 'decline',
           label_sid: 'event.fantasy.offer-to-stay.hint.decline_sid',
+          outcome_sid: 'event.fantasy.offer-to-stay.decline.outcome_sid',
+          journal_sid: 'event.fantasy.offer-to-stay.decline.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'declined-residence' },
@@ -302,6 +336,8 @@
         {
           id: 'ask-cost',
           label_sid: 'event.fantasy.offer-to-stay.hint.ask-cost_sid',
+          outcome_sid: 'event.fantasy.offer-to-stay.ask-cost.outcome_sid',
+          journal_sid: 'event.fantasy.offer-to-stay.ask-cost.journal_sid',
           requires: [],
           effects: [
             {
@@ -328,6 +364,8 @@
         {
           id: 'investigate',
           label_sid: 'event.fantasy.storm-at-edge.hint.investigate_sid',
+          outcome_sid: 'event.fantasy.storm-at-edge.investigate.outcome_sid',
+          journal_sid: 'event.fantasy.storm-at-edge.investigate.journal_sid',
           requires: [],
           effects: [
             { op: 'add_resource', key: 'energy', delta: -1 },
@@ -343,6 +381,8 @@
         {
           id: 'warn-gardener',
           label_sid: 'event.fantasy.storm-at-edge.hint.warn-gardener_sid',
+          outcome_sid: 'event.fantasy.storm-at-edge.warn-gardener.outcome_sid',
+          journal_sid: 'event.fantasy.storm-at-edge.warn-gardener.journal_sid',
           requires: [],
           effects: [
             { op: 'add_relationship', target: 'trust-cosmic', delta: 1 },
@@ -353,6 +393,8 @@
         {
           id: 'ignore',
           label_sid: 'event.fantasy.storm-at-edge.hint.ignore_sid',
+          outcome_sid: 'event.fantasy.storm-at-edge.ignore.outcome_sid',
+          journal_sid: 'event.fantasy.storm-at-edge.ignore.journal_sid',
           requires: [],
           effects: [
             { op: 'add_flag', key: 'storm-ignored' },

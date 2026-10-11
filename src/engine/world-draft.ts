@@ -75,6 +75,23 @@ function withLowerArticle(phrase: string): string {
   return phrase.replace(/^(The|A|An)\b/, (m) => m.toLowerCase());
 }
 
+/**
+ * Format a person's name into a template frame.
+ * If the card name contains an appositive like ", the X" and a verb follows in the template,
+ * close the appositive with a comma before the verb.
+ */
+export function formatPersonInTemplate(template: string, personName: string): string {
+  if (/, the\b/i.test(personName)) {
+    return template
+      .replace(
+        /{person}(\s+(?:is|are|was|were|has|have|keeps|stays|stands|walks|waits|sits|rests|works|watches|returns|wanders|tends|draws|holds|makes|leaves|[a-z]+s)\b)/gi,
+        `${personName},$1`,
+      )
+      .replace(/{person}/g, personName);
+  }
+  return template.replace(/{person}/g, personName);
+}
+
 /** Compose a setting line from cards: person + place at person scale, or tier cards at higher scales. */
 export function composeWorldDraftLine(
   first: Manifest | undefined | null,
@@ -105,8 +122,7 @@ export function composeWorldDraftLine(
         : withLowerArticle(stripPeriod(rawPlaceName));
       const personWhat = stripPeriod(personCard.one_liner);
       return normalizeProse(
-        template
-          .replace(/{person}/g, personName)
+        formatPersonInTemplate(template, personName)
           .replace(/{place}/g, placeName)
           .replace(/{line}/g, personWhat),
       );

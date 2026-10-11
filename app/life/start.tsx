@@ -50,20 +50,15 @@ interface RoleCardData {
 }
 
 /**
- * Resolve a sid, falling back to the raw sid if it is not in the table. Used
- * for open-vocabulary keys (content-warning categories) that may not yet have
- * a authored label without crashing the whole screen.
+ * Resolve a content-warning label, returning null if unauthored rather than
+ * printing a raw sid token on screen.
  */
-function tryResolveSid(sid: string): string {
+function warningLabel(warningKey: string): string | null {
   try {
-    return resolveSid(sid);
+    return resolveSid(`content_warning.${warningKey}.label_sid`);
   } catch {
-    return sid;
+    return null;
   }
-}
-
-function warningLabel(warningKey: string): string {
-  return tryResolveSid(`content_warning.${warningKey}.label_sid`);
 }
 
 /**
@@ -197,6 +192,12 @@ const ReadyView: FC<ReadyViewProps> = ({
   const lineageNotes = resolveSid(pack.lineage_notes_sid);
   const roleCards = buildRoleCards(pack);
   const warnings = pack.content_warnings;
+  const visibleWarnings = warnings
+    .map((key) => {
+      const label = warningLabel(key);
+      return label !== null ? { key, label } : null;
+    })
+    .filter((item): item is { key: string; label: string } => item !== null);
 
   return (
     <ScrollView role="main" style={styles.scroll} contentContainerStyle={styles.content}>
@@ -239,13 +240,13 @@ const ReadyView: FC<ReadyViewProps> = ({
           </Text>
         </Pressable>
         {warningsExpanded ? (
-          warnings.length === 0 ? (
+          visibleWarnings.length === 0 ? (
             <Text style={styles.body}>{resolveSid('life.start.content_warnings_empty_sid')}</Text>
           ) : (
             <View style={styles.warningList}>
-              {warnings.map((key) => (
+              {visibleWarnings.map(({ key, label }) => (
                 <Text key={key} style={styles.warningItem} testID={`life-start-warning-${key}`}>
-                  {warningLabel(key)}
+                  {label}
                 </Text>
               ))}
             </View>

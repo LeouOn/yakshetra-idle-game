@@ -4,11 +4,13 @@ import {
   assembleWorldDraft,
   canAssembleWorld,
   composeWorldDraftLine,
+  formatPersonInTemplate,
   type Manifest,
   type ManifestScale,
 } from '../';
 import { isIdShaped } from '../prose';
-import { templatesForScale } from '../world-draft-templates';
+import { normalizeProse } from '../prose-normalize';
+import { WORLD_DRAFT_TEMPLATES, templatesForScale } from '../world-draft-templates';
 
 function card(
   kind: Manifest['kind'],
@@ -356,5 +358,96 @@ describe('assembleWorldDraft', () => {
     expect(line).not.toContain('life carries on');
     expect(line).not.toContain('The morning gathers about');
     expect(line).not.toContain('the day unfolds');
+  });
+
+  it('adds a closing comma to appositive names (", the X") through every person-scale frame when a verb follows', () => {
+    const personName = 'Cor, the bell striker';
+    const placeName = 'the Bell Pavilion';
+    const personWhat =
+      'Still at the cedar pillar, mallet held in, giving the nod before the one note';
+
+    const frames = WORLD_DRAFT_TEMPLATES.personWithPlace;
+    expect(frames).toHaveLength(10);
+
+    const renderedLines = frames.map((frame) =>
+      normalizeProse(
+        formatPersonInTemplate(frame, personName)
+          .replace(/{place}/g, placeName)
+          .replace(/{line}/g, personWhat),
+      ),
+    );
+
+    // Frame 0: '{person} is at {place}: {line}.' -> verb 'is'
+    expect(renderedLines[0]).toBe(
+      'Cor, the bell striker, is at the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 1: 'At {place}, {person}: {line}.' -> colon
+    expect(renderedLines[1]).toBe(
+      'At the Bell Pavilion, Cor, the bell striker: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 2: '{person}, found at {place}: {line}.' -> comma
+    expect(renderedLines[2]).toBe(
+      'Cor, the bell striker, found at the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 3: 'By {place}, {person}: {line}.' -> colon
+    expect(renderedLines[3]).toBe(
+      'By the Bell Pavilion, Cor, the bell striker: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 4: '{person} keeps to {place}: {line}.' -> verb 'keeps'
+    expect(renderedLines[4]).toBe(
+      'Cor, the bell striker, keeps to the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 5: 'Down at {place}, {person}: {line}.' -> colon
+    expect(renderedLines[5]).toBe(
+      'Down at the Bell Pavilion, Cor, the bell striker: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 6: '{person} stays close to {place}: {line}.' -> verb 'stays' (Draft 7)
+    expect(renderedLines[6]).toBe(
+      'Cor, the bell striker, stays close to the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 7: 'Near {place}, {person}: {line}.' -> colon
+    expect(renderedLines[7]).toBe(
+      'Near the Bell Pavilion, Cor, the bell striker: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 8: 'Out at {place}, {person}: {line}.' -> colon
+    expect(renderedLines[8]).toBe(
+      'Out at the Bell Pavilion, Cor, the bell striker: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+    // Frame 9: '{person} at {place}: {line}.' -> preposition 'at'
+    expect(renderedLines[9]).toBe(
+      'Cor, the bell striker at the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    );
+
+    // Invariants across all frames:
+    for (const line of renderedLines) {
+      // Never double comma
+      expect(line).not.toContain(',,');
+      // Never comma before colon
+      expect(line).not.toContain(',:');
+      // If 'stays' or 'keeps' or 'is' follows the name, there must be a comma after 'striker'
+      if (line.includes('stays close') || line.includes('keeps to') || line.includes('is at')) {
+        expect(line).toContain('Cor, the bell striker, ');
+      }
+    }
+
+    // End-to-end via composeWorldDraftLine with cards:
+    const cor = card('person', 'cor-1', 'Cor, the bell striker', 'person', {
+      one_liner: 'Still at the cedar pillar, mallet held in, giving the nod before the one note.',
+    });
+    const pavilion = card('place', 'pav-1', 'The Bell Pavilion', 'person', {
+      subject: 'four posts and a low-hung bell',
+      one_liner: 'A low-hung bronze bell in four cedar posts, close enough to feel it arrive.',
+    });
+    const fullDraftLine = composeWorldDraftLine(cor, pavilion, 'person');
+    expect(fullDraftLine).toContain('Cor, the bell striker');
+    if (
+      fullDraftLine.includes('stays') ||
+      fullDraftLine.includes('keeps') ||
+      fullDraftLine.includes('is at')
+    ) {
+      expect(fullDraftLine).toContain('Cor, the bell striker,');
+    }
+    expect(fullDraftLine).not.toContain(',,');
+    expect(fullDraftLine).not.toContain(',:');
   });
 });

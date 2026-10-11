@@ -92,7 +92,7 @@ Composed from the archive's own authored card sentences. Fences held: no engine 
   - Place: _The Bell Pavilion_ ("A low-hung bronze bell in four cedar posts, close enough to feel it arrive.", subject: _four posts and a low-hung bell_)
 - **World Name**: `The Bell Pavilion`
 - **World Line**:
-  > Cor, the bell striker stays close to the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.
+  > Cor, the bell striker, stays close to the Bell Pavilion: Still at the cedar pillar, mallet held in, giving the nod before the one note.
 - **Cast**: Cor, the bell striker
 - **Places**: The Bell Pavilion
 
