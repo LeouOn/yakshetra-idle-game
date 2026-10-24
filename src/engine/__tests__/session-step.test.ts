@@ -46,6 +46,7 @@ import {
   createStudioState,
   queueDevelop,
   recordStudioResidues,
+  tickStudio,
 } from '../';
 import type { LifeState, Practice } from '../';
 import { stepSession, type SessionStepContext } from '../session-step';
@@ -810,6 +811,66 @@ describe('stepSession (endowment modifiers)', () => {
     };
     const out = stepSession(session, ctx, 3, createRng(4n));
     expect(benchOf(out.session, 'household').bay?.status).toBe('ready');
+  });
+
+  it('a fractional surplus_rate banks whole ticks and still parses', () => {
+    // Banking path: a READY bay (so the auto-queue cannot re-seat it) plus
+    // fresh charged pending — the amplified step lands in the bank, not the
+    // cook. surplus is z.number().int() in studio_session: a 4.5-tick bank
+    // would fail every later parse. floor(3 * 1.5) = 4.
+    let bench = recordStudioResidues(createStudioState(), benchResidue(4));
+    bench = queueDevelop(bench, null, createRng(9n));
+    bench = tickStudio(bench, bench.bay?.cook_ticks_total ?? 0); // → ready
+    bench = recordStudioResidues(bench, benchResidue(3)); // charged, bay ready
+    const session = withHouseholdBench(householdSession({ roster: [], practices: [] }), {
+      residue: [...bench.residue],
+      last_harvest_index: bench.last_harvest_index,
+      bay: bench.bay,
+      quality_tier: bench.quality_tier,
+      harvest_count: bench.harvest_count,
+      play_import: bench.play_import,
+      pinned: bench.pinned,
+      surplus: bench.surplus,
+    });
+    const ctx: SessionStepContext = {
+      ...REST_CTX,
+      modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, surplusRate: 0.5 }),
+    };
+    const out = stepSession(session, ctx, 3, createRng(4n));
+    const hh = benchOf(out.session, 'household');
+    expect(hh.surplus).toBe(4);
+    expect(() => parseStudioSession(out.session)).not.toThrow();
+  });
+
+  it('integer surplus rates bank exactly ticks x (1 + rate), capped at 54', () => {
+    // Today's rates are integers; flooring must not change a single one of
+    // their results, and the banked-heat ceiling still binds through the
+    // amplified path.
+    const banked = (rate: number, ticks: number, start = 0): number => {
+      let bench = recordStudioResidues(createStudioState(), benchResidue(4));
+      bench = queueDevelop(bench, null, createRng(9n));
+      bench = tickStudio(bench, bench.bay?.cook_ticks_total ?? 0);
+      bench = recordStudioResidues(bench, benchResidue(3));
+      const session = withHouseholdBench(householdSession({ roster: [], practices: [] }), {
+        residue: [...bench.residue],
+        last_harvest_index: bench.last_harvest_index,
+        bay: bench.bay,
+        quality_tier: bench.quality_tier,
+        harvest_count: bench.harvest_count,
+        play_import: bench.play_import,
+        pinned: bench.pinned,
+        surplus: start,
+      });
+      const ctx: SessionStepContext = {
+        ...REST_CTX,
+        modifiersFor: modsFor({ ...EMPTY_BENCH_MODIFIERS, surplusRate: rate }),
+      };
+      return benchOf(stepSession(session, ctx, ticks, createRng(4n)).session, 'household').surplus;
+    };
+    expect(banked(0, 3)).toBe(3);
+    expect(banked(1, 3)).toBe(6);
+    // 20 ticks at rate 3 would bank 80; the ceiling keeps 54.
+    expect(banked(3, 20)).toBe(54);
   });
 
   it('never consults modifiersFor while the household tier is locked', () => {

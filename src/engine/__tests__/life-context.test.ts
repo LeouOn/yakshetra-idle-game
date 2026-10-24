@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  LifeContextSchema,
   classifyBond,
   createIdleState,
   createLifeState,
@@ -102,5 +103,22 @@ describe('evaluateLifeContext', () => {
     expect(stringifyLifeContext(ctx)).not.toContain('M Guest');
     // And a real relationship name in the same life still resolves and cased.
     expect(ctx.ties.some((t) => t.id === 'aunt' && t.name === 'Aunt')).toBe(true);
+  });
+
+  it('parses back what it builds: a schema round-trip loses nothing', () => {
+    // LifeContextSchema is the contract for anything that consumes a context
+    // away from the builder (prompt payloads, tests, future fillers). The
+    // residue_summary object is non-strict, so a field the schema forgets is
+    // silently STRIPPED on parse — the built and parsed contexts then
+    // disagree and no error says why. practiceIds (the place funnel) was the
+    // field that exposed this; the round-trip pins every future one.
+    const ctx = evaluateLifeContext({
+      life: makeLife(),
+      idle: createIdleState(),
+      epoch: EPOCH,
+    });
+    const parsed = LifeContextSchema.parse(JSON.parse(stringifyLifeContext(ctx)));
+    expect(parsed).toEqual(ctx);
+    expect(parsed.residue_summary.practiceIds).toEqual(ctx.residue_summary.practiceIds);
   });
 });

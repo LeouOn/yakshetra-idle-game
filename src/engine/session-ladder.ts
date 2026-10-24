@@ -177,10 +177,14 @@ export function stepTierLadder(
     }
 
     // Cook under the alreadyCharged gate; surplus_rate amplifies the
-    // absorbed tend ticks (integer math).
+    // absorbed tend ticks. The product is FLOORED to the whole tick: surplus
+    // is an integer by schema (studio_session z.number().int()), and a future
+    // fractional surplus_rate (content deltas are plain numbers) must not
+    // mint a half-tick bank that fails the parse. Flooring keeps every
+    // integer rate's result exactly as before.
     bench = tickStudio(bench, ticks);
     if (alreadyCharged) {
-      bench = absorbSurplus(bench, ticks * (1 + mods.surplusRate));
+      bench = absorbSurplus(bench, Math.floor(ticks * (1 + mods.surplusRate)));
     }
 
     stepped[tier.id] = { ...benchAfterStep(bench, prev), fold_position: foldPosition };

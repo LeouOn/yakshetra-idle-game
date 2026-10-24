@@ -75,6 +75,10 @@ export interface LifeContext {
 const TieSchema = z
   .object({
     id: z.string().min(1),
+    // The display name the card may print (null = "no name yet"). The
+    // schema must carry it or a strict parse REJECTS every built context —
+    // found by the round-trip test below.
+    name: z.string().nullable(),
     source: z.enum(['relationship', 'cast']),
     trust: z.number(),
     debt: z.number(),
@@ -114,6 +118,10 @@ export const LifeContextSchema = z
       typeCounts: z.record(z.string(), z.number()),
       dominantType: z.string().nullable(),
       ids: z.array(z.string()),
+      // Mirrors ResidueSummary.practiceIds (added with the place funnel): a
+      // parsed context must agree with a built one, and a non-strict object
+      // would silently STRIP the field instead — the kind rules read it.
+      practiceIds: z.array(z.string()),
     }),
     activity: z.object({
       work: z.number(),

@@ -39,7 +39,12 @@ describe('place counts practices, not every id on a tick', () => {
     expect(kindOf(member)).toBe('thing');
   });
 
-  it('two plain practices seen through member copies are still a place', () => {
+  it('two plain practices seen through member copies are still a place [invariant pin: green at HEAD by design]', () => {
+    // Not a regression test: two REAL practices are a place under both the
+    // old and the new gate. It pins the other direction — fold tags must
+    // ride along on member copies without ever REPLACING the practice they
+    // annotate (a gate that excluded tagged ticks outright would read this
+    // window as a thing and fail here).
     const window = [
       tick('sutra-copying', false, ['member:m1']),
       tick('breath-sitting', false, ['member:m2']),

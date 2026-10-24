@@ -66,6 +66,14 @@ const FUNCTION_WORDS = [
   'she',
 ];
 
+/** The stutter relation as ONE precompiled regex: same word twice, case
+ * insensitive — `(the|a|…)\s+\1` is exactly what the old per-word loop
+ * checked. The sweep renders ~280k fields; 34 `new RegExp` passes per field
+ * (~9.5M compiles) made this file's slowest test the one that crept into
+ * vitest's default 5 s timeout under load. One pass per field is 1/34th
+ * the work; no explicit timeout is needed once the cost is honest. */
+const STUTTER_RE = new RegExp(`\\b(${FUNCTION_WORDS.join('|')})\\s+\\1\\b`, 'i');
+
 interface Rendered {
   readonly where: string;
   readonly field: string;
@@ -194,13 +202,11 @@ describe('rendered prose is clean', () => {
       if (/\s{2,}/.test(r.text)) {
         bad.push(`double space @ ${r.field} ${r.where}: ${JSON.stringify(r.text.slice(0, 50))}`);
       }
-      for (const w of FUNCTION_WORDS) {
-        const re = new RegExp(`\\b${w}\\s+${w}\\b`, 'i');
-        if (re.test(r.text)) {
-          bad.push(
-            `stutter "${w}" @ ${r.field} ${r.where}: ${JSON.stringify(r.text.slice(0, 60))}`,
-          );
-        }
+      const stutter = r.text.match(STUTTER_RE);
+      if (stutter !== null) {
+        bad.push(
+          `stutter "${stutter[1]}" @ ${r.field} ${r.where}: ${JSON.stringify(r.text.slice(0, 60))}`,
+        );
       }
     }
     for (const b of [...new Set(bad)].slice(0, 10)) {
