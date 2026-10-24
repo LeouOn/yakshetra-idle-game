@@ -16,6 +16,8 @@ import { loadEraPack } from '@/content/loader';
 import { router } from 'expo-router';
 import LifeStartScreen from '../../../app/life/start';
 import { render, act } from '@/test/rntl';
+import { StyleSheet } from 'react-native';
+import { resolveSid } from '@/i18n';
 
 // vi.mock factories are hoisted above the imports by vitest's transformer.
 vi.mock('@/content/loader', () => ({
@@ -23,7 +25,7 @@ vi.mock('@/content/loader', () => ({
 }));
 vi.mock('expo-router', () => ({
   useLocalSearchParams: () => ({}),
-  router: { push: vi.fn() },
+  router: { push: vi.fn(), back: vi.fn() },
 }));
 vi.mock('@/ui/hooks/useSaveSlot', () => ({
   useSaveSlot: () => ({ state: null, loading: false, dispatch: vi.fn() }),
@@ -127,6 +129,27 @@ function flushPromises(): Promise<void> {
 describe('LifeStartScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('offers a back affordance wired to router.back', async () => {
+    // agy-ux finding 5: /life/start had no Back/Home control, so a player
+    // who tapped "Go work a day" and changed their mind was stuck without
+    // the browser back button.
+    vi.mocked(loadEraPack).mockReturnValue(makeFixturePack());
+    const { getByTestID, press } = render(createElement(LifeStartScreen));
+    await act(async () => {
+      await flushPromises();
+    });
+    const button = getByTestID('life-start-back');
+    expect(button.props.accessibilityLabel).toBe(resolveSid('studio.back_button_sid'));
+    const style = StyleSheet.flatten(button.props.style) as {
+      minHeight?: number;
+      borderWidth?: number;
+    };
+    expect(style.minHeight ?? 0).toBeGreaterThanOrEqual(44);
+    expect(style.borderWidth ?? 0).toBeGreaterThan(0);
+    press(button);
+    expect(router.back).toHaveBeenCalledTimes(1);
   });
 
   it('renders the era name, lineage notes, content warnings, and the pack role cards when a pack loads', async () => {

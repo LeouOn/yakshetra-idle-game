@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { createElement } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import SettingsView, { type SettingsViewProps } from '@/ui/components/SettingsView';
 import {
@@ -13,6 +13,8 @@ import {
 } from '@/ui/hooks/useSaveSlot';
 import type { SaveBlob } from '@/engine';
 import { render, act } from '@/test/rntl';
+import type { TestInstance } from 'test-renderer';
+import { resolveSid } from '@/i18n';
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -85,6 +87,7 @@ function renderSettings(
         clipboard.current = text;
       },
       onNavigateAbout: props.onNavigateAbout ?? fns.onNavigateAbout,
+      ...(props.onBack === undefined ? {} : { onBack: props.onBack }),
     } as SettingsViewProps),
   );
   return { ...result, ...fns, clipboard };
@@ -95,6 +98,70 @@ function renderSettings(
 // ---------------------------------------------------------------------------
 
 describe('SettingsView', () => {
+  it('orders core preferences above the content warnings', () => {
+    // agy-ux finding 10: nine warning rows (~680px) used to fill the top of
+    // Settings and push Reduced motion / Text size / Save slots below the
+    // fold. The core sections now lead; warnings stay reachable below.
+    const { container, getByTestID } = renderSettings();
+    const headings: string[] = [];
+    const visit = (node: TestInstance): void => {
+      if (node.props.accessibilityRole === 'header') {
+        const first = node.children[0];
+        if (typeof first === 'string') {
+          headings.push(first);
+        } else if (
+          typeof first === 'object' &&
+          first !== null &&
+          typeof (first as { children?: readonly unknown[] }).children?.[0] === 'string'
+        ) {
+          headings.push((first as { children: readonly unknown[] }).children[0] as string);
+        }
+      }
+      for (const child of node.children) {
+        if (typeof child === 'object' && child !== null) {
+          visit(child as TestInstance);
+        }
+      }
+    };
+    visit(container);
+    const index = (sid: string): number => headings.indexOf(resolveSid(sid));
+    expect(index('settings.reduced_motion_label_sid')).toBeGreaterThan(-1);
+    expect(index('settings.content_warnings_heading_sid')).toBeGreaterThan(-1);
+    expect(index('settings.reduced_motion_label_sid')).toBeLessThan(
+      index('settings.content_warnings_heading_sid'),
+    );
+    expect(index('settings.font_scale_heading_sid')).toBeLessThan(
+      index('settings.content_warnings_heading_sid'),
+    );
+    expect(index('settings.save_slots_heading_sid')).toBeLessThan(
+      index('settings.content_warnings_heading_sid'),
+    );
+    // The SPEC-13 path (the about link that carries the disclaimer back)
+    // still renders — it is a button, not a heading, so its presence is
+    // asserted directly (navigation itself is pinned by an existing test).
+    expect(() => getByTestID('settings-about-link')).not.toThrow();
+  });
+
+  it('renders a back button that fires onBack, and none without the prop', () => {
+    // agy-ux finding 5: Settings had no way back to the home screen.
+    const onBack = vi.fn();
+    const withBack = renderSettings({ onBack });
+    const button = withBack.getByTestID('settings-back');
+    expect(button.props.accessibilityLabel).toBe(resolveSid('studio.back_button_sid'));
+    const style = StyleSheet.flatten(button.props.style) as {
+      minHeight?: number;
+      borderWidth?: number;
+    };
+    expect(style.minHeight ?? 0).toBeGreaterThanOrEqual(44);
+    expect(style.borderWidth ?? 0).toBeGreaterThan(0);
+    withBack.press(button);
+    expect(onBack).toHaveBeenCalledTimes(1);
+
+    const withoutBack = renderSettings();
+    const found = withoutBack.container.queryAll((node) => node.props.testID === 'settings-back');
+    expect(found).toHaveLength(0);
+  });
+
   it('renders one toggle per content-warning category (9, no global off)', () => {
     const { getByTestID } = renderSettings();
     // Exactly the 9 category ids are rendered as toggles.

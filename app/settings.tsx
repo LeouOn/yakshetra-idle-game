@@ -15,6 +15,7 @@ import SettingsView from '@/ui/components/SettingsView';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
+import { goBackOrHome } from '@/ui/navigation';
 
 // Same-session clipboard bridge. On web we additionally push the text to the
 // async platform clipboard (best-effort); the synchronous buffer keeps the
@@ -77,6 +78,7 @@ export default function SettingsScreen() {
       readClipboard={readClipboard}
       writeClipboard={writeClipboard}
       onNavigateAbout={() => router.push('/about')}
+      onBack={goBackOrHome}
     />
   );
 }

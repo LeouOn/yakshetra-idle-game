@@ -14,6 +14,8 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import type { PropsWithChildren } from 'react';
 
+import { studioTheme } from '@/ui/studio-theme';
+
 /**
  * Root HTML document for the web target.
  */
@@ -32,6 +34,18 @@ export default function RootHTML({ children }: PropsWithChildren) {
          */}
       </head>
       <body style={{ backgroundColor: '#0c0a12', color: '#f4eef8' }}>
+        {/* Dark scrollbars + a dark root canvas (web only — this file is
+            ignored on native). The studio scrolls inside its own `main`, so
+            Firefox's default light scrollbar track painted a ~10px white
+            strip down the right edge at desktop widths (agy-ux finding 11).
+            `scrollbar-color` inherits from `html`, so one declaration covers
+            the root and every inner scroller; tokens come from the shared
+            studio palette so the track never drifts from the bench. */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `html{background-color:${studioTheme.bg};scrollbar-color:${studioTheme.line} ${studioTheme.bg};}`,
+          }}
+        />
         {/* Page-level reset so the RN root fills the viewport on web. */}
         <ScrollViewStyleReset />
         {children}

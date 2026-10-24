@@ -39,6 +39,7 @@ import SaveSlotErrorBar, {
   retryPropsFor,
   startFreshAction,
 } from '@/ui/components/SaveSlotErrorBar';
+import { goBackOrHome } from '@/ui/navigation';
 
 const DEFAULT_ERA_ID = 'tang-china';
 
@@ -151,6 +152,15 @@ export default function LifeStartScreen() {
   if (status === 'unavailable' || pack === null) {
     return (
       <View role="main" style={styles.center}>
+        <Pressable
+          testID="life-start-back"
+          accessibilityRole="button"
+          accessibilityLabel={resolveSid('studio.back_button_sid')}
+          style={styles.backButton}
+          onPress={goBackOrHome}
+        >
+          <Text style={styles.backButtonText}>{resolveSid('studio.back_button_sid')}</Text>
+        </Pressable>
         <Text accessibilityRole="header" style={styles.heading}>
           {resolveSid('life.start.unavailable_heading_sid')}
         </Text>
@@ -178,6 +188,7 @@ export default function LifeStartScreen() {
       saveError={error}
       onClearSaveError={clearError}
       onRetrySave={retryLoad}
+      onBack={goBackOrHome}
       onStartFresh={startFreshAction(deleteSlot, clearError, () => router.replace('/life/start'))}
     />
   );
@@ -191,6 +202,7 @@ interface ReadyViewProps {
   readonly onClearSaveError: () => void;
   readonly onRetrySave: () => void;
   readonly onStartFresh: () => Promise<boolean>;
+  readonly onBack: () => void;
 }
 
 const ReadyView: FC<ReadyViewProps> = ({
@@ -201,6 +213,7 @@ const ReadyView: FC<ReadyViewProps> = ({
   onClearSaveError,
   onRetrySave,
   onStartFresh,
+  onBack,
 }) => {
   const [warningsExpanded, setWarningsExpanded] = useState(false);
   const eraName = resolveSid(pack.name_sid);
@@ -216,6 +229,15 @@ const ReadyView: FC<ReadyViewProps> = ({
 
   return (
     <ScrollView role="main" style={styles.scroll} contentContainerStyle={styles.content}>
+      <Pressable
+        testID="life-start-back"
+        accessibilityRole="button"
+        accessibilityLabel={resolveSid('studio.back_button_sid')}
+        style={styles.backButton}
+        onPress={onBack}
+      >
+        <Text style={styles.backButtonText}>{resolveSid('studio.back_button_sid')}</Text>
+      </Pressable>
       <Text accessibilityRole="header" style={styles.heading}>
         {resolveSid('life.start.heading_sid')}
       </Text>
@@ -301,6 +323,16 @@ const ReadyView: FC<ReadyViewProps> = ({
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: t.bg },
   content: { paddingHorizontal: 24, paddingVertical: 32, gap: 20 },
+  backButton: {
+    alignSelf: 'flex-start',
+    borderColor: t.line,
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 16,
+  },
+  backButtonText: { color: t.text, fontSize: 14, fontWeight: '600' },
   center: {
     flex: 1,
     paddingHorizontal: 24,

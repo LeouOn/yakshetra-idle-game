@@ -50,6 +50,8 @@ export interface SettingsViewProps {
   readonly readClipboard: () => string;
   readonly writeClipboard: (text: string) => void;
   readonly onNavigateAbout: () => void;
+  /** Back navigation (the route wires `router.back()`). */
+  readonly onBack?: () => void;
 }
 
 interface ImportMessage {
@@ -84,6 +86,7 @@ export default function SettingsView({
   readClipboard,
   writeClipboard,
   onNavigateAbout,
+  onBack,
 }: SettingsViewProps) {
   const [exportCode, setExportCode] = useState<string | null>(null);
   const [exportSlot, setExportSlot] = useState<number | null>(null);
@@ -137,49 +140,23 @@ export default function SettingsView({
         {resolveSid('settings.title_sid')}
       </Text>
 
-      {/* Content warnings (9 per-category toggles, no global off) */}
-      <View style={styles.section}>
-        <Text accessibilityRole="header" style={styles.sectionHeading}>
-          {resolveSid('settings.content_warnings_heading_sid')}
-        </Text>
-        <Text style={styles.help}>{resolveSid('settings.content_warnings_help_sid')}</Text>
-        <View style={styles.toggleList}>
-          {WARNING_CATEGORIES.map((cat) => {
-            const enabled = settings.contentWarnings[cat.id];
-            const stateSid = enabled ? 'settings.toggle_on_sid' : 'settings.toggle_off_sid';
-            const stateLabel = resolveSid(stateSid);
-            const label = resolveSid(cat.label_sid);
-            const description = resolveSid(cat.description_sid);
-            const rowLabel = formatSid('settings.toggle_label_sid', {
-              label,
-              state: stateLabel,
-            });
-            return (
-              <Pressable
-                key={cat.id}
-                testID={`settings-warning-${cat.id}`}
-                accessibilityRole="button"
-                accessibilityLabel={rowLabel}
-                style={styles.toggleRow}
-                onPress={() => onToggleContentWarning(cat.id, !enabled)}
-              >
-                <View style={styles.toggleText}>
-                  <Text style={styles.toggleLabel}>{label}</Text>
-                  <Text style={styles.toggleDescription}>{description}</Text>
-                </View>
-                <Text
-                  testID={`settings-warning-${cat.id}-state`}
-                  style={enabled ? styles.stateOn : styles.stateOff}
-                >
-                  {stateLabel}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
+      {/* The same back affordance about/studio use, so Settings is never a
+          dead end (agy-ux finding 5). */}
+      {onBack === undefined ? null : (
+        <Pressable
+          testID="settings-back"
+          accessibilityRole="button"
+          accessibilityLabel={resolveSid('studio.back_button_sid')}
+          style={styles.backButton}
+          onPress={onBack}
+        >
+          <Text style={styles.backButtonText}>{resolveSid('studio.back_button_sid')}</Text>
+        </Pressable>
+      )}
 
-      {/* Reduced motion */}
+      {/* Reduced motion — core preferences lead; the nine content-warning
+          rows follow the save slots (agy-ux finding 10) so the controls a
+          player usually reaches are above the fold. */}
       <View style={styles.section}>
         <Text accessibilityRole="header" style={styles.sectionHeading}>
           {resolveSid('settings.reduced_motion_label_sid')}
@@ -304,6 +281,49 @@ export default function SettingsView({
         ) : null}
       </View>
 
+      {/* Content warnings (9 per-category toggles, no global off) — after
+          the core preferences, everything still reachable, nothing collapsed. */}
+      <View style={styles.section}>
+        <Text accessibilityRole="header" style={styles.sectionHeading}>
+          {resolveSid('settings.content_warnings_heading_sid')}
+        </Text>
+        <Text style={styles.help}>{resolveSid('settings.content_warnings_help_sid')}</Text>
+        <View style={styles.toggleList}>
+          {WARNING_CATEGORIES.map((cat) => {
+            const enabled = settings.contentWarnings[cat.id];
+            const stateSid = enabled ? 'settings.toggle_on_sid' : 'settings.toggle_off_sid';
+            const stateLabel = resolveSid(stateSid);
+            const label = resolveSid(cat.label_sid);
+            const description = resolveSid(cat.description_sid);
+            const rowLabel = formatSid('settings.toggle_label_sid', {
+              label,
+              state: stateLabel,
+            });
+            return (
+              <Pressable
+                key={cat.id}
+                testID={`settings-warning-${cat.id}`}
+                accessibilityRole="button"
+                accessibilityLabel={rowLabel}
+                style={styles.toggleRow}
+                onPress={() => onToggleContentWarning(cat.id, !enabled)}
+              >
+                <View style={styles.toggleText}>
+                  <Text style={styles.toggleLabel}>{label}</Text>
+                  <Text style={styles.toggleDescription}>{description}</Text>
+                </View>
+                <Text
+                  testID={`settings-warning-${cat.id}-state`}
+                  style={enabled ? styles.stateOn : styles.stateOff}
+                >
+                  {stateLabel}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
       <Pressable
         testID="settings-about-link"
         accessibilityRole="button"
@@ -403,6 +423,16 @@ const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: t.bg },
   container: { paddingHorizontal: 24, paddingVertical: 28, gap: 28 },
   title: { fontSize: 26, fontWeight: '700', color: t.text },
+  backButton: {
+    alignSelf: 'flex-start',
+    borderColor: t.line,
+    borderRadius: 8,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 16,
+  },
+  backButtonText: { color: t.text, fontSize: 14, fontWeight: '600' },
   section: { gap: 10 },
   sectionHeading: {
     fontSize: 15,

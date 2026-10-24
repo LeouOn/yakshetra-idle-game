@@ -6,7 +6,7 @@
 // Plan reference: todo 28 (disclaimer + glossary surface); this route is wired
 // in todo 15 so the settings screen's "About" link resolves.
 
-import { router } from 'expo-router';
+import { goBackOrHome } from '@/ui/navigation';
 
 import AboutView from '@/ui/components/AboutView';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
@@ -19,5 +19,5 @@ export default function AboutScreen() {
   if (!mounted) {
     return <ScreenSkeleton sections={3} testID="about-skeleton" />;
   }
-  return <AboutView onBack={() => router.back()} />;
+  return <AboutView onBack={goBackOrHome} />;
 }
