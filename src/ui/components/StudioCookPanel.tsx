@@ -51,6 +51,10 @@ interface Props {
   /** Family label per group key, so the player can SEE which groups are
    * Learning vs Work etc. (browser finding 3b). */
   readonly familyLabelOf?: (groupKey: string) => string | null;
+  /** The bench's own name for a group's traces, when it knows them
+   * ('Walk the morning alms route') — a raw id tail is not a word
+   * (browser finding F2). */
+  readonly traceNameOf?: (groupKey: string) => string | null;
   readonly onCook: (choice: CookChoice) => void;
   readonly onCancel: () => void;
 }
@@ -80,6 +84,7 @@ export default function StudioCookPanel({
   surplus = 0,
   pinnedPair = [],
   familyLabelOf,
+  traceNameOf,
   onCook,
   onCancel,
 }: Props) {
@@ -190,6 +195,7 @@ export default function StudioCookPanel({
             canStepDown={totalSpend - 1 >= gate}
             onStep={(delta) => step(group, delta)}
             {...(familyLabelOf === undefined ? {} : { familyLabel: familyLabelOf(group.key) })}
+            {...(traceNameOf === undefined ? {} : { traceName: traceNameOf(group.key) })}
           />
         ))}
       </View>

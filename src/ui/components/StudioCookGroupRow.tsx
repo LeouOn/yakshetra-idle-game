@@ -4,6 +4,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { CookGroup } from '@/engine/cook-groups';
+import { humanizeId } from '@/engine/prose';
 import { formatSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 
@@ -16,13 +17,30 @@ interface Props {
    * hint sentences like 'waits where study bears fruit' are actionable.
    * Null when the group is not practice-shaped. */
   readonly familyLabel?: string | null;
+  /** The bench's own name for the group's traces ('Walk the morning alms
+   * route'), when it knows them. Null falls back to the humanized id. */
+  readonly traceName?: string | null;
 }
 
-function traceLabel(key: string): string {
+/** The first trace id in a group key (`type|id|id...`). */
+function traceIdOf(key: string): string {
   const ids = key.split('|')[1] ?? key;
-  const first = ids.split('|')[0] ?? '';
-  const cut = Math.max(first.lastIndexOf('/'), first.lastIndexOf(':'));
-  return cut >= 0 ? first.slice(cut + 1) : first;
+  return ids.split('|')[0] ?? '';
+}
+
+/**
+ * What the player reads for a group of traces. A raw id tail ('alms-round')
+ * is not a word; the bench's own practice name is ('Walk the morning alms
+ * route'), and the humanized id ('alms round') is the fallback for traces
+ * that are not a practice at all.
+ */
+function traceLabel(key: string, traceName: string | null): string {
+  if (traceName !== null && traceName.length > 0) {
+    return traceName;
+  }
+  const id = traceIdOf(key);
+  const human = humanizeId(id);
+  return human.length > 0 ? human : id;
 }
 
 export default function StudioCookGroupRow({
@@ -31,9 +49,10 @@ export default function StudioCookGroupRow({
   canStepDown,
   onStep,
   familyLabel = null,
+  traceName = null,
 }: Props) {
   const count = group.indices.length;
-  const label = traceLabel(group.key);
+  const label = traceLabel(group.key, traceName);
   const moreDisabled = spend >= count;
   const lessDisabled = spend <= 0 || !canStepDown;
   return (
@@ -85,11 +104,13 @@ const styles = StyleSheet.create({
     padding: 8,
     gap: 8,
   },
-  groupLabel: { color: t.text, fontSize: 13, flexGrow: 1 },
+  // flexShrink so a long practice name WRAPS instead of pushing the stepper
+  // off the row (React Native's default flexShrink is 0, unlike the web's).
+  groupLabel: { color: t.text, fontSize: 13, flexGrow: 1, flexShrink: 1 },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   stepButton: {
-    minWidth: 36,
-    minHeight: 36,
+    minWidth: 44,
+    minHeight: 44,
     borderRadius: 8,
     backgroundColor: t.accentDeep,
     justifyContent: 'center',

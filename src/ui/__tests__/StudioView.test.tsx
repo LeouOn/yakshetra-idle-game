@@ -221,7 +221,7 @@ describe('StudioView', () => {
     expect(personCard.kind).toBe('person');
     const studio: StudioState = { ...createStudioState(), archive: [thingCard, personCard] };
 
-    const { getByTestID, getByText, queryByText, press } = render(
+    const { getByTestID, press, container } = render(
       createElement(StudioView, {
         practices: [makePractice()],
         schedule: ALL_DAY,
@@ -229,25 +229,51 @@ describe('StudioView', () => {
       }),
     );
 
-    expect(() => getByText(thingCard.name)).not.toThrow();
-    expect(() => getByText(personCard.name)).not.toThrow();
+    // The archive GRID is what the kind chips narrow; the Sought section is
+    // its own list and is not filtered. Scope every assertion to the grid's
+    // per-card testIDs so a Sought row naming the same figure cannot trip
+    // a getByText (the lead's clean-worktree red).
+    const gridTexts = (): readonly string[] =>
+      container
+        .queryAll((n) => String(n.props.testID ?? '').startsWith('manifest-'))
+        .flatMap((card) =>
+          card
+            .queryAll((n) => typeof n.children?.[0] === 'string')
+            .map((n) => String(n.children[0])),
+        );
+    const soughtTexts = (): readonly string[] =>
+      container
+        .queryAll((n) => String(n.props.testID ?? '').startsWith('studio-sought-row-'))
+        .flatMap((row) =>
+          row
+            .queryAll((n) => typeof n.children?.[0] === 'string')
+            .map((n) => String(n.children[0])),
+        );
+
+    expect(gridTexts()).toContain(thingCard.name);
+    expect(gridTexts()).toContain(personCard.name);
 
     press(getByTestID('studio-filter-thing'));
-    expect(() => getByText(thingCard.name)).not.toThrow();
-    expect(queryByText(personCard.name)).toBeNull();
+    expect(gridTexts()).toContain(thingCard.name);
+    expect(gridTexts()).not.toContain(personCard.name);
 
     press(getByTestID('studio-filter-person'));
-    expect(() => getByText(personCard.name)).not.toThrow();
-    expect(queryByText(thingCard.name)).toBeNull();
+    expect(gridTexts()).toContain(personCard.name);
+    expect(gridTexts()).not.toContain(thingCard.name);
 
     press(getByTestID('studio-filter-change'));
-    expect(() => getByText(resolveSid('studio.archive_filter_empty_sid'))).not.toThrow();
-    expect(queryByText(thingCard.name)).toBeNull();
-    expect(queryByText(personCard.name)).toBeNull();
+    expect(gridTexts()).not.toContain(thingCard.name);
+    expect(gridTexts()).not.toContain(personCard.name);
+
+    // Sought is never narrowed by the kind chips.
+    press(getByTestID('studio-filter-thing'));
+    const soughtBefore = soughtTexts().length;
+    press(getByTestID('studio-filter-all'));
+    expect(soughtTexts().length).toBe(soughtBefore);
 
     press(getByTestID('studio-filter-all'));
-    expect(() => getByText(thingCard.name)).not.toThrow();
-    expect(() => getByText(personCard.name)).not.toThrow();
+    expect(gridTexts()).toContain(thingCard.name);
+    expect(gridTexts()).toContain(personCard.name);
   });
 
   it('adds the freshly harvested card to the document with a flourish border', () => {

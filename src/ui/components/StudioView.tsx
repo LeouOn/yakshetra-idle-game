@@ -630,6 +630,27 @@ export default function StudioView({
     [encounterFamilyOf],
   );
 
+  /** Group key -> the bench's own name for those traces ('Walk the morning
+   * alms route'). A raw id tail ('alms-round') is not a word (browser
+   * finding F2); the practice's label is the name the player sees everywhere
+   * else. Null for traces that are not a practice the bench knows. */
+  const traceNameOfGroup = useCallback(
+    (groupKey: string): string | null => {
+      const ids = groupKey.split('|')[1] ?? '';
+      const first = ids.split('|')[0] ?? '';
+      const practice = runtimePractices.find((row) => row.id === first);
+      if (practice === undefined) {
+        return null;
+      }
+      try {
+        return resolveSid(practice.label_sid);
+      } catch {
+        return null;
+      }
+    },
+    [runtimePractices],
+  );
+
   const { harvest } = useStudioHarvest({
     completeManifest,
     encounters: registries().encounters,
@@ -991,6 +1012,7 @@ export default function StudioView({
                 surplus={cookHeat}
                 pinnedPair={pinnedCards(studio.pinned).map((focus) => ({ name: focus.name }))}
                 familyLabelOf={familyLabelOfGroup}
+                traceNameOf={traceNameOfGroup}
                 onCancel={() => {
                   setCookOpen(false);
                   setCookPile(null);
