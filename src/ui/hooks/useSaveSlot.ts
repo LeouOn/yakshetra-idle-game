@@ -214,8 +214,10 @@ export interface UseSaveSlotResult {
   readonly exportSlot: (slot: number) => string;
   /** Decode + verify a base64 save code, persist it into `slot`, then refresh. */
   readonly importSlot: (slot: number, base64: string) => Promise<void>;
-  /** Delete an arbitrary slot (no-op when absent), then refresh. */
-  readonly deleteSlot: (slot: number) => Promise<void>;
+  /** Delete an arbitrary slot (no-op when absent), then refresh. Resolves
+   * false when the adapter refused, after surfacing `error` — callers must
+   * not navigate away from a slot that is still there. */
+  readonly deleteSlot: (slot: number) => Promise<boolean>;
   /**
    * The most recent persistence failure, or `null`. Screens should surface
    * this rather than showing an empty slot and implying nothing was ever
@@ -429,12 +431,23 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   );
 
   const deleteSlot = useCallback(
-    async (target: number): Promise<void> => {
-      await adapter().deleteSlot(target);
+    async (target: number): Promise<boolean> => {
+      try {
+        await adapter().deleteSlot(target);
+      } catch (err) {
+        // Same contract as dispatch DELETE_SLOT: surface, do not throw. The
+        // route keeps its place and the player can try the action again.
+        setError(toSaveSlotError('delete', err));
+        return false;
+      }
       if (target === slot) {
         setState(null);
       }
-      await refreshAllSlots();
+      setError(null);
+      // Re-listing after a successful delete can fail on its own; that is a
+      // stale summary, not a failed delete. The next load corrects the list.
+      await refreshAllSlots().catch(() => undefined);
+      return true;
     },
     [slot, refreshAllSlots],
   );

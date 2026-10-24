@@ -8,15 +8,17 @@
 
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 import type { StudioSession } from '@/engine';
 import { loadStudioSession } from '@/persistence';
 import ChainCompleteView, { describeChain } from '@/ui/components/ChainCompleteView';
+import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 
 export default function ChainCompleteScreen() {
-  const { state, loading, deleteSlot } = useSaveSlot(1);
+  const { state, loading, deleteSlot, error, clearError, retryLoad } = useSaveSlot(1);
   const mounted = useMounted();
   const [session, setSession] = useState<StudioSession | null>(null);
   const [benchRead, setBenchRead] = useState(false);
@@ -41,13 +43,30 @@ export default function ChainCompleteScreen() {
   }
 
   return (
-    <ChainCompleteView
-      {...describeChain(state, session)}
-      onBeginNewChain={() => {
-        void deleteSlot(1).then(() => {
-          router.replace('/life/start');
-        });
-      }}
-    />
+    <View style={styles.flex}>
+      {error === null ? null : (
+        <SaveSlotErrorBar
+          error={error}
+          {...retryPropsFor(error, retryLoad)}
+          onContinue={clearError}
+        />
+      )}
+      <ChainCompleteView
+        {...describeChain(state, session)}
+        onBeginNewChain={() => {
+          // Only leave once the slot is actually gone; a refused delete keeps
+          // the player here with the bar explaining why.
+          void deleteSlot(1).then((deleted) => {
+            if (deleted) {
+              router.replace('/life/start');
+            }
+          });
+        }}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+});

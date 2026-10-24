@@ -10,14 +10,16 @@
 // Plan reference: todo 15.
 
 import { router } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 
 import BardoView, { nextErasAfter } from '@/ui/components/BardoView';
+import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 
 export default function BardoScreen() {
-  const { state } = useSaveSlot(1);
+  const { state, error, clearError, retryLoad } = useSaveSlot(1);
   const mounted = useMounted();
 
   if (!mounted) {
@@ -34,13 +36,26 @@ export default function BardoScreen() {
   const eras = nextErasAfter(previousEra, lifeStates.length);
 
   return (
-    <BardoView
-      previousEra={previousEra}
-      echoes={echoes}
-      firstLife={lifeStates.length === 1}
-      eras={eras}
-      onPickEra={(eraId) => router.push({ pathname: '/life/start', params: { era: eraId } })}
-      onCloseChain={() => router.replace('/chain-complete')}
-    />
+    <View style={styles.flex}>
+      {error === null ? null : (
+        <SaveSlotErrorBar
+          error={error}
+          {...retryPropsFor(error, retryLoad)}
+          onContinue={clearError}
+        />
+      )}
+      <BardoView
+        previousEra={previousEra}
+        echoes={echoes}
+        firstLife={lifeStates.length === 1}
+        eras={eras}
+        onPickEra={(eraId) => router.push({ pathname: '/life/start', params: { era: eraId } })}
+        onCloseChain={() => router.replace('/chain-complete')}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: { flex: 1 },
+});
