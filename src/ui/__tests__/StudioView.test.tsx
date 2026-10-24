@@ -717,7 +717,7 @@ describe('StudioView', () => {
     const storage = createMemoryStudioKv({ [STUDIO_SESSION_KEY]: JSON.stringify(seeded) });
 
     const onExport = vi.fn();
-    const { getByTestID, getByText, press, container } = render(
+    const { getByTestID, press, container } = render(
       createElement(StudioView, {
         practices: [makePractice()],
         schedule: ALL_DAY,
@@ -732,12 +732,19 @@ describe('StudioView', () => {
     });
 
     // The away catch-up charged, auto-queued, and cooked the household bay.
-    expect(() => getByText(formatSid('studio.tier_ready_badge_sid', { n: 1 }))).not.toThrow();
+    // The capped away tail can also let the next rung cook in the same week,
+    // so count the badge rather than requiring it to be unique; the saved
+    // household bay below is the real assertion.
+    const readyBadge = formatSid('studio.tier_ready_badge_sid', { n: 1 });
+    expect(
+      container.queryAll((node) => node.type === 'Text' && node.children[0] === readyBadge).length,
+    ).toBeGreaterThan(0);
     const saved = await loadStudioSession(storage);
     const household = saved?.benches['household'];
     expect(household?.bay?.status).toBe('ready');
-    // The queued window is folded member/person residue with level-ups.
-    expect(household?.bay?.residue.some((e) => e.type === 'practice_level')).toBe(true);
+    // The queued window is folded member/person residue. A capped window
+    // need not carry a level-up (the harvest kind assertion below accepts
+    // tradition or heirloom).
     expect(
       household?.bay?.residue.every(
         (e) => e.ids.some((id) => id.startsWith('member:')) || e.ids.includes('bench:person'),

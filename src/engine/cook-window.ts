@@ -9,6 +9,7 @@ import { BASE_COOK_TICKS, LONG_FIRE_EXTRA_TICKS, MAX_WINDOW_COOK_TICKS } from '.
 import type { DevelopOperation, StudioState } from './operations';
 import { residueWindowId, type ResidueEvent } from './residue';
 import type { Rng } from './rng';
+import { WINDOW_MAX_EVENTS } from './window-cap';
 
 // The cook's economics (base cost, window ceiling, long-fire price) and the
 // banked-heat ceiling live in ./heat, so the cap cannot drift from the cook it
@@ -103,13 +104,16 @@ export function heldPending(studio: StudioState): readonly number[] {
   return studio.held_residue.filter((index) => pending.has(index));
 }
 
-/** The window a cook would spend right now: pending minus held traces. */
+/** The window a cook would spend right now: pending minus held traces, and
+ * no more than {@link WINDOW_MAX_EVENTS} of them (the rest stay pending).
+ * The panel preview and the queued bay both read this, so they cannot
+ * disagree about what is being cooked. */
 export function spendableResidue(studio: StudioState): readonly ResidueEvent[] {
   const held = new Set(heldPending(studio));
   return eventsAt(
     studio,
     pendingIndices(studio).filter((index) => !held.has(index)),
-  );
+  ).slice(0, WINDOW_MAX_EVENTS);
 }
 
 /** Every unconsumed event, held-out skips included — the bench's raw charge. */
@@ -196,7 +200,7 @@ export function queueDevelop(
   const gate = Math.max(1, opts?.minResidue ?? MIN_RESIDUE_TO_DEVELOP);
   const hold = canonicalHold(studio, opts?.holdBack, pending, gate);
   const held = new Set(hold);
-  const spent = pending.filter((index) => !held.has(index));
+  const spent = pending.filter((index) => !held.has(index)).slice(0, WINDOW_MAX_EVENTS);
   if (studio.bay !== null || spent.length < gate) {
     return studio;
   }

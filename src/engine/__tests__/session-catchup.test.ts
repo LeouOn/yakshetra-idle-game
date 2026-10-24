@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   MIN_RESIDUE_TO_DEVELOP,
   STUDIO_AWAY_TICK_CAP,
+  WINDOW_MAX_EVENTS,
   STUDIO_SECONDS_PER_TICK,
   catchUpSession,
   createIdleState,
@@ -16,6 +17,7 @@ import {
 } from '../';
 import type { LifeState, Practice } from '../';
 import type { SessionStepContext } from '../session-step';
+import { benchToStudio } from '../bench-mapping';
 import { createTierState } from '../tier-state';
 import type { DailySchedule } from '../schedule';
 import type { ResidueEvent } from '../residue';
@@ -195,6 +197,70 @@ describe('catchUpSession', () => {
     expect(out.session.benches['person']?.bay?.status).toBe('ready');
     expect(out.session.archive).toHaveLength(0);
     expect(out.session.benches['person']?.harvest_count).toBe(0);
+  });
+
+  it('turns a 4 h absence into capped workings, not one giant window', () => {
+    let studio = recordStudioResidues(createStudioState(), events(MIN_RESIDUE_TO_DEVELOP));
+    studio = queueDevelop(studio, null, createRng(21n));
+    const last = 1_000;
+    const session = snapshotStudioSession(studio, createIdleState(), makeLife(), SIX, last);
+    const out = catchUpSession(
+      session,
+      PERSON_CTX,
+      last + STUDIO_AWAY_TICK_CAP * STUDIO_SECONDS_PER_TICK,
+      createRng(21n),
+    );
+    expect(out.summary.embodiedTicks).toBe(STUDIO_AWAY_TICK_CAP);
+    // Both completed windows are archived when time remains after them; no
+    // giant window is left for the return.
+    expect(out.session.archive).toHaveLength(2);
+    expect(out.session.benches['person']?.bay).toBeNull();
+    for (const card of out.session.archive) {
+      expect(card.residue_window_id).toBeTruthy();
+    }
+
+    // The window the returning player queues next is capped too.
+    const bench = out.session.benches['person'];
+    if (bench === undefined) {
+      throw new Error('person bench missing');
+    }
+    const queued = queueDevelop(benchToStudio(bench, out.session.archive), null, createRng(23n));
+    expect(queued.bay?.residue.length).toBeLessThanOrEqual(WINDOW_MAX_EVENTS);
+  });
+
+  it('loads an old bay with a large window and still harvests it', () => {
+    const legacyEvents = events(30);
+    const studio = recordStudioResidues(createStudioState(), legacyEvents);
+    const withBay = {
+      ...studio,
+      last_harvest_index: legacyEvents.length - 1,
+      bay: {
+        id: 'op-legacy',
+        type: 'develop_from_residue' as const,
+        residue_window_id: 'w-legacy',
+        residue: legacyEvents,
+        brief: null,
+        cook_ticks_total: 10,
+        cook_ticks_done: 0,
+        status: 'cooking' as const,
+        rng_seed: '7',
+        focus: null,
+        fire: 'short' as const,
+      },
+    };
+    const session = snapshotStudioSession(withBay, createIdleState(), makeLife(), SIX, 1_000);
+    const parsed = parseStudioSession(JSON.parse(JSON.stringify(session)) as unknown);
+    expect(parsed.benches['person']?.bay?.residue).toHaveLength(30);
+    const out = catchUpSession(
+      parsed,
+      PERSON_CTX,
+      1_000 + STUDIO_AWAY_TICK_CAP * STUDIO_SECONDS_PER_TICK,
+      createRng(24n),
+    );
+    // The legacy window finishes, is archived, and the next capped window
+    // cooks and is archived too; no ready bay is left behind.
+    expect(out.session.archive).toHaveLength(2);
+    expect(out.session.benches['person']?.bay).toBeNull();
   });
 
   it('reloading a stamped session does not duplicate the absence', () => {

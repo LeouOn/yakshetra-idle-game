@@ -266,8 +266,9 @@ export {
   type ChronicleEntry,
 } from './chronicle';
 export type { SessionStepContext, SessionStepResult, SessionStepSummary } from './session-step';
-export { catchUpSession } from './session-catchup';
-export type { SessionCatchUpResult } from './session-catchup';
+export { catchUpSession, stepAbsence } from './session-catchup';
+export type { AbsenceStepResult, SessionCatchUpResult } from './session-catchup';
+export { CATCHUP_WORKINGS, WINDOW_MAX_EVENTS } from './window-cap';
 export {
   WORLD_ASSEMBLED_FLAG,
   applyStudioToNextLife,
