@@ -17,7 +17,7 @@
 # tang-life.yaml. RUNNING is blocked on Maestro CLI + simulators + todo 31.
 
 appId: com.yakshetra.app
-name: "Full chain — Tang then Fantasy"
+name: 'Full chain — Tang then Fantasy'
 tags:
   - chain
   - e2e
@@ -28,134 +28,134 @@ tags:
 
 - runFlow:
     when:
-      visible: "I understand"
+      visible: 'Got it'
     commands:
-      - tapOn: "I understand"
+      - tapOn: 'Got it'
 
 # --- First life: Tang. ---
-- assertVisible: "New chain"
-- tapOn: "New chain"
-- assertVisible: "A new life begins"
-- assertVisible: "Late Tang Chang.an"
+- assertVisible: 'Go work a day'
+- tapOn: 'Go work a day'
+- assertVisible: 'A new life begins'
+- assertVisible: 'Late Tang Chang.an'
 - tapOn:
-    id: "life-start-role-peasant"
+    id: 'life-start-role-peasant'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-end-life-early"
+        id: 'turn-end-life-early'
     commands:
       - tapOn:
-          id: "turn-end-life-early"
+          id: 'turn-end-life-early'
 
 # --- Bardo: pick the Fantasy era. ---
-- assertVisible: "Your life has ended"
-- assertVisible: "Choose your next life"
+- assertVisible: 'Your life has ended'
+- assertVisible: 'Choose your next life'
 - tapOn:
-    id: "bardo-era-fantasy-mahayana"
+    id: 'bardo-era-fantasy-mahayana'
 
 # --- Second life: Fantasy. ---
-- assertVisible: "A new life begins"
-- assertVisible: "The Garden of Arrivals"
-- tapOn: "Newly arrived soul"
+- assertVisible: 'A new life begins'
+- assertVisible: 'The Garden of Arrivals'
+- tapOn: 'Newly arrived soul'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-end-life-early"
+        id: 'turn-end-life-early'
     commands:
       - tapOn:
-          id: "turn-end-life-early"
+          id: 'turn-end-life-early'
 
 # --- Terminal: chain-complete screen. ---
 # Intended terminal once todo 14 wiring routes the empty bardo onward:
 - runFlow:
     when:
-      visible: "No further lives are available in this chain."
+      visible: 'No further lives are available in this chain.'
     commands:
-      - takeScreenshot: "full-chain-empty-bardo"
+      - takeScreenshot: 'full-chain-empty-bardo'
 
-- assertVisible: "The chain is complete"
-- assertVisible: "Begin a new chain"
+- assertVisible: 'The chain is complete'
+- assertVisible: 'Begin a new chain'

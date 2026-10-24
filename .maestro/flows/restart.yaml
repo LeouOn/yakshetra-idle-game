@@ -10,12 +10,12 @@
 #
 # The chain-complete button text is "Begin a new chain" (app/chain-complete.tsx);
 # it router.replace('/')s to the home screen, which is why the first-life picker
-# ("A new life begins") is reached via "New chain" from home.
+# ("A new life begins") is reached via "Go work a day" from home.
 #
 # RUNNING is blocked on Maestro CLI + simulators + todo 31.
 
 appId: com.yakshetra.app
-name: "Restart — new chain without re-showing disclaimer"
+name: 'Restart — new chain without re-showing disclaimer'
 tags:
   - restart
   - e2e
@@ -27,23 +27,23 @@ tags:
     clearState: false
 
 # Document / verify the precondition.
-- assertVisible: "The chain is complete"
-- assertVisible: "Begin a new chain"
+- assertVisible: 'The chain is complete'
+- assertVisible: 'Begin a new chain'
 
-# Tap "new chain" from the chain-complete screen -> home.
-- tapOn: "Begin a new chain"
+# Tap "Begin a new chain" from the chain-complete screen -> home.
+- tapOn: 'Begin a new chain'
 
 # The disclaimer must NOT be shown (already accepted in the prior chain).
 - assertNotVisible:
-    text: "A Note Before You Begin"
+    text: 'A Note Before You Begin'
 - assertNotVisible:
-    id: "disclaimer-modal"
+    id: 'disclaimer-modal'
 
 # Home screen.
-- assertVisible: "New chain"
-- tapOn: "New chain"
+- assertVisible: 'Go work a day'
+- tapOn: 'Go work a day'
 
 # First-life picker is visible.
-- assertVisible: "A new life begins"
-- assertVisible: "Choose your station"
-- assertVisible: "Late Tang Chang.an"
+- assertVisible: 'A new life begins'
+- assertVisible: 'Choose your station'
+- assertVisible: 'Late Tang Chang.an'

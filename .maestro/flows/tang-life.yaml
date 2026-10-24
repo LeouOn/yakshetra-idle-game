@@ -16,7 +16,7 @@
 # Emulator + an installable build from todo 31. Authoring is independent.
 
 appId: com.yakshetra.app
-name: "Tang life — launch to bardo"
+name: 'Tang life — launch to bardo'
 tags:
   - life
   - tang
@@ -31,70 +31,70 @@ tags:
 # robust on re-runs where the flag may already be persisted.
 - runFlow:
     when:
-      visible: "I understand"
+      visible: 'Got it'
     commands:
-      - tapOn: "I understand"
+      - tapOn: 'Got it'
 
 # Home screen.
-- assertVisible: "New chain"
-- tapOn: "New chain"
+- assertVisible: 'Go work a day'
+- tapOn: 'Go work a day'
 
 # Life-start screen. A fresh chain defaults to the Tang era. The peasant
 # station card's testID is life-start-role-peasant; its visible title is
 # "Farmer".
-- assertVisible: "A new life begins"
-- assertVisible: "Late Tang Chang.an"
-- assertVisible: "Choose your station"
+- assertVisible: 'A new life begins'
+- assertVisible: 'Late Tang Chang.an'
+- assertVisible: 'Choose your station'
 - tapOn:
-    id: "life-start-role-peasant"
+    id: 'life-start-role-peasant'
 
 # Turn screen — advance six turns. Each skip is conditional so the flow does
 # not hard-fail if the build is non-dev (no skip button) or if the life ends
 # early from resource exhaustion.
 - assertVisible:
-    text: "Turn 1"
+    text: 'Turn 1'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 
 # End the life. "End life early" is always present on the turn screen while
 # the era-pack loader is a stub; guarded in case resource exhaustion already
@@ -102,12 +102,12 @@ tags:
 - runFlow:
     when:
       visible:
-        id: "turn-end-life-early"
+        id: 'turn-end-life-early'
     commands:
       - tapOn:
-          id: "turn-end-life-early"
+          id: 'turn-end-life-early'
 
 # Terminal: the bardo.
-- assertVisible: "Your life has ended"
+- assertVisible: 'Your life has ended'
 - assertVisible:
-    id: "bardo-screen"
+    id: 'bardo-screen'

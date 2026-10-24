@@ -20,7 +20,7 @@
 # RUNNING is blocked on Maestro CLI + simulators + a build from todo 31.
 
 appId: com.yakshetra.app
-name: "Fantasy life — bardo to bardo/chain-complete"
+name: 'Fantasy life — bardo to bardo/chain-complete'
 tags:
   - life
   - fantasy
@@ -32,131 +32,131 @@ tags:
 # Dismiss the front-matter disclaimer if present.
 - runFlow:
     when:
-      visible: "I understand"
+      visible: 'Got it'
     commands:
-      - tapOn: "I understand"
+      - tapOn: 'Got it'
 
 # --- First (Tang) life, used to reach the bardo's era picker. ---
-- assertVisible: "New chain"
-- tapOn: "New chain"
-- assertVisible: "A new life begins"
+- assertVisible: 'Go work a day'
+- tapOn: 'Go work a day'
+- assertVisible: 'A new life begins'
 - tapOn:
-    id: "life-start-role-peasant"
+    id: 'life-start-role-peasant'
 
 # Advance and end the Tang life.
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-end-life-early"
+        id: 'turn-end-life-early'
     commands:
       - tapOn:
-          id: "turn-end-life-early"
+          id: 'turn-end-life-early'
 
 # Bardo after the first life. Pick the Fantasy era.
-- assertVisible: "Your life has ended"
-- assertVisible: "Choose your next life"
+- assertVisible: 'Your life has ended'
+- assertVisible: 'Choose your next life'
 - tapOn:
-    id: "bardo-era-fantasy-mahayana"
+    id: 'bardo-era-fantasy-mahayana'
 
 # --- Fantasy life. ---
-- assertVisible: "A new life begins"
-- assertVisible: "The Garden of Arrivals"
-- tapOn: "Newly arrived soul"
+- assertVisible: 'A new life begins'
+- assertVisible: 'The Garden of Arrivals'
+- tapOn: 'Newly arrived soul'
 
 # Advance and end the Fantasy life.
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-dev-skip"
+        id: 'turn-dev-skip'
     commands:
       - tapOn:
-          id: "turn-dev-skip"
+          id: 'turn-dev-skip'
 - runFlow:
     when:
       visible:
-        id: "turn-end-life-early"
+        id: 'turn-end-life-early'
     commands:
       - tapOn:
-          id: "turn-end-life-early"
+          id: 'turn-end-life-early'
 
 # Terminal: the bardo again, or — once the chain wrap-up wiring (todo 14)
 # lands — the chain-complete screen. The bardo screen reliably renders on
 # death, so it is the asserted terminal here.
-- assertVisible: "Your life has ended"
+- assertVisible: 'Your life has ended'
