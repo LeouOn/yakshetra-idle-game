@@ -23,6 +23,7 @@
       cooldown_turns: 1,
       once_per_run: false,
       content_warnings: ['war-political-violence', 'forced-moral-compromise'],
+      situation_sid: 'event.tang.grain-requisition.situation_sid',
       choices: [
         {
           id: 'comply',
@@ -75,6 +76,7 @@
       cooldown_turns: 2,
       once_per_run: false,
       content_warnings: ['illness-chronic-suffering'],
+      situation_sid: 'event.tang.sick-traveler.situation_sid',
       choices: [
         {
           id: 'take_in',
@@ -133,6 +135,7 @@
       cooldown_turns: 3,
       once_per_run: false,
       content_warnings: ['social-oppression', 'forced-moral-compromise'],
+      situation_sid: 'event.tang.corrupt-donation-demand.situation_sid',
       choices: [
         {
           id: 'give',
@@ -195,6 +198,7 @@
         'forced-moral-compromise',
         'separation-from-loved-ones',
       ],
+      situation_sid: 'event.tang.conscripted-brother.situation_sid',
       choices: [
         {
           id: 'help_flee',
@@ -249,6 +253,7 @@
       cooldown_turns: 2,
       once_per_run: false,
       content_warnings: ['poverty-starvation'],
+      situation_sid: 'event.tang.famine-year.situation_sid',
       choices: [
         {
           id: 'share',
@@ -296,15 +301,18 @@
     // 6. Persecution edict — imperial order to defrock monks and destroy
     // statues. Modeled loosely on the historical persecution without
     // naming an emperor. Trigger fires in mid-life (age >= 25) so a
-    // late-adolescent character does not face it prematurely.
+    // late-adolescent character does not face it prematurely. The key is the
+    // bare `age`: the evaluator (src/engine/predicates.ts) reads no `state.`
+    // prefix, and an unknown key reads as 0, so `state.age` never fired.
     // ──────────────────────────────────────────────────────────────────────
     {
       id: 'event:tang/persecution-edict',
       weight: 0.5,
       cooldown_turns: 4,
       once_per_run: false,
-      trigger: { op: 'gte', key: 'state.age', value: 25 },
+      trigger: { op: 'gte', key: 'age', value: 25 },
       content_warnings: ['social-oppression', 'forced-moral-compromise'],
+      situation_sid: 'event.tang.persecution-edict.situation_sid',
       choices: [
         {
           id: 'hide_monk',
@@ -367,6 +375,7 @@
       cooldown_turns: 2,
       once_per_run: false,
       content_warnings: ['illness-chronic-suffering', 'death-of-family'],
+      situation_sid: 'event.tang.child-illness.situation_sid',
       choices: [
         {
           id: 'spend_all_wealth',

@@ -27,6 +27,10 @@ import { fileURLToPath } from 'node:url';
 import JSON5 from 'json5';
 import { describe, expect, test } from 'vitest';
 
+import { evaluatePredicate } from '@/engine/predicates';
+import { createLifeState } from '@/engine/reducer';
+import type { LifeState, SocialIdentity } from '@/engine/types';
+
 import { lintPack } from '../../../lint';
 import { EraPackSchema, EventSchema, type EraPack, type Event } from '../../../schema';
 
@@ -41,6 +45,14 @@ const EXPECTED_EVENT_IDS = [
   'event:tang/persecution-edict',
   'event:tang/child-illness',
 ] as const;
+
+const IDENTITY: SocialIdentity = {
+  gender: 'unset',
+  social_class: 'unset',
+  family_wealth_at_birth: 'unset',
+  caste_status: 'unset',
+  disability_status: 'unset',
+};
 
 /** Permitted intent_root values per the plan (four canonical roots). */
 const PERMITTED_INTENT_ROOTS = ['care', 'greed', 'aversion', 'delusion'] as const;
@@ -175,7 +187,30 @@ describe('Tang China events.json5', () => {
     const events = extractEvents(parsed);
     const ev = events.find((e) => e.id === 'event:tang/persecution-edict');
     expect(ev, 'persecution-edict event must exist').toBeDefined();
-    expect(ev?.trigger).toEqual({ op: 'gte', key: 'state.age', value: 25 });
+    expect(ev?.trigger).toEqual({ op: 'gte', key: 'age', value: 25 });
+  });
+
+  test('persecution-edict trigger resolves against a real life: false before 25, true from 25', async () => {
+    // The evaluator reads the bare key `age`. The authored key was once `state.age`, which it does
+    // not read, and an unknown key reads as 0: the edict could not fire at any age.
+    const events = extractEvents(await loadEventsFile());
+    const trigger = events.find((e) => e.id === 'event:tang/persecution-edict')?.trigger;
+    expect(trigger, 'persecution-edict must carry a trigger').toBeDefined();
+    const lifeAt = (age: number): LifeState =>
+      createLifeState({
+        id: 'life-1' as LifeState['id'],
+        era: 'tang-china@0.1.0' as LifeState['era'],
+        role: 'peasant' as LifeState['role'],
+        identity: IDENTITY,
+        age,
+      });
+    if (trigger === undefined) {
+      return;
+    }
+    expect(evaluatePredicate(lifeAt(0), trigger)).toBe(false);
+    expect(evaluatePredicate(lifeAt(24), trigger)).toBe(false);
+    expect(evaluatePredicate(lifeAt(25), trigger)).toBe(true);
+    expect(evaluatePredicate(lifeAt(30), trigger)).toBe(true);
   });
 
   test('conscripted-brother requires a family relationship flag', async () => {

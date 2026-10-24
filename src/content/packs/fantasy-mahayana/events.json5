@@ -15,6 +15,7 @@
       cooldown_turns: 1,
       once_per_run: false,
       content_warnings: ['loss-of-memory'],
+      situation_sid: 'event.fantasy.gardener-question.situation_sid',
       choices: [
         {
           id: 'name-a-grief',
@@ -67,6 +68,7 @@
       cooldown_turns: 1,
       once_per_run: false,
       content_warnings: ['encounters-with-anguish'],
+      situation_sid: 'event.fantasy.soul-in-torment.situation_sid',
       choices: [
         {
           id: 'sit-with',
@@ -121,6 +123,7 @@
       cooldown_turns: 1,
       once_per_run: false,
       content_warnings: ['loss-of-memory'],
+      situation_sid: 'event.fantasy.forgotten-name.situation_sid',
       choices: [
         {
           id: 'meditate',
@@ -182,6 +185,7 @@
       once_per_run: true,
       trigger: { op: 'has_flag', key: 'vow:protect-family' },
       content_warnings: ['spiritual-disorientation'],
+      situation_sid: 'event.fantasy.vow-reminder.situation_sid',
       choices: [
         {
           id: 're-affirm',
@@ -249,6 +253,7 @@
       cooldown_turns: 1,
       once_per_run: false,
       content_warnings: ['spiritual-disorientation'],
+      situation_sid: 'event.fantasy.court-judgment.situation_sid',
       choices: [
         {
           id: 'accept-reading',
@@ -304,6 +309,7 @@
       cooldown_turns: 1,
       once_per_run: true,
       content_warnings: ['spiritual-disorientation'],
+      situation_sid: 'event.fantasy.offer-to-stay.situation_sid',
       choices: [
         {
           id: 'accept',
@@ -360,6 +366,7 @@
       cooldown_turns: 1,
       once_per_run: false,
       content_warnings: ['separation'],
+      situation_sid: 'event.fantasy.storm-at-edge.situation_sid',
       choices: [
         {
           id: 'investigate',

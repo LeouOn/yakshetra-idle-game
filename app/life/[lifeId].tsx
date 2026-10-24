@@ -730,11 +730,6 @@ function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: Orien
 
   const ageRow = formatSid('life.turn.orient_age_row_sid', { n: state.age });
   const relationshipKeys = Object.keys(state.relationships);
-  const flagsCount = state.flags.size;
-  const flagsRow =
-    flagsCount === 0
-      ? resolveSid('life.turn.orient_flags_none_sid')
-      : formatSid('life.turn.orient_flags_row_sid', { n: flagsCount });
 
   const lensRow =
     state.chosen_lens === null
@@ -756,9 +751,8 @@ function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: Orien
           {ageRow}
         </Text>
       ) : null}
-      <Text testID="turn-orient-flags" style={styles.body}>
-        {flagsRow}
-      </Text>
+      {/* No count of flags here: they are internal marks, and the count moves with the deed, not
+          the care (a kindness often sets none, a refusal sets one), so it reads as a tally. */}
       <Text testID="turn-orient-lens" style={styles.body}>
         {lensRow}
       </Text>

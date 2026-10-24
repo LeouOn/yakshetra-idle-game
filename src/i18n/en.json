@@ -66,8 +66,6 @@
       "orient_resource_row_sid": "{resource}: {n}",
       "orient_relationships_label_sid": "Ties",
       "orient_no_relationships_sid": "No ties yet",
-      "orient_flags_row_sid": "Ongoing situations: {n}",
-      "orient_flags_none_sid": "No ongoing situations",
       "orient_age_row_sid": "Age: {n}",
       "orient_lens_focus_sid": "Focused through {lens}",
       "orient_lens_focus_none_sid": "No lens chosen yet",
@@ -1226,6 +1224,7 @@
     "tang": {
       "grain-requisition": {
         "label_sid": "A bailiff from the county seat stands at the gate, scroll in hand. The magistrate requires a portion of stored grain for the army of the western frontier. The neighbors have already begun to comply; the road is loud with carts.",
+        "situation_sid": "A bailiff at your gate holds out the magistrate's scroll for grain, and your neighbors' carts are already on the road.",
         "comply": {
           "label_sid": "Hand over the grain",
           "hint_sid": "You give what is asked without delay. The scroll is marked satisfied, the bailiff bows, and the household eats thinner through the rest of the season.",
@@ -1247,6 +1246,7 @@
       },
       "sick-traveler": {
         "label_sid": "On the road outside the village, a traveler sits under a persimmon tree, forehead burning and lips dry. They look up but cannot rise.",
+        "situation_sid": "On the road outside the village, a traveler sits under a persimmon tree, feverish and unable to rise, looking up at you.",
         "take_in": {
           "label_sid": "Bring them in and tend to them",
           "hint_sid": "You give your time and your strength to someone whose name you may never know. Other travelers, hearing of it, may one day look for your gate.",
@@ -1268,6 +1268,7 @@
       },
       "corrupt-donation-demand": {
         "label_sid": "An older monastic in the precinct sends word: a substantial gift would “open the door to advancement” within the community. The framing is careful; the request is not.",
+        "situation_sid": "An older monastic sends word that a substantial gift would “open the door to advancement”, politely phrased and plainly a demand.",
         "give": {
           "label_sid": "Give what is asked",
           "hint_sid": "You hand over the coin with a polite nod. The promise of spiritual advancement rings hollow in the quiet room; what remains is the lighter purse, the cold transaction, and the uneasy silence between you.",
@@ -1289,6 +1290,7 @@
       },
       "conscripted-brother": {
         "label_sid": "A labor levy summons your brother to the frontier roadworks. He is not strong, and the roadworks are not kind.",
+        "situation_sid": "A labor levy summons your brother to the frontier roadworks; he is not strong, and the roadworks are not kind.",
         "help_flee": {
           "label_sid": "Help him slip away before the caravan leaves",
           "hint_sid": "You will lose the goodwill of whoever keeps the conscription roll, and you may gain something harder to name. Your brother will remember the night you came for him.",
@@ -1310,6 +1312,7 @@
       },
       "famine-year": {
         "label_sid": "The autumn harvest is thin, and the winter ahead is thinner. Provisions in the bin are less than you would wish and less than your neighbors will need.",
+        "situation_sid": "The autumn harvest came in thin, and your bin holds less than you would wish and less than your neighbors will need.",
         "share": {
           "label_sid": "Share what you have with the neighbors",
           "hint_sid": "You set aside half of what is in the bin and carry it door to door. By spring, you may eat thin porridge. By spring, your neighbors are still alive.",
@@ -1331,6 +1334,7 @@
       },
       "persecution-edict": {
         "label_sid": "An imperial order comes down the road. Monastics are to be defrocked, statues broken, wandering monks returned to lay status. The order is written in the careful hand of someone who has never read a sutra.",
+        "situation_sid": "An imperial order comes down the road: monastics are to be defrocked, statues broken, and wandering monks returned to lay life.",
         "hide_monk": {
           "label_sid": "Hide a wandering monk who came to your gate last night",
           "hint_sid": "You take them in. You know the cost of being caught, and you know the cost of refusing. They will sleep in your back room until the order is lifted or until your name is written on a list.",
@@ -1352,6 +1356,7 @@
       },
       "child-illness": {
         "label_sid": "Your child has not woken cleanly in three days. The fever is high and the breathing is thin.",
+        "situation_sid": "Your child has not woken cleanly in three days, the fever high and the breathing thin.",
         "spend_all_wealth": {
           "label_sid": "Spend everything you have on a physician",
           "hint_sid": "You empty the purse for the doctor at the gate. Whether it is enough is not yours to know. The household afterwards is a household with thin walls.",
@@ -1423,6 +1428,7 @@
     "fantasy": {
       "gardener-question": {
         "label_sid": "The keeper of the garden leans on a notched spade at the gate, asking what burden you brought across the crossing.",
+        "situation_sid": "At the gate the Gardener leans on a notched spade and asks what burden crossed the threshold with you.",
         "hint": {
           "name-a-grief_sid": "Name one grief and let it be held in the open.",
           "refuse-to-name_sid": "Keep the grief behind your silence.",
@@ -1443,6 +1449,7 @@
       },
       "soul-in-torment": {
         "label_sid": "A newly arrived traveler shivers on the cold flagstones, gripping their head as old memories tear like wet paper.",
+        "situation_sid": "A newly arrived traveler shivers on the cold flagstones, gripping their head as old memories tear like wet paper.",
         "hint": {
           "sit-with_sid": "Sit beside the being through the cold watches.",
           "attempt-to-soothe_sid": "Offer steady hands and warm tea, trying to quiet the panic before it consumes them.",
@@ -1466,6 +1473,7 @@
       },
       "forgotten-name": {
         "label_sid": "A forgotten name surfaces.",
+        "situation_sid": "A name from before the crossing comes to the tongue, with no face attached and nowhere to set it down.",
         "hint": {
           "meditate_sid": "Attend to the name without chasing its owner.",
           "let-go_sid": "Release the name and the claim it seems to make.",
@@ -1490,6 +1498,7 @@
       },
       "vow-reminder": {
         "label_sid": "A vow from another life returns.",
+        "situation_sid": "A vow from another life, to protect your family, tugs at the cord on your sash and asks to be met again.",
         "hint": {
           "re-affirm_sid": "Speak the vow again, and accept its living cost.",
           "set-aside_sid": "Set the vow aside when it asks more than you can give.",
@@ -1515,6 +1524,7 @@
       },
       "court-judgment": {
         "label_sid": "The Court reads the patterns you brought.",
+        "situation_sid": "In the open-sided Court an attendant unrolls the account of the patterns you brought and begins to read it without anger.",
         "hint": {
           "accept-reading_sid": "Receive the Court's reading of the echoes.",
           "dispute_sid": "Argue that the pattern does not describe you.",
@@ -1539,6 +1549,7 @@
       },
       "offer-to-stay": {
         "label_sid": "An offer to stay is placed before you.",
+        "situation_sid": "The Gardener offers you a pallet under the cedar eaves and a place here for as long as you care to stay.",
         "hint": {
           "accept_sid": "Accept the offered room and remain in the Garden.",
           "decline_sid": "Decline, and return to the work beyond this room.",
@@ -1563,6 +1574,7 @@
       },
       "storm-at-edge": {
         "label_sid": "A storm gathers at the Garden's edge.",
+        "situation_sid": "Past the ditch, a dark squall of unhoused memories is gathering against the blackthorn hedge.",
         "hint": {
           "investigate_sid": "Walk toward the disturbance at the edge.",
           "warn-gardener_sid": "Warn the Gardener before the storm reaches anyone.",

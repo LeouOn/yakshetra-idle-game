@@ -190,6 +190,23 @@ describe('TurnScreen', () => {
     expect(() => getByText('Age: 30')).not.toThrow();
   });
 
+  it('shows no count of flags: the count moves with the deed, so it would read as a tally', () => {
+    // A kindness often sets no flag (Tang: bringing the sick traveler in) and a refusal sets one
+    // (passing by), while releasing a grief in the Garden adds one. A number that rises with the
+    // unkind choice, or with letting go, is a quiet moral tally; and "Ongoing situations: n" sat
+    // directly above the real situation headings. The row is gone, and the lens row stays.
+    const onDeath = vi.fn();
+    const marked: LifeState = {
+      ...makeInitialState(),
+      flags: new Set(['passed_by_sick_traveler', 'attachment:memory:cleared']),
+    };
+    const { getByTestID } = render(
+      createElement(TurnScreen, { initialState: marked, eraPack: fixtureEraPack, onDeath }),
+    );
+    expect(() => getByTestID('turn-orient-flags')).toThrow();
+    expect(() => getByTestID('turn-orient-lens')).not.toThrow();
+  });
+
   it('groups each event’s choices under its situation line in the act panel', () => {
     const onDeath = vi.fn();
     const { getByTestID, getByText, press, container } = render(
