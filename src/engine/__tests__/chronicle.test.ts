@@ -9,6 +9,7 @@ import {
   namesFigureOrClearSubject,
   withArticle,
 } from '@/engine/chronicle';
+import { CHRONICLE_TEMPLATES } from '@/engine/chronicle-templates';
 import { FIGURE_PEOPLE } from '@/engine/manifest-catalog-figures';
 import { tableFillManifest, createRng } from '@/engine';
 import type { Manifest } from '@/engine';
@@ -318,5 +319,94 @@ describe('buildChronicle', () => {
     expect(withArticle('tradition')).toBe('a tradition');
     expect(withArticle('hour')).toBe('an hour');
     expect(withArticle('heirloom')).toBe('a heirloom');
+  });
+});
+
+// ── repetition detector (2026-10-24) ────────────────────────────────────
+// Measured on real runs: a returning figure reprinted its two authored
+// scene sentences up to 4x in one 36-entry chronicle, and two catalog ids
+// for one being earned two adjacent "first meetings" quoting the same
+// sentence. These pins hold the fixes: no sentence twice for one figure,
+// one first meeting per being (by NAME), determinism by construction.
+describe('the chronicle does not repeat itself', () => {
+  const SCENE =
+    'He sits beside the sickbed with an iron bowl of steeped myrobalan, cooling hot foreheads through the midnight watch.';
+
+  function figureCard(i: number, aboutId: string, aboutName: string, detail: string): Manifest {
+    return card({
+      i,
+      kind: 'person',
+      scale: 'person',
+      about_id: aboutId,
+      about_name: aboutName,
+      detail,
+      one_liner: detail,
+    });
+  }
+
+  it('a figure returning with nothing new to say is not reprinted', () => {
+    const name = 'Bhaiṣajyaguru, the Medicine Buddha';
+    const archive = [0, 1, 2, 3].map((i) => figureCard(i, 'figure:medicine-buddha', name, SCENE));
+    const entries = buildChronicle(archive, [], ANCHOR);
+    const mentions = entries.filter((e) => e.text.includes('Bhaiṣajyaguru'));
+    // First meeting prints; the three visits with the same scene and the
+    // same one-liner have nothing new to say and are already on the record.
+    expect(mentions).toHaveLength(1);
+    const sentences = mentions.flatMap((e) =>
+      e.text
+        .split(/(?<=[.!?])\s+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0),
+    );
+    const counts = new Map<string, number>();
+    for (const s of sentences) {
+      counts.set(s, (counts.get(s) ?? 0) + 1);
+    }
+    expect(Math.max(...counts.values())).toBeLessThanOrEqual(2);
+  });
+
+  it('a figure returning with a new fact is printed once more, differently', () => {
+    const name = 'Bhaiṣajyaguru, the Medicine Buddha';
+    const other =
+      'He cools a forehand through a whole night with a wet cloth and a bowl of cold water.';
+    const archive = [
+      figureCard(0, 'figure:medicine-buddha', name, SCENE),
+      figureCard(1, 'figure:medicine-buddha', name, other),
+      figureCard(2, 'figure:medicine-buddha', name, other),
+    ];
+    const entries = buildChronicle(archive, [], ANCHOR);
+    const mentions = entries.filter((e) => e.text.includes('Bhaiṣajyaguru'));
+    expect(mentions).toHaveLength(2); // first + the ONE new fact; the third card adds nothing
+    expect(mentions[1]!.text).toContain(other);
+  });
+
+  it('two catalog ids for one being earn one first meeting (alias dedupe)', () => {
+    // A second FIRST must read as a return, not a second meeting. Compare
+    // against the return-frame pool itself, so rewording or rotating a frame
+    // cannot break this pin.
+    const name = 'Avalokiteśvara (Guanyin)';
+    const other =
+      'She walks toward the shouting, and you mistake her for an aunt until she has already fixed it.';
+    const archive = [
+      figureCard(0, 'figure:avalokiteshvara', name, SCENE),
+      figureCard(1, 'figure:guanyin', name, other),
+    ];
+    const entries = buildChronicle(archive, [], ANCHOR);
+    const mentions = entries.filter((e) => e.text.includes('Avalokiteśvara'));
+    expect(mentions).toHaveLength(2);
+    const returnFrames = CHRONICLE_TEMPLATES.figureReturn.map((frame) =>
+      frame.split('{figure}').join(name).split('{scene}').join(other),
+    );
+    expect(returnFrames).toContain(mentions[1]!.text);
+  });
+
+  it('builds the same chronicle twice from the same archive (determinism)', () => {
+    const name = 'Bhaiṣajyaguru, the Medicine Buddha';
+    const archive = [
+      figureCard(0, 'figure:medicine-buddha', name, SCENE),
+      card({ i: 1, kind: 'place', scale: 'person' }),
+      figureCard(2, 'figure:medicine-buddha', name, SCENE),
+    ];
+    expect(buildChronicle(archive, [], ANCHOR)).toEqual(buildChronicle(archive, [], ANCHOR));
   });
 });

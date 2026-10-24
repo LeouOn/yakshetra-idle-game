@@ -1149,7 +1149,7 @@ describe('lane b1 headless playthrough', () => {
       chronicleToText(fantasyChronicle.slice(0, 10), null, null),
       '```',
     ].join('\n');
-    writeFileSync(resolve(outDir, '..', '..', '07-chronicle-sample.md'), sample);
+    writeFileSync(resolve(outDir, '..', '..', '07-chronicle-sample.md'), `${sample}\n`);
 
     // ── wave-1b bars ────────────────────────────────────────────────────
     const tangKinds = casualTendTang[0]!.metrics.kindDist;
@@ -1179,5 +1179,59 @@ describe('lane b1 headless playthrough', () => {
     console.log('wave1b kinds tang-pulse:', tangPulseKinds);
     console.log('wave1b kinds fantasy-tend:', fantasyKinds);
     console.log('wave1b figure harvests (tang tend):', casualTendTang[0]!.metrics.figureHarvests);
+  });
+
+  // ── chronicle repetition detector (2026-10-24) ─────────────────────
+  // Measured at c6f02dd on this exact run (tang-china, mixed pace, seed 3):
+  // 40 sentences, 37 distinct (92.5%), worst sentence x2 — the echoes of a
+  // returning figure reprinting its authored scenes (on the measurement
+  // battery's seed-3 cell the same scene printed in four entries). Bars
+  // leave room for the world draft's line, which quotes each founding
+  // card's one-liner exactly once by design (naming the stones a world is
+  // made of).
+  it('the chronicle does not repeat itself (real run, tang mixed seed 3)', async () => {
+    const { buildChronicle } = await import('@/engine/chronicle');
+    const run = new Sim({
+      packId: 'tang-china',
+      seed: 3n,
+      tag: 'chronicle-repeat-detector',
+      personHarvestTarget: 40,
+      tickCap: 30_000,
+      iterCap: 60_000,
+      developPolicy: 'immediate',
+      brief: null,
+      buyTea: false,
+      pace: 'mixed',
+    }).run();
+    const chronicle = buildChronicle(
+      run.archive,
+      run.metrics.archiveSize > 1 ? [{ scale: 'household' }] : [],
+      epochFromPackCalendar(packOf('tang-china').calendar),
+    );
+    const entries = chronicle.slice(0, 40);
+    const sentences: string[] = [];
+    for (const entry of entries) {
+      for (const part of entry.text.split(/(?<=[.!?])\s+/)) {
+        const t = part.trim();
+        if (t.length > 0) {
+          sentences.push(t);
+        }
+      }
+    }
+    const counts = new Map<string, number>();
+    for (const s of sentences) {
+      counts.set(s, (counts.get(s) ?? 0) + 1);
+    }
+    const worst = Math.max(...counts.values());
+    const distinct = new Set(sentences).size;
+    console.log(
+      `chronicle repeat: ${sentences.length} sentences, ${distinct} distinct (${Math.round(
+        (100 * distinct) / sentences.length,
+      )}%), worst sentence x${worst}`,
+    );
+    // No fact is printed three times in one chronicle.
+    expect(worst).toBeLessThanOrEqual(2);
+    // And the page is not mostly echoes.
+    expect(distinct / sentences.length).toBeGreaterThanOrEqual(0.95);
   });
 });
