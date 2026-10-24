@@ -149,6 +149,24 @@ describe('SettingsView', () => {
     expect(onSelectFontScale).toHaveBeenCalledWith('medium');
   });
 
+  it('dates a slot by when its chain was begun, in words rather than an epoch number', () => {
+    const { getByTextContent } = renderSettings({
+      slots: [{ slot: 1, blob: makeSaveBlob({ created_at_unix: 1_700_000_000 }) }],
+    });
+    expect(() => getByTextContent('Begun ')).not.toThrow();
+    // 1_700_000_000 s is Nov 2023 in every timezone.
+    expect(() => getByTextContent('2023')).not.toThrow();
+    expect(() => getByTextContent('1700000000')).toThrow();
+    expect(() => getByTextContent('Saved at')).toThrow();
+  });
+
+  it('reads an unusable stamp as undated instead of printing 1970', () => {
+    const { getByText } = renderSettings({
+      slots: [{ slot: 1, blob: makeSaveBlob({ created_at_unix: 0 }) }],
+    });
+    expect(() => getByText('Begun on a date this device did not record')).not.toThrow();
+  });
+
   it('exports an occupied slot to a base64 code and surfaces it', () => {
     const { getByTestID } = renderSettings({ slots: makeSlots([1]) });
     expect(() => getByTestID('settings-export-code')).toThrow();

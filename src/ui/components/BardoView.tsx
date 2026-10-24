@@ -15,6 +15,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Echo, EchoType } from '@/engine';
+import { humanizeId } from '@/engine/prose';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 
@@ -102,7 +103,7 @@ function describeEcho(echo: Echo): EchoSummary {
     case 'unresolved_attachment':
       return {
         summarySid: 'bardo.echo.attachment_sid',
-        params: { subject: echo.key },
+        params: { subject: humanizeId(echo.key) },
       };
     case 'vow': {
       const state = parseVowState(echo.narrative_sid);
@@ -112,7 +113,7 @@ function describeEcho(echo: Echo): EchoSummary {
           : state === 'kept'
             ? 'bardo.echo.vow_kept_sid'
             : 'bardo.echo.vow_declared_sid';
-      return { summarySid: sid, params: { vow: echo.key } };
+      return { summarySid: sid, params: { vow: humanizeId(echo.key) } };
     }
   }
 }

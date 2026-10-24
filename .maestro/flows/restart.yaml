@@ -46,4 +46,4 @@ tags:
 # First-life picker is visible.
 - assertVisible: "A new life begins"
 - assertVisible: "Choose your station"
-- assertVisible: "Tang Dynasty Chang'an"
+- assertVisible: "Late Tang Chang.an"

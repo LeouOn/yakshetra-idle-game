@@ -15,7 +15,7 @@
 #   settings-slot-1-delete      "Delete"
 #   settings-export-code        the produced base64
 #   settings-import-msg         "Save imported into slot 1." on success
-# Slot meta reads "Empty" when null, "Saved at {unix}" otherwise.
+# Slot meta reads "Empty" when null, "Begun {date}" otherwise.
 #
 # RUNNING is blocked on Maestro CLI + simulators + todo 31.
 
@@ -81,6 +81,6 @@ tags:
     id: "settings-import-msg"
 - assertVisible: "Save imported into slot 1."
 
-# --- Assert state matches: slot 1 is no longer empty (shows "Saved at"). ---
-- assertVisible: "Saved at"
+# --- Assert state matches: slot 1 is no longer empty (shows "Begun"). ---
+- assertVisible: "Begun"
 - assertNotVisible: "Export code"

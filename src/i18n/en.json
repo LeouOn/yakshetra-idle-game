@@ -72,7 +72,7 @@
       "orient_lens_focus_sid": "Focused through {lens}",
       "orient_lens_focus_none_sid": "No lens chosen yet",
       "intend_heading_sid": "Choose your lens",
-      "intend_hint_sid": "Focus through one of the six parami.",
+      "intend_hint_sid": "Focus through one of the six pāramitā.",
       "act_heading_sid": "Choose an action",
       "act_hint_sid": "What will you do with this moment?",
       "act_empty_sid": "No actions are open through this lens right now.",
@@ -161,7 +161,7 @@
     "kind_horizon_sid": "Horizon",
     "tier_person_sid": "One life",
     "tier_household_sid": "Household",
-    "tier_org_sid": "Workshop",
+    "tier_org_sid": "Guild",
     "tier_town_sid": "Town",
     "tier_city_sid": "City",
     "tier_region_sid": "Region",
@@ -398,8 +398,8 @@
     }
   },
   "tang": {
-    "name_sid": "Late Tang China",
-    "lineage_notes_sid": "Late Tang China, where the Silk Road meets the capital at Chang'an, and monastery bells measure out the market day. A life here is shaped by grain taxes, seasonal labor, family obligations, and quiet encounters along the road. Every choice costs something real — a thinner pot of millet, a neighbor's trust, or a day spent in the dust of the county seat.",
+    "name_sid": "Late Tang Chang’an",
+    "lineage_notes_sid": "Late Tang Chang’an, the capital at the eastern end of the Silk Road, where monastery bells measure out the market day. A life here is shaped by grain taxes, seasonal labor, family obligations, and quiet encounters along the road. Every choice costs something real — a thinner pot of millet, a neighbor's trust, or a day spent in the dust of the county seat.",
     "social": {
       "mobility_rules_sid": "Movement between stations is possible but uneven. Education, patronage, marriage, trade, military service, migration, and monastic affiliation can open routes, while debt, household duty, taxation, gendered expectations, and official suspicion can close them. A change of station costs time and trust; it is never a hidden reward for a particular virtue. Social obligation is visible in who can ask, who must answer, and whose refusal carries a price."
     },
@@ -425,9 +425,9 @@
       }
     },
     "glossary": {
-      "chan_sid": "Chan is a Chinese Buddhist vocabulary for contemplative practice and the communities, texts, and institutions associated with it. The game uses the term descriptively, without assigning a single uniform doctrine to every person or monastery.",
+      "chan_sid": "The Chinese Buddhist tradition of meditation, known in Japan as Zen, with its texts and monastic communities.",
       "literati_sid": "The literati are educated writers, clerks, teachers, and officials whose learning can open administrative work and whose obligations connect them to both superiors and local households.",
-      "sangha_sid": "Sangha refers here to a monastic community and its shared life of work, study, care, discipline, and dependence on surrounding society. It is a social description, not a spiritual ranking."
+      "sangha_sid": "A monastic community and its shared life of work, study, discipline, and common care."
     },
     "practice": {
       "alms_round": {
@@ -783,7 +783,7 @@
   },
   "fantasy": {
     "name_sid": "The Garden of Arrivals",
-    "lineage_notes_sid": "The Garden of Arrivals, a quiet borderland of stone basins, slow water, and four cedar posts where a bell rings once. Arriving souls bring what they carried across thresholds of memory, answering the Gardener and tending the common work. A vow declared here holds across lives, and what you choose to release or keep will shape the ground you return to.",
+    "lineage_notes_sid": "The Garden of Arrivals, a quiet borderland of stone basins, slow water, and four cedar posts where a bell rings once. Arriving souls bring what they carried across thresholds of memory, answering the Gardener and tending the common work. A vow declared here is carried by the one who spoke it, and what you choose to release or keep will shape the ground you walk.",
     "social": {
       "mobility_rules_sid": "Movement between stations in the Garden follows the weight of what you carry, not a fixed hierarchy. A newly arrived soul may be called to attend the Court; a court attendant may take up a vow and become a traveler. Mobility costs trust and time, and it is never a hidden reward for virtue. Declared vows shape which paths stay open until they are kept, transformed, or set aside."
     },
@@ -805,12 +805,12 @@
       }
     },
     "glossary": {
-      "garden_sid": "The Garden of Arrivals is the original fictional setting of this life. It is an allegorical space where arriving souls are received, not a depiction of any Buddhist pure land or cosmological realm.",
-      "gardener_sid": "The Gardener is an original allegorical figure who tends the Garden of Arrivals. The Gardener has no sutra provenance and is not a stand-in for any recognized devotional figure.",
-      "court_sid": "The Court is an original allegorical institution within the Garden that reviews the patterns a life carries. It is not a depiction of any post-death judgment from any tradition.",
-      "bell_sid": "The bell that rings once is an original allegorical element of the Garden. It marks transitions without doctrinal significance.",
-      "memory_stone_sid": "Memory stones are original allegorical objects in the Garden where the traces of a prior life may be held or released. They are a game-design device, not a reference to any ritual object.",
-      "slow_water_sid": "Slow water is an original allegorical feature of the Garden's landscape. It has no doctrinal referent."
+      "garden_sid": "A quiet borderland of stone basins, slow water, and four cedar posts where arriving souls are received.",
+      "gardener_sid": "The quiet figure who tends the courtyard, receives arriving travelers, and asks what they carried across.",
+      "court_sid": "The hall where travelers sit before the elders to lay out the patterns and vows of prior lives.",
+      "bell_sid": "The iron bell suspended between the cedar posts that strikes once when a life begins or ends.",
+      "memory_stone_sid": "Basin stones set in the courtyard stream where traces of what crossed may be rested or taken up.",
+      "slow_water_sid": "The shallow channels running through the courtyard floor, carrying fallen leaves past the stone benches."
     },
     "practice": {
       "garden_tending": {
@@ -960,7 +960,7 @@
   },
   "era": {
     "tang-china": {
-      "name_sid": "Tang Dynasty Chang’an",
+      "name_sid": "Late Tang Chang’an",
       "lineage_notes_sid": "A cosmopolitan capital at the eastern end of the Silk Road, where monastic communities, merchant caravans, and farming villages meet along the Wei River valley.",
       "role": {
         "peasant": {
@@ -969,7 +969,7 @@
         },
         "merchant": {
           "title_sid": "Merchant",
-          "description_sid": "You move goods between the Western Market and the caravan depots, bargaining in three languages before noon."
+          "description_sid": "You trade in the Western Market, bargaining in three languages before noon."
         },
         "monastic": {
           "title_sid": "Lay Resident",
@@ -1090,9 +1090,9 @@
       "tendency_sid": "A tendency toward {root} colored many of your choices.",
       "pattern_break_sid": "A long-held pattern broke open: care returned after aversion.",
       "attachment_sid": "An unresolved attachment to {subject} lingered.",
-      "vow_kept_sid": "A vow of {vow} was kept.",
-      "vow_broken_sid": "A vow of {vow} was broken.",
-      "vow_declared_sid": "A vow of {vow} was declared."
+      "vow_kept_sid": "The vow “{vow}” was kept.",
+      "vow_broken_sid": "The vow “{vow}” was broken.",
+      "vow_declared_sid": "The vow “{vow}” was declared."
     },
     "close_chain_button_sid": "Close the chain"
   },
@@ -1115,7 +1115,8 @@
     "save_slots_heading_sid": "Save slots",
     "slot_label_sid": "Slot {n}",
     "slot_empty_sid": "Empty",
-    "slot_meta_sid": "Saved at {unix}",
+    "slot_meta_sid": "Begun {date}",
+    "slot_meta_undated_sid": "Begun on a date this device did not record",
     "export_button_sid": "Export",
     "import_button_sid": "Import",
     "delete_button_sid": "Delete",
@@ -1128,22 +1129,22 @@
   "about": {
     "title_sid": "About Yakshetra",
     "disclaimer_heading_sid": "A Note Before You Begin",
-    "disclaimer_body_sid": "Yakshetra is a work of fiction inspired by Buddhist ethical and contemplative traditions. It does not represent itself as doctrine, nor as a teaching of any lineage, teacher, or school. The parami-inspired lenses, the cross-life echoes, and the narrative situations are game design choices made in good faith, not claims about how the world actually works. If a theme here is difficult for you, the content-warning settings let you step away from it.",
+    "disclaimer_body_sid": "Yakshetra is a work of fiction inspired by Buddhist ethical and contemplative traditions. It is not a teaching, a lineage, or a substitute for a teacher, and it does not claim the authority of a sangha. Some themes here are hard; Settings lets you turn off each content-warning category to keep those events out of your lives.",
     "lineage_heading_sid": "Lineage notes",
-    "lineage_body_sid": "The game draws loosely on the six parami framework found across Theravada and Mahayana ethical literature, and on narrative conventions common to historical and fantasy fiction. No specific living teacher, order, or institution endorses or is represented by this work. Each era pack carries its own lineage notes, shown when you begin a life in it.",
+    "lineage_body_sid": "The game's six lenses follow the six pāramitā of the Mahāyāna path; Theravāda counts ten pāramī. It also draws on narrative conventions common to historical and fantasy fiction. No living teacher, order, or institution endorses or is represented by this work. Each era pack carries its own lineage notes, shown when you begin a life in it.",
     "glossary_heading_sid": "Glossary",
-    "bibliography_heading_sid": "Sources",
+    "bibliography_heading_sid": "Further reading",
     "glossary": {
-      "parami_term_sid": "parami (perfection)",
-      "parami_definition_sid": "A quality cultivated through practice. The game's six lenses are named for parami-inspired qualities.",
+      "parami_term_sid": "pāramitā (perfection)",
+      "parami_definition_sid": "One of six perfections cultivated on the Mahāyāna path: generosity (dāna), ethical conduct (śīla), patience (kṣānti), effort (vīrya), meditation (dhyāna), and wisdom (prajñā). The game's six lenses follow them, one for one and in that order: Generosity, Careful Conduct, Patient Courage, Joyful Effort, Collected Attention, Discernment.",
       "lens_term_sid": "lens",
-      "lens_definition_sid": "The frame a player focuses a choice through. Each lens is named for a parami-inspired quality.",
+      "lens_definition_sid": "The frame a player focuses a choice through. Each lens follows one of the six pāramitā.",
       "intent_root_term_sid": "intent root",
-      "intent_root_definition_sid": "The root an action springs from: care, greed, aversion, or delusion. Drives the cross-life echoes.",
+      "intent_root_definition_sid": "The root an action springs from, in the game's four-fold simplification of the Abhidhamma roots: care, greed, aversion, or delusion. Drives the cross-life echoes.",
       "karmic_echo_term_sid": "echo",
       "karmic_echo_definition_sid": "A narrative thread carried from one life into the next: a tendency, an attachment, a vow, or a pattern break. Echoes shift what choices open; they are never a score.",
       "bardo_term_sid": "bardo",
-      "bardo_definition_sid": "An 'in-between' state. The game's between-lives screen is functional UI, not a depiction of any doctrinal bardo.",
+      "bardo_definition_sid": "The in-between state between death and rebirth: antarābhava in Sanskrit, zhongyou (中有) in Chinese, bar do ('bardo') in Tibetan. In the game, the screen between two lives.",
       "life_chain_term_sid": "life chain",
       "life_chain_definition_sid": "A sequence of lives you work through, beginning unburdened and carrying echoes forward until the chain closes.",
       "era_pack_term_sid": "era pack",
@@ -1158,11 +1159,11 @@
       "social_identity_definition_sid": "The station, duties, and community that ground a life in its time."
     },
     "bibliography": {
-      "entry_1_sid": "Bodhi, Bhikkhu (trans.), A Comprehensive Manual of Abhidhamma — reference for the taxonomy of wholesome and unwholesome roots.",
-      "entry_2_sid": "Ñāṇamoli, Bhikkhu (trans.), The Path of Purification (Visuddhimagga) — reference for the parami framework.",
-      "entry_3_sid": "Web Accessibility Initiative, WCAG 2.2 — reference for the accessibility targets the UI is built toward.",
-      "entry_4_sid": "Expo Router documentation, https://docs.expo.dev/router — reference for the app's navigation model.",
-      "entry_5_sid": "Deque Systems, axe-core — reference for the automated accessibility audit rules."
+      "entry_1_sid": "Gethin, Rupert, The Foundations of Buddhism (Oxford University Press, 1998) — a general introduction to Buddhist thought and practice.",
+      "entry_2_sid": "Williams, Paul, Mahāyāna Buddhism: The Doctrinal Foundations, 2nd ed. (Routledge, 2009) — on the Mahāyāna path and its doctrines.",
+      "entry_3_sid": "Bodhi, Bhikkhu (general ed.), A Comprehensive Manual of Abhidhamma (Buddhist Publication Society, 1993) — on the wholesome and unwholesome roots.",
+      "entry_4_sid": "Weinstein, Stanley, Buddhism under the T'ang (Cambridge University Press, 1987) — on Buddhism in the Tang dynasty.",
+      "entry_5_sid": "Buswell, Robert E., Jr., and Donald S. Lopez, Jr., The Princeton Dictionary of Buddhism (Princeton University Press, 2014) — for terms and names."
     }
   },
   "not_found": {
@@ -1173,7 +1174,7 @@
   },
   "disclaimer": {
     "title_sid": "Just a game",
-    "body_sid": "Fiction with a contemplative vibe — not a teaching, not a lineage. Play.",
+    "body_sid": "Fiction inspired by Buddhist tradition — not a teaching, not a lineage. Play.",
     "understand_button_sid": "Got it",
     "read_more_button_sid": "About",
     "advisory_credit_sid": "The long notes live in About, if you want them."
@@ -1604,29 +1605,29 @@
         "narrative_sid": "The separate pattern that was you loosens into the Garden's larger rhythm. There is no fanfare, no destination named, no final word spoken. The stone bench where you sat grows quiet. What you carried settles where it falls; what you tended remains. The Garden continues, neither fuller nor emptier for your presence. The chain closes here, without a verdict and without a name for what you became."
       },
       "return": {
-        "narrative_sid": "You turn from the Garden's gate toward a road you cannot yet see. The echoes you carry — tendencies, attachments, the shape of a vow — travel with you as seeds, not as sentences. No destination is named; no promised land waits on the other side of the threshold. The next life, wherever it opens, will begin with what you brought. The road goes on past the edge of what this telling can hold."
+        "narrative_sid": "You turn from the Garden's gate toward a road you cannot yet see. The echoes you carry — tendencies, attachments, the shape of a vow — travel with you as seeds, not as sentences. No destination is named; no promised land waits on the other side of the threshold. Whatever opens beyond the threshold will meet what you brought. The road goes on past the edge of what this telling can hold."
       },
       "vow-bound": {
-        "narrative_sid": "The life ends with a vow still broken. The words you spoke in an earlier turn — the promise, the commitment, the bond — remain unmet. The Garden does not punish what went unfinished; it does not forgive it either. The broken vow carries forward as a strong attachment echo, and the next chain begins with the weight of what was left unresolved pressing on its first choices."
+        "narrative_sid": "The life ends with a vow still broken. The words you spoke in an earlier turn — the promise, the commitment, the bond — remain unmet. The Garden does not punish what went unfinished; it does not forgive it either. The broken vow is marked as a strong attachment echo, and the weight of what was left unresolved is the last thing the Garden records of you."
       },
       "gardener-blessing": {
-        "narrative_sid": "The Gardener meets you at the edge where the Garden's pattern thins. Your attention has broken open more than once — enough that a different shape becomes possible. The Gardener does not name what you have become. A transformed vow is offered for the next chain: the old commitment, loosened and re-spoken, carried forward not as debt but as direction. Rare, and not repeated."
+        "narrative_sid": "The Gardener meets you at the edge where the Garden's pattern thins. Your attention has broken open more than once — enough that a different shape becomes possible. The Gardener does not name what you have become. A transformed vow is offered: the old commitment, loosened and re-spoken, held not as debt but as direction. Rare, and not repeated."
       }
     }
   },
   "lineage": {
     "fantasy": {
-      "notes_sid": "Excluded completely and by design, never appearing as characters, places, titles, or allegorical references anywhere in the Garden: Sukhāvatī, Abhirati, Vaidūryanirbhāsa, Amitābha, Akṣobhya, Vairocana, Ratnasambhava, Amoghasiddhi, Avalokiteśvara, Mañjuśrī, Samantabhadra, Kṣitigarbha, Mahāsthāmaprāpta, Tārā, Maitreya.\n\nThe life that follows, set in the Garden of Arrivals, stands as original fiction inspired by Mahāyāna cosmological imagery. The Garden and the Gardener at the center of the Garden are inventions of the authors of the project, not a representation of any tradition's doctrine or sacred geography. The editorial choice to build an original cosmology rather than depict a named pure land was deliberate. Mahāyāna literature describes several pure lands, each associated with a specific Buddha and a living devotional tradition with practitioners today. To set a game on one of those lands would be to make claims about someone else's sacred geography — claims the project does not make and does not pretend to be equipped to make. The same caution applies to the great figures of the pantheon: none of the named Buddhas or great practitioners listed above appears here, and the Gardener does not represent any of them.\n\nThe Gardener, stated plainly, has no sutra provenance. The figure was written as an original allegorical character who tends the Garden and receives arriving beings, and the text never claims otherwise. The game does not imply that the Gardener holds a hidden identity or stands as a disguised version of a revered figure. The relationship the player has with the Gardener stays at the level of encounter: questions asked, griefs named, directions offered. The Gardener does not confer a transcendent status, does not adjudicate the life, and does not appear in the endings as a gatekeeper to a named destination.\n\nThe imagery the game does use — an abstract cosmic garden, stone benches, slow water, a bell that rings once, memory stones — was chosen because each evokes a contemplative atmosphere without mapping one-to-one onto any recognized devotional art form. There are no thangkas, no mandalas, no mantras, no mudrās, and no empowerments in the Garden. The Garden operates as a narrative space, not a doctrinal claim about what happens after death. The word that names the in-between state in some Tibetan traditions may appear in these lineage notes as a transparent acknowledgment of inspiration, but the diegetic voice of the game itself does not use that term; the game says 'the Garden' and 'the transition,' and leaves the rest unnamed.\n\nThe vow mechanic draws loose inspiration from the Mahāyāna concept of a commitment to work for the welfare of beings across lives, but the game does not simulate that commitment. A vow here acts as a narrative constraint: once declared, it gates certain choices and colors the echoes that carry into the next life. Breaking a vow produces a narrative consequence — the broken state carries forward as a strong attachment echo — not a metaphysical penalty. Transforming a vow, the rarest outcome, becomes available only when a pattern-break echo opens the way, and represents a genuine change of shape while care remains, not an escalation of rank.\n\nThe six lenses through which the player focuses each choice take their names from the six parami found across Mahāyāna and Theravāda ethical literature: generosity, careful conduct, patient courage, joyful effort, collected attention, and discernment. These serve as framing devices for the player's intent, not as claims about the player's attainment. The engine records which lens the player chose and which root each action sprang from — care, greed, aversion, or delusion — and those records drive the cross-life echo system. There here no score, no meter, no rank, and no state called awakening, liberation, or realization. The game does not adjudicate whether a life was lived well; it only carries forward what remained unresolved.\n\nThe echoes that pass between lives — tendencies, attachments, vows, and pattern breaks — are game-design choices inspired loosely by the idea that action has consequences that persist. They are not a simulation of any doctrine. A tendency echo means the next life begins with a narrative tilt. An attachment echo means the next life begins with an unfinished grief. A pattern-break echo means the next life begins with the possibility of responding differently. None of these constitutes a reward or a punishment; all are narrative seeds for the next chapter.\n\nFor further reading on the doctrinal context the authors drew on for tone rather than for doctrine, see Paul Williams, Mahāyāna Buddhism: The Doctrinal Foundations, and David McMahan, The Making of Buddhist Modernism. The relationship of the project to these texts remains one of ambient inspiration and responsible distance, not of representation or authority. A full disclaimer accompanies the Garden life at first launch: the content of the Garden stands as original fiction, offered in good faith, and nothing here should be read as a teaching of any lineage, school, or teacher."
+      "notes_sid": "The Garden of Arrivals and the Gardener who tends it are this project's own invention, not drawn from any sutra. It is a borderland of stone benches, slow water, memory stones, and a bell that rings once. Vows and echoes are narrative devices: a vow gates certain choices, and what a life leaves unresolved is carried into the next life of the chain as an echo. They keep no score, and the Garden never says a life was lived well. The game's six lenses follow the six pāramitā of the Mahāyāna path."
     }
   },
   "glossary": {
     "fantasy": {
-      "gardener_sid": "An original allegorical figure who tends the Garden of Arrivals. The Gardener has no sutra provenance and does not represent a disguised version of any named figure from any tradition.",
-      "garden-of-arrivals_sid": "The fictional setting of the Garden life: an abstract cosmic garden where arriving beings are received. The Garden does not depict any named pure land from any tradition.",
-      "vow_sid": "A narrative commitment declared in one life that gates choices and carries across lives. Breaking a vow produces attachment echoes, not a metaphysical penalty; transforming a vow opens only when a pattern break makes a new shape possible.",
-      "echo_sid": "A narrative thread carried from one life into the next: a tendency, an attachment, a vow, or a pattern break. Echoes shape the opening of the next life; they are never aggregated into a score.",
-      "court_sid": "An abstract presence in the Garden that reads the patterns a traveler arrived with. The Court summarizes without judging; the Court does not award and does not deduct.",
-      "memory-stones_sid": "Stones in the Garden that hold impressions of what arrived. A permitted narrative image, not a doctrinal object and not a devotional artifact of any tradition."
+      "gardener_sid": "The quiet figure who tends the courtyard, receives arriving travelers, and asks what they carried across.",
+      "garden-of-arrivals_sid": "A quiet borderland of stone basins, slow water, and four cedar posts where arriving souls are received.",
+      "vow_sid": "A commitment declared in a life that keeps certain doors closed until it is kept, transformed, or set aside.",
+      "echo_sid": "A narrative thread carried from one life into the next: a tendency, an attachment, a vow, or a pattern break.",
+      "court_sid": "The hall where travelers sit before the elders to lay out the patterns and vows of prior lives.",
+      "memory-stones_sid": "Basin stones set in the courtyard stream where traces of what crossed may be rested or taken up."
     }
   },
   "test": {
@@ -1649,7 +1650,7 @@
   "card": {
     "tang": {
       "corrupt-donation-demand": {
-        "give_commodification_sid": "The master spoke of accumulating merit through giving. You gave what you could — but there is no cosmic ledger balancing your gift against your faults. The weight of what you have done remains what it is."
+        "give_commodification_sid": "The master spoke of accumulating merit through giving. You gave what you could, and cannot say what the gift weighed. The weight of what you have done remains what it is."
       }
     }
   },
@@ -1670,43 +1671,43 @@
       "display_name_sid": "Bhaiṣajyaguru",
       "attribute_sid": "The Medicine Buddha whose twelve vows turn common herbs and fresh water into remedies for afflicted bodies.",
       "iconography_sid": "Lapis-dark presence holding a myrobalan branch, left hand steadying a heavy medicine jar of simple salve.",
-      "reverence_sid": "Sought out in sickrooms and Tang dispensary halls, invoked with incense and blue banners when fever strikes a house."
+      "reverence_sid": "Sought for the sick: his sutra tells families to recite it, burn forty-nine lamps, and hang a five-colored banner to lengthen a patient's life."
     },
     "vairocana": {
       "display_name_sid": "Vairocana",
       "attribute_sid": "The cosmic truth-body whose clear illumination touches weaving looms, roofbeams, and temple bells alike.",
-      "iconography_sid": "Upright and unmoving in golden light, hands gathered in the bodhyagri-mudrā, crowned like a sovereign who rules without a throne.",
-      "reverence_sid": "Central to Tang Huayan thought, where scholars and workshop masters saw every small task mirrored in his vast field."
+      "iconography_sid": "A great seated Buddha in golden light, as in the colossal Vairocana carved at Longmen, which is shown uncrowned. Esoteric images show him crowned, his hands in the wisdom-fist mudrā.",
+      "reverence_sid": "Central to Tang Huayan thought, where he presides over a world in which every being contains all the others; Empress Wu's colossal Vairocana at Longmen embodied it."
     },
     "maitreya": {
       "display_name_sid": "Maitreya",
       "attribute_sid": "The patient future teacher who leans forward from his heavenly seat to watch the road unfold.",
-      "iconography_sid": "Seated western-style with ankles crossed, one finger raised toward his cheek in thought, a miniature stupa in his high crown.",
-      "reverence_sid": "Treasured by Tang devotees who kept an empty stool ready in anticipation of his promised coming down to earth."
+      "iconography_sid": "In Tang art the Buddha of the future is usually shown seated on a throne with both feet on the ground, ready to rise. Earlier images show a crowned bodhisattva with ankles crossed.",
+      "reverence_sid": "Tang devotion to him mostly took the form of praying to be reborn in his Tuṣita heaven, as the pilgrim Xuanzang did, with some hoping to meet him when he descends."
     },
     "avalokiteshvara": {
       "display_name_sid": "Avalokiteśvara (Guanyin)",
       "attribute_sid": "The bodhisattva who hears the muffled cry of every creature and steps forward without delay.",
-      "iconography_sid": "Graceful presence holding a porcelain vase and dewy willow sprig, robes fluttering like river mist over walking sandals.",
+      "iconography_sid": "Graceful presence holding a vase of pure water and a willow sprig, robes fluttering like river mist over walking sandals.",
       "reverence_sid": "Beloved in every Tang neighborhood, called upon at ferry crossings, birthings, and sudden storms along the road."
     },
     "manjushri": {
       "display_name_sid": "Mañjuśrī (Wenshu)",
       "attribute_sid": "The bodhisattva whose sharp blade severs confusion and cuts straight through entangled pretenses.",
       "iconography_sid": "Youthful prince mounted on a fierce lion, lifting a sword of blazing insight while steadying a palm-leaf text.",
-      "reverence_sid": "Sought by pilgrims on the cold slopes of Wutai Shan, asked to dispel stubborn ignorance and tangled quarrels."
+      "reverence_sid": "Pilgrims climbed cold, clear Wutai Shan, the mountain Tang Buddhists took to be his home, to ask the bodhisattva of wisdom to cut through ignorance."
     },
     "samantabhadra": {
       "display_name_sid": "Samantabhadra (Puxian)",
       "attribute_sid": "The bodhisattva of relentless practice who turns grand vows into shovel work and sturdy roads.",
       "iconography_sid": "Riding a massive six-tusked elephant with quiet tread, holding an open scroll or blooming lotus as he marches.",
-      "reverence_sid": "Reverenced at Mount Emei and in village building guilds as the patron of endurance and completed obligations."
+      "reverence_sid": "Honored as the bodhisattva of vows and practice. Mount Emei in Sichuan, his great mountain, is firmly linked to him by the Song dynasty."
     },
     "ksitigarbha": {
       "display_name_sid": "Kṣitigarbha (Dizang)",
       "attribute_sid": "The bodhisattva of the earth-vow who descends to the lowest pits to unlock every chained door.",
-      "iconography_sid": "Shaven-headed traveler in monk's robes, holding a six-ringed staff that jingles with each step and a bright wish-granting gem.",
-      "reverence_sid": "Invoked at Jiuhua Shan and family burial grounds to succor deceased kinsfolk and release prisoners from despair."
+      "iconography_sid": "Shaven-headed monk in a patched robe, carrying a ringed staff and a glowing wish-granting jewel.",
+      "reverence_sid": "Prayed to for the dead; families embroidered his image to help departed kin. A Silla monk called Dizang had lived on Jiuhua Mountain, which became his great pilgrimage site only much later."
     },
     "mahasthamaprapta": {
       "display_name_sid": "Mahāsthāmaprāpta (Dashizhi)",
@@ -1718,152 +1719,152 @@
       "display_name_sid": "Nāgārjuna",
       "attribute_sid": "The keen dialectician who shows that all things arise together and none can stand in lonely isolation.",
       "iconography_sid": "Lean scholastic monk sheltered by a hood of coiled river serpents, one finger raised to puncture hollow assumptions.",
-      "reverence_sid": "Studied in Tang lecture halls for his uncompromising logic, which cured stubborn dogmatism and grounded compassion in reality."
+      "reverence_sid": "His teaching of emptiness reached China as the Three Treatise school, systematized by Jizang at the dawn of the Tang, and went on shaping Huayan and Chan thought."
     },
     "bodhidharma": {
       "display_name_sid": "Bodhidharma (Damo)",
       "attribute_sid": "The fierce founder who pointed directly at human conduct and brushed aside empty recitation.",
-      "iconography_sid": "Broad-shouldered traveler with bulging eyes, thick beard, and patched coarse cloak, carrying one empty straw sandal.",
-      "reverence_sid": "Claimed by Tang Chan monasteries as the first patriarch whose unbending silence demanded genuine, lived awakening."
+      "iconography_sid": "A foreign monk carrying a single shoe, from the tale that after his burial he was seen walking west with one shoe in hand. The fierce, bearded, wide-eyed look comes from later art; Tang images show a monk much like any other.",
+      "reverence_sid": "Tang Chan writers traced their line back to him; by the Baolin zhuan of 801 he was named the first Chinese patriarch."
     },
     "bhadrakalpa": {
       "1": {
         "display_name_sid": "Koṇḍañña",
-        "attribute_sid": "The first teacher of the present auspicious aeon, whose awakening inaugurates the lineage of past Buddhas invoked in confession.",
-        "iconography_sid": "Seated in meditation beneath a great sāla tree, hands in dhyāna-mudrā; the commentarial lineage lists record him as the opening name in the enumeration of past Buddhas.",
-        "reverence_sid": "Invoked as the first of the Buddhas of the past in the confession liturgies that purify broken precept and karmic obstruction."
+        "attribute_sid": "The second of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. Koṇḍañña is a clan name, and this Buddha is not Gotama's first disciple of the same name.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the sālakalyāṇī.",
+        "reverence_sid": "The Buddhavaṃsa places him alone in his aeon, an incalculable number of aeons after Dīpaṅkara."
       },
       "2": {
         "display_name_sid": "Maṅgala",
-        "attribute_sid": "An auspicious awakened teacher whose name signifies blessing and good fortune.",
-        "iconography_sid": "Seated awakened teacher in monastic robes, hands resting in the gesture of meditation; counted second in the lineage of past Buddhas.",
-        "reverence_sid": "Reverenced in the confession liturgy for the purification of misfortune and the restoration of auspicious conduct."
+        "attribute_sid": "The third of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. His name means “auspicious.”",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the nāga tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Sumana, Revata, and Sobhita, an incalculable number of aeons after Koṇḍañña."
       },
       "3": {
         "display_name_sid": "Sumana",
-        "attribute_sid": "A serene awakened teacher whose name conveys a tranquil and well-settled mind.",
-        "iconography_sid": "Depicted as a seated teacher with the ushṇīṣa and monastic robe, in the collected posture of meditation; the third Buddha of the past.",
-        "reverence_sid": "Reverenced for calming the restless mind and settling the heart in practice."
+        "attribute_sid": "The fourth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the nāga tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Maṅgala, Revata, and Sobhita, an incalculable number of aeons after Koṇḍañña."
       },
       "4": {
         "display_name_sid": "Revata",
-        "attribute_sid": "An awakened teacher honored in the lineage for the steadiness of his collected attention.",
-        "iconography_sid": "Seated in meditation posture, the fourth in the enumeration of past Buddhas; his iconographic form follows the standard type of an awakened monastic teacher.",
-        "reverence_sid": "Reverenced for steadying collected attention and dispelling distraction."
+        "attribute_sid": "The fifth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the nāga tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Maṅgala, Sumana, and Sobhita, an incalculable number of aeons after Koṇḍañña."
       },
       "5": {
         "display_name_sid": "Sobhita",
-        "attribute_sid": "An awakened teacher whose name carries the sense of radiant clarity.",
-        "iconography_sid": "Seated teacher in dhyāna-mudrā, fifth among the past Buddhas; depicted in the standard monastic form with the cranial protuberance.",
-        "reverence_sid": "Reverenced for illuminating obscured understanding with radiant clarity."
+        "attribute_sid": "The sixth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the nāga tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Maṅgala, Sumana, and Revata, an incalculable number of aeons after Koṇḍañña."
       },
       "6": {
         "display_name_sid": "Anomadassī",
-        "attribute_sid": "The incomparable-seeing teacher whose realization is praised as unrivalled in vision.",
-        "iconography_sid": "Seated awakened teacher in meditation; the sixth Buddha of the past, named for his incomparable insight.",
-        "reverence_sid": "Reverenced for the cultivation of incomparable insight and clear seeing."
+        "attribute_sid": "The seventh of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the ajjuna tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Paduma and Nārada, an incalculable number of aeons after Sobhita."
       },
       "7": {
         "display_name_sid": "Paduma",
-        "attribute_sid": "The lotus teacher, named for the lotus and associated with the unfolding of awakened qualities.",
-        "iconography_sid": "Seated teacher associated with the lotus emblem, hands in meditation; the seventh Buddha of the past.",
-        "reverence_sid": "Reverenced for the unfolding of pure qualities, like a lotus rising undefiled."
+        "attribute_sid": "The eighth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. His name means “the lotus.”",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the mahāsoṇa tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Anomadassī and Nārada, an incalculable number of aeons after Sobhita."
       },
       "8": {
         "display_name_sid": "Nārada",
-        "attribute_sid": "An awakened teacher whose compassionate intervention is recorded in the lineage narratives.",
-        "iconography_sid": "Seated teacher in the collected posture of meditation; the eighth Buddha of the past.",
-        "reverence_sid": "Reverenced for compassionate response to those overwhelmed by affliction."
+        "attribute_sid": "The ninth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the mahāsoṇa tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Anomadassī and Paduma, an incalculable number of aeons after Sobhita."
       },
       "9": {
         "display_name_sid": "Padumuttara",
-        "attribute_sid": "The supreme-lotus teacher, associated with the highest excellence of awakened qualities.",
-        "iconography_sid": "Seated awakened teacher in dhyāna-mudrā; the ninth Buddha of the past, named for his supreme lotus-like quality.",
-        "reverence_sid": "Reverenced for the culmination of merit and the supreme excellence of the path."
+        "attribute_sid": "The tenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the salala tree.",
+        "reverence_sid": "The Buddhavaṃsa places him alone in his aeon, a hundred thousand aeons ago."
       },
       "10": {
         "display_name_sid": "Sumedha",
-        "attribute_sid": "The great-wisdom teacher whose aspiration sets the bodhisattva path in motion in the lineage narratives.",
-        "iconography_sid": "Seated teacher in meditation posture; the tenth Buddha of the past, named for his resolute wisdom.",
-        "reverence_sid": "Reverenced for the resolution of wisdom and the aspiration that opens the way to awakening."
+        "attribute_sid": "The eleventh of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. The ascetic of the same name, who became Gotama under Dīpaṅkara, is another person.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the mahānīpa tree (some editions read mahānimba).",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Sujāta, thirty thousand aeons ago."
       },
       "11": {
         "display_name_sid": "Sujāta",
-        "attribute_sid": "The well-born teacher whose lineage is praised as noble and well-established.",
-        "iconography_sid": "Seated awakened teacher in monastic robes; the eleventh Buddha of the past.",
-        "reverence_sid": "Reverenced for the restoration of noble and upright conduct."
+        "attribute_sid": "The twelfth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. The Pali commentary says he was named for the happiness his birth brought to all beings.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the mahāveḷu (a bamboo).",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Sumedha, thirty thousand aeons ago."
       },
       "12": {
         "display_name_sid": "Piyadassī",
-        "attribute_sid": "The beloved-seeing teacher whose vision is praised as dear to those who seek the way.",
-        "iconography_sid": "Seated teacher in meditation; the twelfth Buddha of the past, named for his endearing clarity of sight.",
-        "reverence_sid": "Reverenced for the clearing of the heart's affections toward what is worthy."
+        "attribute_sid": "The thirteenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the kakudha tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Atthadassī and Dhammadassī, eighteen hundred aeons ago."
       },
       "13": {
         "display_name_sid": "Atthadassī",
-        "attribute_sid": "The goal-seeing teacher whose vision perceives the meaning and aim of the teaching.",
-        "iconography_sid": "Seated awakened teacher in the posture of meditation; the thirteenth Buddha of the past.",
-        "reverence_sid": "Reverenced for discerning the aim of practice and the meaning of the way."
+        "attribute_sid": "The fourteenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the campaka tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Piyadassī and Dhammadassī, eighteen hundred aeons ago."
       },
       "14": {
         "display_name_sid": "Dhammadassī",
-        "attribute_sid": "The dharma-seeing teacher whose realization perceives the nature of things as they are.",
-        "iconography_sid": "Seated teacher in dhyāna-mudrā; the fourteenth Buddha of the past, named for his vision of the teaching.",
-        "reverence_sid": "Reverenced for insight into the nature of phenomena and the clearing of delusion."
+        "attribute_sid": "The fifteenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the bimbijāla tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Piyadassī and Atthadassī, eighteen hundred aeons ago."
       },
       "15": {
         "display_name_sid": "Siddhattha",
-        "attribute_sid": "The aim-accomplished teacher whose name signifies one whose purpose has been fulfilled.",
-        "iconography_sid": "Seated awakened teacher in meditation posture; the fifteenth Buddha of the past, sharing his name with the historical teacher of our own age.",
-        "reverence_sid": "Reverenced for the fulfillment of the aim of practice and the completion of what was undertaken."
+        "attribute_sid": "The sixteenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the kaṇikāra tree.",
+        "reverence_sid": "The Buddhavaṃsa places him alone in his aeon, ninety-four aeons ago."
       },
       "16": {
         "display_name_sid": "Tissa",
-        "attribute_sid": "An awakened teacher honored in the lineage for the swiftness of his path.",
-        "iconography_sid": "Seated teacher in the collected posture; the sixteenth Buddha of the past.",
-        "reverence_sid": "Reverenced for the swift clearing of lingering obstruction."
+        "attribute_sid": "The seventeenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the asana tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Phussa, ninety-two aeons ago."
       },
       "17": {
         "display_name_sid": "Phussa",
-        "attribute_sid": "An awakened teacher whose name conveys the sense of radiant, shining brilliance.",
-        "iconography_sid": "Seated awakened teacher in meditation; the seventeenth Buddha of the past.",
-        "reverence_sid": "Reverenced for the dispelling of darkness through radiant brilliance."
+        "attribute_sid": "The eighteenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the āmaṇḍa tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Tissa, ninety-two aeons ago."
       },
       "18": {
         "display_name_sid": "Vipassī",
-        "attribute_sid": "The clear-seeing teacher who, in the lineage narratives, first rediscovers the way after it has faded from the world.",
-        "iconography_sid": "Seated teacher in meditation beneath a pāṭalī tree, hands in dhyāna-mudrā; the eighteenth Buddha of the past.",
-        "reverence_sid": "Reverenced for the clear seeing that reopens the lost way."
+        "attribute_sid": "The nineteenth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. His name means “one with insight.”",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the pāṭalī tree.",
+        "reverence_sid": "The Buddhavaṃsa places him alone in his aeon, ninety-one aeons ago."
       },
       "19": {
         "display_name_sid": "Sikhī",
-        "attribute_sid": "The crested teacher, named for the crest-like ushṇīṣa that marks an awakened one.",
-        "iconography_sid": "Seated awakened teacher with the prominent cranial crest, hands in meditation; the nineteenth Buddha of the past.",
-        "reverence_sid": "Reverenced for the mark of awakening and the height of realized understanding."
+        "attribute_sid": "The twentieth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. His name means “crested.”",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the puṇḍarīka tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Vessabhū, thirty-one aeons ago."
       },
       "20": {
         "display_name_sid": "Vessabhū",
-        "attribute_sid": "The all-pervading teacher whose influence is described in the lineage as reaching throughout the field of beings.",
-        "iconography_sid": "Seated teacher in meditation posture; the twentieth Buddha of the past, the last in this representative sequence before the three teachers of our own historical era.",
-        "reverence_sid": "Reverenced for the all-pervading field of benefit established by an awakened teacher."
+        "attribute_sid": "The twenty-first of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the mahāsāla tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in an aeon he shares with Sikhī, thirty-one aeons ago."
       },
       "21": {
         "display_name_sid": "Kakusandha",
-        "attribute_sid": "The first teacher of the present auspicious aeon; the Pali lineage lists open with him, and the Sanskrit tradition says Krakucchanda for the same seat.",
-        "iconography_sid": "A seated awakened teacher in monastic robes, hands in the gesture of meditation; the standard form of a past Buddha, placed first in the row.",
-        "reverence_sid": "Invoked at the head of the Buddhas of the past in the confession liturgies that purify broken precept."
+        "attribute_sid": "The twenty-second of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. He is Krakucchanda in the Sanskrit lists, and the first Buddha of the present aeon.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the sirīsa tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in the present aeon, the bhaddakappa, with Koṇāgamana, Kassapa, Gotama, and the Buddha still to come, Metteyya."
       },
       "22": {
         "display_name_sid": "Koṇāgamana",
-        "attribute_sid": "The second teacher of the present aeon, called Kanakamuni in the Sanskrit lists — one teacher, two names.",
-        "iconography_sid": "A seated awakened teacher in monastic robes; second in the row of past Buddhas, sometimes shown beneath a nagara tree in the commentaries.",
-        "reverence_sid": "Reverenced in the confession liturgy as the second of the past Buddhas of the auspicious aeon."
+        "attribute_sid": "The twenty-third of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. He is Kanakamuni in the Sanskrit lists, and the second Buddha of the present aeon.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the udumbara tree.",
+        "reverence_sid": "The Buddhavaṃsa places him in the present aeon, the bhaddakappa, with Kakusandha, Kassapa, Gotama, and the Buddha still to come, Metteyya."
       },
       "23": {
         "display_name_sid": "Kassapa",
-        "attribute_sid": "The third teacher of the present aeon, the one immediately before Śākyamuni; the Sanskrit lists say Kāśyapa.",
-        "iconography_sid": "A seated awakened teacher in monastic robes, third in the row; his form closes the sequence of past Buddhas before the historical teacher.",
-        "reverence_sid": "Reverenced as the teacher whose era ended just before ours; the confession liturgy names him third among the past Buddhas."
+        "attribute_sid": "The twenty-fourth of the twenty-four Buddhas that the Pali Buddhavaṃsa counts before Gotama. He is Kāśyapa in the Sanskrit lists, the third Buddha of the present aeon, and the one just before Gotama.",
+        "iconography_sid": "No image is claimed beyond the usual one: an awakened teacher in monastic robes, seated in meditation. The Buddhavaṃsa gives his tree of awakening as the nigrodha tree (a banyan).",
+        "reverence_sid": "The Buddhavaṃsa places him in the present aeon, the bhaddakappa, with Kakusandha, Koṇāgamana, Gotama, and the Buddha still to come, Metteyya."
       }
     }
   },
@@ -1872,126 +1873,126 @@
       "label_sid": "Heart Sutra mantra",
       "transliteration_sid": "gate gate pāragate pārasaṃgate bodhi svāhā",
       "translation_sid": "Gone, gone, gone beyond, gone utterly beyond — awakening, so be it.",
-      "description_sid": "The closing verse of the Prajñāpāramitāhṛdaya, recited daily in Tang monasteries and across every East Asian school that transmits the Heart Sutra today."
+      "description_sid": "The closing verse of the Heart Sutra (Prajñāpāramitāhṛdaya), widely recited in East Asian Buddhism today. Over seventy Heart Sutra manuscripts were found at Dunhuang."
     },
     "six-syllable": {
       "label_sid": "Oṃ maṇi padme hūṃ",
       "transliteration_sid": "oṃ maṇi padme hūṃ",
       "translation_sid": "Om, the jewel in the lotus, hum.",
-      "description_sid": "The six-syllable recitation of Avalokiteśvara / Guanyin, found on Tang-era dharani pillars, amulets, and silk banners along the Silk Road."
+      "description_sid": "The six-syllable mantra of Avalokiteśvara / Guanyin, taught in the Kāraṇḍavyūha Sūtra and known from Sanskrit manuscripts of the sixth to seventh century."
     },
     "medicine-buddha": {
       "label_sid": "Medicine Buddha short mantra",
       "transliteration_sid": "tadyathā oṃ bhaiṣajye bhaiṣajye mahābhaiṣajye rāja-samudgate svāhā",
       "translation_sid": "Thus: om, medicine, medicine, great medicine, king arisen, so be it.",
-      "description_sid": "The heart recitation from the Bhaiṣajyaguru Sūtra, used in Tang monastic rites for the sick and the public copying of the sutra."
+      "description_sid": "A short Medicine Buddha mantra, in the form known from Tibetan practice. The Chinese Medicine Buddha tradition has its own dhāraṇī, in Yijing's translation (T 451, 707 CE), and its sutras prescribe recitation, lamps, and banners for the sick."
     },
     "nianfo": {
       "label_sid": "Nianfo — Námó Ēmítuó Fó",
       "transliteration_sid": "námó ēmítuó fó",
       "translation_sid": "Homage to Amitābha Buddha.",
-      "description_sid": "The Chinese Pure Land recitation of Amitābha's name, central to Tang Jingtu practice. The transliteration above reflects the Late Tang pronunciation form."
+      "description_sid": "The Chinese Pure Land recitation of Amitābha's name, 南無阿彌陀佛, a major Pure Land devotion in Tang China taught by masters such as Daochuo, Shandao, and Fazhao. The transliteration above is modern Mandarin pinyin."
     },
     "heart-dharani": {
       "label_sid": "Heart Sutra Dharani",
       "transliteration_sid": "tadyathā gate gate pāragate pārasaṃgate bodhi svāhā",
       "translation_sid": "Thus it is said: gone, gone, gone beyond, gone utterly beyond, awakening, so be it.",
-      "description_sid": "The full dharani verse that closes the Prajñāpāramitāhṛdaya, carried in the Tang scholastic tradition as a protective condensation of the entire Perfection of Wisdom. Recited as a daily purification and as the seal placed on sutra-copying rites. The tadyathā opening marks it out as a dhāraṇī rather than a short recitative phrase."
+      "description_sid": "The verse that closes the Heart Sutra, here with the word tadyathā ('thus') that Sanskrit texts place before it; Xuanzang's Chinese omits that word. Tang commentators seem to have read the verse as a dhāraṇī."
     },
     "great-compassion-dharani": {
       "label_sid": "Great Compassion Dharani (Nīlakaṇṭha, opening excerpt)",
       "transliteration_sid": "namaḥ ratna-trayāya namas āryāvalokiteśvarāya bodhisattvāya mahāsattvāya mahākāruṇikāya sarva-bandhana-cchedana-karāya sarva-bhava-samudra-śoṣaṇa-karāya",
       "translation_sid": "Homage to the Triple Gem. Homage to the noble Avalokiteśvara, bodhisattva, great being, the greatly compassionate, who severs all bonds and dries up the ocean of becoming.",
-      "description_sid": "Opening excerpt of the Mahākāruṇikacitta Dhāraṇī (Nīlakaṇṭha), brought to Tang Chang'an by the Central Asian monk Bhagavaddharma in the mid-7th century and re-translated by Amoghavajra. Recited across Tang and later East Asian monasteries as a rite of compassion, healing, and protection; the full text runs to several hundred syllables, of which the first invocation is shown here."
+      "description_sid": "Opening excerpt of the Mahākāruṇikacitta Dhāraṇī (Nīlakaṇṭha), from a sutra credited to the West Indian monk Bhagavaddharma and translated around 650; a Dunhuang copy places the work at Khotan. The sutra promises relief from illness, long life, and the removal of obstacles. Only the opening invocation is shown here."
     },
     "usnijaya-dharani": {
       "label_sid": "Uṣṇīṣa Vijaya Dharani (opening excerpt)",
-      "transliteration_sid": "oṃ namo bhagavate uṣṇīṣāya vijayāya tathāgatāya tadyathā oṃ bhrūṃ bhrūṃ śodhaya śodhaya viśodhaya viśodhaya",
-      "translation_sid": "Om, homage to the Blessed One, the Uṣṇīṣa Vijaya Tathāgata. Thus: om, bhrūṃ, bhrūṃ — purify, purify, thoroughly purify, thoroughly purify.",
-      "description_sid": "Opening excerpt of the Uṣṇīṣavijayā Dhāraṇī Sūtra, translated into Chinese by Buddhapāli in 676 CE and central to the Tang rite the monk Śiwúwèi later performed at the Fóguāng Temple. Traditionally recited for the purification of karma, the removal of obstacles, and the lengthening of life; shown here as a representative opening passage of the longer full dhāraṇī."
+      "transliteration_sid": "oṃ namo bhagavate sarvatrailokyaprativiśiṣṭāya buddhāya te namaḥ tadyathā oṃ bhrūṃ bhrūṃ bhrūṃ śodhaya śodhaya viśodhaya viśodhaya",
+      "translation_sid": "Om, homage to the Blessed One, the Buddha most distinguished in all three worlds; homage to you. Thus: om, bhrūṃ, bhrūṃ, bhrūṃ — purify, purify, thoroughly purify, thoroughly purify.",
+      "description_sid": "Opening excerpt of the Uṣṇīṣavijayā Dhāraṇī Sūtra, in Buddhapāli's Chinese version (T 967, probably about 683 CE). The sutra promises purified karma, cleared obstacles, and longer life. In 766 an imperial order told monks and nuns across the empire to recite the dhāraṇī twenty-one times a day, and Tang dhāraṇī pillars were carved with its text."
     },
     "surangama-mantra": {
-      "label_sid": "Śūraṅgama Mantra (opening excerpt)",
-      "transliteration_sid": "namaḥ sitātapatre apāyajāmunī namaḥ sapta-samyak-saṃbuddha-koṭīnāṃ oṃ anale anale viśada viśada vajra-dhare bandha bandha hana hana vajra-vidhāraṇi phaṭ phaṭ svāhā",
-      "translation_sid": "Homage to the white-canopy queen, the unsurpassed. Homage to the seven perfectly awakened ones. Om: blaze, blaze, shine, shine, vajra-bearer, bind, bind, strike, strike, vajra-holder, phaṭ, phaṭ, so be it.",
-      "description_sid": "Opening invocation and first clauses of the Śūraṅgama Mantra from the Da foding shou Lengyan jing, the Chinese scripture translated by Pāramiti in 705 CE at the Shenzhou monastery. Revered in Tang Chan and esoteric schools as the most comprehensive protective dhāraṇī; the full text is several hundred syllables, of which the opening invocation is shown here."
+      "label_sid": "Śūraṅgama Mantra (an opening homage)",
+      "transliteration_sid": "namaḥ saptānāṃ samyak-saṃbuddha-koṭīnāṃ sa-śrāvaka-saṃghānāṃ",
+      "translation_sid": "Homage to the seven koṭis of perfectly awakened ones, with their communities of hearers.",
+      "description_sid": "One of the opening homages of the Śūraṅgama Mantra, from the Shoulengyan jing (T 945), traditionally credited to Pāramiti at Guangzhou in 705 CE. Many scholars think the sutra was composed in China. Chan writers took it up early; ritual chanting of the mantra is attested from the Song."
     },
     "rebirth-dharani": {
       "label_sid": "Rebirth Dharani (Wǎngshēng Zhòu)",
-      "transliteration_sid": "namo amitābhāya tathāgatāya tadyathā amṛtodbhave amṛtasaṃbhave amṛtagarbhe amṛtasiddhe amṛtavikrānte gagana-kīrticchare svāhā",
-      "translation_sid": "Homage to Amitābha Tathāgata. Thus: nectar-arisen, nectar-born, nectar-wombed, nectar-accomplished, nectar-striding, sky-fame-resounding, so be it.",
-      "description_sid": "The Rebirth Dharani (Wǎngshēng Zhòu) appended to the Amitābha Sūtra in the Chinese Pure Land canon. Recited ten times at the close of the evening rite, immediately after the Buddha-name recitation, to direct the recitation toward birth in the Pure Land of Sukhāvatī."
+      "transliteration_sid": "namo amitābhāya tathāgatāya tadyathā amṛtodbhave amṛtasaṃbhave amṛtavikrānte amṛtavikrānta-gāmine gagana-kīrtakare svāhā",
+      "translation_sid": "Homage to Amitābha Tathāgata. Thus: a run of epithets on amṛta, “nectar,” the deathless — so be it.",
+      "description_sid": "The Rebirth Dharani (Wǎngshēng Zhòu), credited to Guṇabhadra (T 368). In later Chinese Buddhist services it is usually chanted three times right after the Amitābha Sūtra, as a prayer for rebirth in Sukhāvatī."
     },
     "pure-land-dharani": {
       "label_sid": "Pure Land Dharani (Amitābha heart)",
-      "transliteration_sid": "oṃ ami deva hrīḥ",
-      "translation_sid": "Om, Amitābha, hrīḥ — the seed-syllable of boundless light and compassion.",
-      "description_sid": "The short heart-mantra of Amitābha, the Buddha of Boundless Light, employed in the esoteric Pure Land rites transmitted to Tang China by Śubhakarasiṃha and Amoghavajra. The seed-syllable hrīḥ seals the recitation, marking it as a wish for awakening in the Pure Land rather than a worldly petition."
+      "transliteration_sid": "oṃ lokeśvara-rāja hrīḥ",
+      "translation_sid": "Om, king of the lords of the world, hrīḥ — the seed-syllable of Amitābha.",
+      "description_sid": "A heart mantra of Amitāyus (Amitābha) from a Tang esoteric ritual manual for rebirth in Sukhāvatī, T 930, attributed to Amoghavajra. The same rite teaches a second mantra, “oṃ amṛta-teje hara hūṃ”."
     }
   },
   "sutra": {
     "heart": {
       "title_sid": "Heart Sutra",
       "transliterated_title_sid": "Prajñāpāramitāhṛdaya",
-      "translator_sid": "Translated by Xuanzang (玄奘)",
-      "translation_era_sid": "Tang dynasty, 649 CE",
-      "description_sid": "The shortest and most widely recited Prajñāpāramitā text. Xuanzang's translation is the form chanted today in East Asian temples.",
+      "translator_sid": "Attributed to Xuanzang (玄奘)",
+      "translation_era_sid": "Tang dynasty, traditionally 649 CE",
+      "description_sid": "A short Prajñāpāramitā text. The Chinese version attributed to Xuanzang (T 251) is the form chanted in East Asian temples.",
       "excerpt_sid": "Form is exactly emptiness, emptiness exactly form; sensation, concept, mental formation, and consciousness are also like this.",
-      "attribution_note_sid": "Excerpt from Xuanzang's Chinese translation (T 251), rendered into English. The sutra itself is anonymous in the Sanskrit manuscript tradition; Xuanzang's colophon dates his translation to 649 CE."
+      "attribution_note_sid": "Excerpt from the Chinese text attributed to Xuanzang (T 251), rendered into English. The traditional date, 649 CE, is first recorded in a Tang catalogue of 730; some modern scholars argue the sutra was composed in Chinese and later rendered into Sanskrit."
     },
     "diamond": {
       "title_sid": "Diamond Sutra",
       "transliterated_title_sid": "Vajracchedikā Prajñāpāramitā",
       "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
-      "translation_era_sid": "Later Qin, 403 CE",
-      "description_sid": "A foundational Prajñāpāramitā discourse on the diamond-like wisdom that cuts through all fixed views. The world's oldest dated printed book (868 CE, Dunhuang) is a copy of this sutra.",
-      "excerpt_sid": "All composed things are like a dream, an illusion, a drop of dew, a flashing lightning — thus should you view them.",
-      "attribution_note_sid": "Excerpt from Kumārajīva's Chinese translation (T 235), rendered into English. The Dunhuang printed copy (British Library Or.8210/P.2) is the earliest dated printed book with a colophon of 868 CE."
+      "translation_era_sid": "Later Qin, c. 401–402 CE",
+      "description_sid": "A foundational Prajñāpāramitā discourse on the diamond-like wisdom that cuts through all fixed views. A printed copy found at Dunhuang, made on 11 May 868 and now in the British Library, is the earliest complete dated printed book known.",
+      "excerpt_sid": "All composed things are like a dream, an illusion, a bubble, a shadow, like dew and like lightning — thus should you view them.",
+      "attribution_note_sid": "Excerpt from Kumārajīva's Chinese translation (T 235), rendered into English. The Dunhuang printed copy (British Library Or.8210/P.2) carries a colophon dated 868 CE."
     },
     "lotus": {
       "title_sid": "Lotus Sutra",
       "transliterated_title_sid": "Saddharmapuṇḍarīka",
       "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
       "translation_era_sid": "Later Qin, 406 CE",
-      "description_sid": "One of the most influential Mahāyāna sutras in East Asia. The universal-gate chapter (chapter 25) is the scriptural foundation for Avalokiteśvara / Guanyin devotion in Tang China.",
-      "excerpt_sid": "Should any living being hear this Law, even for a single moment, even a single thought, in that instant they will attain unexcelled, perfect awakening.",
-      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 262). The classical English phrasing follows the late-19th-century Bunyiu Nanjio translation (Bibliotheca Otaniensis, 1884), now in the public domain."
+      "description_sid": "One of the most influential Mahāyāna sutras in East Asia. Its universal-gate chapter (chapter 25) circulated on its own as the Guanyin Sutra and is a main scriptural source of Guanyin devotion in China.",
+      "excerpt_sid": "Come, my children; the house is burning with a mass of fire; come, lest ye be burnt in that mass of fire, and come to grief and disaster.",
+      "attribution_note_sid": "Excerpt from H. Kern's English translation (The Saddharma-Puṇḍarīka, Sacred Books of the East 21, Oxford, 1884, chapter 3), made from the Sanskrit and now in the public domain. The Chinese version is Kumārajīva's (T 262)."
     },
     "amitabha": {
       "title_sid": "Amitābha Sutra (Shorter Sukhāvatīvyūha)",
       "transliterated_title_sid": "Sukhāvatīvyūha (shorter)",
       "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
       "translation_era_sid": "Later Qin, 402 CE",
-      "description_sid": "The principal Pure Land scripture recited in evening services across Tang monasteries and continuing into modern East Asian practice. Describes the land of Sukhāvatī and the conditions for awakening there.",
+      "description_sid": "A principal Pure Land scripture. It describes the land of Sukhāvatī: its jewelled trees stirred by wind, and birds that voice the teaching.",
       "excerpt_sid": "In that land there is no hell, no animal-birth, no hungry-ghost realm; there are only the sounds of the dharma, of wind in jewel-trees, and of birds who speak the teaching.",
-      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 366). The classical English phrasing follows J.J.M. de Groot's 1892 Leiden translation, now in the public domain."
+      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 366, 402 CE). The English wording is the project's own; compare F. Max Müller's translation from the Sanskrit (Sacred Books of the East 49, Oxford, 1894)."
     },
     "medicine-buddha": {
       "title_sid": "Medicine Buddha Sutra",
       "transliterated_title_sid": "Bhaiṣajyaguru Sūtra",
       "translator_sid": "Translated by Xuanzang (玄奘)",
       "translation_era_sid": "Tang dynasty, 650 CE",
-      "description_sid": "The twelve great vows of Bhaiṣajyaguru establish a field of healing for body and mind. The closing dharani is captured above as the Medicine Buddha mantra.",
-      "excerpt_sid": "When living beings hear the name of the Medicine Buddha, they recite it and keep it in mind; all illness departs and all disturbance settles.",
-      "attribution_note_sid": "Paraphrase from Xuanzang's Chinese translation (T 451), rendered into English."
+      "description_sid": "The twelve great vows of Bhaiṣajyaguru promise healing for body and mind, and the sutra prescribes recitation, lamps, and banners for the sick. This version has no dhāraṇī; the Chinese mantra is in Yijing's later translation (T 451).",
+      "excerpt_sid": "The sutra promises that when living beings hear the name of the Medicine Buddha, recite it and keep it in mind, illness departs and disturbance settles.",
+      "attribution_note_sid": "Paraphrase from Xuanzang's Chinese translation (T 450), rendered into English."
     },
     "vimalakirti": {
       "title_sid": "Vimalakīrti Nirdeśa Sutra",
       "transliterated_title_sid": "Vimalakīrtinirdeśa",
       "translator_sid": "Translated by Kumārajīva (鳩摩羅什)",
       "translation_era_sid": "Later Qin, 406 CE",
-      "description_sid": "The layman Vimalakīrti's discourse on non-duality was a favorite among Tang literati-officials and Chan teachers, especially for its portrayal of a wise householder out-teaching the monastic elders.",
+      "description_sid": "The layman Vimalakīrti, a wealthy townsman who embodies the ideal lay believer, teaches non-duality to the visitors who come to ask after his illness. Kumārajīva's version was the most widely read in China. The Tang poet Wang Wei took the style name Mojie, which with his given name Wei spells Vimalakīrti, and the sutra mattered in Chan.",
       "excerpt_sid": "The Dharma-door of non-duality is entered when, ceasing to grasp at subject and object, one sees that all dualities are themselves empty of any independent nature.",
-      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 475). The classical English phrasing follows Charles Willemen's 1976 translation references; the phrasing here is the project's own paraphrase."
+      "attribution_note_sid": "Paraphrase from Kumārajīva's Chinese translation (T 475). English renderings from the Chinese include Burton Watson's (Columbia University Press, 1997) and John McRae's (BDK, 2004); the wording here is the project's own paraphrase."
     },
     "platform": {
       "title_sid": "Platform Sutra of the Sixth Patriarch",
       "transliterated_title_sid": "Liùzǔ Tánjīng (六祖壇經)",
-      "translator_sid": "Recorded by the disciple Fahai; later Tang recensions",
+      "translator_sid": "Recorded, the Dunhuang text says, by the disciple Fahai",
       "translation_era_sid": "c. 780 CE (Tang dynasty)",
-      "description_sid": "The only Chinese-language text canonized as a sutra in the East Asian Mahāyāna canon. Records the teachings and life of the Sixth Patriarch of Chan and articulates the doctrine of sudden awakening.",
+      "description_sid": "Alone among texts about Chinese Buddhist masters, it is called a sutra. It records the teachings of Huineng, Sixth Patriarch of Chan.",
       "excerpt_sid": "Bodhi is originally no tree; the bright mirror has no stand. Originally there is not a single thing — where could dust gather?",
-      "attribution_note_sid": "Excerpt from the verse exchange traditionally attributed to Huineng. The Dunhuang recension (c. 780 CE) is the earliest extant form; Philip Yampolsky's 1967 translation is the standard scholarly reference."
+      "attribution_note_sid": "Excerpt from the verse exchange attributed to Huineng, in the form found in later editions such as Zongbao's (1291, T 2008). The Dunhuang manuscript, the earliest known text (composed c. 780, copied in the ninth century), has “buddha-nature is always clean and pure” where this has “originally there is not a single thing”. Philip Yampolsky translated the Dunhuang text (Columbia University Press, 1967). The English here is the project's own."
     }
   },
   "chain_complete": {

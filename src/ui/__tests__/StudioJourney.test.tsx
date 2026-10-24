@@ -148,7 +148,7 @@ describe('guided discovery loop', () => {
         registries,
       }),
     );
-    expect(second.getByText('Growing toward Workshop')).toBeTruthy();
+    expect(second.getByText('Growing toward Guild')).toBeTruthy();
   });
   it('hides the next chapter when every tier is unlocked', () => {
     const base = emptyHydratedSession();

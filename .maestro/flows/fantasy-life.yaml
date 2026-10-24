@@ -2,7 +2,7 @@
 # Plan todo 30 (flow 2 of 6).
 #
 # Navigation reality: a fresh chain defaults to the Tang era (app/life/start.tsx
-# DEFAULT_ERA_ID). The Fantasy era ("Mahayana Fantasy", id fantasy-mahayana) is
+# DEFAULT_ERA_ID). The Fantasy era ("The Garden of Arrivals", id fantasy-mahayana) is
 # reachable ONLY through the bardo's "Choose your next life" picker
 # (BardoView.nextErasAfter). So this flow completes one Tang life first, then
 # begins the Fantasy life from the bardo. This matches the spec's intent

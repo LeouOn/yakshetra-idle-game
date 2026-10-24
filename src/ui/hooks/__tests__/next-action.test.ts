@@ -161,7 +161,7 @@ describe('nextAction', () => {
     });
     expect(nextAction(session, [{ scale: 'household' }], registries)).toEqual({
       sid: 'studio.next_gate_sid',
-      values: { name: 'Workshop', n: 2, m: 2 },
+      values: { name: 'Guild', n: 2, m: 2 },
     });
   });
 

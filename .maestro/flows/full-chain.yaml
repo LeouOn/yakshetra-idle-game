@@ -36,7 +36,7 @@ tags:
 - assertVisible: "New chain"
 - tapOn: "New chain"
 - assertVisible: "A new life begins"
-- assertVisible: "Tang Dynasty Chang'an"
+- assertVisible: "Late Tang Chang.an"
 - tapOn:
     id: "life-start-role-peasant"
 - runFlow:

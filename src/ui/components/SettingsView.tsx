@@ -328,12 +328,26 @@ interface SlotRowProps {
   readonly onDelete: (slot: number) => void;
 }
 
+/**
+ * `created_at_unix` is stamped once, when the chain is started, and carried
+ * through every later save, so the row says when the chain was begun, not when
+ * it was last played. It is the device's own clock, advisory only: a stamp that
+ * is not a usable date reads as undated rather than as 1970.
+ */
+function slotBegunText(createdAtUnix: number): string {
+  const when = new Date(createdAtUnix * 1000);
+  if (!Number.isFinite(createdAtUnix) || createdAtUnix <= 0 || Number.isNaN(when.getTime())) {
+    return resolveSid('settings.slot_meta_undated_sid');
+  }
+  return formatSid('settings.slot_meta_sid', {
+    date: when.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
+  });
+}
+
 function SlotRow({ summary, onExport, onImport, onDelete }: SlotRowProps) {
   const { slot, blob } = summary;
   const meta =
-    blob === null
-      ? resolveSid('settings.slot_empty_sid')
-      : formatSid('settings.slot_meta_sid', { unix: blob.created_at_unix });
+    blob === null ? resolveSid('settings.slot_empty_sid') : slotBegunText(blob.created_at_unix);
 
   return (
     <View style={styles.slotRow} testID={`settings-slot-${slot}`}>

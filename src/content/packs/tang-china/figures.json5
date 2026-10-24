@@ -230,19 +230,21 @@
     },
 
     // ──────────────────────────────────────────────────────────────────────
-    // 13–35. The Buddhas of the past (Bhadrakalpa lineage).
+    // 13–35. The Buddhas of the past (ids keep the legacy name `bhadrakalpa-N`).
     //
-    // A representative subset of the Buddhas of the auspicious aeon
-    // (Bhadrakalpa), enumerated in the Buddhavaṃsa and invoked by name in
-    // the East Asian confession liturgies (the "Buddhas of the past" used to
-    // purify broken precept and karmic obstruction). These are tradition-
-    // inspired figure references: descriptive of iconographic type and
-    // devotional role, never doctrinal claims or fabricated sayings. The
-    // shared iconographic form of an awakened teacher (seated, monastic robe,
-    // ushṇīṣa) is varied here by each teacher's place in the lineage and the
-    // meaning of their recorded name. Śākyamuni (Gotama), the final teacher
-    // of this aeon, already appears above as `figure:shakyamuni` and is
-    // therefore not repeated in this sequence.
+    // Twenty-three of the twenty-four Buddhas that the Pali Buddhavaṃsa counts
+    // before Gotama. Dīpaṅkara, the first, is not included, so the number N
+    // here is the Buddhavaṃsa's ordinal minus one. Only the last three
+    // (Kakusandha, Koṇāgamana, Kassapa) belong to the present aeon, the
+    // bhaddakappa; the other twenty lived in earlier aeons, so the legacy id
+    // is a misnomer. The prose is limited to what the Buddhavaṃsa gives
+    // (ordinal, tree of awakening, which aeon, with whom) and to dictionary
+    // glosses of a name. No liturgical or devotional claim is made; East Asian
+    // repentance rites chant their own lists of Buddha names (such as the
+    // Seven Buddhas of the past). Śākyamuni (Gotama) already appears above
+    // as `figure:shakyamuni` and is not repeated here.
+    // NOTE: these entries cite `sutra:bhadrakalpa`, which sutras.json5 does
+    // not define; nothing resolves that id today.
     // ──────────────────────────────────────────────────────────────────────
     {
       id: 'figure:bhadrakalpa-1',

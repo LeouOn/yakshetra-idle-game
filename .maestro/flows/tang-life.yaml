@@ -43,7 +43,7 @@ tags:
 # station card's testID is life-start-role-peasant; its visible title is
 # "Farmer".
 - assertVisible: "A new life begins"
-- assertVisible: "Tang Dynasty Chang'an"
+- assertVisible: "Late Tang Chang.an"
 - assertVisible: "Choose your station"
 - tapOn:
     id: "life-start-role-peasant"

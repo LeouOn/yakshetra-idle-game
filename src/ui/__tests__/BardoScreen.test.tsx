@@ -81,8 +81,8 @@ describe('BardoView', () => {
     });
     // Header heading.
     expect(() => getByTextContent('Your life has ended')).not.toThrow();
-    // Subheading resolves era.tang-china.name_sid ("Tang Dynasty Chang'an").
-    expect(() => getByTextContent('Tang Dynasty Chang')).not.toThrow();
+    // Subheading resolves era.tang-china.name_sid ("Late Tang Chang’an").
+    expect(() => getByTextContent('Late Tang Chang')).not.toThrow();
   });
 
   it('falls back to the generic header when the previous era is unknown', () => {
@@ -102,11 +102,36 @@ describe('BardoView', () => {
     // Tendency summary references the resolved intent-root label.
     expect(() => getByTextContent('tendency toward aversion')).not.toThrow();
     // Vow summary reflects the parsed broken state.
-    expect(() => getByTextContent('vow of silence was broken')).not.toThrow();
+    expect(() => getByTextContent('vow “silence” was broken')).not.toThrow();
     // Attachment summary references the subject.
     expect(() => getByTextContent('attachment to daughter')).not.toThrow();
     // Pattern-break summary.
     expect(() => getByTextContent('pattern broke open')).not.toThrow();
+  });
+
+  it('prints the content ids behind a vow and an attachment as words, not as raw keys', () => {
+    // The Garden's only vow is `vow:protect-family`; its only attachment is
+    // `attachment:memory`. A hyphenated id (here a stand-in subject) must not reach the sentence.
+    const { getByTextContent } = renderBardo({
+      echoes: [
+        echo({
+          type: 'vow',
+          key: 'protect-family',
+          weight: 0.5,
+          narrative_sid: 'echo:vow:protect-family:kept',
+        }),
+        echo({
+          type: 'unresolved_attachment',
+          key: 'old-house',
+          weight: -0.4,
+          narrative_sid: 'echo:attachment:old-house',
+        }),
+      ],
+    });
+    expect(() => getByTextContent('The vow “protect family” was kept.')).not.toThrow();
+    expect(() => getByTextContent('attachment to old house lingered')).not.toThrow();
+    expect(() => getByTextContent('protect-family')).toThrow();
+    expect(() => getByTextContent('old-house')).toThrow();
   });
 
   it('shows the graceful "no echoes" message when the life produced none', () => {

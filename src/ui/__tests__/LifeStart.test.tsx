@@ -140,7 +140,7 @@ describe('LifeStartScreen', () => {
 
     // Heading + era name resolved from pack.name_sid.
     expect(() => getByText('A new life begins')).not.toThrow();
-    expect(() => getByText('Tang Dynasty Chang\u2019an')).not.toThrow();
+    expect(() => getByText('Late Tang Chang\u2019an')).not.toThrow();
 
     // Lineage notes resolved from pack.lineage_notes_sid (substring match).
     expect(() => getByTextContent('cosmopolitan capital at the eastern end')).not.toThrow();
