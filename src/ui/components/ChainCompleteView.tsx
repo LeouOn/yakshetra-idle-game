@@ -41,6 +41,10 @@ export interface ChainSummary {
 export interface ChainCompleteViewProps extends ChainSummary {
   /** Fired when the player begins a new chain; the route clears the slot. */
   readonly onBeginNewChain: () => void;
+  /** True while the slot could not be READ: beginning a new chain would
+   * delete bytes the player never got to see. The route also guards the
+   * action; this is the perceivable state. */
+  readonly beginDisabled?: boolean;
 }
 
 /**
@@ -108,6 +112,7 @@ export default function ChainCompleteView({
   keeps,
   draftScales,
   onBeginNewChain,
+  beginDisabled = false,
 }: ChainCompleteViewProps) {
   const summary: ChainSummary = { lives, echoes, keeps, draftScales };
   return (
@@ -210,7 +215,8 @@ export default function ChainCompleteView({
         testID="chain-begin-new"
         accessibilityRole="button"
         accessibilityLabel={resolveSid('chain_complete.begin_new_chain_label_sid')}
-        style={styles.button}
+        disabled={beginDisabled}
+        style={[styles.button, beginDisabled ? styles.buttonDisabled : null]}
         onPress={onBeginNewChain}
       >
         <Text style={styles.buttonText}>
@@ -236,5 +242,6 @@ const styles = StyleSheet.create({
     backgroundColor: t.accentDeep,
     alignItems: 'center',
   },
+  buttonDisabled: { opacity: 0.4 },
   buttonText: { color: t.text, fontSize: 15, fontWeight: '600' },
 });

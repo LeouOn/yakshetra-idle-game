@@ -42,6 +42,12 @@ export default function ChainCompleteScreen() {
     return <ScreenSkeleton sections={3} testID="chain-complete-skeleton" />;
   }
 
+  // A load failure means the bytes exist but we could not read them: the
+  // screen has nothing to close, and the one action would delete the only
+  // copy. Block it until a retry reads the slot; the bar's Try again is the
+  // enabled path out. A DELETE failure keeps the action live for a retry.
+  const beginBlocked = error?.operation === 'load';
+
   return (
     <View style={styles.flex}>
       {error === null ? null : (
@@ -53,7 +59,13 @@ export default function ChainCompleteScreen() {
       )}
       <ChainCompleteView
         {...describeChain(state, session)}
+        beginDisabled={beginBlocked}
         onBeginNewChain={() => {
+          // The disabled control is the perceivable guard; this is the real
+          // one, so a programmatic press cannot destroy unreadable bytes.
+          if (beginBlocked) {
+            return;
+          }
           // Only leave once the slot is actually gone; a refused delete keeps
           // the player here with the bar explaining why.
           void deleteSlot(1).then((deleted) => {

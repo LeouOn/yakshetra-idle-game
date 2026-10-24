@@ -114,12 +114,58 @@ describe('save-error bar on the remaining slot routes', { timeout: 90_000 }, () 
     expect(() => ui.getByTestID('save-error-retry')).not.toThrow();
   });
 
+  it('chain-complete: an unreadable slot disables Begin and never deletes it', async () => {
+    adapter.load.mockRejectedValue(new Error('storage broke'));
+    const ChainScreen = (await import('../../../app/chain-complete')).default;
+    const ui = render(createElement(ChainScreen));
+    await waitForTestID(ui, 'chain-begin-new');
+    expect(ui.getByTestID('chain-begin-new').props.disabled).toBe(true);
+    // The shim's press calls the handler directly (it does not emulate the
+    // platform's disabled gate), so this also proves the route's own guard.
+    ui.press(ui.getByTestID('chain-begin-new'));
+    expect(adapter.deleteSlot).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
+  });
+
+  it('chain-complete: Try again after a failed load re-enables Begin', async () => {
+    adapter.load.mockReset().mockRejectedValueOnce(new Error('storage broke'));
+    adapter.load.mockResolvedValue(blob());
+    const ChainScreen = (await import('../../../app/chain-complete')).default;
+    const ui = render(createElement(ChainScreen));
+    await waitForTestID(ui, 'save-error-retry');
+    expect(ui.getByTestID('chain-begin-new').props.disabled).toBe(true);
+    ui.press(ui.getByTestID('save-error-retry'));
+    await waitFor('Begin to be enabled after a successful retry', () => {
+      try {
+        return ui.getByTestID('chain-begin-new').props.disabled !== true;
+      } catch {
+        return false;
+      }
+    });
+    expect(() => ui.getByTestID('save-error-bar')).toThrow();
+  });
+
+  it('chain-complete: a readable slot keeps Begin enabled, deletes, and navigates', async () => {
+    adapter.load.mockResolvedValue(blob());
+    const ChainScreen = (await import('../../../app/chain-complete')).default;
+    const ui = render(createElement(ChainScreen));
+    await waitForTestID(ui, 'chain-begin-new');
+    expect(ui.getByTestID('chain-begin-new').props.disabled).not.toBe(true);
+    ui.press(ui.getByTestID('chain-begin-new'));
+    await waitFor(
+      'navigation after a successful delete',
+      () => router.replace.mock.calls.length > 0,
+    );
+    expect(adapter.deleteSlot).toHaveBeenCalledWith(1);
+  });
+
   it('chain-complete: a refused delete paints the bar and does not navigate', async () => {
     adapter.load.mockResolvedValue(blob());
     adapter.deleteSlot.mockRejectedValue(new Error('quota'));
     const ChainScreen = (await import('../../../app/chain-complete')).default;
     const ui = render(createElement(ChainScreen));
     await waitForTestID(ui, 'chain-begin-new');
+    expect(ui.getByTestID('chain-begin-new').props.disabled).not.toBe(true);
     ui.press(ui.getByTestID('chain-begin-new'));
     await waitForTestID(ui, 'save-error-bar');
     expect(adapter.deleteSlot).toHaveBeenCalledWith(1);
