@@ -109,6 +109,10 @@ export const StudioSessionSchema = z
     practices: z.array(PracticeSliceSchema),
     members: z.record(z.string(), MemberSliceSchema).default(() => ({})),
     world_drafts: z.array(WorldDraftReferenceSchema).default(() => []),
+    // The pack the bench runs (a registry era id), written from the campaign life's era.
+    // Optional with NO parse default: sessions saved before the era-aware bench carry none,
+    // and the engine never names a pack id, so the UI layer supplies its default.
+    bench_era: z.string().min(1).optional(),
     last_visited_at_unix: z.number().finite().optional(),
   })
   .strict();
@@ -125,6 +129,7 @@ export function snapshotStudioSession(
   extras?: {
     members?: Record<string, z.infer<typeof MemberSliceSchema>>;
     world_drafts?: readonly z.infer<typeof WorldDraftReferenceSchema>[];
+    bench_era?: string;
   },
 ): StudioSession {
   const members = extras?.members ?? {};
@@ -161,6 +166,7 @@ export function snapshotStudioSession(
     })),
     members,
     world_drafts,
+    ...(extras?.bench_era === undefined ? {} : { bench_era: extras.bench_era }),
     ...(visited === undefined ? {} : { last_visited_at_unix: visited }),
   });
 }

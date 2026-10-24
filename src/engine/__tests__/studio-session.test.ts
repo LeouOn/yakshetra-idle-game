@@ -116,3 +116,34 @@ describe('studio session snapshot', () => {
     expect(() => parseStudioSession({ ...snap, last_visited_at_unix: Number.NaN })).toThrow();
   });
 });
+
+describe('studio session bench_era', () => {
+  it('a session saved before the era-aware bench parses unchanged and gains no era', () => {
+    const snap = snapshotStudioSession(createStudioState(), createIdleState(), makeLife(), []);
+    expect('bench_era' in snap).toBe(false);
+    const raw: unknown = JSON.parse(JSON.stringify(snap));
+    const parsed = parseStudioSession(raw);
+    expect('bench_era' in parsed).toBe(false);
+    expect(parsed).toEqual(snap);
+  });
+
+  it('writes the era it is given and keeps it through a parse', () => {
+    const snap = snapshotStudioSession(
+      createStudioState(),
+      createIdleState(),
+      makeLife(),
+      [],
+      undefined,
+      undefined,
+      { bench_era: 'fantasy-mahayana' },
+    );
+    expect(snap.bench_era).toBe('fantasy-mahayana');
+    expect(parseStudioSession(JSON.parse(JSON.stringify(snap))).bench_era).toBe('fantasy-mahayana');
+  });
+
+  it('rejects an empty or non-string era', () => {
+    const snap = snapshotStudioSession(createStudioState(), createIdleState(), makeLife(), []);
+    expect(() => parseStudioSession({ ...snap, bench_era: '' })).toThrow();
+    expect(() => parseStudioSession({ ...snap, bench_era: 7 })).toThrow();
+  });
+});

@@ -163,3 +163,63 @@ describe('play-bridge bench-field carry (wave-1 review #1)', () => {
     }
   });
 });
+
+describe('play-bridge bench_era (the bench follows the campaign life era)', () => {
+  it('writes the era even with no new residue to import', async () => {
+    const kv = createMemoryStudioKv();
+    await syncPlayResidueToStudio('life-a', [], kv, 'fantasy-mahayana');
+    expect((await loadStudioSession(kv))?.bench_era).toBe('fantasy-mahayana');
+  });
+
+  it('stamps the era on a session saved before the field existed, with nothing new to import', async () => {
+    const kv = createMemoryStudioKv();
+    await syncPlayResidueToStudio('life-a', [], kv); // an old session: this life, no era recorded
+    expect((await loadStudioSession(kv))?.bench_era).toBeUndefined();
+    await syncPlayResidueToStudio('life-a', [], kv, 'fantasy-mahayana'); // same life, cursor current
+    expect((await loadStudioSession(kv))?.bench_era).toBe('fantasy-mahayana');
+  });
+
+  it('follows a change of era, and keeps the last era when none is given', async () => {
+    const kv = createMemoryStudioKv();
+    await syncPlayResidueToStudio('life-a', [], kv, 'fantasy-mahayana');
+    await syncPlayResidueToStudio('life-b', [], kv, 'tang-china');
+    expect((await loadStudioSession(kv))?.bench_era).toBe('tang-china');
+    await syncPlayResidueToStudio('life-b', [], kv);
+    expect((await loadStudioSession(kv))?.bench_era).toBe('tang-china');
+  });
+
+  it('keeps the era through a sync that imports residue', async () => {
+    const kv = createMemoryStudioKv();
+    await syncPlayResidueToStudio('life-a', [], kv, 'fantasy-mahayana');
+    const life = applyChoice(intendLens(makeLife('life-a'), 'generosity'), CHOICE, createRng(1n));
+    await syncPlayResidueToStudio('life-a', residueLog(life), kv, 'fantasy-mahayana');
+    const saved = await loadStudioSession(kv);
+    expect(saved?.bench_era).toBe('fantasy-mahayana');
+    expect(saved?.benches['person']?.residue.length).toBeGreaterThan(0);
+  });
+
+  it('writes nothing when neither the residue nor the era changed', async () => {
+    const base = createMemoryStudioKv();
+    let writes = 0;
+    const kv = {
+      get: base.get,
+      del: base.del,
+      set: async (key: string, value: string): Promise<void> => {
+        writes += 1;
+        await base.set(key, value);
+      },
+    };
+    await syncPlayResidueToStudio('life-a', [], kv, 'tang-china');
+    const after = writes;
+    await syncPlayResidueToStudio('life-a', [], kv, 'tang-china');
+    expect(writes).toBe(after);
+  });
+
+  it('records no era for a life that has none (the session itself is created as before)', async () => {
+    const kv = createMemoryStudioKv();
+    await syncPlayResidueToStudio('life-a', [], kv);
+    const saved = await loadStudioSession(kv);
+    expect(saved).not.toBeNull();
+    expect(saved?.bench_era).toBeUndefined();
+  });
+});

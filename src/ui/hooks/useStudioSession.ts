@@ -171,6 +171,8 @@ export interface BenchSlices {
   readonly members: Record<string, MemberSlice>;
   readonly worldDrafts: readonly WorldDraftReference[];
   readonly benches: Readonly<Record<string, BenchState>>;
+  /** The era the bench runs, carried so a re-snapshot never resets what the bridge wrote. */
+  readonly benchEra?: string | undefined;
 }
 
 export function sessionFromSlices(slices: BenchSlices, lastVisitedAtUnix?: number): StudioSession {
@@ -181,7 +183,11 @@ export function sessionFromSlices(slices: BenchSlices, lastVisitedAtUnix?: numbe
     slices.practices,
     lastVisitedAtUnix,
     slices.progression,
-    { members: slices.members, world_drafts: slices.worldDrafts },
+    {
+      members: slices.members,
+      world_drafts: slices.worldDrafts,
+      ...(slices.benchEra === undefined ? {} : { bench_era: slices.benchEra }),
+    },
   );
   const ids = Object.keys(slices.benches);
   if (ids.length === 0) {
@@ -238,6 +244,8 @@ export interface UseStudioSessionArgs {
   readonly initialStudio?: StudioState;
   /** Full session to open the bench from (tests, embeds); overrides the piecemeal initials. */
   readonly initialSession?: StudioSession;
+  /** The era the bench life carries (a real pack id). Absent: the era-neutral stand-in token. */
+  readonly benchEra?: string;
   readonly rng?: Rng;
   /** When true, load/save the bench through {@link storage}. */
   readonly persist: boolean;
@@ -275,10 +283,11 @@ export interface UseStudioSessionResult {
   readonly adoptSteppedSession: (next: StudioSession) => void;
 }
 
-function defaultLife(): LifeState {
+function defaultLife(era?: string): LifeState {
   return createLifeState({
     id: 'studio-bench' as LifeState['id'],
-    era: 'studio-bench@0.1.0' as LifeState['era'],
+    // A real era id lets `eraFamilyOf` resolve, so harvests follow the era; the token does not.
+    era: (era ?? 'studio-bench@0.1.0') as LifeState['era'],
     role: 'operator' as LifeState['role'],
     identity: {
       gender: 'unspecified',
@@ -299,6 +308,7 @@ export function useStudioSession({
   initialIdle,
   initialStudio,
   initialSession,
+  benchEra: benchEraArg,
   rng,
   persist,
   storage,
@@ -309,10 +319,14 @@ export function useStudioSession({
   const [bootstrap] = useState(() =>
     initialSession === undefined
       ? null
-      : hydrateStudioSession(initialSession, initialLife ?? defaultLife(), practices),
+      : hydrateStudioSession(initialSession, initialLife ?? defaultLife(benchEraArg), practices),
   );
   const [life, setLife] = useState<LifeState>(
-    () => bootstrap?.life ?? initialLife ?? defaultLife(),
+    () => bootstrap?.life ?? initialLife ?? defaultLife(benchEraArg),
+  );
+  // What the session records as the bench's era: the argument, else what the saved session holds.
+  const [benchEra, setBenchEra] = useState<string | undefined>(
+    () => benchEraArg ?? initialSession?.bench_era,
   );
   const [idle, setIdle] = useState<IdleState>(
     () => bootstrap?.idle ?? initialIdle ?? createIdleState(),
@@ -349,6 +363,7 @@ export function useStudioSession({
     members,
     worldDrafts,
     benches,
+    benchEra,
   });
 
   useEffect(() => {
@@ -361,8 +376,9 @@ export function useStudioSession({
       members,
       worldDrafts,
       benches,
+      benchEra,
     };
-  }, [studio, idle, life, runtimePractices, progression, members, worldDrafts, benches]);
+  }, [studio, idle, life, runtimePractices, progression, members, worldDrafts, benches, benchEra]);
 
   const stepCtxRef = useRef<SessionStepContext | null>(null);
 
@@ -431,9 +447,10 @@ export function useStudioSession({
         const next = caught.session;
         const hydrated = hydrateStudioSession(
           next,
-          initialLife ?? defaultLife(),
+          initialLife ?? defaultLife(benchEraArg),
           packPracticesRef.current,
         );
+        setBenchEra((current) => current ?? session.bench_era);
         setLife(hydrated.life);
         setIdle(hydrated.idle);
         setStudio(hydrated.studio);
@@ -478,6 +495,7 @@ export function useStudioSession({
         members,
         worldDrafts,
         benches,
+        benchEra,
       },
       lastVisitedAtUnix,
     );
@@ -504,6 +522,7 @@ export function useStudioSession({
     members,
     worldDrafts,
     benches,
+    benchEra,
   ]);
 
   /** Drive the person-bench slices, members, tier benches, and visitor

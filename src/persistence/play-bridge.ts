@@ -13,12 +13,19 @@ import { loadStudioSession, saveStudioSession, type StudioKv } from './studio-kv
 
 /**
  * Import new play residue into the bench session.
- * Creates a session if none exists. No-op when the cursor is already current.
+ * Creates a session if none exists. No-op when the cursor is already current and the era is
+ * unchanged.
+ *
+ * `era` is the campaign life's era when it is a real pack id (the caller filters build-internal
+ * tokens): the bench follows the era the player is living in. It is written even when there is
+ * no new residue, so a player who starts a Garden life and opens the bench at once gets the
+ * Garden bench. Absent, the session keeps its last value.
  */
 export async function syncPlayResidueToStudio(
   lifeId: string,
   lifeLog: readonly ResidueEvent[],
   kv?: StudioKv,
+  era?: string,
 ): Promise<StudioState> {
   const existing = await loadStudioSession(kv);
   const empty = emptyHydratedSession();
@@ -42,7 +49,8 @@ export async function syncPlayResidueToStudio(
           cook_choices: bench.cook_choices,
         };
   const next = importPlayResidue(studio, lifeId, lifeLog);
-  if (next === studio) {
+  const eraChanged = era !== undefined && base.bench_era !== era;
+  if (next === studio && !eraChanged) {
     return next;
   }
   // Spread the EXISTING bench and override only the imported fields, so a
@@ -53,6 +61,7 @@ export async function syncPlayResidueToStudio(
   const person = base.benches['person'];
   const saved = parseStudioSession({
     ...base,
+    ...(era === undefined ? {} : { bench_era: era }),
     benches: {
       ...base.benches,
       ...(person === undefined
