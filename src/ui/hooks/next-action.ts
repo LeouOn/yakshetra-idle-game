@@ -25,6 +25,7 @@ import {
   computeArchiveStats,
   computeGlobalRewards,
   endowableSlots,
+  isPinnableKind,
   windowSince,
   type ArchivePredicateLike,
   type ArchiveStats,
@@ -280,13 +281,29 @@ export function nextAction(
     };
   }
 
-  // (e) An empty endowment slot can spend an archive card.
-  const endow = endowableTier(session, registries);
+  // (e) An empty endowment slot can spend an archive card — but not while
+  // the player is holding a card the bench cannot SET. The reveal stage
+  // only pins person and place cards (`isPinnableKind`), so right after an
+  // unpinnable harvest (outcome, thing, change) this advice would name an
+  // action the card in the player's hands cannot take (browser walk, item
+  // 1: "Next: Set a keepsake" over an Outcome with no pin button). Skip it
+  // and let the fallback below point onward instead.
+  const latestCard = session.archive[session.archive.length - 1];
+  const latestIsPinnable = latestCard !== undefined && isPinnableKind(latestCard.kind);
+  const endow = latestIsPinnable ? endowableTier(session, registries) : null;
   if (endow !== null) {
     return {
       sid: 'studio.next_endow_sid',
       values: { tier: resolveSid(`studio.tier_${endow.tierId}_sid`) },
     };
+  }
+
+  // (f) Nothing the bench can prompt for, and the last card is not one the
+  // bench can set: say what IS next instead of staying mute — back to the
+  // life, or another working. (Renders only in this state; a pinnable
+  // latest card keeps the old silent steady state.)
+  if (latestCard !== undefined && !latestIsPinnable) {
+    return { sid: 'studio.next_kept_sid' };
   }
 
   return null;

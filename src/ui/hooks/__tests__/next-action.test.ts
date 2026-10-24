@@ -223,6 +223,40 @@ describe('nextAction', () => {
     });
   });
 
+  it('rule e holds its tongue when the LATEST card is not pinnable (walk item 1)', () => {
+    // An outcome harvest suppresses the endow nudge: the reveal stage has
+    // no pin button for it, and "Set a keepsake" over a card the bench
+    // cannot set reads as a broken instruction.
+    const session = makeSession({
+      archive: [{ ...personCard('c-1'), kind: 'outcome' }],
+      tiers: { person: createTierState('person', true) },
+    });
+    expect(nextAction(session, [], registries)).not.toEqual(
+      expect.objectContaining({ sid: 'studio.next_endow_sid' }),
+    );
+  });
+
+  it('rule f: an unpinnable latest card with nothing else pending points onward', () => {
+    const session = makeSession({
+      archive: [{ ...personCard('c-1'), kind: 'outcome' }],
+      tiers: { person: createTierState('person', true) },
+    });
+    expect(nextAction(session, [], registries)).toEqual({ sid: 'studio.next_kept_sid' });
+  });
+
+  it('a pinnable latest card keeps the silent steady state (no fallback banner)', () => {
+    const session = makeSession({
+      archive: [personCard('c-1')],
+      tiers: {
+        person: {
+          ...createTierState('person', true),
+          endowed: ['endow/person/swift-cook', 'endow/person/deep-window'],
+        },
+      },
+    });
+    expect(nextAction(session, [], registries)).toBeNull();
+  });
+
   it('rule e: stays silent when the archive is empty', () => {
     const session = makeSession({
       tiers: { person: createTierState('person', true) },

@@ -196,18 +196,20 @@ describe('StudioView six-tier ladder (Phase 4 Task 4)', () => {
       ).not.toThrow();
     }
 
-    // The next locked rung — city — is shown with the locked mask and its
+    // The next locked rung — city — is shown NAMED (dimmed) with its
     // progress badge (1 of 2 archived cards of its gate, since the
     // city-graduated session holds zero archived cards yet).
     expect(() => getByTestID('studio-rail-tier-city')).not.toThrow();
-    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('studio.tier_city_sid'))).not.toThrow();
     expect(() =>
       getByText(formatSid('studio.tier_progress_badge_sid', { n: 0, m: 1 })),
     ).not.toThrow();
 
-    // The deeper rung — region — stays masked by the disclosure loop
-    // (the rail breaks at the first locked rung).
-    expect(queryByText(resolveSid('studio.tier_region_sid'))).toBeNull();
+    // The locked rung itself — region — shows its name too (that is the
+    // point: the rail names what is being worked toward). The tier PAST the
+    // break — nation — is the one that stays undisclosed.
+    expect(() => getByText(resolveSid('studio.tier_region_sid'))).not.toThrow();
+    expect(queryByText(resolveSid('studio.tier_nation_sid'))).toBeNull();
   });
 
   it('renders six rail rows when the first six tiers are unlocked (nation masked)', () => {
@@ -227,19 +229,20 @@ describe('StudioView six-tier ladder (Phase 4 Task 4)', () => {
       ).not.toThrow();
     }
 
-    // Nation stays masked by the disclosure loop (the rail breaks at the
-    // first locked rung — nation).
-    expect(queryByText(resolveSid('studio.tier_nation_sid'))).toBeNull();
+    // Nation, the locked rung, shows its NAME dimmed (the disclosure loop
+    // still breaks here — only the tier past it stays hidden).
+    expect(() => getByText(resolveSid('studio.tier_nation_sid'))).not.toThrow();
+    expect(queryByText(resolveSid('studio.tier_world_sid'))).toBeNull();
   });
 
   it('shows the nation locked badge once region is unlocked and keeps world masked', () => {
     const { getByTestID, getByText, queryByText } = renderStudio(graduateToRegion());
 
-    // The next locked rung — nation — is shown with the locked mask and its
+    // The next locked rung — nation — is shown NAMED (dimmed) with its
     // progress badge (0 of 1 archived legends of its gate, since the
     // region-graduated session holds zero archived cards and drafts yet).
     expect(() => getByTestID('studio-rail-tier-nation')).not.toThrow();
-    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('studio.tier_nation_sid'))).not.toThrow();
     expect(() =>
       getByText(formatSid('studio.tier_progress_badge_sid', { n: 0, m: 1 })),
     ).not.toThrow();

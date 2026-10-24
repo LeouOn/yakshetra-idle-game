@@ -276,6 +276,30 @@ describe('StudioView', () => {
     expect(gridTexts()).toContain(personCard.name);
   });
 
+  it('puts the earned archive above the Sought riddles (walk item 3)', () => {
+    const thingCard = tableFillManifest(THING_WINDOW, null, 0, createRng(41n), '41', 'm-thing');
+    const studio: StudioState = { ...createStudioState(), archive: [thingCard] };
+
+    const { container } = render(
+      createElement(StudioView, {
+        practices: [makePractice()],
+        schedule: ALL_DAY,
+        initialStudio: studio,
+      }),
+    );
+
+    // Document order: the player's own keepsake must come BEFORE the locked
+    // mysteries, or a first harvest scrolls past what they just made.
+    const order: string[] = [];
+    container.queryAll((n) => {
+      const id = String(n.props.testID ?? '');
+      if (id.startsWith('manifest-') && !order.includes('ARCHIVE')) order.push('ARCHIVE');
+      if (id === 'studio-sought') order.push('SOUGHT');
+      return false;
+    });
+    expect(order).toEqual(['ARCHIVE', 'SOUGHT']);
+  });
+
   it('adds the freshly harvested card to the document with a flourish border', () => {
     let studio: StudioState = recordStudioResidues(createStudioState(), THING_WINDOW);
     studio = queueDevelop(studio, null, createRng(51n));
@@ -448,7 +472,8 @@ describe('StudioView', () => {
     expect(() => getByTestID('studio-rail')).not.toThrow();
     expect(() => getByTestID('studio-rail-tier-person')).not.toThrow();
     expect(() => getByTestID('studio-rail-tier-household')).not.toThrow();
-    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
+    // The locked rung shows its real name dimmed, not a bare "Locked".
+    expect(() => getByText(resolveSid('studio.tier_household_sid'))).not.toThrow();
     expect(() =>
       getByText(formatSid('studio.tier_progress_badge_sid', { n: 2, m: 3 })),
     ).not.toThrow();

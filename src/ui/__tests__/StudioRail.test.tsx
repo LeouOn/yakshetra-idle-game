@@ -39,14 +39,25 @@ describe('StudioRail', () => {
     expect(() => getByText(formatSid('studio.tier_ready_badge_sid', { n: 1 }))).not.toThrow();
   });
 
-  it('masks a locked tier and shows its progress toward unlocking', () => {
-    const { getByText, queryByText } = render(createElement(StudioRail, { tiers: TIERS }));
+  it('names the locked rung and shows its progress toward unlocking (walk item 4)', () => {
+    const { getByText, queryByText, getByTestID } = render(
+      createElement(StudioRail, { tiers: TIERS }),
+    );
 
-    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
-    expect(queryByText(resolveSid('studio.tier_household_sid'))).toBeNull();
+    // The locked rung shows the tier the player is working TOWARD, not a
+    // bare "Locked": the real name, dimmed, plus how far there is to go.
+    expect(() => getByText(resolveSid('studio.tier_household_sid'))).not.toThrow();
     expect(() =>
       getByText(formatSid('studio.tier_progress_badge_sid', { n: 2, m: 3 })),
     ).not.toThrow();
+    // "Locked" is no longer rendered as text; screen readers hear it as the
+    // locked row's label instead.
+    expect(queryByText(resolveSid('studio.tier_locked_sid'))).toBeNull();
+    const lockedRow = getByTestID('studio-rail-tier-household');
+    expect(String(lockedRow.props.accessibilityLabel ?? '')).toContain('Locked');
+    expect(String(lockedRow.props.accessibilityLabel ?? '')).toContain(
+      resolveSid('studio.tier_household_sid'),
+    );
   });
 
   it('hides the progress badge when a tier reports no progress', () => {

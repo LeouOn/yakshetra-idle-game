@@ -22,7 +22,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 
-import { useCallback, useEffect, useState, useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import type { Ending } from '@/content/schema';
 import { loadEraPack } from '@/content/loader';
 import {
@@ -342,6 +342,21 @@ export default function StudioView({
   }
   const [brief, setBrief] = useState('');
   const [cookOpen, setCookOpen] = useState(false);
+  // The cook panel opens UNDER its button (walk item 2): on a phone the fire
+  // options and the confirm land below the fold, so the press looks like a
+  // no-op. One scroll on open brings the panel's top into view; the flag is
+  // consumed by the panel's onLayout (deterministic, no timers) and the
+  // scroll is instant under reduced motion.
+  const screenScrollRef = useRef<ScrollView | null>(null);
+  const scrollPanelIntoView = useRef(false);
+  // The live scroll offset (content-space), tracked from onScroll so the
+  // open-scroll can convert a measureInWindow screen position into the
+  // content y scrollTo wants.
+  const scrollOffset = useRef(0);
+  const cookPanelRef = useRef<View | null>(null);
+  /** How far the panel's bottom edge is kept from the viewport's bottom when
+   * the open-scroll lands, so the confirm is never flush against the fold. */
+  const panelFoldInset = 16;
   const [cookPile, setCookPile] = useState<readonly CookChip[] | null>(null);
   const [cookHeat, setCookHeat] = useState(0);
   const [cookDiscount, setCookDiscount] = useState(0);
@@ -361,7 +376,7 @@ export default function StudioView({
   const [activeTab, setActiveTab] = useState<StudioTab>('bench');
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [chronicleCopied, setChronicleCopied] = useState(false);
-  const { width: viewportWidth } = useWindowDimensions();
+  const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const compact = viewportWidth < 720;
   const [running, setRunning] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -538,6 +553,7 @@ export default function StudioView({
     setCookHeat(studio.surplus);
     setCookDiscount(modifiersForSession(buildSession())(EMBODIED_TIER).cookSpeed);
     setCookOpen(true);
+    scrollPanelIntoView.current = true;
   }
 
   /** The develop control names the REAL blocker (round 2): a bay waiting to
@@ -847,6 +863,12 @@ export default function StudioView({
           />
         )}
         <ScrollView
+          ref={(node: ScrollView | null) => {
+            screenScrollRef.current = node;
+          }}
+          onScroll={(e) => {
+            scrollOffset.current = e.nativeEvent.contentOffset.y;
+          }}
           testID="studio-screen"
           role="main"
           style={styles.screen}
@@ -1004,22 +1026,59 @@ export default function StudioView({
             </Pressable>
 
             {cookOpen && developable ? (
-              <StudioCookPanel
-                chips={cookPile ?? cookChips}
-                gate={personMin}
-                onCook={confirmCook}
-                cookTicksDiscount={cookDiscount}
-                surplus={cookHeat}
-                pinnedPair={pinnedCards(studio.pinned).map((focus) => ({ name: focus.name }))}
-                familyLabelOf={familyLabelOfGroup}
-                traceNameOf={traceNameOfGroup}
-                onCancel={() => {
-                  setCookOpen(false);
-                  setCookPile(null);
-                  setCookHeat(0);
-                  setCookDiscount(0);
+              <View
+                ref={(node: View | null) => {
+                  cookPanelRef.current = node;
                 }}
-              />
+                onLayout={() => {
+                  if (!scrollPanelIntoView.current) {
+                    return;
+                  }
+                  scrollPanelIntoView.current = false;
+                  const scroller = screenScrollRef.current;
+                  const panel = cookPanelRef.current;
+                  // The test shim has no scrollTo/measureInWindow; guard so
+                  // the scroll is a browser/native nicety, never a crash.
+                  if (
+                    scroller === null ||
+                    panel === null ||
+                    typeof scroller.scrollTo !== 'function' ||
+                    typeof panel.measureInWindow !== 'function'
+                  ) {
+                    return;
+                  }
+                  panel.measureInWindow((_x, screenY, _w, h) => {
+                    // Aim the panel's ACTION ZONE at the fold: the panel can
+                    // be taller than the viewport, so showing its top can
+                    // still hide the fires and the confirm (walk item 2).
+                    // Land the panel's bottom edge just inside the viewport;
+                    // when it fits, this also shows its top.
+                    const target =
+                      scrollOffset.current + screenY + h - viewportHeight + panelFoldInset;
+                    scroller.scrollTo({
+                      y: target < 0 ? 0 : target,
+                      animated: !prefersReducedMotion,
+                    });
+                  });
+                }}
+              >
+                <StudioCookPanel
+                  chips={cookPile ?? cookChips}
+                  gate={personMin}
+                  onCook={confirmCook}
+                  cookTicksDiscount={cookDiscount}
+                  surplus={cookHeat}
+                  pinnedPair={pinnedCards(studio.pinned).map((focus) => ({ name: focus.name }))}
+                  familyLabelOf={familyLabelOfGroup}
+                  traceNameOf={traceNameOfGroup}
+                  onCancel={() => {
+                    setCookOpen(false);
+                    setCookPile(null);
+                    setCookHeat(0);
+                    setCookDiscount(0);
+                  }}
+                />
+              </View>
             ) : null}
 
             <View style={styles.panel}>
@@ -1127,12 +1186,9 @@ export default function StudioView({
             <Text accessibilityRole="header" style={styles.archiveHeading}>
               {resolveSid('studio.archive_heading_sid')}
             </Text>
-            <StudioSoughtList
-              encounters={registries().encounters}
-              encountered={progression.encounters_done ?? []}
-              archive={studio.archive}
-            />
-
+            {/* The earned archive leads: a player who just harvested their
+             * first card lands here to see what they made, not nine locked
+             * riddles. The Sought list follows, unchanged (walk item 3). */}
             <StudioArchive
               archive={studio.archive}
               freshId={freshHarvestId}
@@ -1142,6 +1198,12 @@ export default function StudioView({
               endowState={endowStateFor}
               onEndow={endowPick}
               onEndowCommit={endowCommit}
+            />
+
+            <StudioSoughtList
+              encounters={registries().encounters}
+              encountered={progression.encounters_done ?? []}
+              archive={studio.archive}
             />
 
             {latest === undefined ? null : (

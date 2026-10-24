@@ -261,7 +261,8 @@ describe('StudioView tier generalization', () => {
     const { getByTestID, getByText } = renderStudio(session);
 
     expect(() => getByTestID('studio-rail-tier-org')).not.toThrow();
-    expect(() => getByText(resolveSid('studio.tier_locked_sid'))).not.toThrow();
+    // The locked rung names the tier being worked toward (walk item 4).
+    expect(() => getByText(resolveSid('studio.tier_org_sid'))).not.toThrow();
     expect(() =>
       getByText(formatSid('studio.tier_progress_badge_sid', { n: 1, m: 2 })),
     ).not.toThrow();

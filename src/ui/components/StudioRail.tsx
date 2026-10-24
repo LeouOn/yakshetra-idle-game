@@ -32,9 +32,19 @@ export default function StudioRail({ tiers, variant = 'side' }: StudioRailProps)
           key={tier.id}
           testID={`studio-rail-tier-${tier.id}`}
           style={strip ? styles.tierStrip : styles.tier}
+          {...(tier.unlocked
+            ? {}
+            : {
+                accessibilityLabel: `${resolveSid('studio.tier_locked_sid')} ${resolveSid(tier.labelSid)}`,
+              })}
         >
+          {/* A locked rung shows its real name, dimmed: "Locked 0/1" read as
+           * a restriction when it is the thing being worked TOWARD (walk
+           * item 4). The name comes from the progression tier labels; the
+           * badge says how far there is to go. Screen readers still hear the
+           * locked state spelled out on the row. */}
           <Text style={tier.unlocked ? styles.label : styles.labelLocked}>
-            {resolveSid(tier.unlocked ? tier.labelSid : 'studio.tier_locked_sid')}
+            {resolveSid(tier.labelSid)}
           </Text>
           {tier.unlocked && tier.readyCount > 0 ? (
             <Text style={styles.ready}>
