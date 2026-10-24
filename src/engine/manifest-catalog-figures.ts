@@ -624,6 +624,7 @@ export const FIGURE_PEOPLE: readonly CatalogEntry[] = [
 export const FIGURE_PLACES: readonly CatalogEntry[] = [
   {
     name: 'Wutai Shan',
+    era: 'tang',
     one_liner: "The northern mountain revered as Mañjuśrī's seat.",
     subject: 'a mountain of wisdom',
     detail:
@@ -632,6 +633,7 @@ export const FIGURE_PLACES: readonly CatalogEntry[] = [
   },
   {
     name: 'Jiuhua Shan',
+    era: 'tang',
     one_liner: "The southern mountain of Kṣitigarbha's great vow.",
     subject: 'a mountain of the vow',
     detail:

@@ -3,6 +3,9 @@
 // here and register it in CATALOG.
 
 import { FIGURE_PEOPLE, FIGURE_PLACES } from './manifest-catalog-figures';
+import { GARDEN_FIGURE_PEOPLE, GARDEN_FIGURE_THINGS } from './manifest-catalog-garden-figures';
+import { GARDEN_PEOPLE } from './manifest-catalog-garden-people';
+import { GARDEN_VERSES } from './manifest-catalog-garden-verses';
 import type { CatalogEntry, CatalogMap } from './table-catalog';
 
 // The single definition of a catalog row lives in ./table-catalog, which also
@@ -2003,7 +2006,7 @@ const PEOPLE: readonly CatalogEntry[] = [
     long_fire:
       ' The cloth-wrapped mallet is up against the breastbone and the whole pavilion is waiting on the nod.',
     rare: ' Cor strikes it once a day and does not strike it twice, whatever the morning has been like.',
-    tags: ['bell', 'mallet', 'noon'],
+    tags: ['bell', 'mallet', 'noon', 'figure:garden-cor'],
     era: 'fantasy',
     templates: [
       {
@@ -2015,6 +2018,11 @@ const PEOPLE: readonly CatalogEntry[] = [
         detail:
           'Cor stands perfectly still with the mallet held in, and the strike is the only fast thing that happens all day.',
         tags: ['bell', 'noon', 'post'],
+      },
+      {
+        detail:
+          'When panic broke among the new arrivals at dawn, Cor put both arms around the rim of the bell and held it until the clang had gone out of it and only a low hum was left to steady the court.',
+        tags: ['bell', 'dawn', 'rim'],
       },
     ],
   },
@@ -2384,9 +2392,9 @@ const PLACES: readonly CatalogEntry[] = [
 ];
 
 export const CATALOG: CatalogMap = {
-  thing: THINGS,
+  thing: [...THINGS, ...GARDEN_FIGURE_THINGS, ...GARDEN_VERSES],
   outcome: OUTCOMES,
   change: CHANGES,
-  person: [...PEOPLE, ...FIGURE_PEOPLE],
+  person: [...PEOPLE, ...FIGURE_PEOPLE, ...GARDEN_FIGURE_PEOPLE, ...GARDEN_PEOPLE],
   place: [...PLACES, ...FIGURE_PLACES],
 };

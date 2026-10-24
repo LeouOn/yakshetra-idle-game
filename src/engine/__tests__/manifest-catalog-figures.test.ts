@@ -24,9 +24,11 @@ describe('figure catalog rows (SPEC 16.1)', () => {
   });
 
   it('keeps the generic person/place fallback pools at their new intent (wave Garden)', () => {
-    // 8 Tang/neutral generics + 12 Garden generics + 12 figures; 6 Tang/neutral
-    // places + 6 Garden places + 2 figure sites.
-    expect(CATALOG.person).toHaveLength(32);
+    // 8 Tang/neutral generics + 12 Garden generics + 12 figures + 5 Garden figures
+    // + 14 plain Garden people (Patch A: they keep the Garden's figure share of
+    // person cards inside 30-40%); 6 Tang/neutral places + 6 Garden places + 2
+    // figure sites (now Tang-only).
+    expect(CATALOG.person).toHaveLength(51);
     expect(CATALOG.place).toHaveLength(14);
   });
 

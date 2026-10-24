@@ -123,8 +123,13 @@ describe('figure repetition on the real person path (finding 2b)', () => {
       const harvested = harvestTableFill(studio, createRng(BigInt(i + 1)));
       if (harvested) studio = harvested.studio;
     }
+    // The lane's own arrivals only (`about_id`). This harvest passes no life context,
+    // so the era is undefined and a generic pick draws from the WHOLE table, figure
+    // rows of every era included; which of those a seeded draw lands on moves
+    // whenever a row is added anywhere in the table. That is not the repetition this
+    // test measures: it measures the single-candidate figure lane.
     const figures = studio.archive
-      .map((card) => card.about_id ?? card.tags.find((t) => t.startsWith('figure:')) ?? null)
+      .map((card) => card.about_id ?? null)
       .filter((f): f is string => f !== null);
     const counts = new Map<string, number>();
     for (const f of figures) counts.set(f, (counts.get(f) ?? 0) + 1);
