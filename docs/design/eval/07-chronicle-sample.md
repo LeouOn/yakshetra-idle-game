@@ -5,39 +5,39 @@ Tang run (casual mixed pace, seed 1, first 20 entries, oldest first):
 ```
 A street that is still deciding
 
-The 1st day of the first month, in the year 780 — The first to arrive was The Hall of Rolls: An open pavilion where everything anyone came here about is read aloud.
-The 1st day of the first month, in the year 780 — First of its kind that season — Amitābha: He leans out from the west with an open palm, and it is not the gesture you expect.
+The 1st day of the first month, in the year 780 — The first to arrive was Śākyamuni: He walks the same lane every morning and stops wherever the work is.
 The 1st day of the first month, in the year 780 — The shelf took in Amitābha — He leans out from the west with an open palm, and it is not the gesture you expect.
-The 3rd day of the first month, in the year 780 — The bench gave shape to Storm-reed whistle: A plugged reed on a lanyard, for warning the court of the storm-edge.
-The 4th day of the first month, in the year 780 — First of its kind that season — The door-god print: A woodblock pair re-pasted every new year, slightly crooked.
-The 4th day of the first month, in the year 780 — The household carried a whole world: He brings the bitter draught to whoever is burning, and the price is not on the bowl. Within these walls: A woodblock pair re-pasted every new year, slightly crooked.
-The 4th day of the first month, in the year 780 — Bhaiṣajyaguru, the Medicine Buddha was the first stone of the household: He brings the bitter draught to whoever is burning, and the price is not on the bowl.
-The 4th day of the first month, in the year 780 — Bhaiṣajyaguru, the Medicine Buddha was there that day: He brings the bitter draught to whoever is burning, and the price is not on the bowl.
-The 5th day of the first month, in the year 780 — The workshop took shape around The bitter tonics: The clinic's worst-tasting jars and its most argued-over.
-The 5th day of the first month, in the year 780 — The fair-copy ledgers came off the bench first of all: The office's clean books, written by the steadiest hand in the house.
-The 6th day of the first month, in the year 780 — Another crossing with Bhaiṣajyaguru, the Medicine Buddha — He cools a forehand through a whole night with a wet cloth and a bowl of cold water, and at the fourth hour the cloth is put out warm instead of cold, which is how you know.
-The 6th day of the first month, in the year 780 — Avalokiteśvara (Guanyin) was there that day: She dips a willow branch in clean water and steps into the crowded lane.
-The 7th day of the first month, in the year 780 — The season opened with The weavers' charter: One width of cloth, one price, sworn before the looms.
-The 8th day of the first month, in the year 780 — Out of The west bridge grew a town: Nine stone arches, and every arrival into town crosses them.
-The 8th day of the first month, in the year 780 — The bench gave shape to The lantern market: One night a year the stalls stay open until the oil runs out.
-The 9th day of the first month, in the year 780 — It began with The flood stones: One engraved stone per flood, stacked where the water stopped.
-The 10th day of the first month, in the year 780 — The bell tower was the first stone of the city: A tall wooden tower whose voice the whole city hears.
-The 10th day of the first month, in the year 780 — The bench gave shape to Before the first market drum: Tools laid out, tea brewed, and the lane still not yet shouting at anyone.
-The 10th day of the first month, in the year 780 — It began with The dry river's stone arches: A bridge that crosses a river that has not come in years.
-The 10th day of the first month, in the year 780 — Amitābha came near the work: He extends an open hand westward each dusk as the day's labor closes.
+The 2nd day of the first month, in the year 780 — The dumpling fold was the first stone of the household: A pinch the family passes before the new year.
+The 3rd day of the first month, in the year 780 — The earliest of these was Folded measure: A six-fold carpenter's rule of seasoned boxwood, hinged with flat brass pins that still snap into place.
+The 3rd day of the first month, in the year 780 — First of its kind that season — The hall beam: The plank that holds up the room where everyone argues.
+The 3rd day of the first month, in the year 780 — The household carried a whole world: A pinch the family passes before the new year. Within these walls: The plank that holds up the room where everyone argues.
+The 3rd day of the first month, in the year 780 — The workshop took shape around The stamped roof tiles: Every tile on the hall carries the same thumb-wide seal.
+The 3rd day of the first month, in the year 780 — The weavers' charter came off the bench first of all: One width of cloth, one price, sworn before the looms.
+The 4th day of the first month, in the year 780 — Word arrived of Bhaiṣajyaguru, the Medicine Buddha: He brings the bitter draught to whoever is burning, and the price is not on the bowl.
+The 4th day of the first month, in the year 780 — Before anything else, The dyer's blacks: A black the workshop sells to every mourning household.
+The 4th day of the first month, in the year 780 — Out of The bell tower at dusk grew a town: The town tells its time by a tower with no clock face.
+The 5th day of the first month, in the year 780 — The bench gave shape to The grain-counting day: The whole town spends a day agreeing on the number.
+The 5th day of the first month, in the year 780 — Bhaiṣajyaguru, the Medicine Buddha was seen from the bench again. He sits beside the sickbed with an iron bowl of steeped myrobalan, cooling hot foreheads through the midnight watch.
+The 6th day of the first month, in the year 780 — Bhaiṣajyaguru, the Medicine Buddha came back through: He weighs the myrobalan in the market on his own small scale, and the herb-women have stopped arguing with his weights, and the reason they have stopped is that his scale is right.
+The 6th day of the first month, in the year 780 — The watch's muster hall was the first stone of the city: The room where the city's lanterns line up before dusk.
+The 6th day of the first month, in the year 780 — It began with The relief bureau: Where a hungry household learns whether the city remembers it.
+The 7th day of the first month, in the year 780 — The name of Avalokiteśvara (Guanyin) entered these pages: She walks toward the shouting, and you mistake her for an aunt until she has already fixed it.
+The 7th day of the first month, in the year 780 — The first to arrive was The ferry landing: A worn stone quay where the town both greets and forgives.
+The 8th day of the first month, in the year 780 — First of its kind that season — The founder's stela: A tall stone with a name the city can't quite read.
+The 8th day of the first month, in the year 780 — The Hall of Rolls came off the bench first of all: An open pavilion where everything anyone came here about is read aloud.
 ```
 
 Fantasy run (casual tend pace, seed 1, first 10 entries):
 
 ```
-The 1st day of the first month, in the year 1 — The first to arrive was The Hall of Rolls: An open pavilion where everything anyone came here about is read aloud.
-The 2nd day of the first month, in the year 1 — First of its kind that season — Kith, the vow walker: Walking the fountain line, working the notched cord, matching your stride.
-The 2nd day of the first month, in the year 1 — The shelf took in Kith, the vow walker — Walking the fountain line, working the notched cord, matching your stride.
-The 5th day of the first month, in the year 1 — Before anything else, You look for a second cup: Your hand draws two celadon cups from the drying rack every time the kettle comes to a boil.
-The 8th day of the first month, in the year 1 — The new-year verse was the first stone of the household: A couplet that gets re-painted on the door every spring.
-The 8th day of the first month, in the year 1 — First of its kind that season — The needle case: A bamboo tube with three needles and a story per slot.
-The 8th day of the first month, in the year 1 — The workshop took shape around The stamped roof tiles: Every tile on the hall carries the same thumb-wide seal.
-The 9th day of the first month, in the year 1 — The weavers' charter came off the bench first of all: One width of cloth, one price, sworn before the looms.
-The 10th day of the first month, in the year 1 — It began with The stamped roof tiles: Every tile on the hall carries the same thumb-wide seal.
-The 11th day of the first month, in the year 1 — Out of The cold-food morning grew a town: One breakfast eaten cold, together, before the fires are relit.
+The 1st day of the first month, in the year 1 — The first to arrive was Śākyamuni: He walks the same lane every morning and stops wherever the work is.
+The 2nd day of the first month, in the year 1 — The shelf took in Mire, the water tender — Skimming the slow reach and watching the current at the sluice.
+The 2nd day of the first month, in the year 1 — The needle case was the first stone of the household: A bamboo tube with three needles and a story per slot.
+The 3rd day of the first month, in the year 1 — Before anything else, The Bell Pavilion: A low-hung bronze bell in four cedar posts, close enough to feel it arrive.
+The 3rd day of the first month, in the year 1 — First of its kind that season — The hall beam: The plank that holds up the room where everyone argues.
+The 4th day of the first month, in the year 1 — The workshop took shape around The celadon glazes: Greens the kiln finds once in twenty firings.
+The 4th day of the first month, in the year 1 — The weavers' charter came off the bench first of all: One width of cloth, one price, sworn before the looms.
+The 5th day of the first month, in the year 1 — It began with Breath steadied at the boundary: The panic at the ditch edge settling into a counted rhythm.
+The 5th day of the first month, in the year 1 — Out of The grain-counting day grew a town: The whole town spends a day agreeing on the number.
+The 7th day of the first month, in the year 1 — The season opened with The dyer's blacks: A black the workshop sells to every mourning household.
 ```
