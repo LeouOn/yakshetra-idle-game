@@ -9,14 +9,7 @@
   calendar: 'tang-ce-7xx',
   social: {
     name: 'Late Tang China (8th-9th century CE)',
-    strata: [
-      'literati-official',
-      'merchant',
-      'artisan',
-      'chan-monastic',
-      'peasant',
-      'soldier',
-    ],
+    strata: ['literati-official', 'merchant', 'artisan', 'chan-monastic', 'peasant', 'soldier'],
     default_role_at_birth: 'peasant',
     mobility_rules_sid: 'tang.social.mobility_rules_sid',
   },

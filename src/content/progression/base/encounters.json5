@@ -25,10 +25,7 @@
       id: 'encounter/vairocana-every-rafter',
       figure_id: 'figure:vairocana',
       needs: {
-        pinned: [
-          { kind: 'person' },
-          { kind: 'place' },
-        ],
+        pinned: [{ kind: 'person' }, { kind: 'place' }],
         window: { family: 'work', min_count: 6 },
       },
       hint_sid: 'encounter.vairocana.hint_sid',
@@ -78,10 +75,7 @@
       id: 'encounter/mahasthamaprapta-stride',
       figure_id: 'figure:mahasthamaprapta',
       needs: {
-        pinned: [
-          { kind: 'person' },
-          { kind: 'place' },
-        ],
+        pinned: [{ kind: 'person' }, { kind: 'place' }],
         window: { family: 'work', kind: 'outcome', min_count: 4 },
       },
       hint_sid: 'encounter.mahasthamaprapta.hint_sid',
@@ -111,10 +105,7 @@
       id: 'encounter/wutai-terrace',
       figure_id: 'figure:manjushri',
       needs: {
-        pinned: [
-          { kind: 'place' },
-          { kind: 'person' },
-        ],
+        pinned: [{ kind: 'place' }, { kind: 'person' }],
         window: { family: 'meditation', kind: 'place', min_count: 5 },
       },
       hint_sid: 'encounter.wutai.hint_sid',

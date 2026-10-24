@@ -22,11 +22,7 @@
   calendar: 'fictional-echo-calendar',
   social: {
     name: 'The Garden of Arrivals (fictional)',
-    strata: [
-      'newly-arrived-soul',
-      'court-attendant',
-      'vow-bound-traveler',
-    ],
+    strata: ['newly-arrived-soul', 'court-attendant', 'vow-bound-traveler'],
     default_role_at_birth: 'newly-arrived-soul',
     mobility_rules_sid: 'fantasy.social.mobility_rules_sid',
   },
@@ -95,28 +91,23 @@
   },
   source_bibliography: [
     {
-      citation:
-        'McMahan, David L. The Making of Buddhist Modernism. Oxford University Press, 2008. Used for comparative context on the modern reception of Mahāyāna imagery only.',
+      citation: 'McMahan, David L. The Making of Buddhist Modernism. Oxford University Press, 2008. Used for comparative context on the modern reception of Mahāyāna imagery only.',
       url: 'https://global.oup.com/academic/product/the-making-of-buddhist-modernism-9780195183276',
     },
     {
-      citation:
-        'Williams, Paul. Mahāyāna Buddhism: The Doctrinal Foundations. 2nd ed., Routledge, 2009. Doctrinal context for the six-pāramitā framework that the lens set draws from.',
+      citation: 'Williams, Paul. Mahāyāna Buddhism: The Doctrinal Foundations. 2nd ed., Routledge, 2009. Doctrinal context for the six-pāramitā framework that the lens set draws from.',
       url: 'https://www.routledge.com/Mahayana-Buddhism-The-Doctrinal-Foundations/Williams/p/book/9780415356534',
     },
     {
-      citation:
-        'Harvey, Peter. An Introduction to Buddhism: Teachings, History and Practices. 2nd ed., Cambridge University Press, 2013. General historical and ethical context.',
+      citation: 'Harvey, Peter. An Introduction to Buddhism: Teachings, History and Practices. 2nd ed., Cambridge University Press, 2013. General historical and ethical context.',
       url: 'https://www.cambridge.org/9780521859424',
     },
     {
-      citation:
-        'Buswell, Robert E., Jr., and Donald S. Lopez, Jr. The Princeton Dictionary of Buddhism. Princeton University Press, 2014. Reference for terminology used in the lineage notes.',
+      citation: 'Buswell, Robert E., Jr., and Donald S. Lopez, Jr. The Princeton Dictionary of Buddhism. Princeton University Press, 2014. Reference for terminology used in the lineage notes.',
       url: 'https://press.princeton.edu/books/hardcover/9780691157863/the-princeton-dictionary-of-buddhism',
     },
     {
-      citation:
-        'Gethin, Rupert. The Foundations of Buddhism. Oxford University Press, 1998. General reference for the ethical framework the lens set is loosely modeled on.',
+      citation: 'Gethin, Rupert. The Foundations of Buddhism. Oxford University Press, 1998. General reference for the ethical framework the lens set is loosely modeled on.',
       url: 'https://global.oup.com/academic/product/the-foundations-of-buddhism-9780192892232',
     },
   ],

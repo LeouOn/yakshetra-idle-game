@@ -48,8 +48,7 @@
       trigger: { op: 'has_flag', key: 'requested-next-life' },
       narrative_sid: 'ending.fantasy.return.narrative_sid',
       echo_implications: {
-        tendency:
-          'All current echoes carry forward unchanged as seeds for the next chain; in the prototype slice this surfaces the chain-complete screen.',
+        tendency: 'All current echoes carry forward unchanged as seeds for the next chain; in the prototype slice this surfaces the chain-complete screen.',
       },
     },
 
@@ -70,10 +69,8 @@
       },
       narrative_sid: 'ending.fantasy.vow-bound.narrative_sid',
       echo_implications: {
-        broken_vow:
-          'The life ended with the vow still broken; the unresolved commitment carries forward as a strong attachment echo.',
-        attachment:
-          'What the broken vow pointed toward — the person, the duty, the bond — remains unresolved and weights the opening of the next chain.',
+        broken_vow: 'The life ended with the vow still broken; the unresolved commitment carries forward as a strong attachment echo.',
+        attachment: 'What the broken vow pointed toward — the person, the duty, the bond — remains unresolved and weights the opening of the next chain.',
       },
     },
 
@@ -90,8 +87,7 @@
       trigger: { op: 'gte', key: 'echoes.pattern_break_count', value: 2 },
       narrative_sid: 'ending.fantasy.gardener-blessing.narrative_sid',
       echo_implications: {
-        pattern_break:
-          'The Gardener offers a transformed vow: the old commitment, loosened and re-spoken, carried forward as direction rather than debt. In the prototype slice this is narrative-only.',
+        pattern_break: 'The Gardener offers a transformed vow: the old commitment, loosened and re-spoken, carried forward as direction rather than debt. In the prototype slice this is narrative-only.',
       },
     },
   ],

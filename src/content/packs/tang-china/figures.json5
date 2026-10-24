@@ -109,13 +109,7 @@
     {
       id: 'figure:avalokiteshvara',
       display_name_sid: 'figure.avalokiteshvara.display_name_sid',
-      transliterated_names: [
-        'Avalokiteśvara',
-        'Avalokiteshvara',
-        'Guanyin',
-        'Kannon',
-        'Chenrezig',
-      ],
+      transliterated_names: ['Avalokiteśvara', 'Avalokiteshvara', 'Guanyin', 'Kannon', 'Chenrezig'],
       role: 'bodhisattva',
       primary_attribute_sid: 'figure.avalokiteshvara.attribute_sid',
       mantra_id: 'mantra:six-syllable',

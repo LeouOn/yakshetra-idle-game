@@ -22,10 +22,7 @@
       weight: 1.0,
       cooldown_turns: 1,
       once_per_run: false,
-      content_warnings: [
-        'war-political-violence',
-        'forced-moral-compromise',
-      ],
+      content_warnings: ['war-political-violence', 'forced-moral-compromise'],
       choices: [
         {
           id: 'comply',
@@ -77,9 +74,7 @@
       weight: 0.8,
       cooldown_turns: 2,
       once_per_run: false,
-      content_warnings: [
-        'illness-chronic-suffering',
-      ],
+      content_warnings: ['illness-chronic-suffering'],
       choices: [
         {
           id: 'take_in',
@@ -137,10 +132,7 @@
       weight: 0.6,
       cooldown_turns: 3,
       once_per_run: false,
-      content_warnings: [
-        'social-oppression',
-        'forced-moral-compromise',
-      ],
+      content_warnings: ['social-oppression', 'forced-moral-compromise'],
       choices: [
         {
           id: 'give',
@@ -256,9 +248,7 @@
       weight: 0.9,
       cooldown_turns: 2,
       once_per_run: false,
-      content_warnings: [
-        'poverty-starvation',
-      ],
+      content_warnings: ['poverty-starvation'],
       choices: [
         {
           id: 'share',
@@ -314,10 +304,7 @@
       cooldown_turns: 4,
       once_per_run: false,
       trigger: { op: 'gte', key: 'state.age', value: 25 },
-      content_warnings: [
-        'social-oppression',
-        'forced-moral-compromise',
-      ],
+      content_warnings: ['social-oppression', 'forced-moral-compromise'],
       choices: [
         {
           id: 'hide_monk',
@@ -328,7 +315,11 @@
           effects: [
             { op: 'add_flag', key: 'sheltered_fugitive_monk' },
             { op: 'add_relationship', target: 'monastics', delta: 2 },
-            { op: 'modify_event_weight', event_id: 'event:tang/persecution-edict', multiplier: 1.2 },
+            {
+              op: 'modify_event_weight',
+              event_id: 'event:tang/persecution-edict',
+              multiplier: 1.2,
+            },
             { op: 'set_intent_root', intent_root: 'care' },
           ],
           forbidden: false,
@@ -354,7 +345,11 @@
           journal_sid: 'event.tang.persecution-edict.flee_region.journal_sid',
           requires: [],
           effects: [
-            { op: 'modify_event_weight', event_id: 'event:tang/persecution-edict', multiplier: 0.1 },
+            {
+              op: 'modify_event_weight',
+              event_id: 'event:tang/persecution-edict',
+              multiplier: 0.1,
+            },
             { op: 'add_flag', key: 'fled_persecution' },
             { op: 'set_intent_root', intent_root: 'delusion' },
           ],
@@ -371,10 +366,7 @@
       weight: 0.7,
       cooldown_turns: 2,
       once_per_run: false,
-      content_warnings: [
-        'illness-chronic-suffering',
-        'death-of-family',
-      ],
+      content_warnings: ['illness-chronic-suffering', 'death-of-family'],
       choices: [
         {
           id: 'spend_all_wealth',
