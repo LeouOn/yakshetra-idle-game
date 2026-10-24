@@ -7,7 +7,7 @@
 // stays in StudioView.
 
 import { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import {
   groupTraces,
@@ -36,12 +36,15 @@ export interface CookChoice {
   readonly fire: CookFire;
   /** Absolute indices to leave unspent (the full desired held set). */
   readonly holdBack: readonly number[];
+  readonly brief?: string;
 }
 
 interface Props {
   readonly chips: readonly CookChip[];
   /** Effective queue gate for this bench (endowed/visitor window_min in play). */
   readonly gate: number;
+  /** Optional initial brief text when pre-populated. */
+  readonly initialBrief?: string;
   /** Endowed cook_speed discount, snapshotted at panel open. */
   readonly cookTicksDiscount?: number;
   /** Banked heat (surplus), snapshotted at panel open. */
@@ -80,6 +83,7 @@ function initialCounts(
 export default function StudioCookPanel({
   chips,
   gate,
+  initialBrief = '',
   cookTicksDiscount = 0,
   surplus = 0,
   pinnedPair = [],
@@ -88,6 +92,7 @@ export default function StudioCookPanel({
   onCook,
   onCancel,
 }: Props) {
+  const [brief, setBrief] = useState(initialBrief);
   const groups = useMemo(() => groupTraces(chips), [chips]);
   const reachable = useMemo(() => reachableKinds(groups, gate), [groups, gate]);
   const [counts, setCounts] = useState<Record<string, number>>(() => {
@@ -164,6 +169,18 @@ export default function StudioCookPanel({
             : formatSid('studio.pinned_one_sid', { a: pinnedPair[0]?.name ?? '' })}
         </Text>
       )}
+      <View style={styles.briefSection}>
+        <Text style={styles.briefLabel}>{resolveSid('studio.brief_label_sid')}</Text>
+        <TextInput
+          testID="studio-brief"
+          accessibilityLabel={resolveSid('studio.brief_label_sid')}
+          placeholder={resolveSid('studio.brief_placeholder_sid')}
+          placeholderTextColor={t.muted}
+          value={brief}
+          onChangeText={setBrief}
+          style={styles.input}
+        />
+      </View>
       <Text testID="studio-cook-preview" style={styles.preview}>
         {previewText}
       </Text>
@@ -232,7 +249,14 @@ export default function StudioCookPanel({
         testID="studio-cook-confirm"
         disabled={!canMeetGate || totalSpend < gate}
         accessibilityState={{ disabled: !canMeetGate || totalSpend < gate }}
-        onPress={() => onCook({ fire, holdBack })}
+        onPress={() => {
+          const trimmed = brief.trim();
+          onCook({
+            fire,
+            holdBack,
+            ...(trimmed.length === 0 ? {} : { brief: trimmed }),
+          });
+        }}
         style={[styles.button, !canMeetGate || totalSpend < gate ? styles.buttonDisabled : null]}
       >
         <Text style={styles.buttonText}>{resolveSid('studio.cook_confirm_sid')}</Text>
@@ -258,6 +282,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   title: { fontSize: 18, fontWeight: '700', color: t.text },
+  briefSection: { gap: 6 },
+  briefLabel: { fontSize: 14, fontWeight: '600', color: t.text },
+  input: {
+    borderWidth: 1,
+    borderColor: t.line,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: t.text,
+    backgroundColor: t.chip,
+  },
   preview: { color: t.gold, fontSize: 15, lineHeight: 21 },
   reachable: { gap: 6 },
   kindRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

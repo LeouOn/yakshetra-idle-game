@@ -2,16 +2,16 @@
 // function of the session at the moment of read.
 //
 // The studio's job is to convert residue into a world; the next-action
-// strip points the player at the most urgent of the actions the bench
-// supports. First-match-wins priority order:
+// strip points the player at what the bench cannot say through its
+// primary journey card (wave 4). First-match-wins priority order:
 //
-//   a. Ready harvest on any unlocked bench         (next_harvest_sid)
-//   b. Locked-tier gate ≥ 80% of the worst operand (next_gate_sid)
-//   c. Embodied bench pending ≥ effective minimum  (next_develop_sid)
-//   d. Active visitor with windows remaining       (next_visitor_sid)
-//   e. Empty endowment slot on an unlocked tier
-//      with an eligible track + a card in archive  (next_endow_sid)
-//   f. otherwise null                              (render nothing)
+//   a. Ready harvest on unembodied higher-tier bench (next_harvest_sid)
+//   b. Locked-tier gate ≥ 80% of the worst operand   (next_gate_sid)
+//   c. Active visitor with windows remaining         (next_visitor_sid)
+//   d. Empty endowment slot on an unlocked tier
+//      with an eligible track + a card in archive    (next_endow_sid)
+//   e. Unpinnable keepsake kept fallback (rule f)    (next_kept_sid)
+//   f. otherwise null                                (render nothing)
 //
 // Pure: no clock, no rng, no React, no DOM. The caller passes the
 // progression registries in so the function can read tier/milestone/track
@@ -26,7 +26,6 @@ import {
   computeGlobalRewards,
   endowableSlots,
   isPinnableKind,
-  windowSince,
   type ArchivePredicateLike,
   type ArchiveStats,
   type BenchModifiers,
@@ -37,7 +36,7 @@ import {
 import { resolveSid } from '@/i18n';
 import type { ProgressionRegistries } from '@/content/progression/loader';
 import { EMBODIED_TIER } from '@/engine/ladder-const';
-import { personEffectiveMin, statValue } from './session-selectors';
+import { statValue } from './session-selectors';
 
 export interface NextAction {
   readonly sid: string;
@@ -83,11 +82,15 @@ function readyBench(
   session: StudioSession,
   registries: ProgressionRegistries,
 ): { readonly tierId: string; readonly index: number } | null {
-  // The embodied person bay rides on the session's person bench; every other
-  // unlocked tier's bench lives in session.benches. The highest-index rung
-  // wins (org outranks household outranks person).
+  // The embodied person bay rides on the session's person bench and is
+  // addressed by StudioJourney's primary button ("Harvest keepsake").
+  // NextAction surfaces only unembodied higher-tier ready benches
+  // (household, org, ...) so it never repeats the journey card (wave 4).
   let best: { tierId: string; index: number } | null = null;
   for (const tier of registries.tiers) {
+    if (tier.id === EMBODIED_TIER) {
+      continue;
+    }
     const bench = session.benches[tier.id];
     if (bench === undefined) {
       continue;
@@ -135,25 +138,6 @@ function approachedGate(
     return null;
   }
   return { name: best.name, n: best.n, m: best.m };
-}
-
-/* ---- rule c: develop on the embodied bench ------------------------------ */
-
-function personPendingLength(session: StudioSession): number {
-  const bench = session.benches[EMBODIED_TIER];
-  if (bench === undefined) {
-    return 0;
-  }
-  return windowSince(bench.residue, bench.last_harvest_index).length;
-}
-
-function developReady(session: StudioSession, registries: ProgressionRegistries): boolean {
-  const bench = session.benches[EMBODIED_TIER];
-  if (bench === undefined || bench.bay !== null) {
-    return false;
-  }
-  const pending = personPendingLength(session);
-  return pending >= personEffectiveMin(session, registries);
 }
 
 /* ---- rule d: active visitor --------------------------------------------- */
@@ -267,12 +251,7 @@ export function nextAction(
     };
   }
 
-  // (c) Pending residue on the embodied bench ready to develop.
-  if (developReady(session, registries)) {
-    return { sid: 'studio.next_develop_sid' };
-  }
-
-  // (d) A seated guest is the loudest ambient signal.
+  // (c) A seated guest is the loudest ambient signal.
   const visitor = seatedVisitor(session, registries);
   if (visitor !== null) {
     return {

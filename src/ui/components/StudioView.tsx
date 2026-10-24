@@ -17,7 +17,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -336,7 +335,6 @@ export default function StudioView({
   function report(text: string): void {
     setReceipt((current) => ({ id: (current?.id ?? 0) + 1, text }));
   }
-  const [brief, setBrief] = useState('');
   const [cookOpen, setCookOpen] = useState(false);
   // The cook panel opens UNDER its button (walk item 2): on a phone the fire
   // options and the confirm land below the fold, so the press looks like a
@@ -371,6 +369,7 @@ export default function StudioView({
   } | null>(null);
   const [activeTab, setActiveTab] = useState<StudioTab>('bench');
   const [milestoneOpen, setMilestoneOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
   const [chronicleCopied, setChronicleCopied] = useState(false);
   const { width: viewportWidth, height: viewportHeight } = useWindowDimensions();
   const compact = viewportWidth < 720;
@@ -573,7 +572,7 @@ export default function StudioView({
     setCookPile(null);
     setCookHeat(0);
     setCookDiscount(0);
-    const trimmed = brief.trim();
+    const trimmed = (choice.brief ?? '').trim();
     // The manual develop path queues the person bench, so its endowed
     // cook_speed discounts the cook (floored at MIN_COOK_TICKS in the
     // engine) and its endowed/visitor window_min widens the queue gate.
@@ -957,52 +956,31 @@ export default function StudioView({
               )}
             </View>
 
-            <Pressable
-              role="button"
-              testID="studio-tend"
-              accessibilityLabel={resolveSid('studio.tend_button_sid')}
-              onPress={tend}
-              style={[styles.button, styles.buttonSecondary]}
-            >
-              <Text style={styles.buttonText}>{resolveSid('studio.tend_button_sid')}</Text>
-            </Pressable>
+            <View style={styles.idleRow}>
+              <Pressable
+                role="button"
+                testID="studio-tend"
+                accessibilityLabel={resolveSid('studio.tend_button_sid')}
+                onPress={tend}
+                style={[styles.button, styles.buttonSecondary, styles.idleButton]}
+              >
+                <Text style={styles.buttonText}>{resolveSid('studio.tend_button_sid')}</Text>
+              </Pressable>
 
-            <Pressable
-              role="button"
-              testID="studio-run"
-              accessibilityLabel={
-                running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')
-              }
-              onPress={() => setRunning((value) => !value)}
-              style={[styles.button, styles.buttonSecondary]}
-            >
-              <Text style={styles.buttonText}>
-                {running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')}
-              </Text>
-            </Pressable>
-
-            <Text style={styles.panelLabel}>{resolveSid('studio.brief_label_sid')}</Text>
-            <TextInput
-              testID="studio-brief"
-              accessibilityLabel={resolveSid('studio.brief_label_sid')}
-              placeholder={resolveSid('studio.brief_placeholder_sid')}
-              value={brief}
-              onChangeText={setBrief}
-              style={styles.input}
-            />
-
-            <Pressable
-              role="button"
-              testID="studio-develop"
-              accessibilityLabel={resolveSid('studio.develop_button_sid')}
-              disabled={!developable}
-              onPress={developable ? develop : undefined}
-              style={[styles.button, developable ? null : styles.buttonDisabled]}
-            >
-              <Text testID="studio-develop-label" style={styles.buttonText}>
-                {developLabel()}
-              </Text>
-            </Pressable>
+              <Pressable
+                role="button"
+                testID="studio-run"
+                accessibilityLabel={
+                  running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')
+                }
+                onPress={() => setRunning((value) => !value)}
+                style={[styles.button, styles.buttonSecondary, styles.idleButton]}
+              >
+                <Text style={styles.buttonText}>
+                  {running ? resolveSid('studio.run_on_sid') : resolveSid('studio.run_off_sid')}
+                </Text>
+              </Pressable>
+            </View>
 
             {cookOpen && developable ? (
               <View
@@ -1060,60 +1038,108 @@ export default function StudioView({
               </View>
             ) : null}
 
-            <View style={styles.panel}>
-              {studio.bay === null ? (
-                anyBenchReady ? (
-                  <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
-                ) : (
-                  <Text style={styles.hint}>{resolveSid('studio.bay_empty_sid')}</Text>
-                )
-              ) : studio.bay.status === 'ready' ? (
-                <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
-              ) : (
-                <Text style={styles.hint}>
-                  {formatSid('studio.bay_cooking_sid', {
-                    done: studio.bay.cook_ticks_done,
-                    total: studio.bay.cook_ticks_total,
-                  })}
-                </Text>
-              )}
-            </View>
-
             <Pressable
               role="button"
-              testID="studio-harvest"
-              accessibilityLabel={resolveSid('studio.harvest_button_sid')}
-              disabled={!harvestable}
-              onPress={harvestable ? () => void harvest() : undefined}
-              style={[styles.button, harvestable ? styles.buttonHarvest : styles.buttonDisabled]}
+              testID="studio-manual-disclosure"
+              accessibilityLabel={resolveSid('studio.manual_disclosure_sid')}
+              accessibilityState={{ expanded: manualOpen }}
+              aria-expanded={manualOpen}
+              onPress={() => setManualOpen((value) => !value)}
+              style={styles.disclosure}
             >
-              <Text style={styles.buttonText}>{resolveSid('studio.harvest_button_sid')}</Text>
+              <Text style={styles.disclosureText}>
+                {resolveSid('studio.manual_disclosure_sid')}
+                <Text accessible={false} style={styles.disclosureChevron}>
+                  {manualOpen ? ' ▴' : ' ▾'}
+                </Text>
+              </Text>
             </Pressable>
 
-            {upgradable ? (
+            <View
+              testID="studio-manual-panel"
+              style={manualOpen ? styles.manualOpen : styles.manualCollapsed}
+            >
               <Pressable
                 role="button"
-                testID="studio-upgrade"
-                accessibilityLabel={resolveSid('studio.upgrade_button_sid')}
-                onPress={deepen}
-                style={[styles.button, styles.buttonSecondary]}
+                testID="studio-develop"
+                accessibilityLabel={resolveSid('studio.develop_button_sid')}
+                disabled={!developable}
+                onPress={developable ? develop : undefined}
+                style={[
+                  styles.button,
+                  styles.buttonSecondary,
+                  developable ? null : styles.buttonDisabled,
+                ]}
               >
-                <Text style={styles.buttonText}>{resolveSid('studio.upgrade_button_sid')}</Text>
+                <Text testID="studio-develop-label" style={styles.buttonText}>
+                  {developLabel()}
+                </Text>
               </Pressable>
-            ) : remainingForUpgrade > 0 ? (
-              <Text style={styles.hint}>
-                {formatSid('studio.upgrade_hint_sid', { n: remainingForUpgrade })}
-              </Text>
-            ) : null}
+
+              <View style={styles.panel}>
+                {studio.bay === null ? (
+                  anyBenchReady ? (
+                    <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
+                  ) : (
+                    <Text style={styles.hint}>{resolveSid('studio.bay_empty_sid')}</Text>
+                  )
+                ) : studio.bay.status === 'ready' ? (
+                  <Text style={styles.ready}>{resolveSid('studio.bay_ready_sid')}</Text>
+                ) : (
+                  <Text style={styles.hint}>
+                    {formatSid('studio.bay_cooking_sid', {
+                      done: studio.bay.cook_ticks_done,
+                      total: studio.bay.cook_ticks_total,
+                    })}
+                  </Text>
+                )}
+              </View>
+
+              <Pressable
+                role="button"
+                testID="studio-harvest"
+                accessibilityLabel={resolveSid('studio.harvest_button_sid')}
+                disabled={!harvestable}
+                onPress={harvestable ? () => void harvest() : undefined}
+                style={[
+                  styles.button,
+                  styles.buttonSecondary,
+                  harvestable ? null : styles.buttonDisabled,
+                ]}
+              >
+                <Text style={styles.buttonText}>{resolveSid('studio.harvest_button_sid')}</Text>
+              </Pressable>
+
+              {upgradable ? (
+                <Pressable
+                  role="button"
+                  testID="studio-upgrade"
+                  accessibilityLabel={resolveSid('studio.upgrade_button_sid')}
+                  onPress={deepen}
+                  style={[styles.button, styles.buttonSecondary]}
+                >
+                  <Text style={styles.buttonText}>{resolveSid('studio.upgrade_button_sid')}</Text>
+                </Pressable>
+              ) : remainingForUpgrade > 0 ? (
+                <Text style={styles.hint}>
+                  {formatSid('studio.upgrade_hint_sid', { n: remainingForUpgrade })}
+                </Text>
+              ) : null}
+            </View>
             <Pressable
               role="button"
               testID="studio-milestone-disclosure"
               accessibilityLabel={resolveSid('studio.milestone_disclosure_sid')}
+              accessibilityState={{ expanded: milestoneOpen }}
+              aria-expanded={milestoneOpen}
               onPress={() => setMilestoneOpen((value) => !value)}
               style={styles.disclosure}
             >
               <Text style={styles.disclosureText}>
                 {resolveSid('studio.milestone_disclosure_sid')}
+                <Text accessible={false} style={styles.disclosureChevron}>
+                  {milestoneOpen ? ' ▴' : ' ▾'}
+                </Text>
               </Text>
             </Pressable>
             {milestoneOpen ? (
@@ -1313,6 +1339,11 @@ const styles = StyleSheet.create({
   },
   disclosure: { minHeight: 44, justifyContent: 'center', paddingVertical: 8 },
   disclosureText: { fontSize: 14, fontWeight: '600', color: t.muted },
+  disclosureChevron: { fontSize: 12, color: t.muted },
+  idleRow: { flexDirection: 'row', gap: 12 },
+  idleButton: { flex: 1, minHeight: 44, paddingHorizontal: 12 },
+  manualCollapsed: { display: 'none' },
+  manualOpen: { gap: 12 },
   ready: { fontSize: 16, fontWeight: '600', color: t.harvestText },
   input: {
     borderWidth: 1,

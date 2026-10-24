@@ -176,24 +176,20 @@ describe('nextAction', () => {
     expect(result?.sid).not.toBe('studio.next_gate_sid');
   });
 
-  it('rule c: surfaces develop when the embodied bench has enough pending residue', () => {
-    // 3 pending residue (no endowment) → effective min = 3 → ready.
+  it('rule a: ignores the embodied bench so it never repeats the journey card', () => {
+    // Person bench is embodied — its harvest is the journey card's job.
+    const session = makeSession({
+      benches: { person: readyBench() },
+    });
+    expect(nextAction(session, [], registries)).toBeNull();
+  });
+
+  it('never surfaces develop on the embodied bench (handled by journey primary)', () => {
+    // 3 pending residue on embodied person bench — suppressed from nextAction
+    // so StudioNextAction never repeats "Cook these traces" (wave 4).
     const session = makeSession({
       benches: { person: personBenchWithPending(3) },
     });
-    expect(nextAction(session, [], registries)).toEqual({
-      sid: 'studio.next_develop_sid',
-    });
-  });
-
-  it('rule c: locks develop when the pending window is below the effective minimum', () => {
-    // 2 pending → below the no-endowment min of 3 → not develop.
-    const session = makeSession({
-      benches: { person: personBenchWithPending(2) },
-    });
-    // The fixture has no archive and no visitor, so the only ways a prompt
-    // can surface is develop or enrich. Develop is locked, enrich is empty,
-    // so the next-action is null.
     expect(nextAction(session, [], registries)).toBeNull();
   });
 
@@ -264,11 +260,11 @@ describe('nextAction', () => {
     expect(nextAction(session, [], registries)).toBeNull();
   });
 
-  it('priority: a ready harvest beats a closing gate, a pending develop, a visitor, and an endow slot', () => {
-    // Everything is true at once; the ready bench wins.
+  it('priority: a ready higher-tier harvest beats a closing gate, a visitor, and an endow slot', () => {
+    // Everything is true at once; the ready household bench wins.
     const session = makeSession({
       archive: [personCard('c-1'), traditionCard('c-1'), traditionCard('c-2')],
-      benches: { person: readyBench() },
+      benches: { household: readyBench() },
       milestonesDone: ['unlock-household'],
       worldDrafts: [{ scale: 'household' }],
       tiers: {
@@ -283,9 +279,9 @@ describe('nextAction', () => {
     );
   });
 
-  it('priority: a closing gate beats a develop prompt, a visitor, and an endow slot', () => {
-    // No ready bench: but the gate is closing, develop is ready, a visitor
-    // is seated, and an archive card is ready to endow. Gate wins.
+  it('priority: a closing gate beats a visitor and an endow slot', () => {
+    // No ready higher bench: but the gate is closing, pending residue exists,
+    // a visitor is seated, and an archive card is ready to endow. Gate wins.
     const session = makeSession({
       archive: [personCard('c-1'), traditionCard('c-1'), traditionCard('c-2')],
       benches: { person: personBenchWithPending(3) },
@@ -303,7 +299,7 @@ describe('nextAction', () => {
     );
   });
 
-  it('priority: a develop prompt beats a visitor and an endow slot', () => {
+  it('priority: a seated visitor beats an empty endowment slot even with pending residue', () => {
     const session = makeSession({
       archive: [personCard('c-1')],
       benches: { person: personBenchWithPending(3) },
@@ -314,7 +310,7 @@ describe('nextAction', () => {
         },
       },
     });
-    expect(nextAction(session, [], registries)?.sid).toBe('studio.next_develop_sid');
+    expect(nextAction(session, [], registries)?.sid).toBe('studio.next_visitor_sid');
   });
 
   it('priority: a seated visitor beats an empty endowment slot', () => {

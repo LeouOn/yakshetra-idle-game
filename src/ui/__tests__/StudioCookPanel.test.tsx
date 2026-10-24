@@ -137,6 +137,21 @@ describe('StudioCookPanel (unit, round 2)', () => {
     ui.press(ui.getByTestID('studio-cook-confirm'));
     expect(onCook).toHaveBeenCalledWith({ fire: 'short', holdBack: [0] });
   });
+
+  it('passes the optional brief through onCook when provided', () => {
+    const chips = MIX.map((event, index) => chip(index, event));
+    const { ui, onCook } = panel(chips);
+    const briefInput = ui.getByTestID('studio-brief');
+    act(() => {
+      briefInput.props.onChangeText('a quiet dawn');
+    });
+    ui.press(ui.getByTestID('studio-cook-confirm'));
+    expect(onCook).toHaveBeenCalledWith({
+      fire: 'short',
+      holdBack: [],
+      brief: 'a quiet dawn',
+    });
+  });
 });
 
 /* ---- integration through StudioView -------------------------------------- */

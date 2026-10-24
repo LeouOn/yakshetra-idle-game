@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { describe, expect, it } from 'vitest';
 import { render } from '@/test/rntl';
-import { formatSid } from '@/i18n';
+import { formatSid, resolveSid } from '@/i18n';
 import StudioView from '@/ui/components/StudioView';
 import StudioJourney from '@/ui/components/StudioJourney';
 import StudioMilestone from '@/ui/components/StudioMilestone';
@@ -66,7 +66,9 @@ describe('guided discovery loop', () => {
     // The cook primary opens the shaping panel (lane B); confirm a short fire.
     ui.press(ui.getByTestID('studio-cook-confirm'));
     // Surplus can make a batch ready immediately; otherwise tending completes it.
-    if (ui.queryByText('Tend the working') !== null) ui.press(ui.getByTestID('journey-primary'));
+    if (ui.queryByText(resolveSid('studio.journey_tend_sid')) !== null) {
+      ui.press(ui.getByTestID('journey-primary'));
+    }
     expect(ui.getByTestID('journey-primary')).toBeTruthy();
     ui.press(ui.getByTestID('journey-primary'));
     // Wave 2c: the stage holds the fresh card; dismiss it and the journey
