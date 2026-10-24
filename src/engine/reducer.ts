@@ -16,6 +16,7 @@ import type { Choice, EffectOp, Event } from '@/content/schema';
 
 import type { IntentRoot, Lens, LifeState, ResourceId, SocialIdentity } from './types';
 import type { Rng } from './rng';
+import { choiceIsAvailable } from './choice-availability';
 import { evaluatePredicate } from './predicates';
 import { recordLifeResidue } from './residue';
 
@@ -187,7 +188,7 @@ export function applyEffects(state: LifeState, effects: readonly EffectOp[], rng
  * {@link applyEffect} and the choice id is appended to the replay history.
  */
 export function applyChoice(state: LifeState, choice: Choice, rng: Rng): LifeState {
-  if (!choice.requires.every((p) => evaluatePredicate(state, p))) {
+  if (!choiceIsAvailable(state, choice)) {
     return state;
   }
   const afterEffects = choice.effects.reduce<LifeState>(
@@ -240,9 +241,7 @@ export function applyEvent(state: LifeState, event: Event, rng: Rng): LifeState 
     return state;
   }
   const matched =
-    event.choices.find(
-      (c) => !c.forbidden && c.requires.every((p) => evaluatePredicate(state, p)),
-    ) ?? firstChoice;
+    event.choices.find((c) => !c.forbidden && choiceIsAvailable(state, c)) ?? firstChoice;
 
   const afterChoice = applyChoice(state, matched, rng);
   const firedOnce = event.once_per_run

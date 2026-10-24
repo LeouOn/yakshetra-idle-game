@@ -19,7 +19,10 @@
 
 import { resolveSid } from '../i18n';
 import type { MinigameDef } from './minigame-schema';
-import type { EffectOp, EraPack, Practice } from './schema';
+import type { EffectOp, Ending, EraPack, Practice } from './schema';
+import { predicateKeyViolations } from './lint-predicates';
+
+export { R_RESOLVABLE_PREDICATE_KEY, KNOWN_DEAD_GATES } from './lint-predicates';
 
 /* -------------------------------------------------------------------------------------------------
  * Public types
@@ -559,6 +562,7 @@ export function lintPack(
   practices: readonly Practice[] = [],
   i18n: Readonly<Record<string, string>> = {},
   minigames: readonly MinigameDef[] = [],
+  endings: readonly Ending[] = [],
 ): LintReport {
   const violations: LintViolation[] = [];
   checkNoKarmaMeter(pack, violations);
@@ -568,6 +572,7 @@ export function lintPack(
   checkMinigameRewards(minigames, violations);
   checkResolvableOutcomeSids(pack, i18n, violations);
   checkResolvableSituationSids(pack, i18n, violations);
+  violations.push(...predicateKeyViolations(pack, practices, endings));
   const hasError = violations.some((v) => v.severity === 'error');
   return { passed: !hasError, violations };
 }

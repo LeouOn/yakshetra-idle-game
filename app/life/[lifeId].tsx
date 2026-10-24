@@ -18,6 +18,7 @@ import { loadEraPack } from '@/content/loader';
 import type { Choice, EraPack, Event } from '@/content/schema';
 import {
   applyChoice,
+  choiceIsAvailable,
   applyStudioToNextLife,
   createLifeState,
   createRng,
@@ -657,7 +658,12 @@ function TurnScreenBody({
         <IntendPanel state={state} onChoose={handleChooseLens} />
       ) : null}
       {!noEra && phase === 'act' ? (
-        <ActPanel state={state} events={visibleEvents} onChoose={handleChooseAction} />
+        <ActPanel
+          state={state}
+          events={visibleEvents}
+          onChoose={handleChooseAction}
+          onAdvance={handleReflectContinue}
+        />
       ) : null}
       {phase === 'resolve' && reflect !== null ? (
         <ReflectCard
@@ -850,10 +856,22 @@ interface ActPanelProps {
   readonly state: LifeState;
   readonly events: readonly Event[];
   readonly onChoose: (choice: Choice) => void;
+  /** Advance the turn when nothing is open through this lens. */
+  readonly onAdvance: () => void;
 }
 
-function ActPanel({ state, events, onChoose }: ActPanelProps) {
-  const totalChoices = events.reduce((sum, evt) => sum + evt.choices.length, 0);
+function ActPanel({ state, events, onChoose, onAdvance }: ActPanelProps) {
+  // Filter first, then group: an event with no available choice is not shown
+  // at all, and a choice the reducer would refuse is never rendered. The
+  // panel's old `disabled` was only the lens gate; availability now comes
+  // from the same predicate the reducer uses.
+  const groups = events
+    .map((evt) => ({
+      evt,
+      choices: evt.choices.filter((choice) => choiceIsAvailable(state, choice)),
+    }))
+    .filter((group) => group.choices.length > 0);
+  const totalChoices = groups.reduce((sum, group) => sum + group.choices.length, 0);
   return (
     <View style={styles.phase}>
       <Text accessibilityRole="header" style={styles.heading}>
@@ -861,11 +879,22 @@ function ActPanel({ state, events, onChoose }: ActPanelProps) {
       </Text>
       <Text style={styles.body}>{resolveSid('life.turn.act_hint_sid')}</Text>
       {totalChoices === 0 ? (
-        <Text testID="turn-act-empty" style={styles.body}>
-          {resolveSid('life.turn.act_empty_sid')}
-        </Text>
+        <>
+          <Text testID="turn-act-empty" style={styles.body}>
+            {resolveSid('life.turn.act_empty_sid')}
+          </Text>
+          <Pressable
+            role="button"
+            testID="turn-act-pass"
+            accessibilityLabel={resolveSid('life.turn.act_pass_sid')}
+            onPress={onAdvance}
+            style={styles.actionCard}
+          >
+            <Text style={styles.actionCardText}>{resolveSid('life.turn.act_pass_sid')}</Text>
+          </Pressable>
+        </>
       ) : (
-        events.map((evt, index) => (
+        groups.map(({ evt, choices }, index) => (
           <View
             key={evt.id}
             testID={`turn-situation-group-${evt.id}`}
@@ -885,7 +914,7 @@ function ActPanel({ state, events, onChoose }: ActPanelProps) {
               </Text>
             )}
             <View style={styles.actionList}>
-              {evt.choices.map((choice) => {
+              {choices.map((choice) => {
                 const label = resolveSid(choice.label_sid);
                 const disabled = state.chosen_lens === null;
                 return (

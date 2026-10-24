@@ -602,4 +602,54 @@ describe('TurnScreen', () => {
       expect(hint.flexShrink).toBe(1);
     }
   });
+
+  it('does not offer a choice whose requires fail, and never renders a dead group', () => {
+    const onDeath = vi.fn();
+    const pack = structuredClone(fixtureEraPack);
+    pack.events[0]!.choices.push({
+      id: 'choice-wealth-blocked',
+      label_sid: 'test.action.wealth_blocked_label_sid',
+      requires: [{ op: 'gte', key: 'wealth', value: 1 }],
+      effects: [],
+      forbidden: false,
+    });
+    const { getByTestID, press } = render(
+      createElement(TurnScreen, { initialState: makeInitialState(), eraPack: pack, onDeath }),
+    );
+    press(getByTestID('turn-lens-generosity'));
+    // The reducer would refuse this choice; the act panel must not show it.
+    expect(() => getByTestID('turn-action-choice-wealth-blocked')).toThrow();
+    expect(() => getByTestID('turn-action-choice-give-alms')).not.toThrow();
+  });
+
+  it('when no choice is available, shows the empty line and lets the day pass', () => {
+    const onDeath = vi.fn();
+    const pack = structuredClone(fixtureEraPack);
+    const blocked = {
+      ...pack.events[0]!,
+      id: 'evt-all-blocked',
+      choices: [
+        {
+          ...pack.events[0]!.choices[0]!,
+          id: 'choice-all-blocked',
+          label_sid: 'test.action.all_blocked_label_sid',
+          requires: [{ op: 'gte' as const, key: 'wealth', value: 1 }],
+          effects: [],
+        },
+      ],
+    };
+    pack.events = [blocked];
+    const { getByTestID, getByText, press } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: { ...pack, events: [blocked] },
+        onDeath,
+      }),
+    );
+    press(getByTestID('turn-lens-generosity'));
+    expect(() => getByTestID('turn-act-empty')).not.toThrow();
+    expect(() => getByTestID('turn-action-choice-all-blocked')).toThrow();
+    press(getByTestID('turn-act-pass'));
+    expect(() => getByText('Turn 1')).not.toThrow();
+  });
 });

@@ -74,6 +74,7 @@
       "act_heading_sid": "Choose an action",
       "act_hint_sid": "What will you do with this moment?",
       "act_empty_sid": "No actions are open through this lens right now.",
+      "act_pass_sid": "Let the day pass",
       "no_era_heading_sid": "No events for this era yet",
       "no_era_body_sid": "This passage holds no further choices. Step forward across the threshold to see what echoes carry into the next life.",
       "end_life_button_sid": "End life early",
@@ -1646,7 +1647,9 @@
   "test": {
     "action": {
       "give_alms_label_sid": "Give alms at the temple gate",
-      "harvest_rice_label_sid": "Harvest rice in the terraces"
+      "harvest_rice_label_sid": "Harvest rice in the terraces",
+      "wealth_blocked_label_sid": "Spend what you do not have",
+      "all_blocked_label_sid": "An action nobody can take"
     },
     "situation": {
       "alms_sid": "A tired traveler sits at the temple gate, bowl upturned.",

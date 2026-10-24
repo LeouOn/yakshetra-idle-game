@@ -265,6 +265,7 @@ export {
   withArticle,
   type ChronicleEntry,
 } from './chronicle';
+export { choiceIsAvailable } from './choice-availability';
 export type { SessionStepContext, SessionStepResult, SessionStepSummary } from './session-step';
 export { catchUpSession, stepAbsence } from './session-catchup';
 export type { AbsenceStepResult, SessionCatchUpResult } from './session-catchup';

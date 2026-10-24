@@ -273,17 +273,6 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     );
   }
 
-  // --- Lint (second enforcement layer) -------------------------------------
-  const lintReport = lintPack(parsedResult.data, practicesResult.data, {}, minigamesResult.data);
-  if (!lintReport.passed) {
-    const first = lintReport.violations[0];
-    throw new Error(
-      `loadEraPack("${eraId}"): lint rejected pack (rule ${first?.rule ?? 'unknown'}): ${
-        first?.message ?? 'unknown violation'
-      }`,
-    );
-  }
-
   // --- Endings validation --------------------------------------------------
   // EraPackSchema is strict and has no `endings` key by design (plan todo 4:
   // endings are a standalone artifact). We validate them standalone here and
@@ -297,6 +286,23 @@ export function loadEraPack(eraId: string): LoadedEraPack {
     throw new Error(
       `loadEraPack("${eraId}"): endings schema validation failed at "${fieldPath}": ${
         firstIssue?.message ?? 'unknown error'
+      }`,
+    );
+  }
+
+  // --- Lint (second enforcement layer) -------------------------------------
+  const lintReport = lintPack(
+    parsedResult.data,
+    practicesResult.data,
+    {},
+    minigamesResult.data,
+    endingsResult.data,
+  );
+  if (!lintReport.passed) {
+    const first = lintReport.violations[0];
+    throw new Error(
+      `loadEraPack("${eraId}"): lint rejected pack (rule ${first?.rule ?? 'unknown'}): ${
+        first?.message ?? 'unknown violation'
       }`,
     );
   }

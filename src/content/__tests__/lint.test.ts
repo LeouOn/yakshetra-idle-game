@@ -13,6 +13,13 @@ import {
   R_RESOLVABLE_SITUATION_SID,
 } from '../lint';
 import { EraPackSchema, PracticeSchema, type EraPack } from '../schema';
+import { loadEraPack } from '../loader';
+import {
+  collectPredicateKeySpaces,
+  isStudioReturnFlag,
+  KNOWN_DEAD_GATES,
+} from '../lint-predicates';
+import { pinFlag, placeFlag, WORLD_ASSEMBLED_FLAG, worldDraftFlag } from '@/engine';
 import { MinigameDefSchema } from '../minigame-schema';
 
 /**
@@ -310,5 +317,100 @@ describe('R-RESOLVABLE-SITUATION-SID', () => {
     const report = lintPack(pack, []);
     expect(report.passed).toBe(true);
     expect(report.violations).toEqual([]);
+  });
+});
+
+describe('R-RESOLVABLE-PREDICATE-KEY', () => {
+  test('FAIL — a made-up predicate key is an error', async () => {
+    const pack = structuredClone(await loadFixture('karma-meter-pass'));
+    pack.events[0]!.trigger = { op: 'gte', key: 'made-up-key', value: 1 };
+    const report = lintPack(pack);
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toContain('R-RESOLVABLE-PREDICATE-KEY');
+  });
+
+  test('FAIL — state.age reintroduced is caught (the age bug class)', async () => {
+    const pack = structuredClone(await loadFixture('karma-meter-pass'));
+    pack.events[0]!.trigger = { op: 'gte', key: 'state.age', value: 25 };
+    const report = lintPack(pack);
+    expect(ruleIds(report)).toContain('R-RESOLVABLE-PREDICATE-KEY');
+    expect(
+      report.violations.find((v) => v.rule === 'R-RESOLVABLE-PREDICATE-KEY')?.message,
+    ).toContain('state.age');
+  });
+
+  test('PASS — the explicit known-dead exemptions are the only ones that pass', async () => {
+    const pack = structuredClone(await loadFixture('karma-meter-pass'));
+    const clean = lintPack(pack);
+    expect(ruleIds(clean)).not.toContain('R-RESOLVABLE-PREDICATE-KEY');
+    // Each exemption must stay a named, commented entry, not a silent default.
+    pack.events[0]!.choices[0]!.requires = [
+      { op: 'gte', key: 'wealth', value: 3 },
+      { op: 'has_flag', key: 'has_brother' },
+      { op: 'has_flag', key: 'vow:protect-family' },
+      { op: 'has_flag', key: 'victim-of-purge' },
+      { op: 'has_flag', key: 'bandit-casualty' },
+    ];
+    const exempt = lintPack(pack);
+    expect(ruleIds(exempt)).not.toContain('R-RESOLVABLE-PREDICATE-KEY');
+  });
+
+  test('PASS — a flag the studio return seeds into a new life is a real producer', async () => {
+    const pack = structuredClone(await loadFixture('karma-meter-pass'));
+    pack.events[0]!.choices[0]!.requires = [
+      { op: 'has_flag', key: WORLD_ASSEMBLED_FLAG },
+      { op: 'has_flag', key: pinFlag('person-1') },
+      { op: 'has_flag', key: placeFlag('place-1') },
+      { op: 'has_flag', key: worldDraftFlag('town') },
+    ];
+    expect(ruleIds(lintPack(pack))).not.toContain('R-RESOLVABLE-PREDICATE-KEY');
+    // The list in lint-predicates repeats the engine's shapes; this pins it to them.
+    for (const flag of [
+      WORLD_ASSEMBLED_FLAG,
+      pinFlag('x'),
+      placeFlag('x'),
+      worldDraftFlag('town'),
+    ]) {
+      expect(isStudioReturnFlag(flag), flag).toBe(true);
+    }
+    expect(isStudioReturnFlag('has_brother')).toBe(false);
+  });
+
+  test('every exemption is still used by a real pack and still has no producer', () => {
+    const used = new Set<string>();
+    const walk = (p: unknown): void => {
+      const node = p as { key?: string; operands?: unknown[]; operand?: unknown };
+      if (typeof node.key === 'string') used.add(node.key);
+      node.operands?.forEach(walk);
+      if (node.operand !== undefined) walk(node.operand);
+    };
+    for (const era of ['tang-china', 'fantasy-mahayana']) {
+      const pack = loadEraPack(era);
+      for (const event of pack.events) {
+        if (event.trigger !== undefined) walk(event.trigger);
+        event.choices.forEach((choice) => choice.requires.forEach(walk));
+      }
+      pack.endings.forEach((ending) => walk(ending.trigger));
+      const spaces = collectPredicateKeySpaces(pack, pack.practices);
+      for (const key of Object.keys(KNOWN_DEAD_GATES)) {
+        // A key that gained a producer must leave the list (then the rule guards it again).
+        expect(
+          spaces.numeric.has(key) || spaces.flags.has(key) || spaces.skills.has(key),
+          key,
+        ).toBe(false);
+      }
+    }
+    // A stale exemption (no pack reads the key any more) is clutter that hides a future dead gate.
+    for (const key of Object.keys(KNOWN_DEAD_GATES)) {
+      expect(used.has(key), `${key} is exempt but no real predicate uses it`).toBe(true);
+    }
+  });
+
+  test('the real packs are green (after c1’s pending age fix)', () => {
+    for (const era of ['tang-china', 'fantasy-mahayana']) {
+      const pack = loadEraPack(era);
+      const report = lintPack(pack, pack.practices, {}, pack.minigames, pack.endings);
+      expect(ruleIds(report)).not.toContain('R-RESOLVABLE-PREDICATE-KEY');
+    }
   });
 });
