@@ -111,16 +111,10 @@ function computePhase(reflect: ReflectEntry | null, state: LifeState): Phase {
   return 'act';
 }
 
-/** Flatten all choices of all events into a single render list. */
-function collectChoices(events: readonly Event[]): readonly Choice[] {
-  const out: Choice[] = [];
-  for (const evt of events) {
-    for (const choice of evt.choices) {
-      out.push(choice);
-    }
-  }
-  return out;
-}
+/** The act panel renders ONE block per visible event: the event's situation
+ * line (when it has one) above ONLY that event's choices, so every choice
+ * reads against the moment it answers. Events without a `situation_sid`
+ * group their choices with no header — no empty line. */
 
 /**
  * Lens-to-event mapping: which event ids each lens surfaces, per era.
@@ -643,7 +637,6 @@ function TurnScreenBody({
 
   const stateEvents = filterEventsForState(eraPack, state);
   const visibleEvents = filterEventsForLens(stateEvents, state.era, state.chosen_lens);
-  const choices = collectChoices(visibleEvents);
   const noEra = eraPack === null;
 
   return (
@@ -664,7 +657,7 @@ function TurnScreenBody({
         <IntendPanel state={state} onChoose={handleChooseLens} />
       ) : null}
       {!noEra && phase === 'act' ? (
-        <ActPanel state={state} choices={choices} onChoose={handleChooseAction} />
+        <ActPanel state={state} events={visibleEvents} onChoose={handleChooseAction} />
       ) : null}
       {phase === 'resolve' && reflect !== null ? (
         <ReflectCard
@@ -706,9 +699,13 @@ function TopBar({ state }: TopBarProps) {
       <Text testID="turn-top-turn" style={styles.topBarText}>
         {turn}
       </Text>
-      <Text testID="turn-top-age" style={styles.topBarText}>
-        {age}
-      </Text>
+      {/* Nobody ages yet (state.age stays 0), and "Age 0" on a grown farmer
+          reads as a bug: show it only once age is real. */}
+      {state.age > 0 ? (
+        <Text testID="turn-top-age" style={styles.topBarText}>
+          {age}
+        </Text>
+      ) : null}
       <Text testID="turn-top-lens" style={styles.topBarText}>
         {lensLabel}
       </Text>
@@ -754,9 +751,11 @@ function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: Orien
       <Text testID="turn-orient-era-role" accessibilityRole="header" style={styles.heading}>
         {eraRole}
       </Text>
-      <Text testID="turn-orient-age" style={styles.body}>
-        {ageRow}
-      </Text>
+      {state.age > 0 ? (
+        <Text testID="turn-orient-age" style={styles.body}>
+          {ageRow}
+        </Text>
+      ) : null}
       <Text testID="turn-orient-flags" style={styles.body}>
         {flagsRow}
       </Text>
@@ -774,8 +773,12 @@ function OrientPanel({ state, eraPack, showManifestCharge, onOpenStudio }: Orien
           testID="turn-open-studio"
           accessibilityLabel={resolveSid('life.turn.manifest_open_sid')}
           onPress={onOpenStudio}
+          style={styles.benchButton}
         >
-          <Text style={styles.body}>{resolveSid('life.turn.manifest_open_sid')}</Text>
+          <Text style={styles.benchButtonText}>
+            {resolveSid('life.turn.manifest_open_sid')}
+            {' →'}
+          </Text>
         </Pressable>
       ) : null}
       <Text style={styles.subheading}>{resolveSid('life.turn.orient_resources_label_sid')}</Text>
@@ -851,44 +854,66 @@ function IntendPanel({ state, onChoose }: IntendPanelProps) {
 
 interface ActPanelProps {
   readonly state: LifeState;
-  readonly choices: readonly Choice[];
+  readonly events: readonly Event[];
   readonly onChoose: (choice: Choice) => void;
 }
 
-function ActPanel({ state, choices, onChoose }: ActPanelProps) {
+function ActPanel({ state, events, onChoose }: ActPanelProps) {
+  const totalChoices = events.reduce((sum, evt) => sum + evt.choices.length, 0);
   return (
     <View style={styles.phase}>
       <Text accessibilityRole="header" style={styles.heading}>
         {resolveSid('life.turn.act_heading_sid')}
       </Text>
       <Text style={styles.body}>{resolveSid('life.turn.act_hint_sid')}</Text>
-      {choices.length === 0 ? (
+      {totalChoices === 0 ? (
         <Text testID="turn-act-empty" style={styles.body}>
           {resolveSid('life.turn.act_empty_sid')}
         </Text>
       ) : (
-        <View style={styles.actionList}>
-          {choices.map((choice) => {
-            const label = resolveSid(choice.label_sid);
-            const disabled = state.chosen_lens === null;
-            return (
-              <Pressable
-                key={choice.id}
-                testID={`turn-action-${choice.id}`}
-                accessibilityRole="button"
-                accessibilityLabel={label}
-                accessible
-                disabled={disabled}
-                style={disabled ? styles.actionCardDisabled : styles.actionCard}
-                onPress={() => {
-                  onChoose(choice);
-                }}
+        events.map((evt, index) => (
+          <View
+            key={evt.id}
+            testID={`turn-situation-group-${evt.id}`}
+            role="group"
+            {...(evt.situation_sid === undefined
+              ? {}
+              : { 'aria-label': resolveSid(evt.situation_sid) })}
+            style={index === 0 ? styles.situationGroup : styles.situationGroupDivided}
+          >
+            {evt.situation_sid === undefined ? null : (
+              <Text
+                testID={`turn-situation-${evt.id}`}
+                accessibilityRole="header"
+                style={styles.situationLine}
               >
-                <Text style={styles.actionCardText}>{label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                {resolveSid(evt.situation_sid)}
+              </Text>
+            )}
+            <View style={styles.actionList}>
+              {evt.choices.map((choice) => {
+                const label = resolveSid(choice.label_sid);
+                const disabled = state.chosen_lens === null;
+                return (
+                  <Pressable
+                    key={choice.id}
+                    testID={`turn-action-${choice.id}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={label}
+                    accessible
+                    disabled={disabled}
+                    style={disabled ? styles.actionCardDisabled : styles.actionCard}
+                    onPress={() => {
+                      onChoose(choice);
+                    }}
+                  >
+                    <Text style={styles.actionCardText}>{label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        ))
       )}
     </View>
   );
@@ -1096,6 +1121,40 @@ const styles = StyleSheet.create({
     color: t.text,
     fontSize: 15,
     fontWeight: '500',
+  },
+  situationGroup: {
+    gap: 6,
+    marginTop: 4,
+  },
+  situationGroupDivided: {
+    gap: 6,
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: t.line,
+    paddingTop: 10,
+  },
+  situationLine: {
+    color: t.text,
+    fontSize: 15,
+    fontWeight: '600',
+    fontStyle: 'italic',
+  },
+  benchButton: {
+    backgroundColor: t.chip,
+    borderColor: t.line,
+    borderRadius: 999,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 44,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  benchButtonText: {
+    color: t.text,
+    fontSize: 14,
+    fontWeight: '600',
   },
   endLifeButton: {
     borderColor: t.line,

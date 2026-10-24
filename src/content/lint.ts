@@ -48,6 +48,7 @@ export const R_NO_DONATION_OFFSET = 'R-NO-DONATION-OFFSET' as const;
 export const R_NO_VISIBLE_KARMA_METER = 'R-NO-VISIBLE-KARMA-METER' as const;
 export const R_NO_PRACTICE_AS_CURRENCY = 'R-NO-PRACTICE-AS-CURRENCY' as const;
 export const R_RESOLVABLE_OUTCOME_SID = 'R-RESOLVABLE-OUTCOME-SID' as const;
+export const R_RESOLVABLE_SITUATION_SID = 'R-RESOLVABLE-SITUATION-SID' as const;
 
 /* -------------------------------------------------------------------------------------------------
  * Compiled patterns
@@ -497,6 +498,43 @@ function checkResolvableOutcomeSids(
  * -----------------------------------------------------------------------------------------------*/
 
 /**
+ * Check that an event's `situation_sid`, when present, resolves in `en.json`
+ * (or the provided i18n map): the turn screen renders it as the situation
+ * line above the event's choices, so an unresolvable id would throw at
+ * render time instead of failing at pack lint. Meter tokens are barred from
+ * situation prose for the same reason as outcome prose.
+ */
+function checkResolvableSituationSids(
+  pack: EraPack,
+  i18n: Readonly<Record<string, string>>,
+  out: LintViolation[],
+): void {
+  for (const ev of pack.events) {
+    if (ev.situation_sid === undefined) {
+      continue;
+    }
+    const text = tryResolveSid(ev.situation_sid, i18n);
+    if (text === null) {
+      out.push(
+        violation(
+          R_RESOLVABLE_SITUATION_SID,
+          `event situation_sid "${ev.situation_sid}" failed to resolve in en.json`,
+          `events[${ev.id}].situation_sid`,
+        ),
+      );
+    } else if (KARMA_METER_RE.test(text)) {
+      out.push(
+        violation(
+          R_NO_KARMA_METER,
+          `prohibited meter token in resolved situation prose "${text}" in event "${ev.id}"`,
+          `events[${ev.id}].situation_sid`,
+        ),
+      );
+    }
+  }
+}
+
+/**
  * Lint a parsed {@link EraPack} (plus optional practices, i18n strings, and
  * minigames) against the remaining game-design rules.
  *
@@ -529,6 +567,7 @@ export function lintPack(
   checkNoPracticeAsCurrency(practices, i18n, violations);
   checkMinigameRewards(minigames, violations);
   checkResolvableOutcomeSids(pack, i18n, violations);
+  checkResolvableSituationSids(pack, i18n, violations);
   const hasError = violations.some((v) => v.severity === 'error');
   return { passed: !hasError, violations };
 }

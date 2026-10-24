@@ -22,14 +22,14 @@ function renderCard(props: Partial<ReflectCardProps> & { entry?: ReflectEntry } 
   const onContinue = props.onContinue ?? vi.fn();
   const onRemember = props.onRemember ?? vi.fn();
   const entry = props.entry ?? makeEntry();
-  // A huge autoDismissMs keeps the card from auto-dismissing during tests that
-  // are not exercising the timer; the timer test passes an explicit value.
+  // autoDismissMs passes through only when the caller sets one: the default
+  // (no timer) is itself the behavior under test for the no-auto-dismiss pin.
   const result = render(
     createElement(ReflectCard, {
       entry,
       onContinue,
       onRemember,
-      autoDismissMs: props.autoDismissMs ?? 10 ** 9,
+      ...(props.autoDismissMs === undefined ? {} : { autoDismissMs: props.autoDismissMs }),
     }),
   );
   return { ...result, onContinue, onRemember, entry };
@@ -103,6 +103,19 @@ describe('ReflectCard', () => {
     });
     // Remember marks the card as interacted-with, so the auto-dismiss Continue never fires.
     expect(onContinue).not.toHaveBeenCalled();
+  });
+
+  it('does not auto-dismiss by default — the player reads at their own pace', async () => {
+    // Cycle-2 decision: the reflection text is the heart of the game; the
+    // old 8-second default timer snatched it away from slower readers. At
+    // HEAD this test is red: advancing the timers fires onContinue.
+    const onContinue = vi.fn();
+    const { getByTestID } = renderCard({ onContinue });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60_000);
+    });
+    expect(onContinue).not.toHaveBeenCalled();
+    expect(() => getByTestID('reflect-card')).not.toThrow();
   });
 
   it('auto-dismisses (Continue) after the configured delay with no interaction', async () => {

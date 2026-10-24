@@ -10,6 +10,7 @@ import {
   R_NO_KARMA_METER,
   R_NO_PRACTICE_AS_CURRENCY,
   R_NO_VISIBLE_KARMA_METER,
+  R_RESOLVABLE_SITUATION_SID,
 } from '../lint';
 import { EraPackSchema, PracticeSchema, type EraPack } from '../schema';
 import { MinigameDefSchema } from '../minigame-schema';
@@ -267,5 +268,47 @@ describe('lint module import surface', () => {
   test('lintPack is importable via the "@/content/lint" path alias', async () => {
     const mod = (await import('@/content/lint')) as typeof import('../lint');
     expect(typeof mod.lintPack).toBe('function');
+  });
+});
+
+describe('R-RESOLVABLE-SITUATION-SID', () => {
+  // The turn screen renders event.situation_sid as the situation line above
+  // the event's choices, so an id that does not resolve would throw at render
+  // time; lint must catch it at pack check time instead.
+  const withSituation = (pack: EraPack, sid: string | undefined): EraPack => ({
+    ...pack,
+    events: pack.events.map((evt, index) =>
+      index === 0 ? { ...evt, ...(sid === undefined ? {} : { situation_sid: sid }) } : evt,
+    ),
+  });
+
+  test('PASS — a situation_sid that resolves in i18n lints clean', async () => {
+    const pack = withSituation(await loadFixture('karma-meter-pass'), 'situation.pass_sid');
+    const report = lintPack(pack, [], { 'situation.pass_sid': 'A traveler waits at the gate.' });
+    expect(report.passed).toBe(true);
+    expect(report.violations).toEqual([]);
+  });
+
+  test('FAIL — a situation_sid that resolves nowhere is an error violation', async () => {
+    const pack = withSituation(await loadFixture('karma-meter-pass'), 'situation.ghost_sid');
+    const report = lintPack(pack, []);
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toEqual([R_RESOLVABLE_SITUATION_SID]);
+    expect(report.violations[0]!.location).toBe('events[ev_one].situation_sid');
+  });
+
+  test('FAIL — meter tokens in resolved situation prose are barred', async () => {
+    const pack = withSituation(await loadFixture('karma-meter-pass'), 'situation.meter_sid');
+    const report = lintPack(pack, [], { 'situation.meter_sid': 'Your karma score rises.' });
+    expect(report.passed).toBe(false);
+    expect(ruleIds(report)).toEqual([R_NO_KARMA_METER]);
+    expect(report.violations[0]!.location).toBe('events[ev_one].situation_sid');
+  });
+
+  test('absent situation_sid — no violation, nothing required', async () => {
+    const pack = withSituation(await loadFixture('karma-meter-pass'), undefined);
+    const report = lintPack(pack, []);
+    expect(report.passed).toBe(true);
+    expect(report.violations).toEqual([]);
   });
 });

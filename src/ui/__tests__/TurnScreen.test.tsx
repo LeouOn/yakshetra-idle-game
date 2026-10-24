@@ -21,6 +21,7 @@ import type { Choice, EraPack } from '@/content/schema';
 import { TurnScreen } from '../../../app/life/[lifeId]';
 import { resolveSid } from '@/i18n';
 import { render } from '@/test/rntl';
+import type { TestInstance } from 'test-renderer';
 
 // expo-router imports real RN transitively; mock it before importing the screen.
 vi.mock('expo-router', () => ({
@@ -70,6 +71,7 @@ const fixtureEraPack: EraPack = {
       cooldown_turns: 0,
       once_per_run: false,
       content_warnings: [],
+      situation_sid: 'test.situation.alms_sid',
       choices: [
         makeChoice(
           'choice-give-alms',
@@ -90,6 +92,7 @@ const fixtureEraPack: EraPack = {
       cooldown_turns: 0,
       once_per_run: false,
       content_warnings: [],
+      situation_sid: 'test.situation.harvest_sid',
       choices: [
         makeChoice('choice-harvest-rice', 'test.action.harvest_rice_label_sid', [
           { op: 'add_resource', key: 'provisions', delta: 5 },
@@ -145,9 +148,11 @@ describe('TurnScreen', () => {
       }),
     );
 
-    // Top bar carries turn and age.
+    // Top bar carries the turn. Nobody ages yet (age stays 0), and "Age 0" on
+    // a grown farmer reads as a bug, so the age shows only once it is real.
     expect(() => getByText('Turn 0')).not.toThrow();
-    expect(() => getByText('Age 0')).not.toThrow();
+    expect(() => getByTestID('turn-top-age')).toThrow();
+    expect(() => getByTestID('turn-orient-age')).toThrow();
 
     // Orient: every canonical resource appears as a readable strip cell —
     // the value prominent, the label small (wave 2b; was a monospace line).
@@ -175,10 +180,120 @@ describe('TurnScreen', () => {
     expect(() => getByText('Discernment')).not.toThrow();
   });
 
+  it('shows the age, label first, once the life has one', () => {
+    const onDeath = vi.fn();
+    const aged: LifeState = { ...makeInitialState(), age: 30 };
+    const { getByText } = render(
+      createElement(TurnScreen, { initialState: aged, eraPack: fixtureEraPack, onDeath }),
+    );
+    expect(() => getByText('Age 30')).not.toThrow();
+    expect(() => getByText('Age: 30')).not.toThrow();
+  });
+
+  it('groups each event’s choices under its situation line in the act panel', () => {
+    const onDeath = vi.fn();
+    const { getByTestID, getByText, press, container } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: fixtureEraPack,
+        onDeath,
+      }),
+    );
+
+    press(getByTestID('turn-lens-generosity'));
+
+    // Each visible event renders its situation as a header above ONLY its
+    // own choices — the choice the player is offered names its moment.
+    const almsSituation = getByTestID('turn-situation-evt-give-alms');
+    expect(almsSituation.props.accessibilityRole).toBe('header');
+    expect(() => getByText(resolveSid('test.situation.alms_sid'))).not.toThrow();
+    expect(() => getByText(resolveSid('test.situation.harvest_sid'))).not.toThrow();
+    expect(() => getByTestID('turn-situation-group-evt-give-alms')).not.toThrow();
+    expect(() => getByTestID('turn-situation-group-evt-harvest-rice')).not.toThrow();
+
+    // A screen reader moving button to button still hears the moment: each
+    // group is a labelled group carrying its situation text.
+    const almsGroup = getByTestID('turn-situation-group-evt-give-alms');
+    expect(almsGroup.props.role).toBe('group');
+    expect(almsGroup.props['aria-label']).toBe(resolveSid('test.situation.alms_sid'));
+
+    // The alms situation precedes its own choice and the harvest group's
+    // situation in the tree (document order).
+    const order: string[] = [];
+    const visit = (node: TestInstance): void => {
+      const testID = String(node.props.testID ?? '');
+      if (
+        testID === 'turn-situation-evt-give-alms' ||
+        testID === 'turn-action-choice-give-alms' ||
+        testID === 'turn-situation-evt-harvest-rice'
+      ) {
+        order.push(testID);
+      }
+      for (const child of node.children) {
+        if (typeof child === 'object' && child !== null) {
+          visit(child as TestInstance);
+        }
+      }
+    };
+    visit(container);
+    expect(order).toEqual([
+      'turn-situation-evt-give-alms',
+      'turn-action-choice-give-alms',
+      'turn-situation-evt-harvest-rice',
+    ]);
+
+    // The existing choice contract is untouched: same testIDs, still pressable.
+    press(getByTestID('turn-action-choice-give-alms'));
+    expect(() => getByTestID('reflect-card')).not.toThrow();
+  });
+
+  it('renders no empty situation line for events without situation_sid', () => {
+    const onDeath = vi.fn();
+    const barePack: EraPack = {
+      ...fixtureEraPack,
+      events: fixtureEraPack.events.map((evt) => ({ ...evt, situation_sid: undefined })),
+    };
+    const { getByTestID, container, press } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: barePack,
+        onDeath,
+      }),
+    );
+    press(getByTestID('turn-lens-generosity'));
+    // Graceful fallback: choices still group per event, no header, no empty text.
+    const situations = container.queryAll(
+      (node) =>
+        node.props.testID === 'turn-situation-evt-give-alms' ||
+        node.props.testID === 'turn-situation-evt-harvest-rice',
+    );
+    expect(situations).toHaveLength(0);
+    expect(() => getByTestID('turn-action-choice-give-alms')).not.toThrow();
+
+    // The group still exists (a control that fails on the old flat list), is
+    // unlabelled, and holds no empty text before its first choice.
+    const group = getByTestID('turn-situation-group-evt-give-alms');
+    expect(group.props.role).toBe('group');
+    expect(group.props['aria-label']).toBeUndefined();
+    const strings: string[] = [];
+    const collect = (node: TestInstance): void => {
+      for (const child of node.children) {
+        if (typeof child === 'string') {
+          strings.push(child);
+        } else if (typeof child === 'object' && child !== null) {
+          collect(child as TestInstance);
+        }
+      }
+    };
+    collect(group);
+    expect(strings.length).toBeGreaterThan(0);
+    expect(strings.every((text) => text.trim() !== '')).toBe(true);
+  });
+
   it('offers an open-bench affordance when the life charges Manifest', () => {
     const onDeath = vi.fn();
     const onOpenStudio = vi.fn();
-    const { getByTestID, getByText, press } = render(
+    const { getByTestID, getByTextContent, press } = render(
       createElement(TurnScreen, {
         initialState: makeInitialState(),
         eraPack: fixtureEraPack,
@@ -189,7 +304,20 @@ describe('TurnScreen', () => {
     );
 
     const button = getByTestID('turn-open-studio');
-    expect(() => getByText(resolveSid('life.turn.manifest_open_sid'))).not.toThrow();
+    // The visible pill text keeps the SID's words (the arrow is a decorative
+    // glyph appended after them, not part of the SID).
+    expect(() => getByTextContent(resolveSid('life.turn.manifest_open_sid'))).not.toThrow();
+
+    // It must LOOK like a control, not body text (agy-ux finding 8): a
+    // pill with a border and a 44px minimum touch target.
+    const style = StyleSheet.flatten(button.props.style) as {
+      minHeight?: number;
+      borderWidth?: number;
+    };
+    expect(style.minHeight ?? 0).toBeGreaterThanOrEqual(44);
+    expect(style.borderWidth ?? 0).toBeGreaterThan(0);
+    expect(button.props.accessibilityLabel).toBe(resolveSid('life.turn.manifest_open_sid'));
+
     press(button);
     expect(onOpenStudio).toHaveBeenCalledTimes(1);
   });

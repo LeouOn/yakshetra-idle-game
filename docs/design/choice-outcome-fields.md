@@ -63,6 +63,16 @@ In `app/life/[lifeId].tsx`, when `handleChooseAction` constructs the `ReflectEnt
 3. **Absence is valid**:
    - Choices omitting both fields remain completely valid and produce no violations.
 
+### Event situation (`situation_sid`)
+
+An event may carry an optional `situation_sid`: one sentence, in the era's voice, saying what has just happened ("a traveller lies in your doorway"). The life turn's act panel groups each visible event's choices under its situation, so a choice like "Bring them in and tend to them" has an antecedent.
+
+1. **`R-RESOLVABLE-SITUATION-SID`**:
+   - When `situation_sid` is defined on an event, the identifier must resolve in `src/i18n/en.json` (or the provided `i18n` map). An unresolved SID is an error violation.
+   - The resolved prose must not contain the forbidden meter tokens (the same `R-NO-KARMA-METER` pattern as outcome prose).
+2. **Absence is valid**: an event without `situation_sid` renders its group of choices with no header and no empty line.
+3. A situation must not impersonate a teacher, grade the player, or claim attainment (SPEC section 3).
+
 ---
 
 ## 5. Authoring Guide for Content (b3)

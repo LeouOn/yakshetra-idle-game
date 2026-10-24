@@ -290,6 +290,11 @@ export const EventSchema = z
     cooldown_turns: z.number().int().min(0, 'cooldown_turns must be an integer >= 0'),
     once_per_run: z.boolean(),
     trigger: PredicateSchema.optional(),
+    /** The situation the choices answer, shown above them on the turn
+     * screen. Optional: an event without it groups its choices with no
+     * header (no empty line). Lint (R-RESOLVABLE-SITUATION-SID) requires
+     * it to resolve in en.json when present. */
+    situation_sid: SidSchema.optional(),
     choices: z.array(ChoiceSchema).min(1, 'an event must have 1..4 choices').max(4),
     content_warnings: z.array(z.string()),
     minigame_id: TokenSchema.nullable().optional(),

@@ -3,9 +3,11 @@
 // Shows three sections: what the player intended (lens + action), what happened
 // (consequence + resource deltas), and what they carry (a journal memory line).
 // Two actions: Continue (advance the turn) and Remember (persist the entry to the
-// per-life journal). The card auto-dismisses after `autoDismissMs` if the player
-// does not interact, which keeps the turn loop unblocked for motor-impaired
-// players. Slide-in animation is suppressed entirely under reduced-motion.
+// per-life journal). NO auto-dismiss by default (cycle-2 decision): the
+// reflection text is the heart of the game, and the player reads at their own
+// pace — an 8-second timer snatched the card away from slower readers.
+// Callers that want a timer (tests, accessibility flows) pass `autoDismissMs`.
+// Slide-in animation is suppressed entirely under reduced-motion.
 //
 // Design constraints (plan todo 14): no virtue/score messaging, no judgment
 // language ("perfect"/"imperfect"), no emoji in journal text, no inline string
@@ -25,7 +27,6 @@ import type { IntentRoot, Lens, ResourceId } from '@/engine/types';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 
-const DEFAULT_AUTO_DISMISS_MS = 8000;
 const SLIDE_DISTANCE = 24;
 const SLIDE_DURATION_MS = 200;
 
@@ -43,6 +44,8 @@ export interface ReflectCardProps {
   readonly entry: ReflectEntry;
   readonly onContinue: () => void;
   readonly onRemember: () => void;
+  /** Optional auto-dismiss in ms. Absent (the default) means NO timer: the
+   * card stays until the player presses Continue or Remember. */
   readonly autoDismissMs?: number;
 }
 
@@ -141,7 +144,7 @@ export default function ReflectCard({
     throw new Error('missing consequence');
   }
 
-  const dismissMs = autoDismissMs ?? DEFAULT_AUTO_DISMISS_MS;
+  const dismissMs = autoDismissMs ?? null;
 
   const [webSlidIn, setWebSlidIn] = useState(false);
 
@@ -183,6 +186,9 @@ export default function ReflectCard({
   const webOffset = reducedMotion ? 0 : webSlidIn ? 0 : SLIDE_DISTANCE;
 
   useEffect(() => {
+    if (dismissMs === null) {
+      return;
+    }
     const handle = setTimeout(() => {
       if (dismissed.current) {
         return;

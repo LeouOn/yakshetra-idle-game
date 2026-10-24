@@ -68,7 +68,7 @@
       "orient_no_relationships_sid": "No ties yet",
       "orient_flags_row_sid": "Ongoing situations: {n}",
       "orient_flags_none_sid": "No ongoing situations",
-      "orient_age_row_sid": "{n} years old",
+      "orient_age_row_sid": "Age: {n}",
       "orient_lens_focus_sid": "Focused through {lens}",
       "orient_lens_focus_none_sid": "No lens chosen yet",
       "intend_heading_sid": "Choose your lens",
@@ -1634,6 +1634,10 @@
     "action": {
       "give_alms_label_sid": "Give alms at the temple gate",
       "harvest_rice_label_sid": "Harvest rice in the terraces"
+    },
+    "situation": {
+      "alms_sid": "A tired traveler sits at the temple gate, bowl upturned.",
+      "harvest_sid": "The terraces stand ready for the morning's work."
     },
     "consequence": {
       "alms_given_sid": "The beggar ate well; your bowl came back lighter."
