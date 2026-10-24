@@ -64,6 +64,7 @@ import type { DailySchedule } from '@/engine/schedule';
 import { resolveScheduleState } from '@/engine/schedule';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
+import StudioAway from '@/ui/components/StudioAway';
 import {
   modifiersForSession,
   nonPersonBenches,
@@ -251,15 +252,6 @@ function activePracticeLine(
     label = practice.id;
   }
   return formatSid('studio.practice_now_sid', { practice: label });
-}
-
-function awayDuration(ticks: number): string {
-  if (ticks < 60) {
-    return `${ticks} min`;
-  }
-  const hours = Math.floor(ticks / 60);
-  const minutes = ticks % 60;
-  return minutes === 0 ? `${hours}h` : `${hours}h ${minutes}m`;
 }
 
 export default function StudioView({
@@ -893,28 +885,11 @@ export default function StudioView({
           <StudioTabs active={activeTab} onSelect={setActiveTab} />
 
           {away === null ? null : (
-            <View testID="studio-away" style={styles.away}>
-              <Text style={styles.awayText}>
-                {formatSid('studio.away_sid', {
-                  duration: awayDuration(away.ticksSimulated),
-                  residue: away.residueGained,
-                })}
-              </Text>
-              {away.capped ? (
-                <Text style={styles.hint}>{resolveSid('studio.away_capped_sid')}</Text>
-              ) : null}
-              {away.bayReady ? (
-                <Text style={styles.ready}>{resolveSid('studio.away_ready_sid')}</Text>
-              ) : null}
-              <Pressable
-                role="button"
-                testID="studio-away-dismiss"
-                accessibilityLabel={resolveSid('studio.away_dismiss_sid')}
-                onPress={() => setAway(null)}
-              >
-                <Text style={styles.backText}>{resolveSid('studio.away_dismiss_sid')}</Text>
-              </Pressable>
-            </View>
+            <StudioAway
+              summary={away}
+              onDismiss={() => setAway(null)}
+              onOpenKeepsake={() => setActiveTab('archive')}
+            />
           )}
 
           {seatedVisitors.map(({ key, sidNs, windows }) => (

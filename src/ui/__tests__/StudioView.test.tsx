@@ -662,6 +662,59 @@ describe('StudioView', () => {
     expect(saved?.last_visited_at_unix).toBe(1_000_000);
   });
 
+  it('opens an old save with no visit stamp without an away panel', async () => {
+    const withoutStamp: Record<string, unknown> = {
+      ...graduatedSession([263n, 269n, 271n]),
+    };
+    delete withoutStamp['last_visited_at_unix'];
+    const seeded = StudioSessionSchema.parse(withoutStamp);
+    const storage = createMemoryStudioKv({
+      [STUDIO_SESSION_KEY]: JSON.stringify(seeded),
+    });
+
+    const { getByTestID } = render(
+      createElement(StudioView, {
+        practices: SIX_PRACTICES,
+        schedule: SIX_SCHEDULE,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(() => getByTestID('studio-away')).toThrow();
+  });
+
+  it('names the workings the away catch-up finished on the return panel', async () => {
+    const awayTicks = 240; // 4 hours, at the cap
+    const seeded = StudioSessionSchema.parse({
+      ...graduatedSession([241n, 251n, 257n]),
+      last_visited_at_unix: 1_000_000 - awayTicks * STUDIO_SECONDS_PER_TICK,
+    });
+    const storage = createMemoryStudioKv({
+      [STUDIO_SESSION_KEY]: JSON.stringify(seeded),
+    });
+
+    const { getByTestID } = render(
+      createElement(StudioView, {
+        practices: SIX_PRACTICES,
+        schedule: SIX_SCHEDULE,
+        persist: true,
+        storage,
+        clock: () => 1_000_000,
+      }),
+    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(() => getByTestID('studio-away')).not.toThrow();
+    expect(() => getByTestID('studio-away-workings')).not.toThrow();
+  });
+
   it('does not re-apply away ticks when remounting a stamped session', async () => {
     const awayTicks = 120;
     const seeded = StudioSessionSchema.parse({

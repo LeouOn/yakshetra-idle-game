@@ -40,7 +40,6 @@ import {
   type Rng,
   type SessionProgression,
   type SessionStepContext,
-  type StudioAwaySummary,
   type StudioSession,
   type StudioState,
   type WorldDraftReference,
@@ -56,6 +55,7 @@ import { activeVisitorFor, visitorModifierOverlay } from '@/engine/visitors';
 import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persistence';
 import type { DailySchedule } from '@/engine/schedule';
 import { EMBODIED_TIER } from '@/engine/ladder-const';
+import { deriveReturnSummary, type ReturnSummary } from '@/ui/hooks/away-summary';
 
 /** Phase 1 residue-source pack; roster policies resolve against it. */
 const POLICY_PACK = 'tang-china';
@@ -256,7 +256,7 @@ export interface UseStudioSessionResult {
   readonly worldDrafts: readonly WorldDraftReference[];
   readonly benches: Readonly<Record<string, BenchState>>;
   readonly ready: boolean;
-  readonly away: StudioAwaySummary | null;
+  readonly away: ReturnSummary | null;
   readonly rngRef: { readonly current: Rng };
   readonly benchRef: { readonly current: BenchSlices };
   readonly setLife: Dispatch<SetStateAction<LifeState>>;
@@ -267,7 +267,7 @@ export interface UseStudioSessionResult {
   readonly setMembers: Dispatch<SetStateAction<Record<string, MemberSlice>>>;
   readonly setWorldDrafts: Dispatch<SetStateAction<readonly WorldDraftReference[]>>;
   readonly setBenches: Dispatch<SetStateAction<Readonly<Record<string, BenchState>>>>;
-  readonly setAway: Dispatch<SetStateAction<StudioAwaySummary | null>>;
+  readonly setAway: Dispatch<SetStateAction<ReturnSummary | null>>;
   /** Session as it stands right now, every tier bench included. */
   readonly buildSession: (lastVisitedAtUnix?: number) => StudioSession;
   readonly stepCtx: (session: StudioSession) => SessionStepContext;
@@ -339,7 +339,7 @@ export function useStudioSession({
     initialSession === undefined ? {} : nonPersonBenches(initialSession),
   );
   const [ready, setReady] = useState(!persist);
-  const [away, setAway] = useState<StudioAwaySummary | null>(null);
+  const [away, setAway] = useState<ReturnSummary | null>(null);
   const benchRef = useRef<BenchSlices>({
     studio,
     idle,
@@ -443,12 +443,16 @@ export function useStudioSession({
         setWorldDrafts(withRecordedDrafts(hydrated.studio.archive, hydrated.world_drafts));
         setBenches(nonPersonBenches(next));
         if (caught.summary.embodiedTicks > 0) {
-          setAway({
+          const summary = deriveReturnSummary({
             ticksSimulated: caught.summary.embodiedTicks,
             residueGained: next.life.residue.length - session.life.residue.length,
-            bayReady: caught.summary.benchesReady.length > 0,
+            harvested: caught.harvested,
+            benchesReady: caught.summary.benchesReady,
             capped: caught.summary.capped,
           });
+          if (summary !== null) {
+            setAway(summary);
+          }
           void saveStudioSession(next, storage);
         }
       }
