@@ -12,6 +12,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { createElement } from 'react';
+import { StyleSheet } from 'react-native';
 
 import type { EraId, LifeId, LifeState, RoleId } from '@/engine';
 import { createLifeState } from '@/engine';
@@ -427,5 +428,33 @@ describe('TurnScreen', () => {
         }),
       ),
     ).not.toThrow();
+  });
+
+  it('bounds the lens cards to their container — the phone sideways-scroll cause', () => {
+    // This does NOT prove the phone layout: jsdom has no layout engine, so
+    // no vitest test can measure a flex row. It guards the CAUSE of the
+    // overflow measured in a real browser (life/[lifeId], 360px: the page
+    // scrolled to 548px because the lens card was content-width and its
+    // one-line hint was 520px wide). A card with no width bound is
+    // content-sized; a card that may not exceed its container and may
+    // shrink cannot push the page sideways. The layout proof is the browser
+    // probe in the harness (yaksh-browser/m1-c2b-sweep.mjs).
+    const onDeath = vi.fn();
+    const { getByTestID } = render(
+      createElement(TurnScreen, {
+        initialState: makeInitialState(),
+        eraPack: fixtureEraPack,
+        onDeath,
+      }),
+    );
+    for (const lens of ['generosity', 'collected_attention']) {
+      // Flatten: an innocent restyle may compose styles as an array.
+      const card = StyleSheet.flatten(getByTestID(`turn-lens-${lens}`).props.style);
+      expect(card.flexBasis).toBeDefined();
+      expect(card.flexShrink).toBe(1);
+      expect(card.maxWidth).toBe('100%');
+      const hint = StyleSheet.flatten(getByTestID(`turn-lens-${lens}-hint`).props.style);
+      expect(hint.flexShrink).toBe(1);
+    }
   });
 });

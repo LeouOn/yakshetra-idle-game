@@ -1040,11 +1040,21 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 4,
   },
+  // The lens cards are CONTENT-WIDTH by default, and their hint line is one
+  // long sentence: on a 360px phone the card wanted 520px and the page
+  // scrolled sideways, cutting the text off. A definite basis plus grow and
+  // shrink makes each card a filled cell of the grid: one per row on a phone,
+  // three across on a wide screen (six lenses, two even rows), and never
+  // wider than the card behind it.
   lensCard: {
     backgroundColor: t.chip,
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    flexBasis: 340,
+    flexGrow: 1,
+    flexShrink: 1,
+    maxWidth: '100%',
     minWidth: 140,
   },
   lensCardSelected: {
@@ -1052,14 +1062,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    flexBasis: 340,
+    flexGrow: 1,
+    flexShrink: 1,
+    maxWidth: '100%',
     minWidth: 140,
   },
   lensCardText: {
     color: t.text,
     fontSize: 15,
     fontWeight: '600',
+    flexShrink: 1,
   },
-  lensCardHint: { color: t.muted, fontSize: 12, lineHeight: 17 },
+  lensCardHint: { color: t.muted, fontSize: 12, lineHeight: 17, flexShrink: 1 },
   actionList: {
     gap: 8,
     marginTop: 4,
