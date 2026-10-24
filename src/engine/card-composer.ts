@@ -44,6 +44,8 @@ export interface ComposeInput extends SlotSource {
    * `about_id`/`detail` pairs answer this; no persisted state. Optional so a
    * caller with no figure history keeps the old global-dedup path. */
   readonly figureUsage?: Readonly<Record<string, readonly string[]>>;
+  /** The era for a card made without a life context (see `tableFillManifest`). */
+  readonly eraId?: string;
   readonly rng: Rng;
 }
 
@@ -136,7 +138,7 @@ export function eraFamilyOf(eraId: string | undefined): CatalogEra | null {
  */
 export function composeCard(entry: CatalogEntry, input: ComposeInput): ComposedCard {
   const slots = buildSlots(input);
-  const era = eraFamilyOf(input.lifeContext?.setting.era_id);
+  const era = eraFamilyOf(input.lifeContext?.setting.era_id ?? input.eraId);
   const usable = (entry.templates ?? []).filter(
     (t) =>
       (t.gate === undefined || atLeastRarity(input.rarity, t.gate)) &&

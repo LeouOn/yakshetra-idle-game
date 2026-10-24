@@ -129,6 +129,7 @@ export function tableFillManifest(
   archiveTitles: readonly string[] = [],
   encounterFigureId?: string,
   archiveFigureDetails: Readonly<Record<string, readonly string[]>> = {},
+  eraId?: string,
 ): Manifest {
   const summary = summarizeResidue(window);
   const predictedKind = pickKindFromRegistry(summary, kindRules);
@@ -139,7 +140,9 @@ export function tableFillManifest(
   // The era decides which ROWS this life may harvest at all, which is a
   // different question from which phrasings a row uses (the composer handles
   // that one). Same source for both, so the two can never disagree.
-  const era = eraFamilyOf(lifeContext?.setting.era_id) ?? undefined;
+  // `eraId` is the bench's era for a harvest that carries no life context (the away catch-up,
+  // the tier benches); a life context's own era wins.
+  const era = eraFamilyOf(lifeContext?.setting.era_id ?? eraId) ?? undefined;
   const row = pickCatalogRow(
     predictedKind,
     entries,
@@ -174,6 +177,7 @@ export function tableFillManifest(
     usedDetails: archiveDetails,
     usedTitles: archiveTitles,
     figureUsage: archiveFigureDetails,
+    ...(eraId === undefined ? {} : { eraId }),
     rng,
   });
   const tags = [...entry.tags, ...card.tags];

@@ -79,6 +79,8 @@ export interface ManifestCompileRequest {
    * no-repeat memory. Additive; absent means no figure history.
    */
   readonly archive_figure_details?: Readonly<Record<string, readonly string[]>>;
+  /** The bench's era (a pack id) for a harvest with no life context; absent = era-neutral. */
+  readonly era_id?: string;
 }
 
 export interface ManifestFiller {
@@ -96,6 +98,7 @@ export function compileRequestFromBay(
   archiveDetails: readonly string[] = [],
   archiveTitles: readonly string[] = [],
   archiveFigureDetails: Readonly<Record<string, readonly string[]>> = {},
+  eraId?: string,
 ): ManifestCompileRequest {
   const summary = summarizeResidue(bay.residue);
   return {
@@ -113,6 +116,7 @@ export function compileRequestFromBay(
     archive_details: archiveDetails,
     archive_titles: archiveTitles,
     archive_figure_details: archiveFigureDetails,
+    ...(eraId === undefined ? {} : { era_id: eraId }),
     ...(bay.fire === undefined ? {} : { fire: bay.fire }),
     ...(bay.encounter_figure_id === undefined
       ? {}
@@ -152,6 +156,7 @@ export function tableFiller(): ManifestFiller {
         request.archive_titles ?? [],
         request.encounter_figure_id,
         request.archive_figure_details ?? {},
+        request.era_id,
       );
     },
   };
@@ -188,6 +193,7 @@ export function tableFillerWithCatalog(entries: readonly CatalogEntry[]): Manife
         request.archive_titles ?? [],
         request.encounter_figure_id,
         request.archive_figure_details ?? {},
+        request.era_id,
       );
     },
   };
@@ -235,6 +241,9 @@ export function fillManifestSafe(
       fireOf(request),
       undefined,
       request.archive_titles ?? [],
+      request.encounter_figure_id,
+      request.archive_figure_details ?? {},
+      request.era_id,
     );
   }
 }

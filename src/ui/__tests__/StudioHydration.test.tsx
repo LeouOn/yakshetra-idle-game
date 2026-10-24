@@ -38,12 +38,13 @@ describe('/studio hydration parity', () => {
   it('the bench mounts after the flip with its testIDs unchanged', async () => {
     const ui = render(createElement(StudioRoute));
     expect(() => ui.getByTestID('studio-skeleton')).not.toThrow();
-    await act(async () => {
-      await Promise.resolve();
-    });
-    await act(async () => {
-      await Promise.resolve();
-    });
+    // The route reads the saved session (to learn the bench era) before it loads the pack, so the
+    // bench appears a read later than it used to; the skeleton covers that window.
+    for (let i = 0; i < 3; i += 1) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
     expect(() => ui.getByTestID('studio-screen')).not.toThrow();
     expect(() => ui.getByTestID('studio-tabs')).not.toThrow();
   });

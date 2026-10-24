@@ -6,9 +6,18 @@
 // session, window width for the rail variant) and mounts only after the
 // flip, as a normal post-hydration update. Every loaded-bench testID is
 // unchanged after mount.
+//
+// The bench FOLLOWS the era the player is living in: the persisted session
+// records it (`bench_era`), so the route reads the session first and loads
+// THAT pack's practices, schedules and endings. The skeleton covers the read,
+// so the hydration parity is unchanged; a studio-only player has no recorded
+// era and gets Tang.
 
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { loadStudioSession } from '@/persistence';
+import { DEFAULT_BENCH_ERA, resolveBenchEra } from '@/ui/hooks/bench-era';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 import { epochFromPackCalendar } from '@/content/calendar-epoch';
@@ -19,8 +28,6 @@ import type { DailySchedule } from '@/engine/schedule';
 import { resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import StudioView from '@/ui/components/StudioView';
-
-const DEFAULT_ERA = 'tang-china';
 
 function toRuntimePractice(practice: ContentPractice): Practice {
   return {
@@ -45,9 +52,9 @@ function toRuntimePractice(practice: ContentPractice): Practice {
 // kind funnel. `schedule` stays the first authored day as the single-day
 // fallback for callers that never pass the list.
 
-function loadBench() {
+function loadBench(era: string) {
   try {
-    const pack = loadEraPack(DEFAULT_ERA);
+    const pack = loadEraPack(era);
     const practices = pack.practices.map(toRuntimePractice);
     const schedules: readonly DailySchedule[] = pack.schedules;
     if (practices.length === 0 || schedules.length === 0) {
@@ -64,8 +71,21 @@ function loadBench() {
   }
 }
 
+/** The bench for an era; a pack that will not load falls back to the default era's. */
+function benchFor(era: string) {
+  const own = loadBench(era);
+  if (own !== null || era === DEFAULT_BENCH_ERA) {
+    return own === null ? null : { era, bench: own };
+  }
+  const fallback = loadBench(DEFAULT_BENCH_ERA);
+  return fallback === null ? null : { era: DEFAULT_BENCH_ERA, bench: fallback };
+}
+
 export default function StudioRoute({ onBack }: { readonly onBack?: () => void }) {
-  const bench = loadBench();
+  // null = the session has not been read yet (the skeleton covers that window).
+  const [era, setEra] = useState<string | null>(null);
+  const loaded = useMemo(() => (era === null ? null : benchFor(era)), [era]);
+  const bench = loaded?.bench ?? null;
   const firstDay = bench?.schedules[0];
   // Hydration parity (React #418, review fix): the server and the FIRST
   // client render both show the skeleton — the bench derives from client
@@ -73,7 +93,28 @@ export default function StudioRoute({ onBack }: { readonly onBack?: () => void }
   // mounts only after useMounted flips. The swap is a normal post-hydration
   // update; every testID of the loaded bench is unchanged after mount.
   const mounted = useMounted();
-  if (!mounted) {
+  useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+    let cancelled = false;
+    loadStudioSession().then(
+      (session) => {
+        if (!cancelled) {
+          setEra(resolveBenchEra(session?.bench_era));
+        }
+      },
+      () => {
+        if (!cancelled) {
+          setEra(DEFAULT_BENCH_ERA);
+        }
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [mounted]);
+  if (!mounted || era === null) {
     // No labelSid: StudioView's root (studio-screen) carries no
     // accessibilityLabel, so the skeleton must not either (browser finding
     // 3 — a different aria-label on the same element is a #418 mismatch).
@@ -88,6 +129,8 @@ export default function StudioRoute({ onBack }: { readonly onBack?: () => void }
   }
   return (
     <StudioView
+      key={loaded?.era}
+      benchEra={loaded?.era ?? DEFAULT_BENCH_ERA}
       practices={bench.practices}
       schedule={firstDay}
       embodiedSchedules={bench.schedules}

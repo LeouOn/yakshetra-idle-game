@@ -155,6 +155,8 @@ export interface StudioViewProps {
   readonly initialStudio?: StudioState;
   /** Full session to open the bench from (tests, embeds); overrides the piecemeal initials. */
   readonly initialSession?: StudioSession;
+  /** The era the bench runs (a real pack id); absent keeps the era-neutral stand-in life. */
+  readonly benchEra?: string;
   readonly rng?: Rng;
   readonly onExport?: (json: string) => void;
   /** When true, load/save the bench through {@link storage}. */
@@ -264,6 +266,7 @@ export default function StudioView({
   initialIdle,
   initialStudio,
   initialSession,
+  benchEra,
   rng,
   onExport,
   persist = false,
@@ -306,6 +309,7 @@ export default function StudioView({
     ...(initialIdle === undefined ? {} : { initialIdle }),
     ...(initialStudio === undefined ? {} : { initialStudio }),
     ...(initialSession === undefined ? {} : { initialSession }),
+    ...(benchEra === undefined ? {} : { benchEra }),
     ...(rng === undefined ? {} : { rng }),
     persist,
     ...(storage === undefined ? {} : { storage }),

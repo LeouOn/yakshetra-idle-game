@@ -175,7 +175,7 @@ export function harvestWithFiller(
   rng: Rng,
   filler: ManifestFiller = tableFiller(),
   lifeContext: LifeContext | null = null,
-  opts?: { readonly encounterFigureId?: string },
+  opts?: { readonly encounterFigureId?: string; readonly eraId?: string },
 ): HarvestResult | null {
   const bay = studio.bay;
   if (bay === null || bay.status !== 'ready') {
@@ -203,6 +203,7 @@ export function harvestWithFiller(
       }
       return acc;
     }, {}),
+    opts?.eraId,
   );
   const manifest = fillManifestSafe(request, rng, filler);
   const next: StudioState = {
@@ -222,7 +223,7 @@ export function harvestTableFill(
   rng: Rng,
   lifeContext: LifeContext | null = null,
   visitorTableEntries: readonly CatalogEntry[] | null = null,
-  opts?: { readonly encounterFigureId?: string },
+  opts?: { readonly encounterFigureId?: string; readonly eraId?: string },
 ): HarvestResult | null {
   if (visitorTableEntries === null) {
     return harvestWithFiller(studio, rng, tableFiller(), lifeContext, opts);

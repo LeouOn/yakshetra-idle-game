@@ -145,7 +145,14 @@ export function stepAbsence(
     }
 
     const settled = benchToStudio(current.benches[PERSON] ?? emptyBench(), current.archive);
-    const result = harvestTableFill(settled, rng, null);
+    // The bench's era reaches the away harvest through the session: there is no life context here.
+    const result = harvestTableFill(
+      settled,
+      rng,
+      null,
+      null,
+      session.bench_era === undefined ? undefined : { eraId: session.bench_era },
+    );
     if (result === null) {
       break;
     }

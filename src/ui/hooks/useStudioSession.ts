@@ -56,9 +56,15 @@ import { loadStudioSession, saveStudioSession, type StudioKv } from '@/persisten
 import type { DailySchedule } from '@/engine/schedule';
 import { EMBODIED_TIER } from '@/engine/ladder-const';
 import { deriveReturnSummary, type ReturnSummary } from '@/ui/hooks/away-summary';
+import { DEFAULT_BENCH_ERA } from '@/ui/hooks/bench-era';
 
-/** Phase 1 residue-source pack; roster policies resolve against it. */
-const POLICY_PACK = 'tang-china';
+/**
+ * The pack the roster policies are AUTHORED against: their schedules (`schedule:household-morning`
+ * ...) and practices (`practice:tang/alms-round` ...) exist only in the Tang pack. A bench in another
+ * era tries its own pack first and falls back here for any policy that pack does not carry, so the
+ * roster keeps running; closing that gap needs per-era policy content, not wiring.
+ */
+const POLICY_FALLBACK_PACK = DEFAULT_BENCH_ERA;
 
 /**
  * Stable session seed for the autonomous member rng streams: roster
@@ -81,7 +87,7 @@ interface PolicyRuntime {
   readonly schedule: DailySchedule;
 }
 
-let policyRuntimeCache: ReadonlyMap<string, PolicyRuntime> | null = null;
+const policyRuntimeCache = new Map<string, ReadonlyMap<string, PolicyRuntime>>();
 
 function toRuntimePractice(practice: ContentPractice): Practice {
   const { minigame_id, ...rest } = practice;
@@ -93,32 +99,62 @@ function toRuntimePractice(practice: ContentPractice): Practice {
   };
 }
 
-/** Roster policy rows resolved to pack runtime practices + schedule. */
-function policyRuntime(): ReadonlyMap<string, PolicyRuntime> {
-  if (policyRuntimeCache === null) {
-    const pack = loadEraPack(POLICY_PACK);
-    const schedules = new Map(pack.schedules.map((row) => [row.id, row]));
-    const practices = new Map(pack.practices.map((row) => [row.id, toRuntimePractice(row)]));
-    const out = new Map<string, PolicyRuntime>();
-    for (const policy of registries().policies) {
-      const schedule = schedules.get(policy.schedule_ref);
-      if (schedule === undefined) {
-        throw new Error(`studio: policy "${policy.id}" has no schedule "${policy.schedule_ref}"`);
-      }
-      out.set(policy.id, {
-        practices: policy.practices.map((id) => {
-          const found = practices.get(id);
-          if (found === undefined) {
-            throw new Error(`studio: policy "${policy.id}" has no practice "${id}"`);
-          }
-          return found;
-        }),
-        schedule,
-      });
-    }
-    policyRuntimeCache = out;
+type LoadedPack = ReturnType<typeof loadEraPack>;
+
+/** One policy resolved against one pack; throws when the pack lacks its schedule or a practice. */
+function resolvePolicy(
+  policy: ProgressionRegistries['policies'][number],
+  pack: LoadedPack,
+): PolicyRuntime {
+  const schedule = pack.schedules.find((row) => row.id === policy.schedule_ref);
+  if (schedule === undefined) {
+    throw new Error(`studio: policy "${policy.id}" has no schedule "${policy.schedule_ref}"`);
   }
-  return policyRuntimeCache;
+  return {
+    practices: policy.practices.map((id) => {
+      const found = pack.practices.find((row) => row.id === id);
+      if (found === undefined) {
+        throw new Error(`studio: policy "${policy.id}" has no practice "${id}"`);
+      }
+      return toRuntimePractice(found);
+    }),
+    schedule,
+  };
+}
+
+/**
+ * Roster policy rows resolved to runtime practices + schedules for a bench era: the era's own
+ * pack first, the Tang pack the policies are authored against for any policy the era pack does
+ * not carry (today every policy, in the Garden).
+ */
+export function policyRuntime(era: string): ReadonlyMap<string, PolicyRuntime> {
+  const cached = policyRuntimeCache.get(era);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const fallback = loadEraPack(POLICY_FALLBACK_PACK);
+  let own: LoadedPack | null = null;
+  if (era !== POLICY_FALLBACK_PACK) {
+    try {
+      own = loadEraPack(era);
+    } catch {
+      own = null;
+    }
+  }
+  const out = new Map<string, PolicyRuntime>();
+  for (const policy of registries().policies) {
+    let resolved: PolicyRuntime | null = null;
+    if (own !== null) {
+      try {
+        resolved = resolvePolicy(policy, own);
+      } catch {
+        resolved = null;
+      }
+    }
+    out.set(policy.id, resolved ?? resolvePolicy(policy, fallback));
+  }
+  policyRuntimeCache.set(era, out);
+  return out;
 }
 
 let rulesByScaleCache: Readonly<Record<string, readonly KindRule[]>> | null = null;
@@ -389,7 +425,7 @@ export function useStudioSession({
    */
   function stepCtx(session: StudioSession): SessionStepContext {
     if (stepCtxRef.current === null) {
-      const policies = policyRuntime();
+      const policies = policyRuntime(benchEraArg ?? DEFAULT_BENCH_ERA);
       const resolve = (id: string): PolicyRuntime => {
         const found = policies.get(id);
         if (found === undefined) {
