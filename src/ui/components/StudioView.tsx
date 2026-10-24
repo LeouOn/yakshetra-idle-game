@@ -55,6 +55,7 @@ import {
   type StudioSession,
   type StudioState,
   activityFamilyForLens,
+  SURPLUS_CAP_TICKS,
 } from '@/engine';
 import { canEndow, endowManifest } from '@/engine/endowment';
 import type { StudioKv } from '@/persistence';
@@ -928,7 +929,8 @@ export default function StudioView({
               </Text>
               {studio.surplus <= 0 ? null : (
                 <Text testID="studio-surplus" style={styles.banked}>
-                  {formatSid('studio.banked_heat_sid', { n: studio.surplus })}
+                  {formatSid('studio.banked_heat_sid', { n: studio.surplus })}{' '}
+                  {formatSid('studio.cook_heat_cap_sid', { n: SURPLUS_CAP_TICKS })}
                 </Text>
               )}
             </View>
