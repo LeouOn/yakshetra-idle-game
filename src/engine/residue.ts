@@ -20,6 +20,20 @@ export type ResidueEventType =
  * A convention on ids, not a new event type. */
 export const ENGAGEMENT_PREFIX = 'engagement:';
 
+/** Ids that ride along on a practice_tick event but are not the practice
+ * itself: engagement markers, autonomous-member tags, fold-up bench tags.
+ * Everything else on a practice tick is a practice id. */
+const NON_PRACTICE_PREFIXES: readonly string[] = [
+  ENGAGEMENT_PREFIX,
+  'member:',
+  'bench:',
+  'folded_from:',
+];
+
+function isPracticeId(id: string): boolean {
+  return !NON_PRACTICE_PREFIXES.some((prefix) => id.startsWith(prefix));
+}
+
 /** One structured trace. No prose — the compiler writes sentences. */
 export interface ResidueEvent {
   readonly tick: number;
@@ -36,6 +50,9 @@ export interface ResidueSummary {
   readonly typeCounts: Readonly<Record<ResidueEventType, number>>;
   readonly dominantType: ResidueEventType | null;
   readonly ids: readonly string[];
+  /** Distinct practice ids carried by practice_tick events (practices only:
+   * resource keys, lens ids, fold and member tags are excluded). */
+  readonly practiceIds: readonly string[];
 }
 
 const EMPTY_COUNTS: Record<ResidueEventType, number> = {
@@ -96,8 +113,16 @@ export function residueWindowId(window: readonly ResidueEvent[]): string {
 export function summarizeResidue(window: readonly ResidueEvent[]): ResidueSummary {
   const typeCounts: Record<ResidueEventType, number> = { ...EMPTY_COUNTS };
   const idSet: string[] = [];
+  const practiceSet: string[] = [];
   for (const event of window) {
     typeCounts[event.type] += 1;
+    if (event.type === 'practice_tick') {
+      for (const id of event.ids) {
+        if (isPracticeId(id) && !practiceSet.includes(id)) {
+          practiceSet.push(id);
+        }
+      }
+    }
     for (const id of event.ids) {
       if (!idSet.includes(id)) {
         idSet.push(id);
@@ -120,6 +145,7 @@ export function summarizeResidue(window: readonly ResidueEvent[]): ResidueSummar
     typeCounts,
     dominantType,
     ids: idSet,
+    practiceIds: practiceSet,
   };
 }
 

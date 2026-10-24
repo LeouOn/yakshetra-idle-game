@@ -38,7 +38,12 @@ import type { KindRule } from '../kind-registry';
 const WINDOW: readonly ResidueEvent[] = [
   { tick: 1, type: 'practice_tick', ids: ['practice:tang/alms-round'], numbers: { progress: 2 } },
   { tick: 2, type: 'practice_tick', ids: ['practice:tang/alms-round'], numbers: { progress: 2 } },
-  { tick: 3, type: 'practice_tick', ids: ['bench:person'], numbers: { progress: 2 } },
+  {
+    tick: 3,
+    type: 'practice_tick',
+    ids: ['practice:tang/courtyard-beings', 'bench:person'],
+    numbers: { progress: 2 },
+  },
 ];
 
 const TIES = [

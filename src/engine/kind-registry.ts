@@ -41,10 +41,15 @@ export function isSocialWindow(summary: ResidueSummary): boolean {
   );
 }
 
-/** Two or more practices, no social marker — a setting, not a someone. */
+/** Two or more DISTINCT PRACTICES, no social marker — a setting, not a
+ * someone. Counts practice ids only: resource keys ('skill'), lens ids,
+ * fold tags and member tags ride on windows but are not practices
+ * (SPEC §6: place = several practices). */
 export function isSpatialWindow(summary: ResidueSummary): boolean {
   return (
-    summary.ids.length >= 2 && summary.typeCounts.practice_tick >= 2 && !isSocialWindow(summary)
+    summary.practiceIds.length >= 2 &&
+    summary.typeCounts.practice_tick >= 2 &&
+    !isSocialWindow(summary)
   );
 }
 
@@ -73,6 +78,13 @@ function matchHolds(match: KindMatch, summary: ResidueSummary): boolean {
 /**
  * First-match-wins kind pick. Throws when no rule matches: a registry that
  * cannot classify a window is a content bug, not a runtime condition.
+ *
+ * No recency lever: trio eligibility is mutually exclusive (social ⇒ not
+ * spatial, and a nonempty window always has a dominant type, so thing's
+ * `no_dominant` row never holds — only its total fallback row does). A
+ * "least-recent kind" tiebreak could therefore only override a DECISIVE
+ * person/place pick, which SPEC §6 forbids, and it would desync the harvest
+ * from the cook panel's preview (previewOf applies no lever).
  */
 export function pickKindFromRegistry<K extends string>(
   summary: ResidueSummary,
