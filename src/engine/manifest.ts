@@ -128,6 +128,7 @@ export function tableFillManifest(
   rarityFloor?: ManifestRarity,
   archiveTitles: readonly string[] = [],
   encounterFigureId?: string,
+  archiveFigureDetails: Readonly<Record<string, readonly string[]>> = {},
 ): Manifest {
   const summary = summarizeResidue(window);
   const predictedKind = pickKindFromRegistry(summary, kindRules);
@@ -172,6 +173,7 @@ export function tableFillManifest(
     fire,
     usedDetails: archiveDetails,
     usedTitles: archiveTitles,
+    figureUsage: archiveFigureDetails,
     rng,
   });
   const tags = [...entry.tags, ...card.tags];
@@ -205,10 +207,14 @@ export function tableFillManifest(
     fill_status: 'table',
     quality_tier: qualityTier,
     provenance: { source: 'table', revision: TABLE_FILL_REVISION },
-    ...(focus !== null
-      ? { about_id: focus.id, about_name: focus.name }
-      : figureAbout !== null
-        ? { about_id: figureAbout.id, about_name: figureAbout.name }
+    // A figure row's identity wins over a pin: the card IS the figure, and
+    // the focus is already visible in `subject`/tags. Before this, an active
+    // pin overwrote about_id with the pinned card's manifest id, so every
+    // figure after the first pin lost its identity (the seam in the note).
+    ...(figureAbout !== null
+      ? { about_id: figureAbout.id, about_name: figureAbout.name }
+      : focus !== null
+        ? { about_id: focus.id, about_name: focus.name }
         : {}),
   };
   return ManifestSchema.parse(manifest);

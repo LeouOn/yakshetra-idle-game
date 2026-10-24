@@ -74,6 +74,11 @@ export interface ManifestCompileRequest {
    */
   readonly archive_details?: readonly string[];
   readonly archive_titles?: readonly string[];
+  /**
+   * `detail` strings already printed per `figure:<id>`, for the per-figure
+   * no-repeat memory. Additive; absent means no figure history.
+   */
+  readonly archive_figure_details?: Readonly<Record<string, readonly string[]>>;
 }
 
 export interface ManifestFiller {
@@ -90,6 +95,7 @@ export function compileRequestFromBay(
   kindRules?: readonly KindRule[],
   archiveDetails: readonly string[] = [],
   archiveTitles: readonly string[] = [],
+  archiveFigureDetails: Readonly<Record<string, readonly string[]>> = {},
 ): ManifestCompileRequest {
   const summary = summarizeResidue(bay.residue);
   return {
@@ -106,6 +112,7 @@ export function compileRequestFromBay(
     life_context: lifeContext,
     archive_details: archiveDetails,
     archive_titles: archiveTitles,
+    archive_figure_details: archiveFigureDetails,
     ...(bay.fire === undefined ? {} : { fire: bay.fire }),
     ...(bay.encounter_figure_id === undefined
       ? {}
@@ -144,6 +151,7 @@ export function tableFiller(): ManifestFiller {
         undefined,
         request.archive_titles ?? [],
         request.encounter_figure_id,
+        request.archive_figure_details ?? {},
       );
     },
   };
@@ -179,6 +187,7 @@ export function tableFillerWithCatalog(entries: readonly CatalogEntry[]): Manife
         undefined,
         request.archive_titles ?? [],
         request.encounter_figure_id,
+        request.archive_figure_details ?? {},
       );
     },
   };

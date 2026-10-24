@@ -5,6 +5,7 @@ import { tableFillManifest } from '../manifest';
 import type { CatalogMap } from '../table-catalog';
 import type { ResidueEvent } from '../residue';
 import { createRng } from '../rng';
+import { CATALOG } from '../manifest-catalog';
 
 function event(tick: number, ids: string[]): ResidueEvent {
   return { tick, type: 'practice_tick', ids, numbers: { progress: 1 } };
@@ -35,6 +36,31 @@ describe('figure-tagged catalog preference (SPEC 16.1)', () => {
     expect(m.about_id).toBe('figure:amitabha');
   });
 
+  it('a generic pick of a figure row still carries its identity', () => {
+    const row = CATALOG.person?.find((r) => r.tags.includes('figure:medicine-buddha'));
+    expect(row).toBeDefined();
+    const window = [
+      { tick: 1, type: 'lens_chosen' as const, ids: ['market:tea', 'conversation:0'], numbers: {} },
+      event(2, ['practice.test']),
+      event(3, ['practice.test']),
+    ];
+    const m = tableFillManifest(
+      window,
+      null,
+      0,
+      createRng(9n),
+      's6',
+      'm-6',
+      null,
+      undefined,
+      'person',
+      undefined,
+      { person: [row!] },
+    );
+    expect(m.about_id).toBe('figure:medicine-buddha');
+    expect(m.about_name).toBe('Bhaiṣajyaguru, the Medicine Buddha');
+  });
+
   it('keeps the plain table pick when nothing matches', () => {
     const window = [event(1, ['practice.test'])];
     const m = tableFillManifest(window, null, 0, createRng(3n), 's3', 'm-3');
@@ -42,7 +68,7 @@ describe('figure-tagged catalog preference (SPEC 16.1)', () => {
     expect(m.about_id).toBeUndefined();
   });
 
-  it('prefers the pinned focus over the figure for about_id', () => {
+  it('keeps the figure identity when a pin is active (identity seam)', () => {
     const window = [event(1, ['figure:amitabha'])];
     // ManifestFocus: kind is 'person' | 'place' and one_liner is required.
     const focus: ManifestFocus = {
@@ -52,7 +78,49 @@ describe('figure-tagged catalog preference (SPEC 16.1)', () => {
       one_liner: 'The hour the lamps are trimmed.',
     };
     const m = tableFillManifest(window, null, 0, createRng(5n), 's4', 'm-4', focus);
-    expect(m.about_id).toBe('focus:x');
+    // Figure identity wins: a pin used to overwrite about_id with the pinned
+    // card's manifest id, which made every figure after the first pin
+    // anonymous to the cooldown, the figure memory and the chronicle. The
+    // focus is still visible in the subject and tags.
+    expect(m.about_id).toBe('figure:amitabha');
+    expect(m.about_name).toBe('Amitābha');
+  });
+
+  it('a figure answers a long fire as itself: a person row is never labelled a thing', () => {
+    // Three ticks of one practice predict `thing`; the bound practice also
+    // names Amitābha, a row of the person table. Both fires answer with the
+    // figure and the figure's own kind: a `thing` card must not carry a person row.
+    const window = [1, 2, 3].map((tick) => event(tick, ['practice:tang/nianfo-recitation']));
+    const short = tableFillManifest(
+      window,
+      null,
+      0,
+      createRng(13n),
+      's7',
+      'm-7',
+      null,
+      undefined,
+      'person',
+    );
+    expect(short.about_id).toBe('figure:amitabha');
+    expect(short.kind).toBe('person');
+    const long = tableFillManifest(
+      window,
+      null,
+      0,
+      createRng(13n),
+      's8',
+      'm-8',
+      null,
+      undefined,
+      'person',
+      undefined,
+      undefined,
+      [],
+      'long',
+    );
+    expect(long.about_id).toBe('figure:amitabha');
+    expect(long.kind).toBe('person');
   });
 
   it('is deterministic per seed', () => {

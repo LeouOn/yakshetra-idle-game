@@ -195,6 +195,14 @@ export function harvestWithFiller(
     // and does not repeat a card's name while an alternative exists.
     studio.archive.map((card) => card.detail),
     studio.archive.map((card) => card.name),
+    // Per-figure body history, derived from the archive's own identity/detail
+    // pairs. No persisted field; an old save simply starts with an empty map.
+    studio.archive.reduce<Record<string, string[]>>((acc, card) => {
+      if (card.about_id?.startsWith('figure:')) {
+        (acc[card.about_id] ??= []).push(card.detail);
+      }
+      return acc;
+    }, {}),
   );
   const manifest = fillManifestSafe(request, rng, filler);
   const next: StudioState = {

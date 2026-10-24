@@ -141,9 +141,12 @@ describe('figure repetition on the real person path (finding 2b)', () => {
       prev = f;
       longestRun = Math.max(longestRun, run);
     }
-    // Assert the measured facts so the report is test-backed.
+    // Identity now follows generic figure picks too, and the per-figure
+    // cooldown/memory is in place: the single-candidate practice lane no
+    // longer fills every figure slot (the pre-fix finding this test pinned).
     expect(figures.length).toBeGreaterThan(0);
-    expect(counts.get('figure:avalokiteshvara') ?? 0).toBe(figures.length); // single-candidate pool
-    expect(longestRun).toBe(figures.length);
+    expect(counts.get('figure:avalokiteshvara') ?? 0).toBeGreaterThan(0);
+    expect(counts.get('figure:avalokiteshvara') ?? 0).toBeLessThan(figures.length);
+    expect(longestRun).toBeLessThanOrEqual(2);
   });
 });

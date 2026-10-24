@@ -5,7 +5,24 @@
 import type { Rng } from './rng';
 import type { ResidueSummary } from './residue';
 import type { CatalogEntry, CatalogMap } from './table-catalog';
+import {
+  figureCandidates,
+  rowsForEra,
+  FIGURE_COOLDOWN_HARVESTS,
+  LONG_FIRE_COOLDOWN_HARVESTS,
+  type CatalogEra,
+} from './figure-lane';
+import { figureAboutOf, figureTagOf } from './figure-memory';
 import type { ManifestFire } from './manifest';
+
+export {
+  figureCandidates,
+  rowsForEra,
+  FIGURE_COOLDOWN_HARVESTS,
+  LONG_FIRE_COOLDOWN_HARVESTS,
+  type CatalogEra,
+  type FigureCandidate,
+} from './figure-lane';
 export { humanizeId, lastSegment } from './prose';
 
 export type ManifestRarity = 'common' | 'uncommon' | 'rare';
@@ -55,72 +72,6 @@ export function pickRarity(
 
 /** The segment after the last `/` or `:` — `practice:tang/nianfo` -> `nianfo`. */
 /** Id prefixes a card must never show the player (SPEC §7, SPEC §10.5). */
-
-/** A catalog row that names a figure and matches a residue id (SPEC §16.1). */
-export interface FigureCandidate {
-  readonly kind: string;
-  readonly entry: CatalogEntry;
-  readonly figureId: string;
-}
-
-/** The era families a row can be authored for. */
-export type CatalogEra = 'tang' | 'fantasy';
-
-/**
- * Rows whose tags reference an id the residue window carries. Only rows
- * tagged `figure:*` are candidates; the visitor table swap (a Proxy with no
- * own keys) yields none, which preserves the swap's replace-not-merge rule.
- */
-export function figureCandidates(
-  summary: ResidueSummary,
-  catalog: CatalogMap,
-  era?: CatalogEra,
-): FigureCandidate[] {
-  const out: FigureCandidate[] = [];
-  for (const [kind, rows] of Object.entries(catalog)) {
-    for (const entry of rowsForEra(rows, era)) {
-      const figureTag = entry.tags.find((t) => t.startsWith('figure:'));
-      if (figureTag === undefined) {
-        continue;
-      }
-      if (entry.tags.some((t) => summary.ids.includes(t))) {
-        out.push({ kind, entry, figureId: figureTag });
-      }
-    }
-  }
-  return out;
-}
-
-/**
- * Narrow a table to the rows an era may harvest.
- *
- * A row with no `era` is neutral and always eligible. A row tagged for the other
- * era is dropped. If the era owns no rows at all, the full table is returned
- * rather than an empty one, so a content gap in one kind cannot make a harvest
- * throw — but the catalog test asserts that situation does not arise, so the
- * fallback is a safety net and not a normal path.
- */
-export function rowsForEra(
-  entries: readonly CatalogEntry[],
-  era: CatalogEra | undefined,
-): readonly CatalogEntry[] {
-  if (era === undefined) {
-    return entries;
-  }
-  const eligible = entries.filter((e) => e.era === undefined || e.era === era);
-  return eligible.length > 0 ? eligible : entries;
-}
-
-/**
- * After a figure card, that figure is off the residue-matched pick for this
- * many person-bench harvests (see pickCatalogRow). 4 was tuned against the
- * 80-harvest single-figure measurement: share ~25%, longest run <= 2, generic
- * people fill the rest. A LONG fire is the player calling on purpose, so it
- * serves a SHORTER cooldown — the figure answers more often than a short
- * fire ever will, but never camps (always-long measures 50%, run 1).
- */
-export const FIGURE_COOLDOWN_HARVESTS = 4;
-export const LONG_FIRE_COOLDOWN_HARVESTS = 1;
 
 export interface PickedRow {
   readonly kind: string;
@@ -249,7 +200,10 @@ export function pickCatalogRow(
   const seen = (e: CatalogEntry): boolean => rowTitles(e).some((t) => t !== '' && held.has(t));
   const unseen = eraEntries.filter((e) => !seen(e));
   if (unseen.length > 0) {
-    return { kind: predictedKind, entry: rng.pick(unseen), about: null };
+    // A figure row picked here carries its identity. No cooldown is needed: every title in the recent
+    // window is also in `held`, so a cooling figure's row is never in `unseen`.
+    const entry = rng.pick(unseen);
+    return { kind: predictedKind, entry, about: figureAboutOf(entry) };
   }
   // Every row has been harvested. A repeat is now unavoidable — there are
   // twelve titles in the `thing` table and the sweep asks for twenty-four
@@ -264,9 +218,10 @@ export function pickCatalogRow(
     latest === undefined
       ? eraEntries
       : eraEntries.filter((e) => !rowTitles(e).some((t) => t === latest));
-  return {
-    kind: predictedKind,
-    entry: rng.pick(notLatest.length > 0 ? notLatest : eraEntries),
-    about: null,
-  };
+  const cooling = (e: CatalogEntry): boolean =>
+    figureTagOf(e) !== null && figureTitles(e).some((t) => recentForFire.has(t));
+  const freshFallback = notLatest.filter((e) => !cooling(e));
+  const pool = freshFallback.length > 0 ? freshFallback : notLatest;
+  const entry = rng.pick(pool.length > 0 ? pool : eraEntries);
+  return { kind: predictedKind, entry, about: figureAboutOf(entry) };
 }

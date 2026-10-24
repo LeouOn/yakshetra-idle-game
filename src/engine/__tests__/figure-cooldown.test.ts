@@ -118,12 +118,18 @@ describe('figure cooldown on the person bench (real path)', () => {
     const figureShare = figures.length / cards.length;
     const longestFigureRun = longestSameRun(cards, (c) => c.name);
     const distinctFigures = new Set(figures.map((c) => c.name)).size;
+    const bound = figures.filter((c) => c.about_id === 'figure:avalokiteshvara');
     process.stdout.write(
-      `\n  tang: figure share ${(figureShare * 100).toFixed(0)}% (${figures.length}/80), ` +
+      `\n  tang: all-figure share ${(figureShare * 100).toFixed(0)}% (${figures.length}/80), ` +
+        `bound share ${((bound.length / cards.length) * 100).toFixed(0)}% (${bound.length}/80), ` +
         `distinct figures ${distinctFigures}, longest same-card run ${longestFigureRun}\n`,
     );
-    expect(figureShare).toBeGreaterThanOrEqual(0.2);
-    expect(figureShare).toBeLessThanOrEqual(0.5);
+    // Identity now attaches to every generic figure row too, so the
+    // all-figure share is the person table's figure density (~68%); the
+    // cooldown promise is about the BOUND figure (Guanyin), which stays 20%.
+    expect(bound.length / cards.length).toBeGreaterThanOrEqual(0.2);
+    expect(bound.length / cards.length).toBeLessThanOrEqual(0.5);
+    expect(distinctFigures).toBe(12);
     expect(longestFigureRun).toBeLessThanOrEqual(2);
   });
 
@@ -132,12 +138,15 @@ describe('figure cooldown on the person bench (real path)', () => {
     const figures = cards.filter(isFigureCard);
     const figureShare = figures.length / cards.length;
     const longestFigureRun = longestSameRun(cards, (c) => c.name);
+    const bound = figures.filter((c) => c.about_id === 'figure:avalokiteshvara');
     process.stdout.write(
-      `\n  garden: figure share ${(figureShare * 100).toFixed(0)}% (${figures.length}/80), ` +
+      `\n  garden: all-figure share ${(figureShare * 100).toFixed(0)}% (${figures.length}/80), ` +
+        `bound share ${((bound.length / cards.length) * 100).toFixed(0)}% (${bound.length}/80), ` +
         `longest same-card run ${longestFigureRun}\n`,
     );
-    expect(figureShare).toBeGreaterThanOrEqual(0.2);
-    expect(figureShare).toBeLessThanOrEqual(0.5);
+    expect(bound.length / cards.length).toBeGreaterThanOrEqual(0.2);
+    expect(bound.length / cards.length).toBeLessThanOrEqual(0.5);
+    expect(figureShare).toBeGreaterThanOrEqual(0.2); // all 12 names still appear
     expect(longestFigureRun).toBeLessThanOrEqual(2);
   });
 
@@ -212,7 +221,7 @@ describe('figure cooldown on the person bench (real path)', () => {
       undefined,
       titles,
     );
-    expect((shortCard.about_id ?? '').startsWith('figure:')).toBe(false);
+    expect(shortCard.about_id).not.toBe('figure:avalokiteshvara');
   });
 
   it('always-long-fire stays a decision, not a camp: share <= 60%, run <= 2', () => {
@@ -241,13 +250,17 @@ describe('figure cooldown on the person bench (real path)', () => {
       cards.push(card);
     }
     const figures = cards.filter((c) => (c.about_id ?? '').startsWith('figure:'));
+    const bound = cards.filter((c) => c.about_id === 'figure:avalokiteshvara');
     const longest = longestSameRun(cards, (c) =>
-      (c.about_id ?? '').startsWith('figure:') ? 'FIG' : 'gen',
+      c.about_id === 'figure:avalokiteshvara' ? 'BOUND' : 'other',
     );
     process.stdout.write(
-      `\n  always-long: figure share ${((figures.length / 80) * 100).toFixed(0)}% (${figures.length}/80), longest figure run ${longest}\n`,
+      `\n  always-long: all-figure share ${((figures.length / 80) * 100).toFixed(0)}% (${figures.length}/80), ` +
+        `bound share ${((bound.length / 80) * 100).toFixed(0)}% (${bound.length}/80), longest figure run ${longest}\n`,
     );
-    expect(figures.length / 80).toBeLessThanOrEqual(0.6);
+    // Long fire shortens the cooldown to one, so the BOUND figure answers
+    // every other card at most; the all-figure share is the table density.
+    expect(bound.length / 80).toBeLessThanOrEqual(0.6);
     expect(longest).toBeLessThanOrEqual(2);
   });
 });

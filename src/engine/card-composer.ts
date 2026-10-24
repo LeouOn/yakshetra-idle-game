@@ -15,9 +15,14 @@ import { normalizeProse } from './prose-normalize';
 import type { ManifestFocus } from './focus';
 import type { LifeContext } from './life-context';
 import { atLeastRarity, type CatalogEra, type ManifestRarity } from './manifest-pick';
+import { chooseFigureBody, figureTagOf } from './figure-memory';
+import { briefScore } from './card-brief';
+import { qualifier } from './card-qualifier';
 import type { Rng } from './rng';
 import type { ResidueSummary } from './residue';
 import type { CardTemplate, CatalogEntry } from './table-catalog';
+
+export { LONG_FIRE_POOL, RARE_POOL } from './card-pools';
 
 export interface ComposeInput extends SlotSource {
   readonly summary: ResidueSummary;
@@ -35,6 +40,10 @@ export interface ComposeInput extends SlotSource {
    * directly rather than inferring variety from differing detail strings.
    */
   readonly usedTitles: readonly string[];
+  /** `detail` strings already printed for each figure id. The archive's own
+   * `about_id`/`detail` pairs answer this; no persisted state. Optional so a
+   * caller with no figure history keeps the old global-dedup path. */
+  readonly figureUsage?: Readonly<Record<string, readonly string[]>>;
   readonly rng: Rng;
 }
 
@@ -55,87 +64,6 @@ export interface ComposedCard {
  * the authored rows: these lines are read just as often, because every row
  * without its own line lands here.
  */
-export const LONG_FIRE_POOL: readonly string[] = [
-  ' It was not hurried, and it shows.',
-  ' Whatever else you did that day, this was the part you let run long.',
-  ' It has the settled look of something given twice the attention it asked for.',
-  ' You stopped early the second time round, which was the point of stopping.',
-  ' It carries the extra hour like a change in the weather.',
-  ' Nothing about it was rushed, and you can tell.',
-];
-
-export const RARE_POOL: readonly string[] = [
-  ' It does not come like this often.',
-  ' There is no second one of these on the shelf.',
-  ' You would remember the day you found it.',
-  ' It is the kind of thing that gets lent out once.',
-  ' You keep it where you can see it, which is not your habit.',
-  ' Whoever made it did not expect it to be kept.',
-];
-
-/** How many brief words a template's own copy already answers. */
-function briefScore(template: CardTemplate | null, brief: string | null): number {
-  if (brief === null) {
-    return 0;
-  }
-  const words = brief
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((w) => w.length > 2);
-  if (words.length === 0) {
-    return 0;
-  }
-  // The row's own detail is a candidate like any template (see composeCard), so
-  // a brief that names the row's own subject has to be able to score it.
-  const haystack = `${template?.detail ?? ''} ${(template?.tags ?? []).join(' ')}`.toLowerCase();
-  let hits = 0;
-  for (const word of words) {
-    if (haystack.includes(word)) {
-      hits += 1;
-    }
-  }
-  return hits;
-}
-
-/**
- * The extra sentence a long cook or a rare card earns. A row's own sentence
- * wins; otherwise the shared pool, picked by the same seeded rng the template
- * rotation uses.
- *
- * Returned as a value rather than drawn inside render(): render is called once
- * per *candidate* while the dedup pass compares templates, and a draw inside it
- * would advance the stream on every comparison, so the same candidate would
- * render differently each time it was inspected.
- */
-function qualifier(
-  template: CardTemplate | null,
-  entry: CatalogEntry,
-  input: ComposeInput,
-  slots: Readonly<Record<string, string>>,
-): string {
-  // A template that names a different object overrides the row's sentence; see
-  // CardTemplate.long_fire.
-  const owned =
-    input.fire === 'long'
-      ? (template?.long_fire ?? entry.long_fire)
-      : input.rarity === 'rare'
-        ? (template?.rare ?? entry.rare)
-        : undefined;
-  if (owned !== undefined) {
-    // A clause that cannot be filled is DROPPED, not printed raw. The old
-    // `?? owned` fallback emitted the authored source, so a `{{tie}}` in a
-    // long_fire reached the player as "whatever else {{tie}} keeps quiet
-    // about" on every life that had no tie to name. Eligibility only ever
-    // checked `detail`, so nothing caught it.
-    return fillSlots(owned, slots) ?? '';
-  }
-  if (input.fire !== 'long' && input.rarity !== 'rare') {
-    return '';
-  }
-  const pool = input.fire === 'long' ? LONG_FIRE_POOL : RARE_POOL;
-  return pool[input.rng.nextInt(0, pool.length)] ?? '';
-}
-
 function render(
   entry: CatalogEntry,
   template: CardTemplate | null,
@@ -280,9 +208,23 @@ export function composeCard(entry: CatalogEntry, input: ComposeInput): ComposedC
   //    has to be the one that runs. (Treating "no history" as "every title is
   //    fresh" made freshTitle win outright and disabled detail dedup.)
   const freshTitle = hasTitleHistory ? rotated.find((c) => !seenTitle(c)) : undefined;
-  const chosen = hasTitleHistory
-    ? (freshTitle ?? unseenDetail ?? top[0])
-    : (unseenDetail ?? top[0]);
+  // A figure has its OWN body history: prefer a body it has not printed yet,
+  // then start a new hash-rotated cycle instead of always landing on body 0.
+  const figureId = figureTagOf(entry);
+  const figureBody =
+    figureId === null
+      ? undefined
+      : chooseFigureBody(
+          rotated,
+          input.figureUsage?.[figureId] ?? [],
+          (candidate) => draw(candidate.t).detail,
+        );
+  const chosen =
+    figureId !== null
+      ? (figureBody ?? top[0])
+      : hasTitleHistory
+        ? (freshTitle ?? unseenDetail ?? top[0])
+        : (unseenDetail ?? top[0]);
   const winner = chosen?.t ?? null;
   return render(entry, winner, input, slots, qualifier(winner, entry, input, slots));
 }
