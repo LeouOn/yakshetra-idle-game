@@ -100,6 +100,7 @@ export {
   maxHoldBack,
   pendingIndices,
 } from './cook-window';
+export { SURPLUS_CAP_TICKS, bankHeat } from './heat';
 export {
   groupTraces,
   reachableKinds,

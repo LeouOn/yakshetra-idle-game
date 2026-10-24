@@ -14,6 +14,7 @@ import {
 
 import { createStudioState, recordStudioResidues } from '@/engine/operations';
 import type { ResidueEvent } from '@/engine/residue';
+import { LONGEST_LONG_COOK_TICKS, SURPLUS_CAP_TICKS } from '@/engine/heat';
 
 function events(n: number): ResidueEvent[] {
   const out: ResidueEvent[] = [];
@@ -182,3 +183,45 @@ function planCookTicksForTest(
 ) {
   return planCookTicks(len, fire, discount, surplus);
 }
+
+describe('banked heat ceiling (finding 4)', () => {
+  it('banks up to 3x the longest long cook and drops the excess', async () => {
+    const { SURPLUS_CAP_TICKS, bankHeat, absorbSurplus, createStudioState } =
+      await import('@/engine');
+    expect(SURPLUS_CAP_TICKS).toBe(54);
+    expect(bankHeat(0, 100)).toBe(54);
+    expect(bankHeat(50, 10)).toBe(54);
+    expect(bankHeat(10, 5)).toBe(15);
+    // The real accrual path: tending past a full bar with no bay cooking.
+    const studio = createStudioState();
+    const banked = absorbSurplus(studio, 5047);
+    expect(banked.surplus).toBe(54);
+  });
+});
+
+describe('cook economics and the ceiling derived from them', () => {
+  // The short-fire cost for window lengths 0..40, dumped from HEAD's
+  // cookTicksFor before the split. The long-fire cost at HEAD was exactly
+  // this plus LONG_FIRE_EXTRA_TICKS for all 41 lengths, so the short table
+  // plus that relation IS the frozen behaviour of the cook.
+  const HEAD_SHORT_COOK_TICKS = [
+    4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+  ];
+
+  it('costs the same as HEAD for every window length and both fires', () => {
+    expect(HEAD_SHORT_COOK_TICKS).toHaveLength(41);
+    for (let len = 0; len <= 40; len += 1) {
+      const short = HEAD_SHORT_COOK_TICKS[len] ?? -1;
+      expect(cookTicksFor(len, 'short')).toBe(short);
+      expect(cookTicksFor(len, 'long')).toBe(short + LONG_FIRE_EXTRA_TICKS);
+    }
+  });
+
+  it('pins the ceiling to three times the longest long cook', () => {
+    expect(cookTicksFor(15, 'long')).toBe(LONGEST_LONG_COOK_TICKS);
+    expect(SURPLUS_CAP_TICKS).toBe(3 * cookTicksFor(15, 'long'));
+    expect(LONGEST_LONG_COOK_TICKS).toBe(18);
+    expect(SURPLUS_CAP_TICKS).toBe(54);
+  });
+});

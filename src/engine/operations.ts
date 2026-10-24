@@ -15,6 +15,7 @@ import {
   spendableResidue,
   type CookChoices,
 } from './cook-window';
+import { bankHeat } from './heat';
 import type { LifeContext } from './life-context';
 import { nextPinned, type ManifestFocus } from './focus';
 import type { Manifest } from './manifest';
@@ -39,6 +40,7 @@ export {
   queueDevelop,
   spendableResidue,
 } from './cook-window';
+export { SURPLUS_CAP_TICKS, bankHeat } from './heat';
 
 /** Harvests required before the first quality upgrade. */
 export const QUALITY_UPGRADE_HARVESTS = 3;
@@ -141,7 +143,7 @@ export function absorbSurplus(studio: StudioState, extraTicks: number): StudioSt
   if (studio.bay !== null && studio.bay.status === 'cooking') {
     return tickStudio(studio, extraTicks);
   }
-  return { ...studio, surplus: studio.surplus + extraTicks };
+  return { ...studio, surplus: bankHeat(studio.surplus, extraTicks) };
 }
 
 /** Advance the bay by `ticks`. No-op when the bay is empty or already ready. */

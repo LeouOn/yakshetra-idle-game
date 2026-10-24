@@ -3,6 +3,7 @@
 import { createRng } from './rng';
 import type { StudioSession } from './studio-session';
 import { absorbSurplus } from './operations';
+import { bankHeat } from './heat';
 import { benchToStudio, studioToBench } from './bench-mapping';
 
 export const TEA_COST = 4;
@@ -68,7 +69,7 @@ export function purchaseMarket(session: StudioSession, purchase: MarketPurchase)
     const used = Math.min(SUPPLIES_STEPS, remaining);
     const accelerated = absorbSurplus(benchToStudio(bench, session.archive), used);
     next = studioToBench(
-      { ...accelerated, surplus: accelerated.surplus + SUPPLIES_STEPS - used },
+      { ...accelerated, surplus: bankHeat(accelerated.surplus, SUPPLIES_STEPS - used) },
       bench.fold_position,
     );
   } else {

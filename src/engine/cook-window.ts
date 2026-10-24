@@ -5,17 +5,21 @@
 // the state transitions stay in operations.ts. Pure: no Date, no RNG, no I/O.
 
 import type { CookFire } from './fill-adapter';
+import { BASE_COOK_TICKS, LONG_FIRE_EXTRA_TICKS, MAX_WINDOW_COOK_TICKS } from './heat';
 import type { DevelopOperation, StudioState } from './operations';
 import { residueWindowId, type ResidueEvent } from './residue';
 import type { Rng } from './rng';
+
+// The cook's economics (base cost, window ceiling, long-fire price) and the
+// banked-heat ceiling live in ./heat, so the cap cannot drift from the cook it
+// is derived from. LONG_FIRE_EXTRA_TICKS is re-exported here because engine
+// tests and existing importers have always read it from this module.
+export { LONG_FIRE_EXTRA_TICKS };
 
 /** Minimum window size before a develop job can start. */
 export const MIN_RESIDUE_TO_DEVELOP = 3;
 
 const MIN_COOK_TICKS = 2;
-
-/** Extra ticks a long fire costs over a short fire of the same window. */
-export const LONG_FIRE_EXTRA_TICKS = 6;
 
 /** Counters for the wave-1 instrumented bar: "% of cooks that use hold-back
  * or long fire" (target >50%, baseline 0%). Plain ints on the bench so the
@@ -44,8 +48,8 @@ export const EMPTY_COOK_CHOICES: CookChoices = { long: 0, holdback: 0 };
  * matching figure row — so it is a quality/time trade, never a requirement.
  */
 export function cookTicksFor(windowLength: number, fire: CookFire = 'short'): number {
-  const extra = Math.min(8, Math.ceil(windowLength / 2));
-  return 4 + extra + (fire === 'long' ? LONG_FIRE_EXTRA_TICKS : 0);
+  const extra = Math.min(MAX_WINDOW_COOK_TICKS, Math.ceil(windowLength / 2));
+  return BASE_COOK_TICKS + extra + (fire === 'long' ? LONG_FIRE_EXTRA_TICKS : 0);
 }
 
 /** The one cook-length planner (browser finding 1): what the panel
