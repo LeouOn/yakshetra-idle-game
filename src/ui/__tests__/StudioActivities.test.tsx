@@ -58,6 +58,6 @@ describe('StudioActivities', () => {
     expect(ui.getByText('Craft & Community Footprint')).toBeTruthy();
     expect(ui.getByText('⚒ Market shifts: 6')).toBeTruthy();
     expect(ui.getByText('🪙 Purse: 12 copper')).toBeTruthy();
-    expect(ui.getByText('🏛 Folded to household: 4 traces')).toBeTruthy();
+    expect(ui.getByText('🏛 Traces folded to household: 4')).toBeTruthy();
   });
 });

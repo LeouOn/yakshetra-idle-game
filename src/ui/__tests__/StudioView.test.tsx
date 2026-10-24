@@ -1510,7 +1510,7 @@ describe('StudioView', () => {
     const banners = ui.container.queryAll(
       (i: { props?: { testID?: string } }) => i.props?.testID === 'studio-visitor',
     );
-    expect(JSON.stringify(banners)).toContain('1 workings');
+    expect(JSON.stringify(banners)).toContain(formatSid('studio.visitor_windows_sid', { n: 1 }));
     ui.press(ui.getByTestID('journey-primary'));
     // Two cards revealed (person + household), not four on a double press.
     const cards = ui.container.queryAll(

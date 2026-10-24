@@ -102,7 +102,7 @@ tags:
 
 # --- Fantasy life. ---
 - assertVisible: "A new life begins"
-- assertVisible: "Mahayana Fantasy"
+- assertVisible: "The Garden of Arrivals"
 - tapOn: "Newly arrived soul"
 
 # Advance and end the Fantasy life.
