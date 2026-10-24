@@ -47,6 +47,7 @@ export default function SettingsScreen() {
     deleteSlot,
     error,
     clearError,
+    retryLoad,
   } = useSaveSlot(1);
   const mounted = useMounted();
 
@@ -61,6 +62,7 @@ export default function SettingsScreen() {
       slotsLoading={!mounted}
       error={error}
       onClearError={clearError}
+      onRetryLoad={retryLoad}
       onToggleContentWarning={setContentWarning}
       onToggleReducedMotion={(enabled) => updateSettings({ reducedMotion: enabled })}
       onSelectFontScale={(scale) => updateSettings({ fontScale: scale })}

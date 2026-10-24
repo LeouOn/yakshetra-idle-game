@@ -24,6 +24,27 @@ function messageSid(operation: SaveSlotError['operation']): string {
   return `save_error.${operation}_sid`;
 }
 
+/**
+ * Props for the bar's retry control, from the one rule every route uses: the
+ * control is honest only for a LOAD failure, because the retry re-runs the
+ * mount load. A save/import/delete failure gets no retry control — a button
+ * that reloads without retrying the write would be a lie.
+ */
+export function retryPropsFor(
+  error: SaveSlotError | null | undefined,
+  retryLoad: (() => void) | undefined,
+): { readonly onRetry?: () => void } {
+  if (
+    error === null ||
+    error === undefined ||
+    error.operation !== 'load' ||
+    retryLoad === undefined
+  ) {
+    return {};
+  }
+  return { onRetry: retryLoad };
+}
+
 export default function SaveSlotErrorBar({ error, onRetry, onContinue }: Props) {
   if (error === null || error === undefined) {
     return null;

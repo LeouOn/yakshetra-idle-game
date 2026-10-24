@@ -32,11 +32,10 @@ import { loadEraPack } from '@/content/loader';
 import { openLife } from '@/engine';
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
-import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+import { useSaveSlot, type SaveSlotError } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
-import SaveSlotErrorBar from '@/ui/components/SaveSlotErrorBar';
-import type { SaveSlotError } from '@/ui/hooks/useSaveSlot';
+import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
 
 const DEFAULT_ERA_ID = 'tang-china';
 
@@ -84,7 +83,7 @@ function buildRoleCards(pack: EraPack): RoleCardData[] {
 export default function LifeStartScreen() {
   const params = useLocalSearchParams<{ era?: string; resume?: string }>();
   const eraId = params.era ?? DEFAULT_ERA_ID;
-  const { state: saveState, loading: saveLoading, error, clearError } = useSaveSlot();
+  const { state: saveState, loading: saveLoading, error, clearError, retryLoad } = useSaveSlot();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const mounted = useMounted();
   const [pack, setPack] = useState<EraPack | null>(null);
@@ -168,6 +167,7 @@ export default function LifeStartScreen() {
       onSelectRole={handleSelectRole}
       saveError={error}
       onClearSaveError={clearError}
+      onRetrySave={retryLoad}
     />
   );
 }
@@ -178,6 +178,7 @@ interface ReadyViewProps {
   readonly onSelectRole: (roleKey: string) => void;
   readonly saveError: SaveSlotError | null;
   readonly onClearSaveError: () => void;
+  readonly onRetrySave: () => void;
 }
 
 const ReadyView: FC<ReadyViewProps> = ({
@@ -186,6 +187,7 @@ const ReadyView: FC<ReadyViewProps> = ({
   onSelectRole,
   saveError = null,
   onClearSaveError,
+  onRetrySave,
 }) => {
   const [warningsExpanded, setWarningsExpanded] = useState(false);
   const eraName = resolveSid(pack.name_sid);
@@ -205,7 +207,11 @@ const ReadyView: FC<ReadyViewProps> = ({
         {resolveSid('life.start.heading_sid')}
       </Text>
 
-      <SaveSlotErrorBar error={saveError} onContinue={onClearSaveError} />
+      <SaveSlotErrorBar
+        error={saveError}
+        {...retryPropsFor(saveError, onRetrySave)}
+        onContinue={onClearSaveError}
+      />
 
       <View style={styles.section}>
         <Text style={styles.label}>{resolveSid('life.start.era_label_sid')}</Text>

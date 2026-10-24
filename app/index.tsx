@@ -19,7 +19,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import DisclaimerModal from '@/ui/components/DisclaimerModal';
-import SaveSlotErrorBar from '@/ui/components/SaveSlotErrorBar';
+import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
@@ -39,7 +39,7 @@ function resumeLineOf(life: LifeState | null): string | null {
 }
 
 export default function IndexScreen() {
-  const { settings, updateSettings, state, loading, error, clearError } = useSaveSlot(1);
+  const { settings, updateSettings, state, loading, error, clearError, retryLoad } = useSaveSlot(1);
   const mounted = useMounted();
   const life =
     state === null ? null : (state.chain.life_states[state.chain.current_life_index] ?? null);
@@ -59,7 +59,11 @@ export default function IndexScreen() {
         <Text style={styles.subtitle}>{resolveSid('home.subtitle_sid')}</Text>
       </View>
 
-      <SaveSlotErrorBar error={error} onContinue={clearError} />
+      <SaveSlotErrorBar
+        error={error}
+        {...retryPropsFor(error, retryLoad)}
+        onContinue={clearError}
+      />
 
       <View style={styles.actions}>
         <Pressable

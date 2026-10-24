@@ -17,7 +17,7 @@ import { WARNING_CATEGORIES, type WarningCategoryId } from '@/content/warning-ta
 import { formatSid, resolveSid } from '@/i18n';
 import { studioTheme as t } from '@/ui/studio-theme';
 import type { AppSettings, FontScale, SaveSlotError, SlotSummary } from '@/ui/hooks/useSaveSlot';
-import SaveSlotErrorBar from '@/ui/components/SaveSlotErrorBar';
+import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -29,6 +29,8 @@ export interface SettingsViewProps {
   /** Persistence failures surfaced by the owning route (SaveSlotErrorBar). */
   readonly error?: SaveSlotError | null;
   readonly onClearError?: () => void;
+  /** Try again: re-run the slot load. */
+  readonly onRetryLoad?: () => void;
   /** True until mount: the save-slot list is localStorage-derived, so the
    * server (and the first client render) show placeholders of the same
    * shape instead of an empty list (React #418). */
@@ -66,6 +68,7 @@ function fontScaleLabelSid(scale: FontScale): string {
 export default function SettingsView({
   error = null,
   onClearError,
+  onRetryLoad,
   slotsLoading = false,
   settings,
   slots,
@@ -120,7 +123,11 @@ export default function SettingsView({
       contentContainerStyle={styles.container}
     >
       {onClearError === undefined ? null : (
-        <SaveSlotErrorBar error={error} onContinue={onClearError} />
+        <SaveSlotErrorBar
+          error={error}
+          {...retryPropsFor(error, onRetryLoad)}
+          onContinue={onClearError}
+        />
       )}
       <Text accessibilityRole="header" style={styles.title}>
         {resolveSid('settings.title_sid')}

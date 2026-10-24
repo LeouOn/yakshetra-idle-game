@@ -16,7 +16,7 @@
 // Plan reference: todo 11 (shell), todos 12-13 (semantic wiring), todo 15
 // (settings/accessibility + save-slot management extensions).
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { ContentWarningSettings, WarningCategoryId } from '@/content/warning-taxonomy';
 import { defaultContentWarningSettings } from '@/content/warning-taxonomy';
@@ -224,6 +224,8 @@ export interface UseSaveSlotResult {
   readonly error: SaveSlotError | null;
   /** Dismiss {@link UseSaveSlotResult.error}. */
   readonly clearError: () => void;
+  /** Re-run the mount load — the error bar's real Try again. */
+  readonly retryLoad: () => void;
 }
 
 /** Build a `SaveSlotError` from whatever was thrown, without losing the cause. */
@@ -260,39 +262,75 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
     setAllSlots(summaries);
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      setLoading(true);
-      try {
-        const slots = await adapter().listSlots();
-        const blob = slots.includes(slot) ? await adapter().load(slot) : null;
-        const summaries: SlotSummary[] = [];
-        for (const s of MANAGED_SLOTS) {
-          if (s === slot) {
-            summaries.push({ slot: s, blob });
-          } else {
-            const b = slots.includes(s) ? await adapter().load(s) : null;
-            summaries.push({ slot: s, blob: b });
-          }
-        }
-        if (!cancelled) {
-          setState(blob);
-          setAllSlots(summaries);
-          setError(null);
-        }
-      } catch (err) {
-        // A load that throws must not look like an empty slot. Surface it and
-        // leave `state` null so a fresh start is still possible.
-        if (!cancelled) setError(toSaveSlotError('load', err));
-      } finally {
-        if (!cancelled) setLoading(false);
+  /** The mount load, extracted so the error bar's Try again can re-run
+   * it. A slot that EXISTS but will not parse is a failure, not an empty
+   * slot (browser finding B/C: garbage under the key painted nothing) —
+   * the adapter nulls unparseable data, so the key's presence is the tell. */
+  // Load generation: retrying bumps it, and only the newest load may write
+  // state — a stale run (superseded by a retry or a slot change) lands on
+  // the floor instead of clobbering newer truth.
+  const loadGen = useRef(0);
+
+  const runLoad = useCallback(async (): Promise<void> => {
+    const gen = loadGen.current + 1;
+    loadGen.current = gen;
+    setLoading(true);
+    try {
+      const slots = await adapter().listSlots();
+      const present = slots.includes(slot);
+      const blob = present ? await adapter().load(slot) : null;
+      if (present && blob === null) {
+        throw new Error('slot data is present but unreadable');
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      const summaries: SlotSummary[] = [];
+      for (const s of MANAGED_SLOTS) {
+        if (s === slot) {
+          summaries.push({ slot: s, blob });
+        } else {
+          const b = slots.includes(s) ? await adapter().load(s) : null;
+          summaries.push({ slot: s, blob: b });
+        }
+      }
+      if (loadGen.current !== gen) {
+        return; // superseded by a newer load
+      }
+      setState(blob);
+      setAllSlots(summaries);
+      // A successful reload clears a LOAD failure; a save/import/delete
+      // failure survives it. The write never happened, so the warning that
+      // the last change is not written down must not vanish on a re-read.
+      setError((current) => (current === null || current.operation === 'load' ? null : current));
+    } catch (err) {
+      if (loadGen.current !== gen) {
+        return;
+      }
+      // A load that throws must not look like an empty slot. Surface it and
+      // leave `state` null so a fresh start is still possible.
+      setError(toSaveSlotError('load', err));
+    } finally {
+      if (loadGen.current === gen) {
+        setLoading(false);
+      }
+    }
   }, [slot]);
+
+  /** The error bar's real Try again: re-run the mount load. */
+  const retryLoad = useCallback((): void => {
+    void runLoad();
+  }, [runLoad]);
+
+  useEffect(() => {
+    // Deferred a microtask so the load's first setState is a separate pass,
+    // not a synchronous cascade inside the effect (repo lint).
+    void Promise.resolve().then(() => {
+      void runLoad();
+    });
+    // Unmount cancels: the generation bump makes a late load return before
+    // it touches state (the guard HEAD had, kept on the counter).
+    return () => {
+      loadGen.current += 1;
+    };
+  }, [runLoad]);
 
   const updateSettings = useCallback((patch: Partial<AppSettings>): void => {
     if (patch.disclaimerAccepted === true) {
@@ -415,5 +453,6 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
     deleteSlot,
     error,
     clearError,
+    retryLoad,
   };
 }

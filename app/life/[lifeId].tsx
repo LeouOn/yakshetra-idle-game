@@ -27,6 +27,7 @@ import {
 } from '@/engine';
 import { loadStudioSession } from '@/persistence';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
+import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 import type {
@@ -386,7 +387,14 @@ export default function LifeTurnScreen() {
   // `lifeId` is the route address, not the life: every life opens at
   // `/life/pending` and takes its identity from the chain it joins.
   const { era, roleId } = useLocalSearchParams<{ lifeId: string; era?: string; roleId?: string }>();
-  const { state: blob, loading: saveLoading, dispatch: saveDispatch } = useSaveSlot(1);
+  const {
+    state: blob,
+    loading: saveLoading,
+    dispatch: saveDispatch,
+    error: saveError,
+    clearError,
+    retryLoad,
+  } = useSaveSlot(1);
   const mounted = useMounted();
   const [initialState, setInitialState] = useState<LifeState | null>(null);
   const [isNewLife, setIsNewLife] = useState(false);
@@ -449,18 +457,27 @@ export default function LifeTurnScreen() {
   }
 
   return (
-    <TurnScreen
-      initialState={initialState}
-      eraPack={eraPack}
-      onDeath={() => {
-        router.push('/bardo');
-      }}
-      syncStudio
-      persistLife={persistLife}
-      onOpenStudio={() => {
-        router.push('/studio');
-      }}
-    />
+    <View style={styles.flex}>
+      {saveError === null ? null : (
+        <SaveSlotErrorBar
+          error={saveError}
+          {...retryPropsFor(saveError, retryLoad)}
+          onContinue={clearError}
+        />
+      )}
+      <TurnScreen
+        initialState={initialState}
+        eraPack={eraPack}
+        onDeath={() => {
+          router.push('/bardo');
+        }}
+        syncStudio
+        persistLife={persistLife}
+        onOpenStudio={() => {
+          router.push('/studio');
+        }}
+      />
+    </View>
   );
 }
 
@@ -898,6 +915,7 @@ function DevTools({ onSkipTurn, onDie }: DevToolsProps) {
 // ---------------------------------------------------------------------------
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   center: {
     flex: 1,
     justifyContent: 'center',
