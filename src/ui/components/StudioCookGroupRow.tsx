@@ -12,6 +12,10 @@ interface Props {
   readonly spend: number;
   readonly canStepDown: boolean;
   readonly onStep: (delta: 1 | -1) => void;
+  /** Family label for the group's practice ('Learning', 'Beings', ...), so
+   * hint sentences like 'waits where study bears fruit' are actionable.
+   * Null when the group is not practice-shaped. */
+  readonly familyLabel?: string | null;
 }
 
 function traceLabel(key: string): string {
@@ -21,7 +25,13 @@ function traceLabel(key: string): string {
   return cut >= 0 ? first.slice(cut + 1) : first;
 }
 
-export default function StudioCookGroupRow({ group, spend, canStepDown, onStep }: Props) {
+export default function StudioCookGroupRow({
+  group,
+  spend,
+  canStepDown,
+  onStep,
+  familyLabel = null,
+}: Props) {
   const count = group.indices.length;
   const label = traceLabel(group.key);
   const moreDisabled = spend >= count;
@@ -29,7 +39,12 @@ export default function StudioCookGroupRow({ group, spend, canStepDown, onStep }
   return (
     <View testID={`studio-cook-group-${group.key}`} style={styles.group}>
       <Text style={styles.groupLabel}>
-        {label} x{count}
+        {familyLabel === null
+          ? `${label} x${count}`
+          : formatSid('studio.cook_family_note_sid', {
+              group: `${label} x${count}`,
+              family: familyLabel,
+            })}
       </Text>
       <View style={styles.stepper}>
         <Pressable

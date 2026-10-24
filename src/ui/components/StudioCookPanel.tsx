@@ -48,6 +48,9 @@ interface Props {
   readonly surplus?: number;
   /** The bench's pinned pair, shown above the traces (wave 3b). */
   readonly pinnedPair?: readonly { readonly name: string }[];
+  /** Family label per group key, so the player can SEE which groups are
+   * Learning vs Work etc. (browser finding 3b). */
+  readonly familyLabelOf?: (groupKey: string) => string | null;
   readonly onCook: (choice: CookChoice) => void;
   readonly onCancel: () => void;
 }
@@ -76,6 +79,7 @@ export default function StudioCookPanel({
   cookTicksDiscount = 0,
   surplus = 0,
   pinnedPair = [],
+  familyLabelOf,
   onCook,
   onCancel,
 }: Props) {
@@ -185,6 +189,7 @@ export default function StudioCookPanel({
             spend={counts[group.key] ?? 0}
             canStepDown={totalSpend - 1 >= gate}
             onStep={(delta) => step(group, delta)}
+            {...(familyLabelOf === undefined ? {} : { familyLabel: familyLabelOf(group.key) })}
           />
         ))}
       </View>

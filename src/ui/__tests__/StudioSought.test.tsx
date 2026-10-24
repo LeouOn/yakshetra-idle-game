@@ -261,3 +261,33 @@ describe('the encounter journey through StudioView (items 1+4)', () => {
     ).toHaveLength(1);
   });
 });
+
+describe('cook-panel family labels (browser finding 3b)', () => {
+  it('the cook panel labels trace groups with their family', () => {
+    let studio: StudioState = { ...createStudioState(), archive: [personCard('m-a', 'Old Wu')] };
+    studio = recordStudioResidues(studio, [
+      { tick: 1, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+      { tick: 2, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+      { tick: 3, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+      { tick: 4, type: 'practice_tick', ids: ['practice.test'], numbers: {} },
+    ]);
+    const ui = render(
+      createElement(StudioView, {
+        practices: [practice],
+        schedule,
+        initialSession: sessionWith(studio),
+      }),
+    );
+    ui.press(ui.getByTestID('studio-develop'));
+    // practice.test's lens is joyful_effort -> Learning.
+    const group = ui.getByTestID('studio-cook-group-practice_tick|practice.test');
+    const label = String(
+      (
+        group.children.find(
+          (child) => typeof (child as { children?: readonly unknown[] }).children?.[0] === 'string',
+        ) as { children: readonly unknown[] }
+      )?.children?.[0] ?? '',
+    );
+    expect(label).toContain('Learning');
+  });
+});

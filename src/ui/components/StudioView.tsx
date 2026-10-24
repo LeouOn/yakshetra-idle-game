@@ -617,6 +617,18 @@ export default function StudioView({
     [runtimePractices],
   );
 
+  /** Group key -> family LABEL for the cook panel ('Learning', ...). The key
+   * is `type|id|id...`; the practice id is the first id segment. */
+  const familyLabelOfGroup = useCallback(
+    (groupKey: string): string | null => {
+      const ids = groupKey.split('|')[1] ?? '';
+      const first = ids.split('|')[0] ?? '';
+      const family = encounterFamilyOf(first);
+      return family === null ? null : resolveSid(`studio.family_${family}_sid`);
+    },
+    [encounterFamilyOf],
+  );
+
   const { harvest } = useStudioHarvest({
     completeManifest,
     encounters: registries().encounters,
@@ -976,6 +988,7 @@ export default function StudioView({
                 cookTicksDiscount={cookDiscount}
                 surplus={cookHeat}
                 pinnedPair={pinnedCards(studio.pinned).map((focus) => ({ name: focus.name }))}
+                familyLabelOf={familyLabelOfGroup}
                 onCancel={() => {
                   setCookOpen(false);
                   setCookPile(null);
