@@ -250,10 +250,23 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   }));
   const [allSlots, setAllSlots] = useState<readonly SlotSummary[]>([]);
   const [error, setError] = useState<SaveSlotError | null>(null);
+  const errorRef = useRef<SaveSlotError | null>(null);
+  // A write warning that a later load failure would otherwise overwrite.
+  // Kept until the load error resolves, then restored: a failed save is still
+  // true after a re-read, and the player must not lose that warning.
+  const pendingWarning = useRef<SaveSlotError | null>(null);
+
+  /** Single writer for `error`, keeping the synchronous ref in step so an
+   * async load can decide precedence without a stale render. */
+  const applyError = useCallback((next: SaveSlotError | null): void => {
+    errorRef.current = next;
+    setError(next);
+  }, []);
 
   const clearError = useCallback((): void => {
-    setError(null);
-  }, []);
+    pendingWarning.current = null;
+    applyError(null);
+  }, [applyError]);
 
   const refreshAllSlots = useCallback(async (): Promise<void> => {
     const summaries: SlotSummary[] = [];
@@ -298,23 +311,34 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
       }
       setState(blob);
       setAllSlots(summaries);
-      // A successful reload clears a LOAD failure; a save/import/delete
-      // failure survives it. The write never happened, so the warning that
-      // the last change is not written down must not vanish on a re-read.
-      setError((current) => (current === null || current.operation === 'load' ? null : current));
+      // A successful reload clears a LOAD failure and RESTORES the write
+      // warning that failure was hiding. A write failure that is still on
+      // screen simply survives the re-read (the write never happened).
+      const current = errorRef.current;
+      if (current === null || current.operation === 'load') {
+        const remembered = pendingWarning.current;
+        pendingWarning.current = null;
+        applyError(remembered);
+      }
     } catch (err) {
       if (loadGen.current !== gen) {
         return;
       }
       // A load that throws must not look like an empty slot. Surface it and
-      // leave `state` null so a fresh start is still possible.
-      setError(toSaveSlotError('load', err));
+      // leave `state` null so a fresh start is still possible. A pending
+      // write warning is remembered, not lost: the load error is the more
+      // urgent truth now, and the warning returns when the load recovers.
+      const current = errorRef.current;
+      if (current !== null && current.operation !== 'load') {
+        pendingWarning.current = current;
+      }
+      applyError(toSaveSlotError('load', err));
     } finally {
       if (loadGen.current === gen) {
         setLoading(false);
       }
     }
-  }, [slot]);
+  }, [slot, applyError]);
 
   /** The error bar's real Try again: re-run the mount load. */
   const retryLoad = useCallback((): void => {
@@ -322,14 +346,20 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
   }, [runLoad]);
 
   useEffect(() => {
+    let cancelled = false;
     // Deferred a microtask so the load's first setState is a separate pass,
     // not a synchronous cascade inside the effect (repo lint).
     void Promise.resolve().then(() => {
-      void runLoad();
+      // Unmount may win the race with this microtask; do not even start a
+      // read for a tree that is gone.
+      if (!cancelled) {
+        void runLoad();
+      }
     });
-    // Unmount cancels: the generation bump makes a late load return before
-    // it touches state (the guard HEAD had, kept on the counter).
+    // Unmount also cancels an in-flight load: the generation bump makes a
+    // late result return before it touches state.
     return () => {
+      cancelled = true;
       loadGen.current += 1;
     };
   }, [runLoad]);
@@ -363,17 +393,22 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
           try {
             await adapter().save(slot, action.blob);
             setState(action.blob);
-            setError(null);
+            pendingWarning.current = null;
+            applyError(null);
           } catch (err) {
             // Do not rethrow: callers fire-and-forget this dispatch, so a
             // rethrow would be an unhandled rejection again. The slot simply
             // did not change, and `error` says why. The resolved `false`
             // (wave-1 review #4) lets an awaiting caller know not to
             // navigate on a failed write.
-            setError(toSaveSlotError('save', err));
+            const warning = toSaveSlotError('save', err);
+            pendingWarning.current = warning;
+            applyError(warning);
             return false;
           }
-          await refreshAllSlots();
+          // A failed re-list after a successful write is a stale summary,
+          // not a lost write; the next load corrects it.
+          await refreshAllSlots().catch(() => undefined);
           return true;
         }
 
@@ -381,12 +416,15 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
           try {
             await adapter().deleteSlot(slot);
             setState(null);
-            setError(null);
+            pendingWarning.current = null;
+            applyError(null);
           } catch (err) {
-            setError(toSaveSlotError('delete', err));
+            const warning = toSaveSlotError('delete', err);
+            pendingWarning.current = warning;
+            applyError(warning);
             return false;
           }
-          await refreshAllSlots();
+          await refreshAllSlots().catch(() => undefined);
           return true;
         }
 
@@ -398,7 +436,7 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
         }
       }
     },
-    [slot, refreshAllSlots],
+    [slot, refreshAllSlots, applyError],
   );
 
   const exportSlot = useCallback(
@@ -420,14 +458,17 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
         if (target === slot) {
           setState(blob);
         }
-        setError(null);
+        pendingWarning.current = null;
+        applyError(null);
       } catch (err) {
-        setError(toSaveSlotError('import', err));
+        const warning = toSaveSlotError('import', err);
+        pendingWarning.current = warning;
+        applyError(warning);
         return;
       }
-      await refreshAllSlots();
+      await refreshAllSlots().catch(() => undefined);
     },
-    [slot, refreshAllSlots],
+    [slot, refreshAllSlots, applyError],
   );
 
   const deleteSlot = useCallback(
@@ -437,19 +478,22 @@ export function useSaveSlot(slot: number = 1): UseSaveSlotResult {
       } catch (err) {
         // Same contract as dispatch DELETE_SLOT: surface, do not throw. The
         // route keeps its place and the player can try the action again.
-        setError(toSaveSlotError('delete', err));
+        const warning = toSaveSlotError('delete', err);
+        pendingWarning.current = warning;
+        applyError(warning);
         return false;
       }
       if (target === slot) {
         setState(null);
       }
-      setError(null);
+      pendingWarning.current = null;
+      applyError(null);
       // Re-listing after a successful delete can fail on its own; that is a
       // stale summary, not a failed delete. The next load corrects the list.
       await refreshAllSlots().catch(() => undefined);
       return true;
     },
-    [slot, refreshAllSlots],
+    [slot, refreshAllSlots, applyError],
   );
 
   return {

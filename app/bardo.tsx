@@ -13,13 +13,16 @@ import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import BardoView, { nextErasAfter } from '@/ui/components/BardoView';
-import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
+import SaveSlotErrorBar, {
+  retryPropsFor,
+  startFreshAction,
+} from '@/ui/components/SaveSlotErrorBar';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 
 export default function BardoScreen() {
-  const { state, error, clearError, retryLoad } = useSaveSlot(1);
+  const { state, error, clearError, retryLoad, deleteSlot } = useSaveSlot(1);
   const mounted = useMounted();
 
   if (!mounted) {
@@ -41,6 +44,9 @@ export default function BardoScreen() {
         <SaveSlotErrorBar
           error={error}
           {...retryPropsFor(error, retryLoad)}
+          onStartFresh={startFreshAction(deleteSlot, clearError, () =>
+            router.replace('/life/start'),
+          )}
           onContinue={clearError}
         />
       )}

@@ -17,7 +17,12 @@
     "export_sid": "The save code could not be read out. The slot itself is fine.",
     "delete_sid": "The slot was not deleted. It keeps what it held.",
     "retry_sid": "Try again",
-    "continue_sid": "Go on"
+    "continue_sid": "Go on",
+    "start_fresh_sid": "Start fresh",
+    "start_fresh_title_sid": "Start fresh?",
+    "start_fresh_body_sid": "This discards the unreadable save in slot 1 and everything in it, echoes included. It cannot be undone.",
+    "start_fresh_confirm_sid": "Discard and start fresh",
+    "start_fresh_cancel_sid": "Cancel"
   },
   "life": {
     "reflect": {

@@ -35,7 +35,10 @@ import { studioTheme as t } from '@/ui/studio-theme';
 import { useSaveSlot, type SaveSlotError } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
-import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
+import SaveSlotErrorBar, {
+  retryPropsFor,
+  startFreshAction,
+} from '@/ui/components/SaveSlotErrorBar';
 
 const DEFAULT_ERA_ID = 'tang-china';
 
@@ -83,7 +86,14 @@ function buildRoleCards(pack: EraPack): RoleCardData[] {
 export default function LifeStartScreen() {
   const params = useLocalSearchParams<{ era?: string; resume?: string }>();
   const eraId = params.era ?? DEFAULT_ERA_ID;
-  const { state: saveState, loading: saveLoading, error, clearError, retryLoad } = useSaveSlot();
+  const {
+    state: saveState,
+    loading: saveLoading,
+    error,
+    clearError,
+    retryLoad,
+    deleteSlot,
+  } = useSaveSlot();
   const [status, setStatus] = useState<LoadStatus>('loading');
   const mounted = useMounted();
   const [pack, setPack] = useState<EraPack | null>(null);
@@ -168,6 +178,7 @@ export default function LifeStartScreen() {
       saveError={error}
       onClearSaveError={clearError}
       onRetrySave={retryLoad}
+      onStartFresh={startFreshAction(deleteSlot, clearError, () => router.replace('/life/start'))}
     />
   );
 }
@@ -179,6 +190,7 @@ interface ReadyViewProps {
   readonly saveError: SaveSlotError | null;
   readonly onClearSaveError: () => void;
   readonly onRetrySave: () => void;
+  readonly onStartFresh: () => Promise<boolean>;
 }
 
 const ReadyView: FC<ReadyViewProps> = ({
@@ -188,6 +200,7 @@ const ReadyView: FC<ReadyViewProps> = ({
   saveError = null,
   onClearSaveError,
   onRetrySave,
+  onStartFresh,
 }) => {
   const [warningsExpanded, setWarningsExpanded] = useState(false);
   const eraName = resolveSid(pack.name_sid);
@@ -210,6 +223,7 @@ const ReadyView: FC<ReadyViewProps> = ({
       <SaveSlotErrorBar
         error={saveError}
         {...retryPropsFor(saveError, onRetrySave)}
+        onStartFresh={onStartFresh}
         onContinue={onClearSaveError}
       />
 

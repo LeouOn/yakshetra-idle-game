@@ -9,6 +9,8 @@
 
 import { router } from 'expo-router';
 
+import { startFreshAction } from '@/ui/components/SaveSlotErrorBar';
+
 import SettingsView from '@/ui/components/SettingsView';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
@@ -63,6 +65,7 @@ export default function SettingsScreen() {
       error={error}
       onClearError={clearError}
       onRetryLoad={retryLoad}
+      onStartFresh={startFreshAction(deleteSlot, clearError, () => router.replace('/life/start'))}
       onToggleContentWarning={setContentWarning}
       onToggleReducedMotion={(enabled) => updateSettings({ reducedMotion: enabled })}
       onSelectFontScale={(scale) => updateSettings({ fontScale: scale })}

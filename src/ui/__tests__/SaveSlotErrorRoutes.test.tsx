@@ -2,7 +2,7 @@ import { createElement, useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-import { act, render } from '@/test/rntl';
+import { act, cleanup, render } from '@/test/rntl';
 import type { SaveBlob } from '@/engine';
 import { useSaveSlot, type UseSaveSlotResult } from '@/ui/hooks/useSaveSlot';
 
@@ -139,6 +139,7 @@ describe('SaveSlotErrorBar through the route components', { timeout: 90_000 }, (
       roleId: 'peasant@0.1.0',
       era: 'tang-china',
     };
+    adapter.load.mockResolvedValue(blob());
     adapter.save.mockRejectedValue(new Error('quota exceeded'));
     const LifeScreen = (await import('../../../app/life/[lifeId]')).default;
     const ui = render(createElement(LifeScreen));
@@ -178,6 +179,65 @@ describe('SaveSlotErrorBar through the route components', { timeout: 90_000 }, (
     });
     await waitFor('the successful reload', () => adapter.load.mock.calls.length > loadsBefore);
     expect(hookApi!.error?.operation).toBe('save');
+  });
+
+  it('a load failure shows itself but remembers a pending save warning', async () => {
+    adapter.load.mockResolvedValue(blob());
+    adapter.listSlots.mockResolvedValue([1]);
+    adapter.save.mockRejectedValue(new Error('quota'));
+    render(
+      createElement(HookProbe, {
+        onApi: (api) => {
+          hookApi = api;
+        },
+      }),
+    );
+    await waitFor('the first load to finish', () => hookApi !== null && !hookApi.loading);
+
+    await act(async () => {
+      await hookApi!.dispatch({ type: 'PERSIST', blob: blob() });
+    });
+    expect(hookApi!.error?.operation).toBe('save');
+
+    // The reload fails: the load error is the urgent truth now.
+    adapter.load.mockRejectedValue(new Error('storage broke'));
+    const beforeFailure = adapter.load.mock.calls.length;
+    await act(async () => {
+      hookApi!.retryLoad();
+    });
+    await waitFor(
+      'the load error to replace the warning on screen',
+      () => adapter.load.mock.calls.length > beforeFailure && hookApi!.error?.operation === 'load',
+    );
+
+    // The reload recovers: the save warning must come back, not vanish.
+    adapter.load.mockResolvedValue(blob());
+    const beforeRecovery = adapter.load.mock.calls.length;
+    await act(async () => {
+      hookApi!.retryLoad();
+    });
+    await waitFor(
+      'the remembered save warning',
+      () => adapter.load.mock.calls.length > beforeRecovery && hookApi!.error?.operation === 'save',
+    );
+  });
+
+  it('an unmount before the deferred load starts never reads the adapter', async () => {
+    render(
+      createElement(HookProbe, {
+        onApi: (api) => {
+          hookApi = api;
+        },
+      }),
+    );
+    // Same macrotask as render: the effect's deferred microtask has not run.
+    cleanup();
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(adapter.listSlots).not.toHaveBeenCalled();
   });
 });
 

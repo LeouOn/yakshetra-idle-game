@@ -27,7 +27,10 @@ import {
 } from '@/engine';
 import { loadStudioSession } from '@/persistence';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
-import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
+import SaveSlotErrorBar, {
+  retryPropsFor,
+  startFreshAction,
+} from '@/ui/components/SaveSlotErrorBar';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
 import type {
@@ -394,15 +397,29 @@ export default function LifeTurnScreen() {
     error: saveError,
     clearError,
     retryLoad,
+    deleteSlot,
   } = useSaveSlot(1);
   const mounted = useMounted();
   const [initialState, setInitialState] = useState<LifeState | null>(null);
   const [isNewLife, setIsNewLife] = useState(false);
   const openedRef = useRef(false);
   const chainRef = useRef<SaveBlob | null>(null);
+  // Set once Start fresh is confirmed: the slot belongs to that flow, so the
+  // route must never open (and persist) a new life over the slot it just
+  // emptied. Cleared when the delete is refused.
+  const startingFreshRef = useRef(false);
 
   useEffect(() => {
     if (saveLoading || openedRef.current) {
+      return;
+    }
+    if (startingFreshRef.current) {
+      return;
+    }
+    // An unresolved slot error must not be overwritten by a fresh life
+    // before the player chooses. Wait for a retry, Start fresh, or a
+    // dismissal; the bar carries those paths.
+    if (saveError !== null) {
       return;
     }
     openedRef.current = true;
@@ -424,12 +441,23 @@ export default function LifeTurnScreen() {
     return () => {
       cancelled = true;
     };
-  }, [era, roleId, saveLoading, blob]);
+  }, [era, roleId, saveLoading, blob, saveError]);
 
   const eraPack = useMemo<EraPack | null>(
     () => (initialState === null ? null : resolveEraPack(initialState.era)),
     [initialState],
   );
+
+  const freshStart = startFreshAction(deleteSlot, clearError, () => router.replace('/life/start'));
+  const startFresh = async (): Promise<boolean> => {
+    startingFreshRef.current = true;
+    const deleted = await freshStart();
+    if (!deleted) {
+      // The slot is still there and still unreadable; a retry may still work.
+      startingFreshRef.current = false;
+    }
+    return deleted;
+  };
 
   const persistLife = useCallback(
     (life: LifeState) => {
@@ -448,11 +476,22 @@ export default function LifeTurnScreen() {
   // server shipped the skeleton. Gate until mount.
   if (initialState === null || !mounted) {
     return (
-      <ScreenSkeleton
-        labelSid="life.turn.screen_label_sid"
-        sections={3}
-        testID="life-turn-skeleton"
-      />
+      <View style={styles.flex}>
+        {saveError === null ? null : (
+          <SaveSlotErrorBar
+            error={saveError}
+            {...retryPropsFor(saveError, retryLoad)}
+            onStartFresh={startFresh}
+            continueWouldPersist
+            onContinue={clearError}
+          />
+        )}
+        <ScreenSkeleton
+          labelSid="life.turn.screen_label_sid"
+          sections={3}
+          testID="life-turn-skeleton"
+        />
+      </View>
     );
   }
 
@@ -462,6 +501,8 @@ export default function LifeTurnScreen() {
         <SaveSlotErrorBar
           error={saveError}
           {...retryPropsFor(saveError, retryLoad)}
+          onStartFresh={startFresh}
+          continueWouldPersist
           onContinue={clearError}
         />
       )}

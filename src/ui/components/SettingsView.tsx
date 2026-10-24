@@ -31,6 +31,8 @@ export interface SettingsViewProps {
   readonly onClearError?: () => void;
   /** Try again: re-run the slot load. */
   readonly onRetryLoad?: () => void;
+  /** Delete an unreadable slot and start a fresh chain (bar's Start fresh). */
+  readonly onStartFresh?: () => Promise<boolean>;
   /** True until mount: the save-slot list is localStorage-derived, so the
    * server (and the first client render) show placeholders of the same
    * shape instead of an empty list (React #418). */
@@ -69,6 +71,7 @@ export default function SettingsView({
   error = null,
   onClearError,
   onRetryLoad,
+  onStartFresh,
   slotsLoading = false,
   settings,
   slots,
@@ -126,6 +129,7 @@ export default function SettingsView({
         <SaveSlotErrorBar
           error={error}
           {...retryPropsFor(error, onRetryLoad)}
+          {...(onStartFresh === undefined ? {} : { onStartFresh })}
           onContinue={onClearError}
         />
       )}

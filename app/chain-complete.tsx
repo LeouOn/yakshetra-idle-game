@@ -12,7 +12,10 @@ import { StyleSheet, View } from 'react-native';
 import type { StudioSession } from '@/engine';
 import { loadStudioSession } from '@/persistence';
 import ChainCompleteView, { describeChain } from '@/ui/components/ChainCompleteView';
-import SaveSlotErrorBar, { retryPropsFor } from '@/ui/components/SaveSlotErrorBar';
+import SaveSlotErrorBar, {
+  retryPropsFor,
+  startFreshAction,
+} from '@/ui/components/SaveSlotErrorBar';
 import { useSaveSlot } from '@/ui/hooks/useSaveSlot';
 import { useMounted } from '@/ui/hooks/useMounted';
 import ScreenSkeleton from '@/ui/components/ScreenSkeleton';
@@ -54,6 +57,13 @@ export default function ChainCompleteScreen() {
         <SaveSlotErrorBar
           error={error}
           {...retryPropsFor(error, retryLoad)}
+          onStartFresh={startFreshAction(deleteSlot, clearError, () =>
+            router.replace('/life/start'),
+          )}
+          // Dismissing a load error would re-enable "Begin a new chain", which
+          // deletes the unreadable slot with no confirmation. Keep the bar up;
+          // Try again or Start fresh (confirmed) are the ways out.
+          continueWouldPersist
           onContinue={clearError}
         />
       )}
