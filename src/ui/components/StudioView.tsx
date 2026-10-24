@@ -1259,7 +1259,17 @@ const styles = StyleSheet.create({
   barFill: { height: 12, backgroundColor: t.accent },
   hint: { fontSize: 14, color: t.muted },
   gold: { fontSize: 14, color: t.gold, fontWeight: '600' },
-  banked: { fontSize: 12, color: t.muted },
+  // The banked-heat line is one of the two things the bench teaches about
+  // heat, so it is set like the other bench lines (14px, the same muted
+  // grey as `hint`) and given air above and below: at 12px it read as a
+  // footnote glued to the Tend button below it.
+  banked: {
+    fontSize: 14,
+    lineHeight: 19,
+    color: t.muted,
+    marginTop: 2,
+    marginBottom: 10,
+  },
   disclosure: { minHeight: 44, justifyContent: 'center', paddingVertical: 8 },
   disclosureText: { fontSize: 14, fontWeight: '600', color: t.muted },
   ready: { fontSize: 16, fontWeight: '600', color: t.harvestText },
