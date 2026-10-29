@@ -1,6 +1,7 @@
 {
   "name": "yakshetra",
   "version": "0.0.1",
+  "license": "MIT",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {

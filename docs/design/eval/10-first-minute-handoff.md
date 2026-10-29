@@ -1,9 +1,5 @@
 # First-Minute Prose Handoff: Choice Outcomes, Life-Start Wall, Content Warnings, and Appositive Comma
 
-**Queue Item:** `qitem-20261008053453-7b3fcc40`  
-**From:** `dev-b3@yakshetra-idle-game`  
-**To:** `dev-lead@yakshetra-idle-game`
-
 ---
 
 ## 1. Executive Summary

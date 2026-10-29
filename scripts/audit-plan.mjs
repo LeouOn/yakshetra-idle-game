@@ -230,12 +230,9 @@ ${missingRows.join('\n')}
 ${uncovered.length ? uncovered.map((c) => `- ${c.bullet}`).join('\n') : '- _(none)_'}
 `;
 
-// `.omo/evidence/` holds three files that are tracked (force-added before the
-// `.omo/` ignore rule, which no longer applies to them), so a fresh clone does
-// have the directory. This guard is for the states where it does NOT: `.omo/`
-// absent or removed wholesale — `git clean -xdf`, a sparse checkout, or an
-// evidence directory deleted. Write the report before anything else can fail on
-// a missing directory.
+// `.omo/` is local-only and untracked, so a fresh clone has no evidence
+// directory (nor does a tree after `git clean -xdf`). Create it, then write the
+// report before anything else can fail on a missing directory.
 mkdirSync(EVIDENCE_DIR, { recursive: true });
 writeFileSync(REPORT_PATH, report, 'utf8');
 

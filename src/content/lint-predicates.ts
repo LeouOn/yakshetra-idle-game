@@ -71,7 +71,7 @@ export function isStudioReturnFlag(key: string): boolean {
  * Keys that are known dead today and are pending a rules decision, not a lint
  * fix. Each entry must stay explicit and commented: the rule is green for the
  * packs, and a NEW dead key fails immediately. Do not add a key here unless a
- * learner decision is the fix.
+ * maintainer decision is the fix.
  */
 export const KNOWN_DEAD_GATES: Readonly<Record<string, string>> = {
   wealth:

@@ -1,6 +1,6 @@
 # State of the game, 2026-10-08
 
-An honest read of Yakshetra as it plays now, after the fun pass. Evidence: the headless simulation (`docs/design/eval/harness`), the code, real-Firefox screenshots (`~/proj/rig-lab/yaksh-browser/shots/`), and a hand-played first minute (`lead-life.mjs`, `lead-click.mjs`). Not verified in this document: native iOS/Android, sound (there is none), anything past about 45 minutes of real play.
+An honest read of Yakshetra as it plays now, after the fun pass. Evidence: the headless simulation (`docs/design/eval/harness`), the code, real-Firefox screenshots (taken with a local browser harness, not in this repo), and a hand-played first minute (`lead-life.mjs`, `lead-click.mjs`). Not verified in this document: native iOS/Android, sound (there is none), anything past about 45 minutes of real play.
 
 ## The game in one paragraph
 

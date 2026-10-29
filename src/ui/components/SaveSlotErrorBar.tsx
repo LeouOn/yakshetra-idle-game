@@ -9,7 +9,7 @@
 // An unreadable slot gets one more way out: Start fresh, in two steps. The
 // first press never deletes — it swaps the bar for a plain statement of what
 // is lost, with Cancel first and a destructive Confirm. The raw error text
-// stays visible in both steps (the learner's decision).
+// stays visible in both steps (the maintainer's decision).
 
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';

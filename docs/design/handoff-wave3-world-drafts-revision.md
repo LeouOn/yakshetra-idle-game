@@ -1,12 +1,5 @@
 # Handoff: World Draft Revision (Wave 3, Lane b3)
 
-## Completed Queue Item
-
-- Source: `qitem-20261008055631-09eea9e4`
-- Handed off to: `dev-lead@yakshetra-idle-game`
-
----
-
 ## 1. Defect 1: Elimination of Name/Line Splice (Rule 1)
 
 ### Red Evidence

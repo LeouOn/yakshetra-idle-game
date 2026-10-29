@@ -11,7 +11,7 @@
  * follow-up rather than gating on a clean pass (most routes are placeholders).
  */
 import { describe, it, expect } from 'vitest';
-import { readFile, writeFile, stat } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, stat } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -135,6 +135,8 @@ describe('accessibility audit (task 29)', () => {
     };
 
     const report = renderReport(audits, ctx);
+    // `.omo/` is local-only and untracked, so a fresh clone has no evidence dir.
+    await mkdir(evidenceDir, { recursive: true });
     await writeFile(reportPath, report, 'utf8');
 
     // Smoke assertions — the audit ran for ALL routes and produced a report.

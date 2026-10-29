@@ -51,6 +51,7 @@ advisory/reviewer-agreements/
 # config into the repo.
 .claude/
 .openrig/
+.agents/
 .mcp.json
 
 # TypeScript build info
